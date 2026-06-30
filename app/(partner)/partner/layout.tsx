@@ -1,0 +1,55 @@
+import Link from "next/link";
+import { requireRole } from "@/lib/domains/identity/service";
+import { PartnerNav } from "./partner-nav";
+
+export default async function PartnerLayout({ children }: { children: React.ReactNode }) {
+  const session = await requireRole("partner");
+
+  return (
+    <div className="flex h-screen overflow-hidden" style={{ background: "var(--so-black)" }}>
+      {/* Sidebar */}
+      <aside
+        className="flex w-56 flex-col border-r"
+        style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}
+      >
+        {/* Brand mark */}
+        <div className="flex h-14 items-center gap-2 border-b px-4" style={{ borderColor: "var(--so-border)" }}>
+          <span className="text-lg font-semibold tracking-tight" style={{ color: "var(--so-gold)" }}>
+            Sweet&apos;Oh
+          </span>
+          <span className="text-xs" style={{ color: "var(--so-cream-dim)" }}>workspace</span>
+        </div>
+
+        {/* Partner identity */}
+        <div className="border-b px-4 py-3" style={{ borderColor: "var(--so-border)" }}>
+          <p className="text-xs font-medium" style={{ color: "var(--so-cream)" }}>
+            {session.appUser.name ?? session.appUser.email}
+          </p>
+          <p className="text-xs" style={{ color: "var(--so-cream-dim)" }}>Creator</p>
+        </div>
+
+        {/* Nav */}
+        <PartnerNav />
+
+        {/* Dekaz access */}
+        <div className="mt-auto border-t p-3" style={{ borderColor: "var(--so-border)" }}>
+          <Link
+            href="/partner/ask"
+            className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-[var(--so-surface)]"
+            style={{ color: "var(--so-gold)" }}
+          >
+            <span className="text-base">◆</span>
+            <span>Ask Dekaz</span>
+          </Link>
+        </div>
+      </aside>
+
+      {/* Main */}
+      <main className="flex-1 overflow-y-auto">
+        <div className="mx-auto max-w-4xl px-6 py-8">
+          {children}
+        </div>
+      </main>
+    </div>
+  );
+}

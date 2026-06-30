@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+:root {
+  /* Sweet'Oh brand tokens */
+  --so-black: #0C0A09;
+  --so-dark: #141210;
+  --so-surface: #1E1A17;
+  --so-border: #2C2620;
+  --so-gold: #C9A84C;
+  --so-gold-dim: #8A6F32;
+  --so-cream: #F5F0E8;
+  --so-cream-dim: #9E9589;
+  --so-rose: #C4677A;
+  --so-rose-dim: #7A3D4A;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--so-black);
+  color: var(--so-cream);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--so-dark); }
+::-webkit-scrollbar-thumb { background: var(--so-border); border-radius: 2px; }

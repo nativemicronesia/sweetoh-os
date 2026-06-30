@@ -1,0 +1,82 @@
+{
+  "id": "1be027e5-4aa7-48f5-aca8-457330906d50",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.product_intelligence_assets": {
+      "name": "product_intelligence_assets",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "product_type": {
+          "name": "product_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mockup_base_image_bucket": {
+          "name": "mockup_base_image_bucket",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mockup_base_image_object_key": {
+          "name": "mockup_base_image_object_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "placement_regions": {
+          "name": "placement_regions",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "safe_zones": {
+          "name": "safe_zones",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "printable_areas": {
+          "name": "printable_areas",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
