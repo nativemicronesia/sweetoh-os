@@ -30,6 +30,14 @@ const serverEnvSchema = publicEnvSchema.extend({
     .enum(["true", "false"])
     .optional()
     .default("false"),
+  /**
+   * Slug of the `venture` row this deployment serves. Sweet'Oh is an
+   * independent venture/storefront, not a sub-brand of Island Sprouts —
+   * this replaces what used to be a hardcoded "island-sprouts" slug.
+   * Defaults to "sweetoh"; override per-environment once the real venture
+   * row exists (no migration/seed is created by this change).
+   */
+  SWEETOH_VENTURE_SLUG: z.string().min(1).default("sweetoh"),
 });
 
 export type PublicEnv = {
@@ -50,6 +58,7 @@ export type ServerEnv = PublicEnv & {
   sweetohSupportEmail?: string;
   openaiApiKey?: string;
   openaiModel: string;
+  ventureSlug: string;
 };
 
 let cachedPublic: PublicEnv | null = null;
@@ -121,6 +130,7 @@ export function getServerEnv(): ServerEnv {
     sweetohSupportEmail: parsed.data.SWEETOH_SUPPORT_EMAIL,
     openaiApiKey: parsed.data.OPENAI_API_KEY,
     openaiModel: parsed.data.OPENAI_MODEL,
+    ventureSlug: parsed.data.SWEETOH_VENTURE_SLUG,
   };
 
   return cachedServer;

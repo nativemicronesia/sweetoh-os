@@ -3,7 +3,7 @@
 import { createContext, useContext, useMemo, useSyncExternalStore } from "react";
 import type { CartLineItem } from "./types";
 
-const STORAGE_KEY = "island-sprouts-cart";
+const STORAGE_KEY = "sweetoh-cart";
 
 type Listener = () => void;
 

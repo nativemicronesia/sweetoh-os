@@ -1,13 +1,21 @@
 import { and, eq } from "drizzle-orm";
 import { cache } from "react";
 import { createClient } from "@/lib/auth/supabase/server";
+import { getServerEnv } from "@/lib/config/env";
 import { getDb } from "@/lib/db/client";
 import { appUser, venture } from "@/lib/db/schema";
 import { ForbiddenError, UnauthorizedError } from "@/lib/shared/errors";
 import type { AppRole, SessionUser, SyncAppUserInput } from "./types";
 
-// Shared Supabase DB venture — sweetoh-os is a separate app deployment on the same data
-const SWEETOH_VENTURE_SLUG = "island-sprouts";
+/**
+ * Sweet'Oh is an independent venture with its own storefront/checkout, not a
+ * sub-brand of Island Sprouts. Which `venture` row this deployment serves is
+ * configurable via SWEETOH_VENTURE_SLUG (defaults to "sweetoh") instead of
+ * being hardcoded — see lib/config/env.ts.
+ */
+function currentVentureSlug(): string {
+  return getServerEnv().ventureSlug;
+}
 
 async function findSessionUser(authUserId: string): Promise<SessionUser | null> {
   const db = getDb();
@@ -35,15 +43,16 @@ async function findSessionUser(authUserId: string): Promise<SessionUser | null> 
 }
 
 export const getDefaultVenture = cache(async () => {
+  const slug = currentVentureSlug();
   const db = getDb();
   const [row] = await db
     .select()
     .from(venture)
-    .where(eq(venture.slug, SWEETOH_VENTURE_SLUG))
+    .where(eq(venture.slug, slug))
     .limit(1);
 
   if (!row) {
-    throw new Error(`Venture not found: ${SWEETOH_VENTURE_SLUG}`);
+    throw new Error(`Venture not found: ${slug}`);
   }
 
   return row;
@@ -84,15 +93,16 @@ export async function requireRole(role: AppRole): Promise<SessionUser> {
 
 export async function syncAppUser(supabaseUser: SyncAppUserInput) {
   const db = getDb();
+  const slug = currentVentureSlug();
 
   const [ventureRow] = await db
     .select()
     .from(venture)
-    .where(eq(venture.slug, SWEETOH_VENTURE_SLUG))
+    .where(eq(venture.slug, slug))
     .limit(1);
 
   if (!ventureRow) {
-    throw new Error(`Venture not found: ${SWEETOH_VENTURE_SLUG}`);
+    throw new Error(`Venture not found: ${slug}`);
   }
 
   const email = supabaseUser.email ?? "";

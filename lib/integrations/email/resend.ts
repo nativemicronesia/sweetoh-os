@@ -158,6 +158,53 @@ export async function sendOrderConfirmationEmail(input: {
   });
 }
 
+/**
+ * Order confirmation for Sweet'Oh's own independent storefront checkout
+ * (app/api/webhooks/stripe). Every order this app's Stripe webhook creates
+ * belongs to this deployment's own venture, so it is always Sweet'Oh
+ * branded — unlike the legacy `sendOrderConfirmationEmail` above, which was
+ * written for a shared cart that could mix Island Sprouts and Sweet'Oh
+ * line items and always defaulted to Island Sprouts branding.
+ */
+export async function sendStorefrontOrderConfirmationEmail(input: {
+  to: string;
+  orderId: string;
+  totalCents: number;
+  lineItems: { productName: string; quantity: number; priceCentsAtPurchase: number }[];
+}) {
+  const supportEmail = sweetohReplyTo();
+
+  const itemLines = input.lineItems
+    .map(
+      (item) =>
+        `${item.productName} × ${item.quantity} — ${formatPrice(item.priceCentsAtPurchase * item.quantity)}`,
+    )
+    .join("\n");
+
+  const text = [
+    "Thank you for your Sweet'Oh order!",
+    "",
+    `Order ${input.orderId}`,
+    "",
+    itemLines,
+    "",
+    `Total: ${formatPrice(input.totalCents)}`,
+    ...(supportEmail
+      ? ["", `Questions? Reply to this email or contact ${supportEmail}.`]
+      : []),
+    "",
+    "— Sweet'Oh",
+  ].join("\n");
+
+  await sendSweetohWorkflowEmail({
+    to: input.to,
+    subject: "Your Sweet'Oh order is confirmed",
+    text,
+    failureLogKey: "storefront_order_confirmation_email_failed",
+    context: { orderId: input.orderId },
+  });
+}
+
 export async function sendCustomRequestReceivedEmail(input: {
   to: string;
   customerName?: string | null;

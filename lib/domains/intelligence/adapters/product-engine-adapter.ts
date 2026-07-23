@@ -1,5 +1,5 @@
 /**
- * The ONLY file in island-sprouts-os allowed to import the Product
+ * The ONLY file in sweetoh-os allowed to import the Product
  * Intelligence Engine module. Maps PIE's own types to the
  * ProductIntelligencePort contract so the rest of this codebase never
  * depends on PIE's types directly -- if PIE moves to its own repo,
