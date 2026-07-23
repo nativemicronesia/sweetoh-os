@@ -22,6 +22,22 @@ export async function uploadToBucket(input: {
   }
 }
 
+export async function downloadFromBucket(input: {
+  bucket: string;
+  objectKey: string;
+}): Promise<Buffer> {
+  const admin = createAdminClient();
+  const { data, error } = await admin.storage
+    .from(input.bucket)
+    .download(input.objectKey);
+
+  if (error || !data) {
+    throw error ?? new Error(`Failed to download ${input.bucket}/${input.objectKey}`);
+  }
+
+  return Buffer.from(await data.arrayBuffer());
+}
+
 export async function createSignedUrl(input: {
   bucket: string;
   objectKey: string;

@@ -175,7 +175,15 @@ export async function createProduct(input: {
   fulfillmentType: FulfillmentType;
   supplierSku?: string | null;
   sourceAssetId?: string | null;
-  actorUserId: string;
+  actorUserId: string | null;
+  /**
+   * Defaults to false (the owner's manually-curated catalog flow, which
+   * goes through the draftStatus editorial pipeline before publishProduct
+   * flips this). A customer-confirmed generated design is the one case that
+   * needs to be immediately purchasable without going through that
+   * pipeline — see createProductFromGeneratedDesign.
+   */
+  active?: boolean;
 }) {
   if (input.fulfillmentType === "digital") {
     throw new ValidationError("Digital products are blocked at launch (ADR-002)");
@@ -195,7 +203,7 @@ export async function createProduct(input: {
       fulfillmentType: input.fulfillmentType,
       supplierSku: input.supplierSku ?? null,
       sourceAssetId: input.sourceAssetId ?? null,
-      active: false,
+      active: input.active ?? false,
       draftStatus: "draft",
     })
     .returning();
@@ -452,7 +460,7 @@ export async function setProductStudioProject(input: {
   ventureId: string;
   productId: string;
   studioProjectId: string | null;
-  actorUserId: string;
+  actorUserId: string | null;
 }) {
   await getProductById({ ventureId: input.ventureId, productId: input.productId });
 
@@ -489,7 +497,7 @@ export async function addProductMediaUpload(input: {
   ventureId: string;
   ventureSlug: string;
   productId: string;
-  actorUserId: string;
+  actorUserId: string | null;
   file: Buffer | Uint8Array;
   filename: string;
   mimeType: string;

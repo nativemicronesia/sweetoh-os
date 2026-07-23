@@ -1,9 +1,16 @@
 import { and, eq } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import { product } from "@/lib/db/schema";
-import { createProduct, setProductStudioProject } from "@/lib/domains/catalog/service";
+import {
+  addProductMediaUpload,
+  createProduct,
+  getActiveProductById,
+  setProductStudioProject,
+} from "@/lib/domains/catalog/service";
 import { sendSweetohProductReadyEmail } from "@/lib/integrations/email/resend";
 import { getPublicEnv } from "@/lib/config/env";
+import { ValidationError } from "@/lib/shared/errors";
+import { downloadFromBucket } from "@/lib/storage/client";
 import { getStudioProjectById } from "./service";
 import { parseCustomerRequestNotes } from "./customer-request";
 
@@ -81,6 +88,89 @@ export async function createProductFromCustomerRequest(input: {
     studioProjectId: input.projectId,
     actorUserId: input.actorUserId,
   });
+}
+
+/**
+ * Mints a real, immediately-purchasable product from a customer's
+ * AI-generated design (the /create flow) — a different trigger from
+ * createProductFromCustomerRequest above, which is a manual, partner-
+ * initiated conversion of an existing request, defaults to priceCents: 0
+ * and active: false (expects a partner to price/publish it afterward), and
+ * always has a real staff actor. None of that fits here: there is no staff
+ * actor at the moment a customer confirms their own design, the price must
+ * be set immediately (copied from whichever existing product they said
+ * they were customizing — same price as that product type, per the
+ * pricing model), and the product must be active right away so it's
+ * addable to cart.
+ *
+ * Deliberately does not touch the product.draftStatus editorial pipeline
+ * (submitProductDraftForReview/publishProduct/etc.) — that's for the
+ * owner's manually-curated catalog. The review gate for a customer-
+ * confirmed item is the partner's existing fulfillment Queue, which already
+ * requires a manual "New -> In Production" step once the order is placed;
+ * routing through draftStatus here would just be a redundant second gate.
+ */
+export async function createProductFromGeneratedDesign(input: {
+  ventureId: string;
+  ventureSlug: string;
+  projectId: string;
+  /** Existing catalog product the customer said they're customizing — its
+   * price/category/fulfillment type are copied onto the new one-off product. */
+  basedOnProductId: string;
+}) {
+  const { project, links } = await getStudioProjectById({
+    ventureId: input.ventureId,
+    projectId: input.projectId,
+  });
+
+  const mockupLink = links.find((link) => link.link.role === "mockup");
+  if (!mockupLink) {
+    throw new ValidationError("No generated design found for this project — generate one first.");
+  }
+  const mockupBytes = await downloadFromBucket({
+    bucket: mockupLink.asset.bucket,
+    objectKey: mockupLink.asset.objectKey,
+  });
+
+  const base = await getActiveProductById({
+    ventureId: input.ventureId,
+    productId: input.basedOnProductId,
+  });
+
+  const parsed = parseCustomerRequestNotes(project.notes);
+  const name = project.name.replace(/^(Request|Customize): /, "");
+  const slug = await generateUniqueProductSlug(input.ventureId, name);
+
+  const created = await createProduct({
+    ventureId: input.ventureId,
+    slug,
+    name,
+    description: parsed.prompt,
+    priceCents: base.priceCents,
+    category: base.category as Parameters<typeof createProduct>[0]["category"],
+    fulfillmentType: base.fulfillmentType as Parameters<typeof createProduct>[0]["fulfillmentType"],
+    actorUserId: null,
+    active: true,
+  });
+
+  await setProductStudioProject({
+    ventureId: input.ventureId,
+    productId: created.id,
+    studioProjectId: input.projectId,
+    actorUserId: null,
+  });
+
+  await addProductMediaUpload({
+    ventureId: input.ventureId,
+    ventureSlug: input.ventureSlug,
+    productId: created.id,
+    actorUserId: null,
+    file: mockupBytes,
+    filename: "mockup.png",
+    mimeType: mockupLink.asset.mimeType ?? "image/png",
+  });
+
+  return created;
 }
 
 /**

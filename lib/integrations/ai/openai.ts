@@ -101,3 +101,116 @@ export const generateProductDraft: ProductDraftGenerator = async (input) => {
 
   return { output: parsed.data, rawResponse: parsedJson };
 };
+
+// ── Customer-facing mascot Q&A ──────────────────────────────────────────────
+
+const MASCOT_SYSTEM_PROMPT = `You are Sweet'Oh AI, the friendly mascot assistant on Sweet'Oh Creations' storefront — a print-on-demand shop selling custom apparel and personalized gifts (t-shirts, mugs, tumblers, tote bags). Answer customer questions about products, shipping, and general help, warmly and briefly.
+
+Never fabricate order-specific details (order status, tracking, delivery dates) — you have no access to real order data. If asked about a specific order, tell the customer to contact support instead of guessing.`;
+
+/**
+ * Unlike generateProductDraft above (which throws on failure, for the
+ * partner-facing draft form to surface as a real error), this returns null
+ * on any failure or misconfiguration — the mascot widget shows a plain
+ * "unavailable" state rather than crashing a customer-facing page.
+ */
+export async function answerCustomerQuestion(input: {
+  message: string;
+  history: { role: "user" | "assistant"; content: string }[];
+}): Promise<string | null> {
+  if (!isOpenAiConfigured()) return null;
+
+  try {
+    const openai = getOpenAiClient();
+    const { openaiModel } = getServerEnv();
+
+    const completion = await openai.chat.completions.create({
+      model: openaiModel,
+      messages: [
+        { role: "system", content: MASCOT_SYSTEM_PROMPT },
+        ...input.history.map((turn) => ({ role: turn.role, content: turn.content })),
+        { role: "user", content: input.message },
+      ],
+    });
+
+    return completion.choices[0]?.message?.content?.trim() || null;
+  } catch {
+    return null;
+  }
+}
+
+// ── Customer-generated design (mockup image + voice prompt) ────────────────
+
+const IMAGE_MODEL = "gpt-image-1";
+const TRANSCRIPTION_MODEL = "whisper-1";
+
+/**
+ * Generates a product mockup preview from a text prompt, optionally guided
+ * by a reference image. No pixel-accurate placement-region compositing —
+ * this repo's template system doesn't support that yet (see
+ * lib/domains/intelligence/pie-processors.ts) — this is a full-image
+ * generation/edit call, not compositing onto an exact print area.
+ * Returns null on any failure or misconfiguration, same convention as
+ * answerCustomerQuestion above.
+ */
+export async function generateProductMockup(input: {
+  prompt: string;
+  referenceImageBuffer?: Buffer;
+  referenceImageMimeType?: string;
+}): Promise<Buffer | null> {
+  if (!isOpenAiConfigured()) return null;
+
+  try {
+    const openai = getOpenAiClient();
+
+    if (input.referenceImageBuffer) {
+      const file = await OpenAI.toFile(
+        input.referenceImageBuffer,
+        `reference.${(input.referenceImageMimeType ?? "image/png").split("/")[1] ?? "png"}`,
+        { type: input.referenceImageMimeType },
+      );
+      const result = await openai.images.edit({
+        model: IMAGE_MODEL,
+        image: file,
+        prompt: input.prompt,
+      });
+      const b64 = result.data?.[0]?.b64_json;
+      return b64 ? Buffer.from(b64, "base64") : null;
+    }
+
+    const result = await openai.images.generate({
+      model: IMAGE_MODEL,
+      prompt: input.prompt,
+    });
+    const b64 = result.data?.[0]?.b64_json;
+    return b64 ? Buffer.from(b64, "base64") : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Returns null on any failure or misconfiguration — the /create UI falls
+ * back to letting the customer type instead of speak. */
+export async function transcribeVoicePrompt(input: {
+  audioBuffer: Buffer;
+  mimeType: string;
+}): Promise<string | null> {
+  if (!isOpenAiConfigured()) return null;
+
+  try {
+    const openai = getOpenAiClient();
+    const extension = input.mimeType.split("/")[1]?.split(";")[0] ?? "webm";
+    const file = await OpenAI.toFile(input.audioBuffer, `voice-note.${extension}`, {
+      type: input.mimeType,
+    });
+
+    const transcription = await openai.audio.transcriptions.create({
+      model: TRANSCRIPTION_MODEL,
+      file,
+    });
+
+    return transcription.text?.trim() || null;
+  } catch {
+    return null;
+  }
+}

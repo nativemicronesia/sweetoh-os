@@ -1,4 +1,7 @@
-import { createCustomerRequestImageUpload } from "@/lib/domains/assets/service";
+import {
+  createCustomerRequestImageUpload,
+  getAssetSignedUrl,
+} from "@/lib/domains/assets/service";
 import { createStudioProject, addStudioProjectAsset } from "@/lib/domains/studio/service";
 import { sendCustomRequestReceivedEmail } from "@/lib/integrations/email/resend";
 import { aiOutputAuditFields } from "@/lib/domains/audit/output";
@@ -9,6 +12,7 @@ import { recordAuditEvent } from "@/lib/domains/audit/service";
 import { isMockAiEnabled, isOpenAiConfigured } from "@/lib/config/env";
 import { ValidationError } from "@/lib/shared/errors";
 import { generateProductDraft } from "./product-builder";
+import { generateProductMockup } from "./mockup-builder";
 
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -139,6 +143,41 @@ export async function submitCustomerCustomizationRequest(input: {
     });
   }
 
+  // Generated mockup preview — the /create flow's whole point. Gracefully
+  // skipped (not thrown) when AI is unavailable, same "raw request still
+  // saves" posture as the text-draft enrichment above; the caller shows an
+  // "unavailable" state rather than a hard error.
+  let mockupPreviewUrl: string | null = null;
+  const mockupImage = await generateProductMockup({
+    prompt,
+    referenceImageBuffer: input.referenceImage?.file,
+    referenceImageMimeType: input.referenceImage?.mimeType,
+  }).catch(() => null);
+
+  if (mockupImage) {
+    const mockupAsset = await createCustomerRequestImageUpload({
+      ventureId: input.ventureId,
+      ventureSlug: input.ventureSlug,
+      studioProjectId: project.id,
+      file: mockupImage,
+      filename: "mockup.png",
+      mimeType: "image/png",
+    });
+
+    await addStudioProjectAsset({
+      ventureId: input.ventureId,
+      projectId: project.id,
+      assetId: mockupAsset.id,
+      role: "mockup",
+      actorUserId: null,
+    });
+
+    mockupPreviewUrl = await getAssetSignedUrl({
+      ventureId: input.ventureId,
+      assetId: mockupAsset.id,
+    });
+  }
+
   await recordAuditEvent({
     ventureId: input.ventureId,
     actorUserId: null,
@@ -160,5 +199,6 @@ export async function submitCustomerCustomizationRequest(input: {
   return {
     projectId: project.id,
     title: aiOutput?.title ?? summarizePrompt(prompt),
+    mockupPreviewUrl,
   };
 }
