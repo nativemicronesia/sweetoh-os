@@ -9,12 +9,13 @@
     "lint": "eslint",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "db:seed": "tsx scripts/seed-foundation.ts",
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.30.0",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.49.8",
-    "@anthropic-ai/sdk": "^0.30.0",
     "drizzle-orm": "^0.44.2",
     "next": "16.2.9",
     "openai": "^6.44.0",
@@ -30,6 +31,7 @@
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^16.6.1",
     "drizzle-kit": "^0.31.1",
     "tailwindcss": "^4.1.8",
     "tsx": "^4.19.4",

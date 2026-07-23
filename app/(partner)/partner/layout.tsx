@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { requireRole } from "@/lib/domains/identity/service";
 import { PartnerNav } from "./partner-nav";
 
@@ -31,16 +30,16 @@ export default async function PartnerLayout({ children }: { children: React.Reac
         {/* Nav */}
         <PartnerNav />
 
-        {/* Dekaz access */}
+        {/* Dekaz access — no /partner/ask page exists yet, so this is an
+            honest disabled state rather than a link to a 404. */}
         <div className="mt-auto border-t p-3" style={{ borderColor: "var(--so-border)" }}>
-          <Link
-            href="/partner/ask"
-            className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-[var(--so-surface)]"
+          <div
+            className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm opacity-40"
             style={{ color: "var(--so-gold)" }}
           >
             <span className="text-base">◆</span>
-            <span>Ask Dekaz</span>
-          </Link>
+            <span>Ask Dekaz — coming soon</span>
+          </div>
         </div>
       </aside>
 
