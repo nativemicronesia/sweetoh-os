@@ -33,7 +33,7 @@ export function CheckoutView({ stripeReady }: CheckoutViewProps) {
       <div className="space-y-4">
         <h1 className="text-2xl font-semibold">Checkout</h1>
         <p className="text-sm text-neutral-500">Your cart is empty.</p>
-        <Link href="/storefront" className="text-sm text-rose-700 hover:underline">
+        <Link href="/products" className="text-sm text-rose-700 hover:underline">
           Continue shopping
         </Link>
       </div>

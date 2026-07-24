@@ -1,8 +1,8 @@
-import { requireRole } from "@/lib/domains/identity/service";
+import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
 import { PartnerNav } from "./partner-nav";
 
 export default async function PartnerLayout({ children }: { children: React.ReactNode }) {
-  const session = await requireRole("partner");
+  const session = await requirePartnerWorkspace();
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: "var(--so-black)" }}>
@@ -24,7 +24,9 @@ export default async function PartnerLayout({ children }: { children: React.Reac
           <p className="text-xs font-medium" style={{ color: "var(--so-cream)" }}>
             {session.appUser.name ?? session.appUser.email}
           </p>
-          <p className="text-xs" style={{ color: "var(--so-cream-dim)" }}>Creator</p>
+          <p className="text-xs" style={{ color: "var(--so-cream-dim)" }}>
+            {session.role === "owner" ? "Owner" : "Creator"}
+          </p>
         </div>
 
         {/* Nav */}

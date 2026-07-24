@@ -1,66 +1,76 @@
 import Link from "next/link";
 import { DraftStatusBadge } from "@/app/(owner)/owner/components/draft-status-badge";
-import { REVIEW_QUEUE_DRAFT_STATUSES } from "@/lib/domains/catalog/draft-status";
-import { requireRole } from "@/lib/domains/identity/service";
+import { FlashBanner } from "@/app/(owner)/owner/components/flash-banner";
+import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
 import { listActorProductDrafts } from "@/lib/domains/intelligence/service";
-import { submitPartnerDraftForReviewAction } from "../actions/drafts";
+import {
+  publishPartnerDraftAction,
+  submitPartnerDraftForReviewAction,
+} from "../actions/drafts";
 
 export default async function PartnerDraftsPage() {
-  const session = await requireRole("partner");
+  const session = await requirePartnerWorkspace();
 
   const rows = await listActorProductDrafts({
     ventureId: session.ventureId,
     actorUserId: session.appUser.id,
   });
 
-  const pending = rows.filter(({ product }) =>
-    REVIEW_QUEUE_DRAFT_STATUSES.includes(product.draftStatus),
-  );
+  const openDrafts = rows.filter(({ product }) => !product.active);
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">My product drafts</h1>
-        <p className="mt-1 text-sm text-neutral-600">
-          AI-generated drafts you created. Edit listing copy, then submit for
-          owner review — partners cannot publish.
-        </p>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-semibold" style={{ color: "var(--so-cream)" }}>
+            Drafts
+          </h1>
+          <p className="mt-1 text-sm" style={{ color: "var(--so-cream-dim)" }}>
+            AI-prepared listings. Fix the price if needed, then publish — you do not
+            wait on an owner.
+          </p>
+        </div>
+        <Link
+          href="/partner/visual-intake"
+          className="rounded-full px-4 py-2 text-sm font-medium"
+          style={{ background: "var(--so-gold)", color: "var(--so-black)" }}
+        >
+          New from photo
+        </Link>
       </div>
 
-      <section className="rounded-lg border border-neutral-200 bg-white">
-        {rows.length === 0 ? (
-          <p className="px-6 py-8 text-sm text-neutral-500">
-            No drafts yet. Use{" "}
-            <Link href="/partner/intelligence" className="text-emerald-800 hover:underline">
-              Product Intelligence
+      <section
+        className="rounded-xl border"
+        style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}
+      >
+        {openDrafts.length === 0 ? (
+          <p className="px-6 py-8 text-sm" style={{ color: "var(--so-cream-dim)" }}>
+            No open drafts.{" "}
+            <Link href="/partner/visual-intake" className="underline" style={{ color: "var(--so-cream)" }}>
+              Photograph a product
             </Link>{" "}
-            or{" "}
-            <Link
-              href="/partner/visual-intake"
-              className="text-emerald-800 hover:underline"
-            >
-              Visual intake
-            </Link>
-            .
+            to start.
           </p>
         ) : (
-          <ul className="divide-y divide-neutral-200">
-            {rows.map(({ product, session: aiSession }) => (
-              <li key={product.id} className="px-6 py-4">
+          <ul className="divide-y" style={{ borderColor: "var(--so-border)" }}>
+            {openDrafts.map(({ product, session: aiSession }) => (
+              <li
+                key={product.id}
+                className="px-6 py-4"
+                style={{ borderColor: "var(--so-border)" }}
+              >
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div>
                     <Link
                       href={`/partner/drafts/${product.id}`}
-                      className="font-medium text-emerald-900 hover:underline"
+                      className="font-medium hover:underline"
+                      style={{ color: "var(--so-cream)" }}
                     >
                       {product.name}
                     </Link>
-                    <p className="mt-1 text-sm text-neutral-500">
+                    <p className="mt-1 text-sm" style={{ color: "var(--so-cream-dim)" }}>
                       {aiSession.mode.replaceAll("_", " ")} ·{" "}
                       {new Date(aiSession.createdAt).toLocaleString()}
-                    </p>
-                    <p className="mt-1 font-mono text-xs text-neutral-400">
-                      Ref {product.id.slice(0, 8)}… · {product.slug}
                     </p>
                   </div>
                   <DraftStatusBadge
@@ -68,48 +78,47 @@ export default async function PartnerDraftsPage() {
                     active={product.active}
                   />
                 </div>
-                {product.draftStatus === "draft" ||
-                product.draftStatus === "needs_work" ? (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <Link
-                      href={`/partner/drafts/${product.id}`}
-                      className="rounded border border-neutral-300 px-3 py-1.5 text-sm text-neutral-700 hover:bg-neutral-50"
-                    >
-                      Edit listing
-                    </Link>
-                    <form
-                      action={submitPartnerDraftForReviewAction.bind(null, product.id)}
-                    >
-                      <button
-                        type="submit"
-                        className="rounded border border-amber-400 bg-amber-50 px-3 py-1.5 text-sm font-medium text-amber-950 hover:bg-amber-100"
-                      >
-                        Submit for owner review
-                      </button>
-                    </form>
-                  </div>
-                ) : (
+                <div className="mt-3 flex flex-wrap gap-2">
                   <Link
                     href={`/partner/drafts/${product.id}`}
-                    className="mt-3 inline-block text-sm text-emerald-800 hover:underline"
+                    className="rounded-lg border px-3 py-1.5 text-sm"
+                    style={{ borderColor: "var(--so-border)", color: "var(--so-cream)" }}
                   >
-                    View draft →
+                    Edit listing
                   </Link>
-                )}
-                {product.suggestedTags?.length ? (
-                  <p className="mt-2 text-xs text-neutral-500">
-                    Tags: {product.suggestedTags.join(", ")}
-                  </p>
-                ) : null}
+                  <form action={publishPartnerDraftAction.bind(null, product.id)}>
+                    <button
+                      type="submit"
+                      className="rounded-lg px-3 py-1.5 text-sm font-medium"
+                      style={{ background: "var(--so-gold)", color: "var(--so-black)" }}
+                    >
+                      Publish
+                    </button>
+                  </form>
+                  <form
+                    action={submitPartnerDraftForReviewAction.bind(null, product.id)}
+                  >
+                    <button
+                      type="submit"
+                      className="rounded-lg border px-3 py-1.5 text-sm"
+                      style={{ borderColor: "var(--so-border)", color: "var(--so-cream-dim)" }}
+                    >
+                      Mark for later review
+                    </button>
+                  </form>
+                </div>
               </li>
             ))}
           </ul>
         )}
       </section>
 
-      <p className="text-xs text-neutral-500">
-        {pending.length} draft{pending.length === 1 ? "" : "s"} awaiting owner
-        review.
+      <p className="text-xs" style={{ color: "var(--so-cream-dim)" }}>
+        Published items live under{" "}
+        <Link href="/partner/products" className="underline">
+          Products
+        </Link>
+        .
       </p>
     </div>
   );

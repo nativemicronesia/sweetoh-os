@@ -2,26 +2,24 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DraftStatusBadge } from "@/app/(owner)/owner/components/draft-status-badge";
 import { FlashBanner } from "@/app/(owner)/owner/components/flash-banner";
-import {
-  evaluateProductPublishReadiness,
-} from "@/lib/domains/catalog/service";
+import { evaluateProductPublishReadiness } from "@/lib/domains/catalog/service";
 import type { ProductCategory } from "@/lib/domains/catalog/publish";
-import { requireRole } from "@/lib/domains/identity/service";
+import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
 import { evaluateAiProductDraftCompleteness } from "@/lib/domains/intelligence/draft-completeness";
 import {
   getActorProductDraft,
   getAiCreationSessionForProduct,
 } from "@/lib/domains/intelligence/service";
 import {
-  submitPartnerDraftForReviewAction,
+  publishPartnerDraftAction,
   updatePartnerDraftAction,
 } from "../../actions/drafts";
 
 const CATEGORIES: { value: ProductCategory; label: string }[] = [
+  { value: "sweetoh_creations", label: "Sweet'Oh Creations" },
   { value: "baby_me", label: "Baby + Me" },
   { value: "toys_sensory", label: "Toys & Sensory" },
-  { value: "sweetoh_creations", label: "Sweet'Oh Creations" },
-  { value: "originals", label: "Island Sprouts Originals" },
+  { value: "originals", label: "Originals" },
 ];
 
 type PartnerDraftDetailPageProps = {
@@ -33,7 +31,7 @@ export default async function PartnerDraftDetailPage({
   params,
   searchParams,
 }: PartnerDraftDetailPageProps) {
-  const session = await requireRole("partner");
+  const session = await requirePartnerWorkspace();
   const { id } = await params;
   const query = await searchParams;
 
@@ -68,16 +66,18 @@ export default async function PartnerDraftDetailPage({
 
   const canEdit =
     !product.active &&
-    (product.draftStatus === "draft" || product.draftStatus === "needs_work");
+    (product.draftStatus === "draft" ||
+      product.draftStatus === "needs_work" ||
+      product.draftStatus === "pending_review");
 
   async function saveListing(formData: FormData) {
     "use server";
     await updatePartnerDraftAction(id, formData);
   }
 
-  async function submitForReview() {
+  async function publishNow() {
     "use server";
-    await submitPartnerDraftForReviewAction(id);
+    await publishPartnerDraftAction(id);
   }
 
   return (
@@ -88,74 +88,96 @@ export default async function PartnerDraftDetailPage({
       <div>
         <Link
           href="/partner/drafts"
-          className="text-sm text-emerald-800 hover:underline"
+          className="text-sm underline"
+          style={{ color: "var(--so-cream-dim)" }}
         >
-          ← My drafts
+          ← Drafts
         </Link>
-        <h1 className="mt-2 text-2xl font-semibold">{product.name}</h1>
-        <p className="mt-2 flex flex-wrap items-center gap-2 text-sm text-neutral-600">
+        <h1 className="mt-2 text-xl font-semibold" style={{ color: "var(--so-cream)" }}>
+          {product.name}
+        </h1>
+        <p className="mt-2 flex flex-wrap items-center gap-2 text-sm">
           <DraftStatusBadge
             draftStatus={product.draftStatus}
             active={product.active}
           />
-          <span className="font-mono text-xs text-neutral-400">{product.slug}</span>
+          <span className="font-mono text-xs" style={{ color: "var(--so-cream-dim)" }}>
+            {product.slug}
+          </span>
         </p>
-        <p className="mt-2 text-sm text-neutral-600">
-          Edit listing copy before submitting for owner review. Partners cannot
-          publish — owners review and publish in the Command Center.
+        <p className="mt-2 text-sm" style={{ color: "var(--so-cream-dim)" }}>
+          Sweet&apos;Oh AI prepared this listing. Confirm the price and publish when
+          ready — production stays with you.
         </p>
       </div>
 
-      <section className="rounded-lg border border-neutral-200 bg-white p-6">
-        <h2 className="text-lg font-medium">Publish readiness</h2>
-        <p className="mt-1 text-sm text-neutral-600">
-          Owner publish gate — fix missing items before submit when possible.
-        </p>
+      <section
+        className="rounded-xl border p-6"
+        style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}
+      >
+        <h2 className="text-lg font-medium" style={{ color: "var(--so-cream)" }}>
+          Publish readiness
+        </h2>
         <ul className="mt-4 space-y-2">
           {readiness.checks.map((check) => (
             <li key={check.label} className="flex items-start gap-2 text-sm">
-              <span className={check.passed ? "text-emerald-700" : "text-red-700"}>
+              <span style={{ color: check.passed ? "var(--so-gold)" : "#f87171" }}>
                 {check.passed ? "✓" : "✗"}
               </span>
-              <span>
+              <span style={{ color: "var(--so-cream-dim)" }}>
                 {check.label}
                 {check.message ? (
-                  <span className="block text-neutral-500">{check.message}</span>
+                  <span className="block opacity-80">{check.message}</span>
                 ) : null}
               </span>
             </li>
           ))}
         </ul>
-        {canEdit ? (
-          <form action={submitForReview} className="mt-4">
+        {!product.active ? (
+          <form action={publishNow} className="mt-4">
             <button
               type="submit"
-              className="rounded border border-amber-400 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-950 hover:bg-amber-100"
+              disabled={!readiness.canPublish}
+              className="rounded-full px-5 py-2.5 text-sm font-medium disabled:opacity-50"
+              style={{ background: "var(--so-gold)", color: "var(--so-black)" }}
             >
-              Submit for owner review
+              Publish to catalog
             </button>
+            {!readiness.canPublish ? (
+              <p className="mt-2 text-xs" style={{ color: "var(--so-cream-dim)" }}>
+                Fix the items above, then publish.
+              </p>
+            ) : null}
           </form>
-        ) : product.draftStatus === "pending_review" ? (
-          <p className="mt-4 text-sm text-amber-800">
-            Awaiting owner review — editing is locked until the owner returns it
-            as needs work.
+        ) : (
+          <p className="mt-4 text-sm" style={{ color: "var(--so-gold)" }}>
+            Live — manage from{" "}
+            <Link href="/partner/products" className="underline">
+              Products
+            </Link>
+            .
           </p>
-        ) : null}
+        )}
       </section>
 
       {draftCompleteness ? (
-        <section className="rounded-lg border border-neutral-200 bg-white p-6">
-          <h2 className="text-lg font-medium">Draft completeness</h2>
+        <section
+          className="rounded-xl border p-6"
+          style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}
+        >
+          <h2 className="text-lg font-medium" style={{ color: "var(--so-cream)" }}>
+            Draft completeness
+          </h2>
           <ul className="mt-4 space-y-2">
             {draftCompleteness.checks.map((check) => (
               <li key={check.label} className="flex items-start gap-2 text-sm">
-                <span className={check.passed ? "text-emerald-700" : "text-red-700"}>
+                <span style={{ color: check.passed ? "var(--so-gold)" : "#f87171" }}>
                   {check.passed ? "✓" : "✗"}
                 </span>
-                <span>
+                <span style={{ color: "var(--so-cream-dim)" }}>
                   {check.label}
                   {check.message ? (
-                    <span className="block text-neutral-500">{check.message}</span>
+                    <span className="block opacity-80">{check.message}</span>
                   ) : null}
                 </span>
               </li>
@@ -165,82 +187,144 @@ export default async function PartnerDraftDetailPage({
       ) : null}
 
       {aiSession ? (
-        <section className="rounded-lg border border-neutral-200 bg-neutral-50 p-6">
-          <h2 className="text-lg font-medium">AI source (read-only)</h2>
-          <p className="mt-1 text-sm text-neutral-600">
+        <section
+          className="rounded-xl border p-6"
+          style={{ borderColor: "var(--so-border)", background: "var(--so-black)" }}
+        >
+          <h2 className="text-lg font-medium" style={{ color: "var(--so-cream)" }}>
+            AI source
+          </h2>
+          <p className="mt-1 text-sm" style={{ color: "var(--so-cream-dim)" }}>
             Mode: {aiSession.session.mode.replaceAll("_", " ")}
           </p>
-          <p className="mt-3 whitespace-pre-wrap text-sm text-neutral-700">
+          <p
+            className="mt-3 whitespace-pre-wrap text-sm"
+            style={{ color: "var(--so-cream-dim)" }}
+          >
             {aiSession.session.prompt}
           </p>
         </section>
       ) : null}
 
-      <section className="rounded-lg border border-neutral-200 bg-white p-6">
-        <h2 className="text-lg font-medium">Listing copy</h2>
+      <section
+        className="rounded-xl border p-6"
+        style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}
+      >
+        <h2 className="text-lg font-medium" style={{ color: "var(--so-cream)" }}>
+          Listing copy
+        </h2>
         {canEdit ? (
           <form action={saveListing} className="mt-4 grid gap-4 md:grid-cols-2">
             <label className="block text-sm md:col-span-2">
-              <span className="mb-1 block text-neutral-700">Name</span>
+              <span className="mb-1 block" style={{ color: "var(--so-cream)" }}>
+                Name
+              </span>
               <input
                 name="name"
                 required
                 defaultValue={product.name}
-                className="w-full rounded border border-neutral-300 px-3 py-2"
+                className="w-full rounded-lg border px-3 py-2"
+                style={{
+                  borderColor: "var(--so-border)",
+                  background: "var(--so-black)",
+                  color: "var(--so-cream)",
+                }}
               />
             </label>
             <label className="block text-sm md:col-span-2">
-              <span className="mb-1 block text-neutral-700">Description</span>
+              <span className="mb-1 block" style={{ color: "var(--so-cream)" }}>
+                Description
+              </span>
               <textarea
                 name="description"
                 rows={4}
                 defaultValue={product.description ?? ""}
-                className="w-full rounded border border-neutral-300 px-3 py-2"
+                className="w-full rounded-lg border px-3 py-2"
+                style={{
+                  borderColor: "var(--so-border)",
+                  background: "var(--so-black)",
+                  color: "var(--so-cream)",
+                }}
               />
             </label>
             <label className="block text-sm md:col-span-2">
-              <span className="mb-1 block text-neutral-700">Short description</span>
+              <span className="mb-1 block" style={{ color: "var(--so-cream)" }}>
+                Short description
+              </span>
               <textarea
                 name="shortDescription"
                 rows={2}
                 defaultValue={product.shortDescription ?? ""}
-                className="w-full rounded border border-neutral-300 px-3 py-2"
+                className="w-full rounded-lg border px-3 py-2"
+                style={{
+                  borderColor: "var(--so-border)",
+                  background: "var(--so-black)",
+                  color: "var(--so-cream)",
+                }}
               />
             </label>
             <label className="block text-sm">
-              <span className="mb-1 block text-neutral-700">SEO title</span>
+              <span className="mb-1 block" style={{ color: "var(--so-cream)" }}>
+                SEO title
+              </span>
               <input
                 name="seoTitle"
                 defaultValue={product.seoTitle ?? ""}
-                className="w-full rounded border border-neutral-300 px-3 py-2"
+                className="w-full rounded-lg border px-3 py-2"
+                style={{
+                  borderColor: "var(--so-border)",
+                  background: "var(--so-black)",
+                  color: "var(--so-cream)",
+                }}
               />
             </label>
             <label className="block text-sm">
-              <span className="mb-1 block text-neutral-700">Price (cents)</span>
+              <span className="mb-1 block" style={{ color: "var(--so-cream)" }}>
+                Price (cents)
+              </span>
               <input
                 name="priceCents"
                 type="number"
                 min={0}
                 step={1}
                 defaultValue={product.priceCents}
-                className="w-full rounded border border-neutral-300 px-3 py-2"
+                className="w-full rounded-lg border px-3 py-2"
+                style={{
+                  borderColor: "var(--so-border)",
+                  background: "var(--so-black)",
+                  color: "var(--so-cream)",
+                }}
               />
             </label>
             <label className="block text-sm md:col-span-2">
-              <span className="mb-1 block text-neutral-700">SEO description</span>
+              <span className="mb-1 block" style={{ color: "var(--so-cream)" }}>
+                SEO description
+              </span>
               <textarea
                 name="seoDescription"
                 rows={2}
                 defaultValue={product.seoDescription ?? ""}
-                className="w-full rounded border border-neutral-300 px-3 py-2"
+                className="w-full rounded-lg border px-3 py-2"
+                style={{
+                  borderColor: "var(--so-border)",
+                  background: "var(--so-black)",
+                  color: "var(--so-cream)",
+                }}
               />
             </label>
             <label className="block text-sm">
-              <span className="mb-1 block text-neutral-700">Category</span>
+              <span className="mb-1 block" style={{ color: "var(--so-cream)" }}>
+                Category
+              </span>
               <select
                 name="category"
                 defaultValue={product.category}
-                className="w-full rounded border border-neutral-300 px-3 py-2"
+                className="w-full rounded-lg border px-3 py-2"
+                style={{
+                  borderColor: "var(--so-border)",
+                  background: "var(--so-black)",
+                  color: "var(--so-cream)",
+                }}
               >
                 {CATEGORIES.map((item) => (
                   <option key={item.value} value={item.value}>
@@ -250,37 +334,48 @@ export default async function PartnerDraftDetailPage({
               </select>
             </label>
             <label className="block text-sm md:col-span-2">
-              <span className="mb-1 block text-neutral-700">
+              <span className="mb-1 block" style={{ color: "var(--so-cream)" }}>
                 Suggested tags (comma-separated)
               </span>
               <input
                 name="suggestedTags"
                 defaultValue={product.suggestedTags?.join(", ") ?? ""}
-                className="w-full rounded border border-neutral-300 px-3 py-2"
+                className="w-full rounded-lg border px-3 py-2"
+                style={{
+                  borderColor: "var(--so-border)",
+                  background: "var(--so-black)",
+                  color: "var(--so-cream)",
+                }}
               />
             </label>
             <label className="block text-sm md:col-span-2">
-              <span className="mb-1 block text-neutral-700">
+              <span className="mb-1 block" style={{ color: "var(--so-cream)" }}>
                 Suggested collections (comma-separated)
               </span>
               <input
                 name="suggestedCollections"
                 defaultValue={product.suggestedCollections?.join(", ") ?? ""}
-                className="w-full rounded border border-neutral-300 px-3 py-2"
+                className="w-full rounded-lg border px-3 py-2"
+                style={{
+                  borderColor: "var(--so-border)",
+                  background: "var(--so-black)",
+                  color: "var(--so-cream)",
+                }}
               />
             </label>
             <div className="md:col-span-2">
               <button
                 type="submit"
-                className="rounded bg-emerald-800 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-900"
+                className="rounded-full px-5 py-2.5 text-sm font-medium"
+                style={{ background: "var(--so-gold)", color: "var(--so-black)" }}
               >
                 Save listing
               </button>
             </div>
           </form>
         ) : (
-          <p className="mt-4 text-sm text-neutral-500">
-            This draft is not editable in its current status.
+          <p className="mt-4 text-sm" style={{ color: "var(--so-cream-dim)" }}>
+            This listing is not editable in its current status.
           </p>
         )}
       </section>

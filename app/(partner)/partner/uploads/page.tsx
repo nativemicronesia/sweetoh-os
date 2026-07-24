@@ -1,4 +1,4 @@
-import { requireRole } from "@/lib/domains/identity/service";
+import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
 import { listAssets } from "@/lib/domains/assets/service";
 import { FlashBanner } from "@/app/(owner)/owner/components/flash-banner";
 import { uploadSweetohDesignAction } from "../actions/assets";
@@ -10,7 +10,7 @@ type PartnerUploadsPageProps = {
 export default async function PartnerUploadsPage({
   searchParams,
 }: PartnerUploadsPageProps) {
-  const session = await requireRole("partner");
+  const session = await requirePartnerWorkspace();
   const query = await searchParams;
 
   const assets = await listAssets({

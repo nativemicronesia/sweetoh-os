@@ -7,7 +7,7 @@ import {
   PARTNER_QUEUE_STAGES,
   parsePartnerQueueStage,
 } from "@/lib/domains/fulfillment/scopes";
-import { requireRole } from "@/lib/domains/identity/service";
+import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
 
 type PartnerQueuePageProps = {
   searchParams: Promise<{ stage?: string }>;
@@ -16,7 +16,7 @@ type PartnerQueuePageProps = {
 export default async function PartnerQueuePage({
   searchParams,
 }: PartnerQueuePageProps) {
-  const session = await requireRole("partner");
+  const session = await requirePartnerWorkspace();
   const query = await searchParams;
   const stage = parsePartnerQueueStage(query.stage);
   const stageMeta = PARTNER_QUEUE_STAGES.find((item) => item.stage === stage)!;

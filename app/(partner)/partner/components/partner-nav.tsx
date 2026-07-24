@@ -1,17 +1,14 @@
 import Link from "next/link";
 import { signOutAction } from "../actions/auth";
 
+/** Legacy header nav — sidebar `partner-nav.tsx` is the live navigation. */
 const navItems = [
   { href: "/partner", label: "Home" },
-  { href: "/partner/queue?stage=new", label: "New Orders" },
-  { href: "/partner/queue?stage=in_production", label: "In Production" },
-  { href: "/partner/queue?stage=ready_to_ship", label: "Ready To Ship" },
-  { href: "/partner/queue?stage=completed", label: "Completed" },
-  { href: "/partner/uploads", label: "Design Uploads" },
-  { href: "/partner/production-queue", label: "Production Queue" },
-  { href: "/partner/drafts", label: "My Drafts" },
-  { href: "/partner/intelligence", label: "Product Intelligence" },
-  { href: "/partner/visual-intake", label: "Visual Intake" },
+  { href: "/partner/visual-intake", label: "New from photo" },
+  { href: "/partner/drafts", label: "Drafts" },
+  { href: "/partner/products", label: "Products" },
+  { href: "/partner/queue", label: "Orders" },
+  { href: "/partner/jobs", label: "Production" },
 ];
 
 export function PartnerNav({ email }: { email: string }) {

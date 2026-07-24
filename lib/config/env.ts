@@ -178,9 +178,9 @@ export function isSweetohEmailConfigured(): boolean {
   return Boolean(env.resendApiKey && env.sweetohFromEmail);
 }
 
-/** API key plus both brand sender addresses — required for full Sweet'Oh launch. */
+/** Sweet'Oh-only deploy: API key + Sweet'Oh from-address. Island Sprouts from not required. */
 export function isResendConfigured(): boolean {
-  return isIslandSproutsEmailConfigured() && isSweetohEmailConfigured();
+  return isSweetohEmailConfigured();
 }
 
 /** Customer-facing support address; falls back to the Island Sprouts sender. */

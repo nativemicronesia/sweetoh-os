@@ -2,6 +2,7 @@ import {
   getCollectionBySlug,
   getPrimaryProductImageUrl,
   getProductsForCollection,
+  listActiveProducts,
 } from "@/lib/domains/catalog/service";
 import { NotFoundError } from "@/lib/shared/errors";
 import { ProductCard } from "./product-card";
@@ -9,22 +10,31 @@ import { ProductCard } from "./product-card";
 const FEATURED_COLLECTION_SLUG = "featured";
 
 /**
- * Renders nothing if no "featured" collection exists yet — curating one is a
- * manual step for now (no admin UI for it), not a blocker for shipping the
- * homepage. See lib/domains/catalog/service.ts's collection/collectionProduct
- * tables for how to create one.
+ * Prefers the manual "featured" collection; falls back to the first active
+ * products so the homepage is never empty after catalog seed.
  */
 export async function FeaturedProducts({ ventureId }: { ventureId: string }) {
-  let collection: Awaited<ReturnType<typeof getCollectionBySlug>>;
+  let products: Awaited<ReturnType<typeof listActiveProducts>> = [];
+
   try {
-    collection = await getCollectionBySlug({ ventureId, slug: FEATURED_COLLECTION_SLUG });
+    const collection = await getCollectionBySlug({
+      ventureId,
+      slug: FEATURED_COLLECTION_SLUG,
+    });
+    products = await getProductsForCollection(collection);
   } catch (error) {
-    if (error instanceof NotFoundError) return null;
-    throw error;
+    if (!(error instanceof NotFoundError)) {
+      throw error;
+    }
   }
 
-  const products = await getProductsForCollection(collection);
-  if (products.length === 0) return null;
+  if (products.length === 0) {
+    products = (await listActiveProducts(ventureId)).slice(0, 8);
+  }
+
+  if (products.length === 0) {
+    return null;
+  }
 
   const images = await Promise.all(
     products.map((item) => getPrimaryProductImageUrl(item.id)),

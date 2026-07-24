@@ -1,4 +1,4 @@
-import { requireRole } from "@/lib/domains/identity/service";
+import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
 import { getStudioProjectImages } from "@/lib/domains/studio/images";
 import {
   isPartnerProductionJobStatus,
@@ -14,7 +14,7 @@ type PartnerProductionQueuePageProps = {
 export default async function PartnerProductionQueuePage({
   searchParams,
 }: PartnerProductionQueuePageProps) {
-  const session = await requireRole("partner");
+  const session = await requirePartnerWorkspace();
   const query = await searchParams;
 
   const requests = await listCustomerCustomizationRequests(session.ventureId);

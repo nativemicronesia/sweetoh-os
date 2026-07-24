@@ -91,6 +91,17 @@ export async function requireRole(role: AppRole): Promise<SessionUser> {
   return session;
 }
 
+/** Partner ops workspace — owners may operate here until a dedicated owner OS ships. */
+export async function requirePartnerWorkspace(): Promise<SessionUser> {
+  const session = await requireAuth();
+
+  if (session.role !== "partner" && session.role !== "owner") {
+    throw new ForbiddenError();
+  }
+
+  return session;
+}
+
 export async function syncAppUser(supabaseUser: SyncAppUserInput) {
   const db = getDb();
   const slug = currentVentureSlug();

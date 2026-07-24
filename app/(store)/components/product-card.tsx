@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { formatPrice } from "@/lib/shared/format";
 import { AddToCartButton } from "./add-to-cart-button";
 
@@ -18,7 +19,7 @@ export function ProductCard({
 }: ProductCardProps) {
   return (
     <div className="flex flex-col overflow-hidden rounded-lg border border-neutral-200 bg-white">
-      <div className="aspect-square bg-neutral-100">
+      <Link href={`/products/${slug}`} className="aspect-square bg-neutral-100">
         {imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={imageUrl} alt={name} className="h-full w-full object-cover" />
@@ -27,10 +28,15 @@ export function ProductCard({
             No image yet
           </div>
         )}
-      </div>
+      </Link>
       <div className="flex flex-1 flex-col gap-3 p-3">
         <div>
-          <p className="text-sm font-medium text-neutral-900">{name}</p>
+          <Link
+            href={`/products/${slug}`}
+            className="text-sm font-medium text-neutral-900 hover:underline"
+          >
+            {name}
+          </Link>
           <p className="text-sm text-neutral-600">{formatPrice(priceCents)}</p>
         </div>
         <div className="mt-auto">

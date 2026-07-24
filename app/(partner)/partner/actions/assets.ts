@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createAssetWithUpload } from "@/lib/domains/assets/service";
-import { requireRole } from "@/lib/domains/identity/service";
+import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
 import { getActionErrorMessage } from "@/lib/shared/action-errors";
 
 function redirectWithError(message: string): never {
@@ -12,7 +12,7 @@ function redirectWithError(message: string): never {
 
 export async function uploadSweetohDesignAction(formData: FormData): Promise<void> {
   try {
-    const session = await requireRole("partner");
+    const session = await requirePartnerWorkspace();
     const name = String(formData.get("name") ?? "").trim();
     const notes = String(formData.get("notes") ?? "").trim() || null;
     const file = formData.get("file");

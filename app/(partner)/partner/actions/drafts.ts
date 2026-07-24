@@ -7,22 +7,24 @@ import {
   validatePartnerProductFields,
 } from "@/lib/domains/catalog/product-form";
 import {
+  getProductById,
+  publishProduct,
   submitProductDraftForReview,
+  unpublishProduct,
   updateProduct,
 } from "@/lib/domains/catalog/service";
 import type { ProductDraftStatus } from "@/lib/domains/catalog/draft-status";
-import { requireRole } from "@/lib/domains/identity/service";
+import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
+import type { SessionUser } from "@/lib/domains/identity/types";
 import { getActorProductDraft } from "@/lib/domains/intelligence/service";
 import { getActionErrorMessage } from "@/lib/shared/action-errors";
 import { ValidationError } from "@/lib/shared/errors";
 
-const PARTNER_EDITABLE_STATUSES: ProductDraftStatus[] = ["draft", "needs_work"];
-
-function draftsPath(query?: Record<string, string>): string {
-  const params = new URLSearchParams(query);
-  const suffix = params.toString();
-  return suffix ? `/partner/drafts?${suffix}` : "/partner/drafts";
-}
+const PARTNER_EDITABLE_STATUSES: ProductDraftStatus[] = [
+  "draft",
+  "needs_work",
+  "pending_review",
+];
 
 function draftDetailPath(productId: string, query?: Record<string, string>): string {
   const params = new URLSearchParams(query);
@@ -32,10 +34,13 @@ function draftDetailPath(productId: string, query?: Record<string, string>): str
     : `/partner/drafts/${productId}`;
 }
 
-async function assertPartnerOwnsEditableDraft(
-  session: Awaited<ReturnType<typeof requireRole>>,
-  productId: string,
-) {
+function productsPath(query?: Record<string, string>): string {
+  const params = new URLSearchParams(query);
+  const suffix = params.toString();
+  return suffix ? `/partner/products?${suffix}` : "/partner/products";
+}
+
+async function assertPartnerOwnsDraft(session: SessionUser, productId: string) {
   const owned = await getActorProductDraft({
     ventureId: session.ventureId,
     actorUserId: session.appUser.id,
@@ -43,11 +48,22 @@ async function assertPartnerOwnsEditableDraft(
   });
 
   if (!owned) {
-    throw new ValidationError("You can only edit your own drafts.");
+    throw new ValidationError("You can only manage your own drafts.");
   }
 
+  return owned;
+}
+
+async function assertPartnerOwnsEditableDraft(
+  session: SessionUser,
+  productId: string,
+) {
+  const owned = await assertPartnerOwnsDraft(session, productId);
+
   if (owned.product.active) {
-    throw new ValidationError("Published products cannot be edited by partners.");
+    throw new ValidationError(
+      "Published products cannot be edited here — unpublish first.",
+    );
   }
 
   if (
@@ -56,18 +72,79 @@ async function assertPartnerOwnsEditableDraft(
     )
   ) {
     throw new ValidationError(
-      "This draft cannot be edited while it is in owner review or archived.",
+      "This draft cannot be edited in its current status.",
     );
   }
 
   return owned;
 }
 
+export async function publishPartnerDraftAction(
+  productId: string,
+): Promise<void> {
+  try {
+    const session = await requirePartnerWorkspace();
+    await assertPartnerOwnsDraft(session, productId);
+
+    const row = await publishProduct({
+      ventureId: session.ventureId,
+      productId,
+      actorUserId: session.appUser.id,
+    });
+
+    revalidatePath("/partner/drafts");
+    revalidatePath(`/partner/drafts/${productId}`);
+    revalidatePath("/partner/products");
+    revalidatePath("/products");
+
+    redirect(
+      productsPath({
+        success: `"${row.name}" is live in your Sweet'Oh catalog.`,
+      }),
+    );
+  } catch (error) {
+    redirect(
+      draftDetailPath(productId, { error: getActionErrorMessage(error) }),
+    );
+  }
+}
+
+export async function unpublishPartnerProductAction(
+  productId: string,
+): Promise<void> {
+  try {
+    const session = await requirePartnerWorkspace();
+    await getProductById({
+      ventureId: session.ventureId,
+      productId,
+    });
+
+    const row = await unpublishProduct({
+      ventureId: session.ventureId,
+      productId,
+      actorUserId: session.appUser.id,
+    });
+
+    revalidatePath("/partner/drafts");
+    revalidatePath(`/partner/drafts/${productId}`);
+    revalidatePath("/partner/products");
+    revalidatePath("/products");
+
+    redirect(
+      productsPath({
+        success: `"${row.name}" unpublished — it is a draft again.`,
+      }),
+    );
+  } catch (error) {
+    redirect(productsPath({ error: getActionErrorMessage(error) }));
+  }
+}
+
 export async function submitPartnerDraftForReviewAction(
   productId: string,
 ): Promise<void> {
   try {
-    const session = await requireRole("partner");
+    const session = await requirePartnerWorkspace();
     await assertPartnerOwnsEditableDraft(session, productId);
 
     const row = await submitProductDraftForReview({
@@ -78,11 +155,10 @@ export async function submitPartnerDraftForReviewAction(
 
     revalidatePath("/partner/drafts");
     revalidatePath(`/partner/drafts/${productId}`);
-    revalidatePath("/owner/review");
 
     redirect(
       draftDetailPath(productId, {
-        success: `"${row.name}" submitted for owner review.`,
+        success: `"${row.name}" marked pending review. You can still publish when ready.`,
       }),
     );
   } catch (error) {
@@ -97,7 +173,7 @@ export async function updatePartnerDraftAction(
   formData: FormData,
 ): Promise<void> {
   try {
-    const session = await requireRole("partner");
+    const session = await requirePartnerWorkspace();
     const owned = await assertPartnerOwnsEditableDraft(session, productId);
     const fields = parsePartnerProductFields(formData);
     validatePartnerProductFields(fields);
@@ -124,6 +200,7 @@ export async function updatePartnerDraftAction(
 
     revalidatePath("/partner/drafts");
     revalidatePath(`/partner/drafts/${productId}`);
+    revalidatePath("/partner/products");
 
     redirect(
       draftDetailPath(productId, {

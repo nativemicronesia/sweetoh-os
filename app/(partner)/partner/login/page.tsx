@@ -12,7 +12,7 @@ export default async function PartnerLoginPage({
 }: PartnerLoginPageProps) {
   const session = await getSessionUser();
 
-  if (session?.role === "partner") {
+  if (session?.role === "partner" || session?.role === "owner") {
     redirect("/partner");
   }
 

@@ -7,7 +7,7 @@ import {
   type FulfillmentJobStatus,
 } from "@/lib/domains/fulfillment/service";
 import { getFulfillmentJobById } from "@/lib/domains/fulfillment/service";
-import { requireRole } from "@/lib/domains/identity/service";
+import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
 import { getActionErrorMessage } from "@/lib/shared/action-errors";
 import { ForbiddenError, ValidationError } from "@/lib/shared/errors";
 
@@ -43,7 +43,7 @@ export async function updatePartnerFulfillmentJobStatusAction(
   formData: FormData,
 ): Promise<void> {
   try {
-    const session = await requireRole("partner");
+    const session = await requirePartnerWorkspace();
     await assertPartnerSweetohJob(session.ventureId, jobId);
 
     const status = String(formData.get("status") ?? "") as FulfillmentJobStatus;

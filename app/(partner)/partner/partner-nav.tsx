@@ -4,12 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const NAV = [
-  { label: "Dashboard", href: "/partner", icon: "⌂" },
-  { label: "Order Queue", href: "/partner/queue", icon: "▦" },
-  { label: "Production Jobs", href: "/partner/jobs", icon: "◈" },
-  { label: "Upload Designs", href: "/partner/uploads", icon: "↑" },
-  { label: "My Drafts", href: "/partner/drafts", icon: "◻" },
-];
+  { label: "Home", href: "/partner", icon: "⌂" },
+  { label: "New from photo", href: "/partner/visual-intake", icon: "◉" },
+  { label: "Drafts", href: "/partner/drafts", icon: "◻" },
+  { label: "Products", href: "/partner/products", icon: "▣" },
+  { label: "Orders", href: "/partner/queue", icon: "▦" },
+  { label: "Production", href: "/partner/jobs", icon: "◈" },
+  { label: "Uploads", href: "/partner/uploads", icon: "↑" },
+] as const;
 
 export function PartnerNav() {
   const path = usePathname();
@@ -17,7 +19,9 @@ export function PartnerNav() {
   return (
     <nav className="flex-1 space-y-0.5 p-2 pt-3">
       {NAV.map((item) => {
-        const active = path === item.href || (item.href !== "/partner" && path.startsWith(item.href));
+        const active =
+          path === item.href ||
+          (item.href !== "/partner" && path.startsWith(item.href));
         return (
           <Link
             key={item.href}

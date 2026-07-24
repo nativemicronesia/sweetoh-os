@@ -194,7 +194,7 @@ const SWEETOH_STARTER_QUESTIONS = [
 export async function getOloStorefrontContext(input?: {
   surface?: StorefrontSurface;
 }): Promise<OloStorefrontContext> {
-  const surface = input?.surface ?? "store";
+  const surface = input?.surface ?? "sweetoh";
   const venture = await getDefaultVenture();
   const [products, collections] = await Promise.all([
     listActiveProducts(venture.id),
@@ -204,8 +204,7 @@ export async function getOloStorefrontContext(input?: {
   return {
     enabled: true,
     surface,
-    starterQuestions:
-      surface === "sweetoh" ? SWEETOH_STARTER_QUESTIONS : STORE_STARTER_QUESTIONS,
+    starterQuestions: SWEETOH_STARTER_QUESTIONS,
     collections: collections.map((item) => ({
       label: item.name,
       href: `/collections/${item.slug}`,

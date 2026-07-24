@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getFulfillmentJobById } from "@/lib/domains/fulfillment/service";
-import { requireRole } from "@/lib/domains/identity/service";
+import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
 import { ForbiddenError, NotFoundError } from "@/lib/shared/errors";
 import { FlashBanner } from "@/app/(owner)/owner/components/flash-banner";
 import { updatePartnerFulfillmentJobStatusAction } from "../../actions/fulfillment";
@@ -24,7 +24,7 @@ export default async function PartnerQueueJobPage({
   params,
   searchParams,
 }: PartnerQueueJobPageProps) {
-  const session = await requireRole("partner");
+  const session = await requirePartnerWorkspace();
   const { id } = await params;
   const query = await searchParams;
 

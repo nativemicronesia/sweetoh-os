@@ -3,13 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { validateImageUpload } from "@/lib/domains/assets/service";
-import { requireRole } from "@/lib/domains/identity/service";
+import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
 import { uploadStudioJobProductionImage } from "@/lib/domains/studio/production";
 import { getActionErrorMessage } from "@/lib/shared/action-errors";
 import { ValidationError } from "@/lib/shared/errors";
 
 function redirectWithError(message: string): never {
-  redirect(`/partner/production-queue?error=${encodeURIComponent(message)}`);
+  redirect(`/partner/jobs?error=${encodeURIComponent(message)}`);
 }
 
 export async function uploadApprovedJobImageAction(
@@ -17,7 +17,7 @@ export async function uploadApprovedJobImageAction(
   formData: FormData,
 ): Promise<void> {
   try {
-    const session = await requireRole("partner");
+    const session = await requirePartnerWorkspace();
     const file = formData.get("file");
 
     if (!(file instanceof File) || file.size === 0) {
@@ -41,11 +41,8 @@ export async function uploadApprovedJobImageAction(
       requirePartnerProductionStatus: true,
     });
 
-    revalidatePath("/partner/production-queue");
-    revalidatePath("/partner/custom-requests");
-    revalidatePath(`/owner/sweetoh-ai/jobs/${projectId}`);
-    revalidatePath(`/owner/studio/${projectId}`);
-    redirect("/partner/production-queue?success=Product+image+uploaded.");
+    revalidatePath("/partner/jobs");
+    redirect("/partner/jobs?success=Product+image+uploaded.");
   } catch (error) {
     redirectWithError(getActionErrorMessage(error));
   }

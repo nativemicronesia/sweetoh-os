@@ -76,7 +76,7 @@ export default async function CheckoutSuccessPage({
         <p className="text-lg font-semibold">{formatPrice(order.totalCents)}</p>
       </div>
 
-      <Link href="/storefront" className="text-sm text-rose-700 hover:underline">
+      <Link href="/products" className="text-sm text-rose-700 hover:underline">
         Continue shopping
       </Link>
     </div>
