@@ -1,6 +1,7 @@
 # Sweet'Oh Creations OS
 
-Standalone storefront + ops for **Sweet'Oh Creations** — NMH’s local print-on-demand shop.
+Standalone storefront + **shared POD Studio** for NMH ventures (Sweet'Oh partner,
+Island Sprouts / NMH creators).
 
 See [`docs/BRAND-TOPOLOGY.md`](./docs/BRAND-TOPOLOGY.md) and [`docs/LAUNCH.md`](./docs/LAUNCH.md).
 
@@ -23,10 +24,9 @@ npm run dev                  # http://localhost:3002
 | `/products`, `/products/[slug]` | Catalog + PDP |
 | `/create` | Customer AI design → cart |
 | `/cart`, `/checkout` | Commerce |
-| `/partner` | Partner desk (NMH handoff lands here) |
-| `/partner/visual-intake` | Photo → Sweet'Oh AI draft |
-| `/partner/drafts` | Edit + publish drafts |
-| `/partner/products` | Manage live catalog |
-| `/partner/queue`, `/partner/jobs` | Orders / production |
+| `/partner` | Studio home (pack by role) |
+| `/partner/studio` | Create · Print · Listings |
+| `/partner/queue` | Ship |
+| `/partner/assist` | Sweet'Oh AI assist |
 
 Partner thesis: [`docs/PARTNER-OPS.md`](./docs/PARTNER-OPS.md).

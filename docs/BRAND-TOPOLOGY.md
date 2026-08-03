@@ -24,12 +24,16 @@ Status: **LOCKED** for v1 launch sequencing.
 
 ## Partner-first (primary job)
 
-The Sweet'Oh partner already sells via Facebook. Her day-one job in this OS:
+Sweet'Oh Studio is the **family POD hub**. Ventures create and submit; the partner
+**Print**s (any printer) and **approves** listings; approved products show on
+Sweet'Oh and carry a brand slug for Island Sprouts / other sites.
 
-1. Photograph / scan a product she built  
-2. Sweet'Oh AI prepares the listing draft  
-3. She reviews, publishes, and manages catalog  
-4. Hard work stays **production and fulfillment**
+1. **Create** — photograph / builder / drafts  
+2. **Submit / Approve** — creators submit; partner approves  
+3. **Print** — produce on whatever printers she runs  
+4. **Ship** — fulfill orders  
+
+Later she creates her **own AI avatar** (shadow agent) for socials — not Dekaz.
 
 See [`PARTNER-OPS.md`](./PARTNER-OPS.md).
 

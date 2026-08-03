@@ -51,6 +51,12 @@ export const product = pgTable(
     internalNotes: text("internal_notes"),
     suggestedTags: jsonb("suggested_tags").$type<string[]>(),
     suggestedCollections: jsonb("suggested_collections").$type<string[]>(),
+    /**
+     * Brand catalog this product belongs to when approved (sweetoh, island-sprouts, nmh…).
+     * Producing venture stays ventureId (Sweet'Oh POD). Fan-out uses this slug.
+     */
+    brandVentureSlug: text("brand_venture_slug").notNull().default("sweetoh"),
+    submittedByUserId: uuid("submitted_by_user_id"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),

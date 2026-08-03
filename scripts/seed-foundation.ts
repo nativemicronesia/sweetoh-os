@@ -120,6 +120,15 @@ async function main() {
     });
   }
 
+  if (seedEnv.creatorEmail && seedEnv.creatorPassword) {
+    await seedAppUser({
+      ventureId: ventureRow.id,
+      email: seedEnv.creatorEmail,
+      password: seedEnv.creatorPassword,
+      role: "creator",
+    });
+  }
+
   logger.info("seed_foundation_complete", {
     ventureId: ventureRow.id,
     ownerAppUserId: ownerAppUser.id,

@@ -3,6 +3,7 @@ import { DraftStatusBadge } from "@/app/(owner)/owner/components/draft-status-ba
 import { FlashBanner } from "@/app/(owner)/owner/components/flash-banner";
 import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
 import { listActorProductDrafts } from "@/lib/domains/intelligence/service";
+import { resolvePartnerWorkspacePack } from "@/lib/domains/workspace/packs";
 import {
   publishPartnerDraftAction,
   submitPartnerDraftForReviewAction,
@@ -10,6 +11,11 @@ import {
 
 export default async function PartnerDraftsPage() {
   const session = await requirePartnerWorkspace();
+  const pack = resolvePartnerWorkspacePack({
+    role: session.role,
+    ventureSlug: session.ventureSlug,
+  });
+  const isCreator = pack.id === "sweetoh_creator";
 
   const rows = await listActorProductDrafts({
     ventureId: session.ventureId,
@@ -22,12 +28,20 @@ export default async function PartnerDraftsPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold" style={{ color: "var(--so-cream)" }}>
+          <p className="text-xs" style={{ color: "var(--so-cream-dim)" }}>
+            <Link href="/partner/studio" className="hover:underline" style={{ color: "var(--so-cream)" }}>
+              Studio
+            </Link>
+            {" / "}
+            Drafts
+          </p>
+          <h1 className="mt-2 text-xl font-semibold" style={{ color: "var(--so-cream)" }}>
             Drafts
           </h1>
           <p className="mt-1 text-sm" style={{ color: "var(--so-cream-dim)" }}>
-            AI-prepared listings. Fix the price if needed, then publish — you do not
-            wait on an owner.
+            {isCreator
+              ? "Finish the listing, then submit for Sweet'Oh partner approval."
+              : "AI-prepared listings. Publish your own, or approve venture submits in Listings."}
           </p>
         </div>
         <Link
@@ -35,7 +49,7 @@ export default async function PartnerDraftsPage() {
           className="rounded-full px-4 py-2 text-sm font-medium"
           style={{ background: "var(--so-gold)", color: "var(--so-black)" }}
         >
-          New from photo
+          New piece
         </Link>
       </div>
 
@@ -86,26 +100,42 @@ export default async function PartnerDraftsPage() {
                   >
                     Edit listing
                   </Link>
-                  <form action={publishPartnerDraftAction.bind(null, product.id)}>
-                    <button
-                      type="submit"
-                      className="rounded-lg px-3 py-1.5 text-sm font-medium"
-                      style={{ background: "var(--so-gold)", color: "var(--so-black)" }}
+                  {isCreator ? (
+                    <form
+                      action={submitPartnerDraftForReviewAction.bind(null, product.id)}
                     >
-                      Publish
-                    </button>
-                  </form>
-                  <form
-                    action={submitPartnerDraftForReviewAction.bind(null, product.id)}
-                  >
-                    <button
-                      type="submit"
-                      className="rounded-lg border px-3 py-1.5 text-sm"
-                      style={{ borderColor: "var(--so-border)", color: "var(--so-cream-dim)" }}
-                    >
-                      Mark for later review
-                    </button>
-                  </form>
+                      <button
+                        type="submit"
+                        className="rounded-lg px-3 py-1.5 text-sm font-medium"
+                        style={{ background: "var(--so-gold)", color: "var(--so-black)" }}
+                      >
+                        Submit for review
+                      </button>
+                    </form>
+                  ) : (
+                    <>
+                      <form action={publishPartnerDraftAction.bind(null, product.id)}>
+                        <button
+                          type="submit"
+                          className="rounded-lg px-3 py-1.5 text-sm font-medium"
+                          style={{ background: "var(--so-gold)", color: "var(--so-black)" }}
+                        >
+                          Publish
+                        </button>
+                      </form>
+                      <form
+                        action={submitPartnerDraftForReviewAction.bind(null, product.id)}
+                      >
+                        <button
+                          type="submit"
+                          className="rounded-lg border px-3 py-1.5 text-sm"
+                          style={{ borderColor: "var(--so-border)", color: "var(--so-cream-dim)" }}
+                        >
+                          Send to pending
+                        </button>
+                      </form>
+                    </>
+                  )}
                 </div>
               </li>
             ))}

@@ -70,7 +70,12 @@ export async function resolveAiUserAuditFields(actorUserId: string) {
     userId: user.id,
     email: user.email,
     role: user.role,
-    kind: user.role,
+    kind:
+      user.role === "owner"
+        ? "owner"
+        : user.role === "partner" || user.role === "creator"
+          ? "partner"
+          : "system",
     displayName: user.name,
   });
 }

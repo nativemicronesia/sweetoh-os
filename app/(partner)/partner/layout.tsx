@@ -1,55 +1,75 @@
 import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
+import { resolvePartnerWorkspacePack } from "@/lib/domains/workspace/packs";
 import { PartnerNav } from "./partner-nav";
 
-export default async function PartnerLayout({ children }: { children: React.ReactNode }) {
+export default async function PartnerLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const session = await requirePartnerWorkspace();
+  const pack = resolvePartnerWorkspacePack({
+    role: session.role,
+    ventureSlug: session.ventureSlug,
+  });
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: "var(--so-black)" }}>
-      {/* Sidebar */}
+    <div
+      className="flex h-screen overflow-hidden"
+      style={{ background: "var(--so-black)" }}
+    >
       <aside
         className="flex w-56 flex-col border-r"
         style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}
       >
-        {/* Brand mark */}
-        <div className="flex h-14 items-center gap-2 border-b px-4" style={{ borderColor: "var(--so-border)" }}>
-          <span className="text-lg font-semibold tracking-tight" style={{ color: "var(--so-gold)" }}>
+        <div
+          className="flex h-14 items-center gap-2 border-b px-4"
+          style={{ borderColor: "var(--so-border)" }}
+        >
+          <span
+            className="text-lg font-semibold tracking-tight"
+            style={{ color: "var(--so-gold)" }}
+          >
             Sweet&apos;Oh
           </span>
-          <span className="text-xs" style={{ color: "var(--so-cream-dim)" }}>workspace</span>
+          <span className="text-xs" style={{ color: "var(--so-cream-dim)" }}>
+            studio
+          </span>
         </div>
 
-        {/* Partner identity */}
-        <div className="border-b px-4 py-3" style={{ borderColor: "var(--so-border)" }}>
+        <div
+          className="border-b px-4 py-3"
+          style={{ borderColor: "var(--so-border)" }}
+        >
           <p className="text-xs font-medium" style={{ color: "var(--so-cream)" }}>
             {session.appUser.name ?? session.appUser.email}
           </p>
           <p className="text-xs" style={{ color: "var(--so-cream-dim)" }}>
-            {session.role === "owner" ? "Owner" : "Creator"}
+            {session.role === "owner" ? "Owner · Studio" : pack.roleLabel}
           </p>
         </div>
 
-        {/* Nav */}
-        <PartnerNav />
+        <PartnerNav packId={pack.id} />
 
-        {/* Dekaz access — no /partner/ask page exists yet, so this is an
-            honest disabled state rather than a link to a 404. */}
-        <div className="mt-auto border-t p-3" style={{ borderColor: "var(--so-border)" }}>
+        <div
+          className="mt-auto border-t p-3"
+          style={{ borderColor: "var(--so-border)" }}
+        >
           <div
-            className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm opacity-40"
-            style={{ color: "var(--so-gold)" }}
+            className="rounded-lg px-3 py-2 text-sm opacity-45"
+            style={{ color: "var(--so-cream-dim)" }}
+            title={pack.agentSlot.note}
           >
-            <span className="text-base">◆</span>
-            <span>Ask Dekaz — coming soon</span>
+            <p className="font-medium" style={{ color: "var(--so-cream)" }}>
+              {pack.agentSlot.label}
+            </p>
+            <p className="mt-0.5 text-xs">Create later — your shadow for socials</p>
           </div>
         </div>
       </aside>
 
-      {/* Main */}
       <main className="flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-4xl px-6 py-8">
-          {children}
-        </div>
+        <div className="mx-auto max-w-4xl px-6 py-8">{children}</div>
       </main>
     </div>
   );

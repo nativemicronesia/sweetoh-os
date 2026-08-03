@@ -9,6 +9,7 @@ import {
 import {
   getProductById,
   publishProduct,
+  rejectProductListing,
   submitProductDraftForReview,
   unpublishProduct,
   updateProduct,
@@ -84,6 +85,11 @@ export async function publishPartnerDraftAction(
 ): Promise<void> {
   try {
     const session = await requirePartnerWorkspace();
+    if (session.role === "creator") {
+      throw new ValidationError(
+        "Creators submit for review — the Sweet'Oh partner approves listings.",
+      );
+    }
     await assertPartnerOwnsDraft(session, productId);
 
     const row = await publishProduct({
@@ -147,23 +153,95 @@ export async function submitPartnerDraftForReviewAction(
     const session = await requirePartnerWorkspace();
     await assertPartnerOwnsEditableDraft(session, productId);
 
+    const brandVentureSlug =
+      session.role === "creator"
+        ? (process.env.CREATOR_DEFAULT_BRAND_SLUG?.trim() || "island-sprouts")
+        : "sweetoh";
+
     const row = await submitProductDraftForReview({
       ventureId: session.ventureId,
       productId,
       actorUserId: session.appUser.id,
+      brandVentureSlug,
     });
 
     revalidatePath("/partner/drafts");
     revalidatePath(`/partner/drafts/${productId}`);
+    revalidatePath("/partner/studio/listings");
 
     redirect(
       draftDetailPath(productId, {
-        success: `"${row.name}" marked pending review. You can still publish when ready.`,
+        success:
+          row.draftStatus === "pending_review"
+            ? `"${row.name}" submitted for Sweet'Oh listing review.`
+            : `"${row.name}" needs more work before review.`,
       }),
     );
   } catch (error) {
     redirect(
       draftDetailPath(productId, { error: getActionErrorMessage(error) }),
+    );
+  }
+}
+
+export async function approvePendingListingAction(
+  productId: string,
+): Promise<void> {
+  try {
+    const session = await requirePartnerWorkspace();
+    if (session.role === "creator") {
+      throw new ValidationError("Only the Sweet'Oh partner can approve listings.");
+    }
+
+    const row = await publishProduct({
+      ventureId: session.ventureId,
+      productId,
+      actorUserId: session.appUser.id,
+    });
+
+    revalidatePath("/partner/studio/listings");
+    revalidatePath("/partner/products");
+    revalidatePath("/partner/drafts");
+    revalidatePath("/products");
+
+    redirect(
+      `/partner/studio/listings?success=${encodeURIComponent(
+        `"${row.name}" approved — live on Sweet'Oh (brand: ${row.brandVentureSlug ?? "sweetoh"}).`,
+      )}`,
+    );
+  } catch (error) {
+    redirect(
+      `/partner/studio/listings?error=${encodeURIComponent(getActionErrorMessage(error))}`,
+    );
+  }
+}
+
+export async function rejectPendingListingAction(
+  productId: string,
+): Promise<void> {
+  try {
+    const session = await requirePartnerWorkspace();
+    if (session.role === "creator") {
+      throw new ValidationError("Only the Sweet'Oh partner can reject listings.");
+    }
+
+    const row = await rejectProductListing({
+      ventureId: session.ventureId,
+      productId,
+      actorUserId: session.appUser.id,
+    });
+
+    revalidatePath("/partner/studio/listings");
+    revalidatePath("/partner/drafts");
+
+    redirect(
+      `/partner/studio/listings?success=${encodeURIComponent(
+        `"${row.name}" rejected.`,
+      )}`,
+    );
+  } catch (error) {
+    redirect(
+      `/partner/studio/listings?error=${encodeURIComponent(getActionErrorMessage(error))}`,
     );
   }
 }

@@ -1,6 +1,6 @@
 import type { appUser } from "@/lib/db/schema";
 
-export type AppRole = "owner" | "partner";
+export type AppRole = "owner" | "partner" | "creator";
 
 export type SessionUser = {
   authUserId: string;

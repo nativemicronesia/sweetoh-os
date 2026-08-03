@@ -1,5 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import { cache } from "react";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/auth/supabase/server";
 import { getServerEnv } from "@/lib/config/env";
 import { getDb } from "@/lib/db/client";
@@ -91,12 +92,20 @@ export async function requireRole(role: AppRole): Promise<SessionUser> {
   return session;
 }
 
-/** Partner ops workspace — owners may operate here until a dedicated owner OS ships. */
+/** Partner ops / Studio workspace — partner, creator, or owner. */
 export async function requirePartnerWorkspace(): Promise<SessionUser> {
-  const session = await requireAuth();
+  const session = await getSessionUser();
 
-  if (session.role !== "partner" && session.role !== "owner") {
-    throw new ForbiddenError();
+  if (!session) {
+    redirect("/partner/login");
+  }
+
+  if (
+    session.role !== "partner" &&
+    session.role !== "owner" &&
+    session.role !== "creator"
+  ) {
+    redirect("/partner/login?error=partner_only");
   }
 
   return session;

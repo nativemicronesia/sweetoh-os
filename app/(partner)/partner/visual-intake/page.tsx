@@ -49,8 +49,15 @@ export default async function PartnerVisualIntakePage({
       ) : null}
 
       <div>
-        <h1 className="text-xl font-semibold" style={{ color: "var(--so-cream)" }}>
+        <p className="text-xs" style={{ color: "var(--so-cream-dim)" }}>
+          <Link href="/partner/design" className="hover:underline" style={{ color: "var(--so-cream)" }}>
+            Design
+          </Link>
+          {" / "}
           New from photo
+        </p>
+        <h1 className="mt-2 text-xl font-semibold" style={{ color: "var(--so-cream)" }}>
+          New design from photo
         </h1>
         <p className="mt-1 text-sm" style={{ color: "var(--so-cream-dim)" }}>
           Snap or upload a product you already made. Sweet&apos;Oh AI prepares the

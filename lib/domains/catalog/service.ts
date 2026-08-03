@@ -1,4 +1,4 @@
-import { and, count, desc, eq, inArray } from "drizzle-orm";
+import { and, count, desc, eq, inArray, isNull } from "drizzle-orm";
 import {
   countActiveProductsInCollection,
   ensureAutomaticCollections,
@@ -14,6 +14,7 @@ import {
   orderLineItem,
   product,
   productMedia,
+  listingOutbox,
 } from "@/lib/db/schema";
 import { recordAuditEvent } from "@/lib/domains/audit/service";
 import { aiTimestampAuditFields } from "@/lib/domains/audit/timestamp";
@@ -695,6 +696,12 @@ export async function publishProduct(input: {
     actorUserId: input.actorUserId,
   });
 
+  await enqueueListingApprovedEvent({
+    ventureId: input.ventureId,
+    product: row,
+    actorUserId: input.actorUserId,
+  });
+
   logger.info("product_published", {
     productId: row.id,
     ventureId: input.ventureId,
@@ -929,6 +936,7 @@ export async function submitProductDraftForReview(input: {
   ventureId: string;
   productId: string;
   actorUserId: string;
+  brandVentureSlug?: string;
 }) {
   const db = getDb();
   const existing = await getProductById(input);
@@ -964,7 +972,12 @@ export async function submitProductDraftForReview(input: {
 
   const [row] = await db
     .update(product)
-    .set({ draftStatus, updatedAt: new Date() })
+    .set({
+      draftStatus,
+      submittedByUserId: input.actorUserId,
+      brandVentureSlug: input.brandVentureSlug ?? existing.brandVentureSlug ?? "sweetoh",
+      updatedAt: new Date(),
+    })
     .where(
       and(
         eq(product.id, input.productId),
@@ -1113,6 +1126,102 @@ export async function listActiveProducts(ventureId: string) {
     .from(product)
     .where(and(eq(product.ventureId, ventureId), eq(product.active, true)))
     .orderBy(desc(product.updatedAt));
+}
+
+export async function listProductsPendingReview(ventureId: string) {
+  const db = getDb();
+
+  return db
+    .select()
+    .from(product)
+    .where(
+      and(
+        eq(product.ventureId, ventureId),
+        eq(product.active, false),
+        eq(product.draftStatus, "pending_review"),
+      ),
+    )
+    .orderBy(desc(product.updatedAt));
+}
+
+export async function rejectProductListing(input: {
+  ventureId: string;
+  productId: string;
+  actorUserId: string;
+}) {
+  const db = getDb();
+  const existing = await getProductById(input);
+
+  if (existing.draftStatus !== "pending_review") {
+    throw new ValidationError("Only pending-review listings can be rejected.");
+  }
+
+  const [row] = await db
+    .update(product)
+    .set({ draftStatus: "rejected", active: false, updatedAt: new Date() })
+    .where(
+      and(
+        eq(product.id, input.productId),
+        eq(product.ventureId, input.ventureId),
+      ),
+    )
+    .returning();
+
+  if (!row) {
+    throw new NotFoundError("Product not found");
+  }
+
+  await recordAuditEvent({
+    ventureId: input.ventureId,
+    actorUserId: input.actorUserId,
+    action: "product.listing_rejected",
+    entityType: "product",
+    entityId: row.id,
+    metadata: { brandVentureSlug: row.brandVentureSlug },
+  });
+
+  return row;
+}
+
+async function enqueueListingApprovedEvent(input: {
+  ventureId: string;
+  product: Product;
+  actorUserId: string;
+}) {
+  const db = getDb();
+  const media = await db
+    .select()
+    .from(productMedia)
+    .where(eq(productMedia.productId, input.product.id));
+
+  await db.insert(listingOutbox).values({
+    ventureId: input.ventureId,
+    eventType: "product.listing.approved",
+    payload: {
+      productId: input.product.id,
+      slug: input.product.slug,
+      name: input.product.name,
+      priceCents: input.product.priceCents,
+      brandVentureSlug: input.product.brandVentureSlug ?? "sweetoh",
+      description: input.product.description,
+      mediaObjectKeys: media.map((m) => m.objectKey).filter(Boolean),
+      approvedByUserId: input.actorUserId,
+      approvedAt: new Date().toISOString(),
+    },
+  });
+}
+
+/** Undelivered fan-out events for venture site consumers (Island Sprouts, etc.). */
+export async function listUndeliveredListingEvents(ventureId: string, limit = 50) {
+  const db = getDb();
+  return db
+    .select()
+    .from(listingOutbox)
+    .where(
+      and(eq(listingOutbox.ventureId, ventureId), isNull(listingOutbox.deliveredAt)),
+    )
+    .orderBy(desc(listingOutbox.createdAt))
+    .limit(limit);
 }
 
 export async function getActiveProductBySlug(input: {

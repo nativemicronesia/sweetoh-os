@@ -4,11 +4,10 @@ import { signOutAction } from "../actions/auth";
 /** Legacy header nav — sidebar `partner-nav.tsx` is the live navigation. */
 const navItems = [
   { href: "/partner", label: "Home" },
-  { href: "/partner/visual-intake", label: "New from photo" },
-  { href: "/partner/drafts", label: "Drafts" },
-  { href: "/partner/products", label: "Products" },
-  { href: "/partner/queue", label: "Orders" },
-  { href: "/partner/jobs", label: "Production" },
+  { href: "/partner/design", label: "Design" },
+  { href: "/partner/jobs", label: "Print" },
+  { href: "/partner/queue", label: "Ship" },
+  { href: "/partner/assist", label: "Assist" },
 ];
 
 export function PartnerNav({ email }: { email: string }) {

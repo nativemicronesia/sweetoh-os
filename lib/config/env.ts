@@ -244,6 +244,8 @@ const seedEnvSchema = z.object({
   FOUNDATION_OWNER_PASSWORD: z.string().min(8),
   FOUNDATION_PARTNER_EMAIL: z.string().email().optional(),
   FOUNDATION_PARTNER_PASSWORD: z.string().min(8).optional(),
+  FOUNDATION_CREATOR_EMAIL: z.string().email().optional(),
+  FOUNDATION_CREATOR_PASSWORD: z.string().min(8).optional(),
 });
 
 export type SeedEnv = {
@@ -251,6 +253,8 @@ export type SeedEnv = {
   ownerPassword: string;
   partnerEmail?: string;
   partnerPassword?: string;
+  creatorEmail?: string;
+  creatorPassword?: string;
 };
 
 export function getSeedEnv(): SeedEnv {
@@ -263,6 +267,8 @@ export function getSeedEnv(): SeedEnv {
 
   const partnerEmail = parsed.data.FOUNDATION_PARTNER_EMAIL?.trim();
   const partnerPassword = parsed.data.FOUNDATION_PARTNER_PASSWORD?.trim();
+  const creatorEmail = parsed.data.FOUNDATION_CREATOR_EMAIL?.trim();
+  const creatorPassword = parsed.data.FOUNDATION_CREATOR_PASSWORD?.trim();
 
   if (partnerEmail && !partnerPassword) {
     throw new Error(
@@ -276,11 +282,25 @@ export function getSeedEnv(): SeedEnv {
     );
   }
 
+  if (creatorEmail && !creatorPassword) {
+    throw new Error(
+      "FOUNDATION_CREATOR_PASSWORD is required when FOUNDATION_CREATOR_EMAIL is set",
+    );
+  }
+
+  if (creatorPassword && !creatorEmail) {
+    throw new Error(
+      "FOUNDATION_CREATOR_EMAIL is required when FOUNDATION_CREATOR_PASSWORD is set",
+    );
+  }
+
   return {
     ownerEmail: parsed.data.FOUNDATION_OWNER_EMAIL,
     ownerPassword: parsed.data.FOUNDATION_OWNER_PASSWORD,
     partnerEmail: partnerEmail || undefined,
     partnerPassword: partnerPassword || undefined,
+    creatorEmail: creatorEmail || undefined,
+    creatorPassword: creatorPassword || undefined,
   };
 }
 

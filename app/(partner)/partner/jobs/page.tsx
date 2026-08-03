@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
 import { getStudioProjectImages } from "@/lib/domains/studio/images";
 import {
@@ -36,34 +37,57 @@ export default async function PartnerProductionQueuePage({
     <div className="space-y-6">
       {query.error ? (
         <p
-          className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900"
+          className="rounded-xl border px-4 py-3 text-sm"
+          style={{
+            borderColor: "var(--so-rose-dim)",
+            background: "rgba(196,103,122,0.12)",
+            color: "var(--so-cream)",
+          }}
           role="alert"
         >
           {query.error}
         </p>
       ) : null}
       {query.success ? (
-        <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+        <p
+          className="rounded-xl border px-4 py-3 text-sm"
+          style={{
+            borderColor: "var(--so-gold-dim)",
+            background: "rgba(201,168,76,0.1)",
+            color: "var(--so-cream)",
+          }}
+        >
           {query.success}
         </p>
       ) : null}
 
       <div>
-        <h1 className="text-2xl font-semibold">Production queue</h1>
-        <p className="mt-1 text-sm text-neutral-600">
-          Sweet&apos;Oh AI jobs approved for production. Work stays in this queue
-          while status is Approved or In Production.
+        <p className="text-xs" style={{ color: "var(--so-cream-dim)" }}>
+          <Link href="/partner/studio" className="hover:underline" style={{ color: "var(--so-cream)" }}>
+            Studio
+          </Link>
+          {" / "}
+          Print
+        </p>
+        <h1 className="mt-2 text-xl font-semibold" style={{ color: "var(--so-cream)" }}>
+          Print
+        </h1>
+        <p className="mt-1 text-sm" style={{ color: "var(--so-cream-dim)" }}>
+          Jobs for your printers — heat press, DTG, sublimation, or whatever you run.
         </p>
       </div>
 
-      <section className="rounded-lg border border-neutral-200 bg-white">
+      <section
+        className="rounded-xl border"
+        style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}
+      >
         {jobsWithImages.length === 0 ? (
-          <p className="px-6 py-10 text-sm text-neutral-500">
-            No production jobs yet. When an owner approves a storefront request,
-            it will appear here.
+          <p className="px-6 py-10 text-sm" style={{ color: "var(--so-cream-dim)" }}>
+            Nothing on the press yet. When a job is ready for production, it shows
+            up here.
           </p>
         ) : (
-          <ul className="divide-y divide-neutral-200">
+          <ul className="divide-y" style={{ borderColor: "var(--so-border)" }}>
             {jobsWithImages.map(({ project, images }) => (
               <PartnerJobCard
                 key={project.id}
@@ -75,10 +99,6 @@ export default async function PartnerProductionQueuePage({
           </ul>
         )}
       </section>
-
-      <p className="text-xs text-neutral-500">
-        Status updates are managed by the owner on Sweet&apos;Oh AI jobs.
-      </p>
     </div>
   );
 }

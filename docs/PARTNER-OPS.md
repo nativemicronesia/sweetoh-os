@@ -1,46 +1,57 @@
-# Partner ops — Sweet'Oh AI
+# Partner ops — Sweet'Oh Studio (shared POD network)
 
-Status: **LOCKED** — partner-first loop for Sweet'Oh OS v1.
+Status: **LOCKED** — Studio for partner + venture creators.
+
+## Doctrine
+
+Sweet'Oh is NMH’s **shared POD layer**. Island Sprouts, NMH, and Sweet’Oh itself
+**Create → Submit**; the partner **approves → Print → Ship**. Approved products
+go live on Sweet’Oh and carry a `brandVentureSlug` for venture site fan-out.
 
 ## Who
 
-The Sweet'Oh Creations partner (creator / maker). She already runs the Facebook page and produces custom products. Sweet'Oh OS exists so listing work is easy and her scarce time goes to **production and fulfillment**.
+| Role | Pack | Job |
+|------|------|-----|
+| **Partner** | `sweetoh_partner` | Print, approve listings, ship |
+| **Creator** | `sweetoh_creator` | Create + submit for review |
+| **Owner** | partner desk | Same as partner until owner OS |
 
 ## Loop
 
 ```
-NMH login
-    → Sweet'Oh OS /partner
-    → New from photo (visual intake)
-    → Sweet'Oh AI prepares draft
-    → Review price / title / media
-    → Publish (she can publish — no owner gate for v1)
-    → Manage products
-    → Orders / production queue when sales come in
+Venture creator / partner
+    → Studio Create (photo, builder, drafts)
+    → Submit for listing (creators) or Publish (partner own)
+    → Partner Listings: Pending → Approve / Reject
+    → Live on Sweet'Oh + outbox event for brand site
+    → Print (any printer) → Ship
 ```
-
-Facebook remains the customer channel for this phase. Catalog in Sweet'Oh is the system of record.
 
 ## Surfaces
 
-| Path | Job |
-|------|-----|
-| `/partner` | Daily desk |
-| `/partner/visual-intake` | Photograph item → AI draft |
-| `/partner/intelligence` | Text-only AI draft (secondary) |
-| `/partner/drafts` | Edit unpublished drafts |
-| `/partner/products` | Manage published / catalog |
-| `/partner/queue`, `/partner/jobs` | Fulfillment / production |
+| Path | Mode |
+|------|------|
+| `/partner` | Personalized home |
+| `/partner/studio` | Studio hub |
+| `/partner/studio/create` | Create door |
+| `/partner/studio/print` → `/partner/jobs` | Print queue |
+| `/partner/studio/listings` | Pending + drafts + live |
+| `/partner/queue` | Ship |
+| `/partner/assist` | Sweet'Oh AI (docked help) |
 
-## AI vs human
+## AI layers
 
-| Sweet'Oh AI | Partner |
-|-------------|---------|
-| Title, description, draft product, attach photo | Confirm price, publish |
-| Listing prep from photo + optional notes | Make / print / ship |
+| Layer | Role |
+|-------|------|
+| Sweet'Oh AI Assist | Help on Create |
+| Her agent (avatar) | Reserved — socials later |
+| Dekaz | NMH only — not this desk |
 
-## NMH handoff
+## Fan-out
 
-Configured in NMH OS via `SWEETOH_OS_URL` (or `NEXT_PUBLIC_SWEETOH_OS_URL`). Members of the `sweetoh` venture who are not NMH owners are redirected to `{SWEETOH_OS_URL}/partner` after sign-in. Owners stay in NMH and get a CTA.
+On approve/publish: `listing_outbox` event `product.listing.approved`.
+Stub API: `GET /api/integrations/listing-events` (partner/owner).
 
-Auth: prefer the same credentials she uses in NMH when environments share identity; otherwise she signs into Sweet'Oh partner login with her provisioned account (`FOUNDATION_PARTNER_*` / owner seed).
+## Packs
+
+`lib/domains/workspace/packs.ts` — drives nav and home.

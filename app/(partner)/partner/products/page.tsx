@@ -35,12 +35,19 @@ export default async function PartnerProductsPage({
 
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold" style={{ color: "var(--so-cream)" }}>
-            Products
+          <p className="text-xs" style={{ color: "var(--so-cream-dim)" }}>
+            <Link href="/partner/design" className="hover:underline" style={{ color: "var(--so-cream)" }}>
+              Design
+            </Link>
+            {" / "}
+            Live listings
+          </p>
+          <h1 className="mt-2 text-xl font-semibold" style={{ color: "var(--so-cream)" }}>
+            Live listings
           </h1>
           <p className="mt-1 text-sm" style={{ color: "var(--so-cream-dim)" }}>
-            Your Sweet&apos;Oh catalog. Live items can sell on the storefront; Facebook
-            stays your customer channel until you share them there.
+            Published catalog. Facebook stays your customer channel until you share
+            them there.
           </p>
         </div>
         <Link

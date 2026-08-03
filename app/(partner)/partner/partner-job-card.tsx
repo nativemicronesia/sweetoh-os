@@ -45,17 +45,25 @@ export function PartnerJobCard({
   const canUploadProduction = PRODUCTION_JOB_STATUSES.has(job.status);
 
   return (
-    <li className="space-y-4 px-6 py-6">
+    <li className="space-y-4 px-6 py-6" style={{ borderColor: "var(--so-border)" }}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
-          <p className="font-medium">{job.name}</p>
+          <p className="font-medium" style={{ color: "var(--so-cream)" }}>
+            {job.name}
+          </p>
           {isCustomerCustomizationRequest(job.notes) ? (
-            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-900">
+            <span
+              className="rounded-full px-2 py-0.5 text-xs font-medium"
+              style={{
+                background: "rgba(201,168,76,0.15)",
+                color: "var(--so-gold)",
+              }}
+            >
               Storefront
             </span>
           ) : null}
         </div>
-        <span className="text-sm text-neutral-500">
+        <span className="text-sm" style={{ color: "var(--so-cream-dim)" }}>
           {formatStudioProjectStatus(job.status)}
         </span>
       </div>
@@ -66,7 +74,7 @@ export function PartnerJobCard({
         prompt={parsed.prompt}
       />
 
-      <p className="text-xs text-neutral-500">
+      <p className="text-xs" style={{ color: "var(--so-cream-dim)" }}>
         Updated {new Date(job.updatedAt).toLocaleString()}
       </p>
 
@@ -78,7 +86,7 @@ export function PartnerJobCard({
             action={uploadProductionImageAction.bind(null, job.id)}
           />
         ) : (
-          <p className="mt-3 text-xs text-neutral-500">
+          <p className="mt-3 text-xs" style={{ color: "var(--so-cream-dim)" }}>
             This job is no longer open for production uploads.
           </p>
         )}
