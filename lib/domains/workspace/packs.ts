@@ -1,14 +1,15 @@
 /**
  * Personalized workspace packs — Sweet'Oh Studio (shared POD network).
  *
- * Partner: Studio (Create · Print · Listings) + Ship — she prints & approves.
- * Creator: Studio Create/Submit loud — venture operators submit for her review.
- * Assist docks inside Studio. Personal shadow agent reserved on Home.
+ * Partner: Studio (Create · Print · Ship) — she creates, decides what's
+ * waiting on her (Print), and ships. Creator: Create · Print only — creators
+ * submit and wait, they don't ship. Assist docks inside Studio. Personal
+ * shadow agent reserved on Home.
  */
 
 import type { AppRole } from "@/lib/domains/identity/types";
 
-export type StudioModeId = "create" | "print" | "listings";
+export type StudioModeId = "create" | "print" | "ship";
 
 export type WorkspaceNavItem = {
   id: string;
@@ -35,7 +36,6 @@ export type WorkspacePack = {
   /** Home desk cards — partner sees Print/Ship; creator emphasizes Create. */
   homeCards: StudioMode[];
   nav: WorkspaceNavItem[];
-  showShipInNav: boolean;
   assist: {
     id: "sweetoh_ai";
     label: string;
@@ -60,14 +60,14 @@ const STUDIO_PRINT: StudioMode = {
   id: "print",
   label: "Print",
   href: "/partner/studio/print",
-  note: "Jobs for any printer",
+  note: "Decide what's waiting on you",
 };
 
-const STUDIO_LISTINGS: StudioMode = {
-  id: "listings",
-  label: "Listings",
-  href: "/partner/studio/listings",
-  note: "Drafts, pending review, live",
+const STUDIO_SHIP: StudioMode = {
+  id: "ship",
+  label: "Ship",
+  href: "/partner/queue",
+  note: "Orders on their way to customers",
 };
 
 export const SWEETOH_PARTNER_PACK: WorkspacePack = {
@@ -81,8 +81,8 @@ export const SWEETOH_PARTNER_PACK: WorkspacePack = {
     href: "/partner/visual-intake",
     note: "Snap a piece or start a draft — then print and list.",
   },
-  studioModes: [STUDIO_CREATE, STUDIO_PRINT, STUDIO_LISTINGS],
-  homeCards: [STUDIO_CREATE, STUDIO_PRINT, STUDIO_LISTINGS],
+  studioModes: [STUDIO_CREATE, STUDIO_PRINT, STUDIO_SHIP],
+  homeCards: [STUDIO_CREATE, STUDIO_PRINT, STUDIO_SHIP],
   nav: [
     { id: "home", label: "Home", href: "/partner" },
     {
@@ -108,7 +108,6 @@ export const SWEETOH_PARTNER_PACK: WorkspacePack = {
       matchPrefixes: ["/partner/queue"],
     },
   ],
-  showShipInNav: true,
   assist: {
     id: "sweetoh_ai",
     label: "Sweet'Oh AI",
@@ -118,7 +117,7 @@ export const SWEETOH_PARTNER_PACK: WorkspacePack = {
   agentSlot: {
     status: "reserved",
     label: "Your agent",
-    note: "Your own AI avatar later — shadow for socials. Not Dekaz.",
+    note: "Her AI avatar — Dekaz, catered to Sweet'Oh. Reserved, not built yet.",
   },
 };
 
@@ -133,8 +132,8 @@ export const SWEETOH_CREATOR_PACK: WorkspacePack = {
     href: "/partner/visual-intake",
     note: "Make something — then submit for Sweet'Oh review.",
   },
-  studioModes: [STUDIO_CREATE, STUDIO_LISTINGS, STUDIO_PRINT],
-  homeCards: [STUDIO_CREATE, STUDIO_LISTINGS],
+  studioModes: [STUDIO_CREATE, STUDIO_PRINT],
+  homeCards: [STUDIO_CREATE, STUDIO_PRINT],
   nav: [
     { id: "home", label: "Home", href: "/partner" },
     {
@@ -152,7 +151,6 @@ export const SWEETOH_CREATOR_PACK: WorkspacePack = {
       ],
     },
   ],
-  showShipInNav: false,
   assist: SWEETOH_PARTNER_PACK.assist,
   agentSlot: {
     status: "reserved",

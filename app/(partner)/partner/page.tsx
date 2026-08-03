@@ -5,10 +5,6 @@ import {
   statusesForPartnerStage,
 } from "@/lib/domains/fulfillment";
 import { listActorProductDrafts } from "@/lib/domains/intelligence/service";
-import {
-  isPartnerProductionJobStatus,
-  listCustomerCustomizationRequests,
-} from "@/lib/domains/studio";
 import { resolvePartnerWorkspacePack } from "@/lib/domains/workspace/packs";
 import { listProductsPendingReview } from "@/lib/domains/catalog/service";
 
@@ -19,27 +15,22 @@ export default async function PartnerDashboard() {
     ventureSlug: session.ventureSlug,
   });
 
-  const [queueNew, queueReady, approvedJobs, drafts, pending] =
-    await Promise.all([
-      countPartnerSweetohJobs({
-        ventureId: session.ventureId,
-        statuses: statusesForPartnerStage("new"),
-      }),
-      countPartnerSweetohJobs({
-        ventureId: session.ventureId,
-        statuses: statusesForPartnerStage("ready_to_ship"),
-      }),
-      listCustomerCustomizationRequests(session.ventureId),
-      listActorProductDrafts({
-        ventureId: session.ventureId,
-        actorUserId: session.appUser.id,
-      }),
-      listProductsPendingReview(session.ventureId),
-    ]);
+  const [queueNew, queueReady, drafts, pending] = await Promise.all([
+    countPartnerSweetohJobs({
+      ventureId: session.ventureId,
+      statuses: statusesForPartnerStage("new"),
+    }),
+    countPartnerSweetohJobs({
+      ventureId: session.ventureId,
+      statuses: statusesForPartnerStage("ready_to_ship"),
+    }),
+    listActorProductDrafts({
+      ventureId: session.ventureId,
+      actorUserId: session.appUser.id,
+    }),
+    listProductsPendingReview(session.ventureId),
+  ]);
 
-  const printJobs = approvedJobs.filter((p) =>
-    isPartnerProductionJobStatus(p.status),
-  ).length;
   const openDrafts = drafts.filter(({ product }) => !product.active).length;
   const firstName = session.appUser.name?.split(" ")[0];
 
@@ -92,19 +83,19 @@ export default async function PartnerDashboard() {
               detail =
                 openDrafts > 0 ? `${openDrafts} open drafts` : "Start a new piece";
             } else if (card.id === "print") {
-              count = printJobs;
-              detail =
-                printJobs > 0
-                  ? `${printJobs} for your printers`
-                  : "Nothing to print";
-              hot = printJobs > 0;
-            } else if (card.id === "listings") {
               count = pending.length;
               detail =
                 pending.length > 0
-                  ? `${pending.length} pending review`
-                  : "Drafts & live";
+                  ? `${pending.length} waiting on you`
+                  : "Nothing waiting on you";
               hot = pending.length > 0 && pack.id === "sweetoh_partner";
+            } else if (card.id === "ship") {
+              count = queueNew + queueReady;
+              detail =
+                queueNew + queueReady > 0
+                  ? `${queueNew} new · ${queueReady} ready`
+                  : "Nothing to ship";
+              hot = queueNew + queueReady > 0;
             }
             return (
               <Link
@@ -134,44 +125,6 @@ export default async function PartnerDashboard() {
               </Link>
             );
           })}
-          {pack.showShipInNav ? (
-            <Link
-              href="/partner/queue"
-              className="rounded-xl border p-5 transition-colors hover:border-[var(--so-gold-dim)]"
-              style={{
-                borderColor:
-                  queueNew + queueReady > 0
-                    ? "var(--so-gold-dim)"
-                    : "var(--so-border)",
-                background:
-                  queueNew + queueReady > 0
-                    ? "rgba(201,168,76,0.05)"
-                    : "var(--so-dark)",
-              }}
-            >
-              <p
-                className="text-sm font-medium"
-                style={{
-                  color:
-                    queueNew + queueReady > 0 ? "var(--so-gold)" : "var(--so-cream)",
-                }}
-              >
-                Ship
-              </p>
-              <p
-                className="mt-2 text-2xl font-bold"
-                style={{
-                  color:
-                    queueNew + queueReady > 0 ? "var(--so-gold)" : "var(--so-cream)",
-                }}
-              >
-                {queueNew + queueReady}
-              </p>
-              <p className="mt-1 text-xs" style={{ color: "var(--so-cream-dim)" }}>
-                {queueNew} new · {queueReady} ready
-              </p>
-            </Link>
-          ) : null}
         </div>
       </div>
 

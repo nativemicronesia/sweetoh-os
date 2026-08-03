@@ -167,7 +167,7 @@ export async function submitPartnerDraftForReviewAction(
 
     revalidatePath("/partner/drafts");
     revalidatePath(`/partner/drafts/${productId}`);
-    revalidatePath("/partner/studio/listings");
+    revalidatePath("/partner/studio/print");
 
     redirect(
       draftDetailPath(productId, {
@@ -199,19 +199,19 @@ export async function approvePendingListingAction(
       actorUserId: session.appUser.id,
     });
 
-    revalidatePath("/partner/studio/listings");
+    revalidatePath("/partner/studio/print");
     revalidatePath("/partner/products");
     revalidatePath("/partner/drafts");
     revalidatePath("/products");
 
     redirect(
-      `/partner/studio/listings?success=${encodeURIComponent(
+      `/partner/studio/print?success=${encodeURIComponent(
         `"${row.name}" approved — live on Sweet'Oh (brand: ${row.brandVentureSlug ?? "sweetoh"}).`,
       )}`,
     );
   } catch (error) {
     redirect(
-      `/partner/studio/listings?error=${encodeURIComponent(getActionErrorMessage(error))}`,
+      `/partner/studio/print?error=${encodeURIComponent(getActionErrorMessage(error))}`,
     );
   }
 }
@@ -231,17 +231,17 @@ export async function rejectPendingListingAction(
       actorUserId: session.appUser.id,
     });
 
-    revalidatePath("/partner/studio/listings");
+    revalidatePath("/partner/studio/print");
     revalidatePath("/partner/drafts");
 
     redirect(
-      `/partner/studio/listings?success=${encodeURIComponent(
+      `/partner/studio/print?success=${encodeURIComponent(
         `"${row.name}" rejected.`,
       )}`,
     );
   } catch (error) {
     redirect(
-      `/partner/studio/listings?error=${encodeURIComponent(getActionErrorMessage(error))}`,
+      `/partner/studio/print?error=${encodeURIComponent(getActionErrorMessage(error))}`,
     );
   }
 }

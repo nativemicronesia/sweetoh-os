@@ -5,10 +5,6 @@ import {
   statusesForPartnerStage,
 } from "@/lib/domains/fulfillment";
 import { listActorProductDrafts } from "@/lib/domains/intelligence/service";
-import {
-  isPartnerProductionJobStatus,
-  listCustomerCustomizationRequests,
-} from "@/lib/domains/studio";
 import { resolvePartnerWorkspacePack } from "@/lib/domains/workspace/packs";
 import { listProductsPendingReview } from "@/lib/domains/catalog/service";
 
@@ -19,28 +15,24 @@ export default async function PartnerStudioHubPage() {
     ventureSlug: session.ventureSlug,
   });
 
-  const [drafts, pending, approvedJobs, newOrders, readyToShip] =
-    await Promise.all([
-      listActorProductDrafts({
-        ventureId: session.ventureId,
-        actorUserId: session.appUser.id,
-      }),
-      listProductsPendingReview(session.ventureId),
-      listCustomerCustomizationRequests(session.ventureId),
-      countPartnerSweetohJobs({
-        ventureId: session.ventureId,
-        statuses: statusesForPartnerStage("new"),
-      }),
-      countPartnerSweetohJobs({
-        ventureId: session.ventureId,
-        statuses: statusesForPartnerStage("ready_to_ship"),
-      }),
-    ]);
+  const [drafts, pending, newOrders, readyToShip] = await Promise.all([
+    listActorProductDrafts({
+      ventureId: session.ventureId,
+      actorUserId: session.appUser.id,
+    }),
+    listProductsPendingReview(session.ventureId),
+    countPartnerSweetohJobs({
+      ventureId: session.ventureId,
+      statuses: statusesForPartnerStage("new"),
+    }),
+    countPartnerSweetohJobs({
+      ventureId: session.ventureId,
+      statuses: statusesForPartnerStage("ready_to_ship"),
+    }),
+  ]);
 
   const openDrafts = drafts.filter(({ product }) => !product.active).length;
-  const printJobs = approvedJobs.filter((p) =>
-    isPartnerProductionJobStatus(p.status),
-  ).length;
+  const ordersNeedingShip = newOrders + readyToShip;
 
   const modeMeta: Record<
     string,
@@ -55,20 +47,20 @@ export default async function PartnerStudioHubPage() {
       hot: false,
     },
     print: {
-      count: printJobs,
-      detail:
-        printJobs > 0
-          ? `${printJobs} ready for your printers`
-          : "Nothing queued to print",
-      hot: printJobs > 0,
-    },
-    listings: {
       count: pending.length,
       detail:
         pending.length > 0
-          ? `${pending.length} pending review`
-          : "Drafts and live catalog",
+          ? `${pending.length} waiting on you`
+          : "Nothing waiting on you",
       hot: pending.length > 0 && pack.id === "sweetoh_partner",
+    },
+    ship: {
+      count: ordersNeedingShip,
+      detail:
+        ordersNeedingShip > 0
+          ? `${newOrders} new · ${readyToShip} ready`
+          : "Nothing to ship",
+      hot: ordersNeedingShip > 0,
     },
   };
 
@@ -79,7 +71,7 @@ export default async function PartnerStudioHubPage() {
           Studio
         </h1>
         <p className="mt-1 text-sm" style={{ color: "var(--so-cream-dim)" }}>
-          Create · Print · Listings — shared POD desk for NMH ventures.
+          Create · Print · Ship — shared POD desk for NMH ventures.
         </p>
       </div>
 
@@ -137,15 +129,6 @@ export default async function PartnerStudioHubPage() {
           );
         })}
       </div>
-
-      {pack.id === "sweetoh_partner" && (newOrders > 0 || readyToShip > 0) ? (
-        <p className="text-sm" style={{ color: "var(--so-cream-dim)" }}>
-          Ship needs you:{" "}
-          <Link href="/partner/queue" className="underline" style={{ color: "var(--so-cream)" }}>
-            {newOrders} new · {readyToShip} ready
-          </Link>
-        </p>
-      ) : null}
     </div>
   );
 }

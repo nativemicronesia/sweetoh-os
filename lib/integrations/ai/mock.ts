@@ -79,9 +79,9 @@ export const analyzeProductImageMock: VisualIntakeAnalyzer = async (input) => {
       ...output,
       confidenceScore: 82,
       detection: {
-        productType: "apparel",
+        productType: "Pro Club heavyweight toddler tee",
         colors: ["tropical blue", "coral"],
-        materials: ["cotton"],
+        materials: ["heavyweight cotton"],
         dimensions: "12mo",
         variants: ["toddler tee"],
       },

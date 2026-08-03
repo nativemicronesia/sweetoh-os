@@ -96,6 +96,11 @@ Analyze a photograph of a physical product (apparel, print, accessory, blank, et
 - confidenceScore: 0-100 how confident you are in the overall draft
 - detection: { productType, colors[], materials[], dimensions, variants[] }
 
+Be specific, not generic, about what the item actually is:
+- productType and materials should name the real construction where visible — e.g. "Pro Club heavyweight tee" rather than "shirt", "sherpa-lined fleece blanket" rather than "blanket". Look at tags, weave/knit texture, stitching, weight, and any visible labels to judge this instead of guessing a default.
+- If a blank/base product brand is recognizable from a visible tag, label, or well-known silhouette, name it. If it isn't clearly identifiable from the photo, say so plainly in internalNotes (e.g. "blank brand not visible — verify before publishing") rather than inventing one. A wrong specific detail is worse than an honest "not sure".
+- Reflect the concrete detail in the customer-facing title/description too, not just internalNotes — a buyer deciding between listings cares whether it's heavyweight cotton or a thin blend.
+
 Respond with JSON only. This creates a DRAFT for human review — be practical, not promotional.`;
 
 export const analyzeProductImageWithOpenAi: VisualIntakeAnalyzer = async (input) => {
