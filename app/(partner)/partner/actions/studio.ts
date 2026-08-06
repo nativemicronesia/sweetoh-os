@@ -8,8 +8,10 @@ import { uploadStudioJobProductionImage } from "@/lib/domains/studio/production"
 import { getActionErrorMessage } from "@/lib/shared/action-errors";
 import { ValidationError } from "@/lib/shared/errors";
 
+const ORDERS_CUSTOM_PATH = "/partner/orders?tab=custom";
+
 function redirectWithError(message: string): never {
-  redirect(`/partner/jobs?error=${encodeURIComponent(message)}`);
+  redirect(`${ORDERS_CUSTOM_PATH}&error=${encodeURIComponent(message)}`);
 }
 
 export async function uploadApprovedJobImageAction(
@@ -41,8 +43,8 @@ export async function uploadApprovedJobImageAction(
       requirePartnerProductionStatus: true,
     });
 
-    revalidatePath("/partner/jobs");
-    redirect("/partner/jobs?success=Product+image+uploaded.");
+    revalidatePath("/partner/orders");
+    redirect(`${ORDERS_CUSTOM_PATH}&success=Product+image+uploaded.`);
   } catch (error) {
     redirectWithError(getActionErrorMessage(error));
   }

@@ -10,25 +10,27 @@ import {
 import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
 import { getActionErrorMessage } from "@/lib/shared/action-errors";
 
-const PIE_PATH = "/partner/intelligence";
+const CREATE_PATH = "/partner/create";
 
-function redirectPartnerPieError(path: string, message: string): never {
-  redirect(`${path}?error=${encodeURIComponent(message)}`);
+function redirectPartnerPieError(message: string): never {
+  redirect(`${CREATE_PATH}?error=${encodeURIComponent(message)}`);
 }
 
+/** Text-only draft lane on /partner/create. */
 export async function generatePartnerPieDraftAction(
   formData: FormData,
 ): Promise<void> {
   if (!isAiProductBuilderConfigured()) {
     redirectPartnerPieError(
-      PIE_PATH,
       "Product Intelligence Engine is not ready. Add OPENAI_API_KEY or AI_MOCK_MODE=true to .env.local.",
     );
   }
 
   try {
     const session = await requirePartnerWorkspace();
-    const textPrompt = String(formData.get("textPrompt") ?? formData.get("prompt") ?? "").trim();
+    const textPrompt = String(
+      formData.get("textPrompt") ?? formData.get("prompt") ?? "",
+    ).trim();
 
     const product = await createPieProductDraft({
       ventureId: session.ventureId,
@@ -38,27 +40,21 @@ export async function generatePartnerPieDraftAction(
     });
 
     redirect(
-      `/partner/drafts/${product.id}?success=${encodeURIComponent(
+      `/partner/review/${product.id}?success=${encodeURIComponent(
         `Draft "${product.name}" is ready. Review the listing, set the price, then publish.`,
       )}`,
     );
   } catch (error) {
-    redirectPartnerPieError(PIE_PATH, getActionErrorMessage(error));
+    redirectPartnerPieError(getActionErrorMessage(error));
   }
 }
 
-export async function generatePartnerVisualIntakeDraftAction(
-  formData: FormData,
-): Promise<void> {
-  return generatePartnerPieIntakeAction(formData);
-}
-
+/** Photo (optionally + notes) draft lane on /partner/create. */
 export async function generatePartnerPieIntakeAction(
   formData: FormData,
 ): Promise<void> {
   if (!isAiProductBuilderConfigured()) {
     redirectPartnerPieError(
-      "/partner/visual-intake",
       "Product Intelligence Engine is not ready. Add OPENAI_API_KEY or AI_MOCK_MODE=true to .env.local.",
     );
   }
@@ -66,8 +62,12 @@ export async function generatePartnerPieIntakeAction(
   try {
     const session = await requirePartnerWorkspace();
     const textPrompt =
-      String(formData.get("textPrompt") ?? formData.get("operatorNotes") ?? formData.get("prompt") ?? "").trim() ||
-      null;
+      String(
+        formData.get("textPrompt") ??
+          formData.get("operatorNotes") ??
+          formData.get("prompt") ??
+          "",
+      ).trim() || null;
     const file = formData.get("file");
     const hasImage = file instanceof File && file.size > 0;
 
@@ -98,30 +98,13 @@ export async function generatePartnerPieIntakeAction(
     }
 
     redirect(
-      `/partner/drafts/${product.id}?success=${encodeURIComponent(
-        `Draft "${product.name}" created (${describePieInputMode(mode)}). Review, set price, then publish.`,
+      `/partner/review/${product.id}?success=${encodeURIComponent(
+        `Draft "${product.name}" created (${describePieInputMode(
+          mode,
+        )}). Review, set price, then publish.`,
       )}`,
     );
   } catch (error) {
-    const file = formData.get("file");
-    const hasImage = file instanceof File && file.size > 0;
-    redirectPartnerPieError(
-      hasImage ? "/partner/visual-intake" : PIE_PATH,
-      getActionErrorMessage(error),
-    );
+    redirectPartnerPieError(getActionErrorMessage(error));
   }
-}
-
-/** @deprecated Use generatePartnerPieDraftAction or generatePartnerPieIntakeAction */
-export async function generatePartnerProductDraftAction(
-  formData: FormData,
-): Promise<void> {
-  return generatePartnerPieDraftAction(formData);
-}
-
-/** @deprecated Use generatePartnerPieIntakeAction */
-export async function generatePartnerSweetOhAiDraftAction(
-  formData: FormData,
-): Promise<void> {
-  return generatePartnerPieIntakeAction(formData);
 }

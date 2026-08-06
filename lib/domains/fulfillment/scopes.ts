@@ -11,18 +11,26 @@ export const PARTNER_QUEUE_STAGES: {
   label: string;
   href: string;
 }[] = [
-  { stage: "new", label: "New Orders", href: "/partner/queue?stage=new" },
+  {
+    stage: "new",
+    label: "New Orders",
+    href: "/partner/orders?tab=catalog&stage=new",
+  },
   {
     stage: "in_production",
     label: "In Production",
-    href: "/partner/queue?stage=in_production",
+    href: "/partner/orders?tab=catalog&stage=in_production",
   },
   {
     stage: "ready_to_ship",
     label: "Ready To Ship",
-    href: "/partner/queue?stage=ready_to_ship",
+    href: "/partner/orders?tab=catalog&stage=ready_to_ship",
   },
-  { stage: "completed", label: "Completed", href: "/partner/queue?stage=completed" },
+  {
+    stage: "completed",
+    label: "Completed",
+    href: "/partner/orders?tab=catalog&stage=completed",
+  },
 ];
 
 export function statusesForPartnerStage(

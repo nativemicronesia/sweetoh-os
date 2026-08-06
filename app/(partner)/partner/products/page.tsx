@@ -35,15 +35,8 @@ export default async function PartnerProductsPage({
 
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-xs" style={{ color: "var(--so-cream-dim)" }}>
-            <Link href="/partner/design" className="hover:underline" style={{ color: "var(--so-cream)" }}>
-              Design
-            </Link>
-            {" / "}
-            Live listings
-          </p>
-          <h1 className="mt-2 text-xl font-semibold" style={{ color: "var(--so-cream)" }}>
-            Live listings
+          <h1 className="text-xl font-semibold" style={{ color: "var(--so-cream)" }}>
+            Products
           </h1>
           <p className="mt-1 text-sm" style={{ color: "var(--so-cream-dim)" }}>
             Published catalog. Facebook stays your customer channel until you share
@@ -51,11 +44,11 @@ export default async function PartnerProductsPage({
           </p>
         </div>
         <Link
-          href="/partner/visual-intake"
+          href="/partner/create"
           className="rounded-full px-4 py-2 text-sm font-medium"
           style={{ background: "var(--so-gold)", color: "var(--so-black)" }}
         >
-          New from photo
+          New piece
         </Link>
       </div>
 
@@ -136,8 +129,8 @@ export default async function PartnerProductsPage({
           {openDrafts.length === 0 ? (
             <p className="px-6 py-6 text-sm" style={{ color: "var(--so-cream-dim)" }}>
               No open drafts.{" "}
-              <Link href="/partner/visual-intake" className="underline">
-                New from photo
+              <Link href="/partner/create" className="underline">
+                Make something
               </Link>
               .
             </p>
@@ -163,7 +156,7 @@ export default async function PartnerProductsPage({
                       active={product.active}
                     />
                     <Link
-                      href={`/partner/drafts/${product.id}`}
+                      href={`/partner/review/${product.id}`}
                       className="rounded-lg border px-3 py-1.5 text-sm"
                       style={{ borderColor: "var(--so-border)", color: "var(--so-cream)" }}
                     >

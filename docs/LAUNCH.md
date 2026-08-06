@@ -43,9 +43,10 @@ transaction mode (`:6543`) is fine for the app at runtime.
 2. `/products` → list → `/products/{slug}` → add to cart  
 3. `/create` → design preview → cart (needs ≥1 active base product)  
 4. Checkout → Stripe → success → order email (if Resend set)  
-5. `/partner/login` → Studio → Create → publish/submit → listings  
-6. From NMH: `/canvas/web` → attach brand ref → chat Dekaz → mission on `sweetoh-os`  
-7. Orders: `/partner/queue` / `/partner/jobs` when fulfillment is needed  
+5. `/partner/login` → Overview → `/partner/create` → `/partner/review` → publish/submit  
+6. Studio chat bar: "what's waiting on me?" (read), then a real write; confirm it lands in the DB  
+7. From NMH: `/canvas/web` → attach brand ref → chat Dekaz → mission on `sweetoh-os`  
+8. Orders: `/partner/orders` (Catalog and Custom tabs) when fulfillment is needed  
 
 ## Explicitly later
 

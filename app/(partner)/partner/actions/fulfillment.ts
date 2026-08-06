@@ -2,40 +2,21 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import {
-  updateFulfillmentJobStatus,
-  type FulfillmentJobStatus,
-} from "@/lib/domains/fulfillment/service";
-import { getFulfillmentJobById } from "@/lib/domains/fulfillment/service";
+import { updatePartnerJobStatus } from "@/lib/domains/fulfillment/partner-jobs";
 import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
 import { getActionErrorMessage } from "@/lib/shared/action-errors";
-import { ForbiddenError, ValidationError } from "@/lib/shared/errors";
 
-const STATUSES: FulfillmentJobStatus[] = [
-  "new",
-  "in_production",
-  "ready_to_ship",
-  "shipped",
-  "delivered",
-  "cancelled",
-];
-
+/**
+ * Redirect/revalidate shell. The Sweet'Oh path check and status validation
+ * live in `lib/domains/fulfillment/partner-jobs.ts`, shared with the Studio
+ * chat's `update_order_status` tool.
+ */
 function jobPath(jobId: string, query?: Record<string, string>) {
   const params = new URLSearchParams(query);
   const suffix = params.toString();
   return suffix
-    ? `/partner/queue/${jobId}?${suffix}`
-    : `/partner/queue/${jobId}`;
-}
-
-async function assertPartnerSweetohJob(ventureId: string, jobId: string) {
-  const result = await getFulfillmentJobById({ ventureId, jobId });
-
-  if (result.job.path !== "sweetoh") {
-    throw new ForbiddenError("Partners can only manage Sweet'Oh fulfillment jobs.");
-  }
-
-  return result;
+    ? `/partner/orders/${jobId}?${suffix}`
+    : `/partner/orders/${jobId}`;
 }
 
 export async function updatePartnerFulfillmentJobStatusAction(
@@ -44,32 +25,20 @@ export async function updatePartnerFulfillmentJobStatusAction(
 ): Promise<void> {
   try {
     const session = await requirePartnerWorkspace();
-    await assertPartnerSweetohJob(session.ventureId, jobId);
 
-    const status = String(formData.get("status") ?? "") as FulfillmentJobStatus;
-    const trackingNumber = String(formData.get("trackingNumber") ?? "").trim() || null;
-    const trackingUrl = String(formData.get("trackingUrl") ?? "").trim() || null;
-    const notes = String(formData.get("notes") ?? "").trim() || null;
-
-    if (!STATUSES.includes(status)) {
-      throw new ValidationError("Invalid status.");
-    }
-
-    await updateFulfillmentJobStatus({
-      ventureId: session.ventureId,
+    await updatePartnerJobStatus(session, {
       jobId,
-      status,
-      trackingNumber,
-      trackingUrl,
-      notes,
-      actorUserId: session.appUser.id,
+      status: String(formData.get("status") ?? ""),
+      trackingNumber: String(formData.get("trackingNumber") ?? "").trim() || null,
+      trackingUrl: String(formData.get("trackingUrl") ?? "").trim() || null,
+      notes: String(formData.get("notes") ?? "").trim() || null,
     });
   } catch (error) {
     redirect(jobPath(jobId, { error: getActionErrorMessage(error) }));
   }
 
   revalidatePath("/partner");
-  revalidatePath("/partner/queue");
+  revalidatePath("/partner/orders");
   revalidatePath(jobPath(jobId));
   redirect(jobPath(jobId, { success: "Status updated." }));
 }

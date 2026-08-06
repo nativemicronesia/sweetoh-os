@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-/** Listings folded into Print — decide/accept now lives there. */
+/** Listings folded into Review. */
 export default function StudioListingsRedirectPage() {
-  redirect("/partner/studio/print");
+  redirect("/partner/review");
 }
