@@ -14,13 +14,9 @@ export function resolveOrderConfirmationReplyTo(
     return getIslandSproutsSupportEmail();
   }
 
-  const allSweetoh = productCategories.every(
-    (category) => category === "sweetoh_creations",
-  );
-
-  return allSweetoh
-    ? getSweetohSupportEmail()
-    : getIslandSproutsSupportEmail();
+  // sweetoh-os carts always reply via Sweet'Oh support.
+  void productCategories;
+  return getSweetohSupportEmail() ?? getIslandSproutsSupportEmail();
 }
 
 export async function getOrderConfirmationReplyToForProducts(input: {

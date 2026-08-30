@@ -23,9 +23,9 @@ export function AddToCartButton(props: AddToCartButtonProps) {
         setAdded(true);
         setTimeout(() => setAdded(false), 1500);
       }}
-      className="w-full rounded bg-rose-700 px-4 py-2 text-sm font-medium text-white hover:bg-rose-800"
+      className="so-btn-primary w-full"
     >
-      {added ? "Added!" : "Add to cart"}
+      {added ? "Added" : "Add to cart"}
     </button>
   );
 }

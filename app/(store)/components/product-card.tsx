@@ -18,26 +18,34 @@ export function ProductCard({
   imageUrl,
 }: ProductCardProps) {
   return (
-    <div className="flex flex-col overflow-hidden rounded-lg border border-neutral-200 bg-white">
-      <Link href={`/products/${slug}`} className="aspect-square bg-neutral-100">
+    <article className="group flex flex-col">
+      <Link
+        href={`/products/${slug}`}
+        className="relative aspect-[4/5] overflow-hidden"
+        style={{ background: "var(--so-surface)" }}
+      >
         {imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={imageUrl} alt={name} className="h-full w-full object-cover" />
+          <img
+            src={imageUrl}
+            alt={name}
+            className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+          />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-xs text-neutral-400">
-            No image yet
+          <div className="flex h-full w-full items-center justify-center text-xs so-muted">
+            Image coming
           </div>
         )}
       </Link>
-      <div className="flex flex-1 flex-col gap-3 p-3">
-        <div>
+      <div className="flex flex-1 flex-col gap-3 pt-4">
+        <div className="space-y-1">
           <Link
             href={`/products/${slug}`}
-            className="text-sm font-medium text-neutral-900 hover:underline"
+            className="so-link block text-sm font-medium text-[color:var(--so-cream)]"
           >
             {name}
           </Link>
-          <p className="text-sm text-neutral-600">{formatPrice(priceCents)}</p>
+          <p className="text-sm so-muted">{formatPrice(priceCents)}</p>
         </div>
         <div className="mt-auto">
           <AddToCartButton
@@ -49,6 +57,6 @@ export function ProductCard({
           />
         </div>
       </div>
-    </div>
+    </article>
   );
 }

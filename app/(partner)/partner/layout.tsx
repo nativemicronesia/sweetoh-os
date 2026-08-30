@@ -37,7 +37,7 @@ export default async function PartnerLayout({
         <StudioChat />
 
         <main className="flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-4xl px-6 py-8">{children}</div>
+          <div className="mx-auto max-w-5xl px-6 py-8">{children}</div>
         </main>
       </div>
     </div>

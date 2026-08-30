@@ -1,7 +1,9 @@
 import {
   createCustomerRequestImageUpload,
+  getAssetById,
   getAssetSignedUrl,
 } from "@/lib/domains/assets/service";
+import { getPrimaryProductImageBuffer } from "@/lib/domains/catalog/service";
 import { createStudioProject, addStudioProjectAsset } from "@/lib/domains/studio/service";
 import { sendCustomRequestReceivedEmail } from "@/lib/integrations/email/resend";
 import { aiOutputAuditFields } from "@/lib/domains/audit/output";
@@ -11,8 +13,14 @@ import { aiCustomerAuditFields } from "@/lib/domains/audit/user";
 import { recordAuditEvent } from "@/lib/domains/audit/service";
 import { isMockAiEnabled, isOpenAiConfigured } from "@/lib/config/env";
 import { ValidationError } from "@/lib/shared/errors";
+import { downloadFromBucket } from "@/lib/storage/client";
 import { generateProductDraft } from "./product-builder";
-import { generateProductMockup } from "./mockup-builder";
+import {
+  composeBlankMockup,
+  generateProductMockup,
+} from "./mockup-builder";
+
+export type StudioDesignMode = "ai" | "upload" | "library" | "place";
 
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -31,10 +39,14 @@ function buildCustomerNotes(input: {
   email: string;
   customerName: string | null;
   prompt: string;
+  designMode: StudioDesignMode;
+  blankProductName: string | null;
   aiSummary?: string | null;
 }): string {
   return [
-    "Customer customization request (submitted via /create)",
+    "Customer Studio design (submitted via /studio)",
+    `Mode: ${input.designMode}`,
+    input.blankProductName ? `Blank: ${input.blankProductName}` : null,
     `Contact: ${input.customerName ?? input.email}`,
     `Email: ${input.email}`,
     "",
@@ -48,8 +60,44 @@ function buildCustomerNotes(input: {
     .join("\n");
 }
 
+function buildMockupPrompt(input: {
+  prompt: string;
+  blankProductName: string | null;
+  designMode: StudioDesignMode;
+  hasBlankImage: boolean;
+  hasDesignImage: boolean;
+}): string {
+  const blank = input.blankProductName?.trim() || "print-on-demand product";
+
+  if (input.designMode === "ai") {
+    if (input.hasBlankImage) {
+      return [
+        `Edit this blank ${blank} into a photorealistic ecommerce catalog mockup.`,
+        `Apply this custom design onto the printable area naturally (print texture, slight fabric wrap, correct perspective): ${input.prompt}.`,
+        "Keep the product shape, color, and framing. Soft studio lighting. No watermarks, no text overlays, no extra props.",
+      ].join(" ");
+    }
+    return `Photorealistic ecommerce mockup of a ${blank} featuring this design: ${input.prompt}. Soft studio lighting, centered, catalog style. No watermarks.`;
+  }
+
+  if (input.hasBlankImage && input.hasDesignImage) {
+    return [
+      `Use the first image as the blank ${blank} and the second as the artwork.`,
+      "Place the artwork cleanly on the printable area with realistic print texture and perspective.",
+      "Keep product shape and color. Soft studio lighting, ecommerce catalog style. No watermarks.",
+      input.prompt ? `Customer notes: ${input.prompt}` : null,
+    ]
+      .filter(Boolean)
+      .join(" ");
+  }
+
+  return `Photorealistic product mockup of a ${blank} with the provided artwork applied cleanly on the printable area. Soft studio lighting, centered, ecommerce catalog style. ${input.prompt}`.trim();
+}
+
 /**
- * Guest /create flow — saves to Sweet'Oh Studio (studio_project). OpenAI is optional.
+ * Guest Studio flow — blank + AI / upload / library / place → mockup preview.
+ * Saves to Sweet'Oh Studio (studio_project). OpenAI is optional; upload/library
+ * still work via sharp composite when generation is unavailable.
  */
 export async function submitCustomerCustomizationRequest(input: {
   ventureId: string;
@@ -57,22 +105,67 @@ export async function submitCustomerCustomizationRequest(input: {
   customerEmail: string;
   customerName?: string | null;
   prompt: string;
+  designMode?: StudioDesignMode;
+  blankProductName?: string | null;
+  blankProductId?: string | null;
+  libraryAssetId?: string | null;
   referenceImage?: {
     file: Buffer;
     filename: string;
     mimeType: string;
   } | null;
 }) {
-  const prompt = input.prompt.trim();
+  const designMode: StudioDesignMode = input.designMode ?? "ai";
+  const blankProductName = input.blankProductName?.trim() || null;
+  const blankProductId = input.blankProductId?.trim() || null;
+  let prompt = input.prompt.trim();
   const email = input.customerEmail.trim().toLowerCase();
   const customerName = input.customerName?.trim() || null;
 
-  if (!prompt) {
-    throw new ValidationError("Describe what you would like to create.");
-  }
-
   if (!email || !isValidEmail(email)) {
     throw new ValidationError("A valid email address is required.");
+  }
+
+  let referenceImage = input.referenceImage ?? null;
+
+  if (designMode === "library") {
+    if (!input.libraryAssetId?.trim()) {
+      throw new ValidationError("Pick a design from the Sweet'Oh library.");
+    }
+    const libraryAsset = await getAssetById({
+      ventureId: input.ventureId,
+      assetId: input.libraryAssetId,
+    });
+    if (libraryAsset.assetType !== "sweetoh_design" || libraryAsset.status !== "approved") {
+      throw new ValidationError("That library design isn't available.");
+    }
+    const bytes = await downloadFromBucket({
+      bucket: libraryAsset.bucket,
+      objectKey: libraryAsset.objectKey,
+    });
+    referenceImage = {
+      file: bytes,
+      filename: `${libraryAsset.name || "library-design"}.png`,
+      mimeType: libraryAsset.mimeType || "image/png",
+    };
+    if (!prompt) {
+      prompt = `Apply library design "${libraryAsset.name}" to the selected blank.`;
+    }
+  } else if (designMode === "upload" || designMode === "place") {
+    if (!referenceImage) {
+      throw new ValidationError(
+        designMode === "place"
+          ? "Place your design on the blank, then export a preview."
+          : "Upload a design image to place on your blank.",
+      );
+    }
+    if (!prompt) {
+      prompt = blankProductName
+        ? `Customer artwork for ${blankProductName}.`
+        : "Customer uploaded artwork for a print-on-demand blank.";
+    }
+  } else if (!prompt) {
+    throw new ValidationError("Describe what you would like to create.");
   }
 
   let projectName = `Request: ${summarizePrompt(prompt)}`;
@@ -80,7 +173,7 @@ export async function submitCustomerCustomizationRequest(input: {
   let aiOutput: Awaited<ReturnType<typeof generateProductDraft>>["output"] | null =
     null;
 
-  if (isOpenAiConfigured() || isMockAiEnabled()) {
+  if (designMode === "ai" && (isOpenAiConfigured() || isMockAiEnabled())) {
     try {
       const { output } = await generateProductDraft({ prompt });
       aiOutput = output;
@@ -99,12 +192,20 @@ export async function submitCustomerCustomizationRequest(input: {
     } catch {
       // Launch path: raw customer request still saves when AI is unavailable.
     }
+  } else if (designMode === "library") {
+    projectName = `Customize: ${summarizePrompt(prompt)}`;
+  } else if (designMode === "place") {
+    projectName = `Placed: ${summarizePrompt(prompt)}`;
+  } else if (designMode === "upload") {
+    projectName = `Upload: ${summarizePrompt(prompt)}`;
   }
 
   const notes = buildCustomerNotes({
     email,
     customerName,
     prompt,
+    designMode,
+    blankProductName,
     aiSummary,
   });
 
@@ -124,14 +225,14 @@ export async function submitCustomerCustomizationRequest(input: {
     projectId: project.id,
   });
 
-  if (input.referenceImage) {
+  if (referenceImage) {
     const asset = await createCustomerRequestImageUpload({
       ventureId: input.ventureId,
       ventureSlug: input.ventureSlug,
       studioProjectId: project.id,
-      file: input.referenceImage.file,
-      filename: input.referenceImage.filename,
-      mimeType: input.referenceImage.mimeType,
+      file: referenceImage.file,
+      filename: referenceImage.filename,
+      mimeType: referenceImage.mimeType,
     });
 
     await addStudioProjectAsset({
@@ -143,25 +244,67 @@ export async function submitCustomerCustomizationRequest(input: {
     });
   }
 
-  // Generated mockup preview — the /create flow's whole point. Gracefully
-  // skipped (not thrown) when AI is unavailable, same "raw request still
-  // saves" posture as the text-draft enrichment above; the caller shows an
-  // "unavailable" state rather than a hard error.
-  let mockupPreviewUrl: string | null = null;
-  const mockupImage = await generateProductMockup({
-    prompt,
-    referenceImageBuffer: input.referenceImage?.file,
-    referenceImageMimeType: input.referenceImage?.mimeType,
-  }).catch(() => null);
+  const blankImageBuffer = blankProductId
+    ? await getPrimaryProductImageBuffer(blankProductId)
+    : null;
 
-  if (mockupImage) {
+  let mockupPreviewUrl: string | null = null;
+  let mockupBytes: Buffer | null = null;
+  let mockupMime = "image/png";
+  let mockupSource: "place" | "composite" | "ai" | "reference" | null = null;
+
+  // Canvas "Place" export is already blank+design — keep placement fidelity.
+  if (designMode === "place" && referenceImage) {
+    mockupBytes = referenceImage.file;
+    mockupMime = referenceImage.mimeType || "image/png";
+    mockupSource = "place";
+  } else {
+    const mockupPrompt = buildMockupPrompt({
+      prompt,
+      blankProductName,
+      designMode,
+      hasBlankImage: Boolean(blankImageBuffer),
+      hasDesignImage: Boolean(referenceImage),
+    });
+
+    const aiMockup = await generateProductMockup({
+      prompt: mockupPrompt,
+      referenceImageBuffer: referenceImage?.file,
+      referenceImageMimeType: referenceImage?.mimeType,
+      blankImageBuffer: blankImageBuffer ?? undefined,
+      blankImageMimeType: blankImageBuffer ? "image/png" : undefined,
+    }).catch(() => null);
+
+    if (aiMockup) {
+      mockupBytes = aiMockup;
+      mockupSource = "ai";
+    } else if (blankImageBuffer && referenceImage) {
+      try {
+        mockupBytes = await composeBlankMockup({
+          blankImageBuffer,
+          designBuffer: referenceImage.file,
+        });
+        mockupSource = "composite";
+      } catch {
+        mockupBytes = referenceImage.file;
+        mockupMime = referenceImage.mimeType || "image/png";
+        mockupSource = "reference";
+      }
+    } else if (referenceImage) {
+      mockupBytes = referenceImage.file;
+      mockupMime = referenceImage.mimeType || "image/png";
+      mockupSource = "reference";
+    }
+  }
+
+  if (mockupBytes) {
     const mockupAsset = await createCustomerRequestImageUpload({
       ventureId: input.ventureId,
       ventureSlug: input.ventureSlug,
       studioProjectId: project.id,
-      file: mockupImage,
+      file: mockupBytes,
       filename: "mockup.png",
-      mimeType: "image/png",
+      mimeType: mockupMime,
     });
 
     await addStudioProjectAsset({
@@ -187,8 +330,14 @@ export async function submitCustomerCustomizationRequest(input: {
     metadata: {
       customerEmail: email,
       customerName,
+      designMode,
+      blankProductName,
+      blankProductId,
+      mockupSource,
       aiEnriched: Boolean(aiOutput),
-      hasReferenceImage: Boolean(input.referenceImage),
+      hasReferenceImage: Boolean(referenceImage),
+      hasBlankImage: Boolean(blankImageBuffer),
+      libraryAssetId: input.libraryAssetId ?? null,
       ...aiPromptAuditFields({ prompt }),
       ...(aiOutput ? aiOutputAuditFields({ output: aiOutput }) : {}),
       ...aiTimestampAuditFields(),

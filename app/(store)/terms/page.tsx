@@ -14,7 +14,7 @@ export default function TermsPage() {
         confirm details where required. Prices and turnaround times are shown at checkout
         or in follow-up email.
       </p>
-      <p className="text-xs text-neutral-400">
+      <p className="text-xs so-muted">
         Placeholder pending legal review.
       </p>
     </StaticPage>

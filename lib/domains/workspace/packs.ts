@@ -81,7 +81,12 @@ const NAV_PRODUCTS: WorkspaceNavItem = {
   label: "Products",
   href: "/partner/products",
   note: "Your live catalog",
-  matchPrefixes: ["/partner/products", "/partner/uploads"],
+  matchPrefixes: [
+    "/partner/products",
+    "/partner/uploads",
+    "/partner/library",
+    "/partner/canvas",
+  ],
 };
 
 const NAV_SETTINGS: WorkspaceNavItem = {

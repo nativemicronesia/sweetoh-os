@@ -56,9 +56,12 @@ export default async function PartnerCreatePage({
           Create
         </h1>
         <p className="mt-1 text-sm" style={{ color: "var(--so-cream-dim)" }}>
-          {pack.id === "sweetoh_creator"
-            ? "Photograph a piece or describe it. Sweet'Oh AI drafts the listing — then submit it for review."
-            : "Photograph a piece or describe it. Sweet'Oh AI drafts the listing — you confirm price and publish."}
+          Photograph a piece or describe it. Sweet&apos;Oh AI drafts the listing —
+          photos also land in your{" "}
+          <Link href="/partner/library" className="underline" style={{ color: "var(--so-gold)" }}>
+            Design library
+          </Link>{" "}
+          for Studio.
         </p>
       </div>
 
@@ -210,11 +213,18 @@ export default async function PartnerCreatePage({
             : "No open drafts"}
         </Link>
         <Link
-          href="/create"
+          href="/partner/library"
           className="underline"
           style={{ color: "var(--so-cream-dim)" }}
         >
-          AI product builder (same one customers use)
+          Design library
+        </Link>
+        <Link
+          href="/studio"
+          className="underline"
+          style={{ color: "var(--so-cream-dim)" }}
+        >
+          Customer Studio
         </Link>
       </div>
     </div>

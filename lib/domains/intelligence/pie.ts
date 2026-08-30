@@ -1,4 +1,6 @@
+import { uploadPartnerDesign } from "@/lib/domains/catalog/partner-design-library";
 import { ValidationError } from "@/lib/shared/errors";
+import { logger } from "@/lib/shared/logger";
 import { assertPieImageIntakeReady } from "./pie-readiness";
 import { runProductIntelligenceIntake } from "./product-intelligence-service";
 import {
@@ -24,6 +26,11 @@ export type PieDraftInput = {
   } | null;
   /** When set (owner multi-column UI), skip resolvePieInputMode inference. */
   enforcedMode?: PieInputMode | null;
+  /**
+   * Also copy the source photo into the sweetoh_design library for Studio /
+   * Canvas. Partner/owner typically auto-approve; creators leave as draft.
+   */
+  libraryAutoApprove?: boolean;
 };
 
 export function resolvePieInputMode(input: {
@@ -110,7 +117,7 @@ export async function createPieProductDraft(input: PieDraftInput) {
     mimeType: file.mimeType,
   });
 
-  return createProductDraftFromVisualIntake({
+  const product = await createProductDraftFromVisualIntake({
     ventureId: input.ventureId,
     ventureSlug: input.ventureSlug,
     actorUserId: input.actorUserId,
@@ -120,4 +127,27 @@ export async function createPieProductDraft(input: PieDraftInput) {
     textPrompt,
     inputMode: mode,
   });
+
+  // Partner create → design library so customers can place this artwork in Studio.
+  try {
+    await uploadPartnerDesign({
+      ventureId: input.ventureId,
+      ventureSlug: input.ventureSlug,
+      uploadedById: input.actorUserId,
+      name: product.name,
+      notes: `From partner create (visual intake) — draft ${product.id}`,
+      file: Buffer.from(file.buffer),
+      filename: file.filename,
+      mimeType: file.mimeType,
+      autoApprove: Boolean(input.libraryAutoApprove),
+    });
+  } catch (error) {
+    logger.warn("pie_library_design_save_failed", {
+      ventureId: input.ventureId,
+      productId: product.id,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+
+  return product;
 }

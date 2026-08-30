@@ -41,12 +41,15 @@ transaction mode (`:6543`) is fine for the app at runtime.
 
 1. `/` → Create CTA + featured products  
 2. `/products` → list → `/products/{slug}` → add to cart  
-3. `/create` → design preview → cart (needs ≥1 active base product)  
+3. `/studio` → blank → AI / upload / library / place → mockup → cart (blank-aware composite; Place keeps canvas layout)  
 4. Checkout → Stripe → success → order email (if Resend set)  
 5. `/partner/login` → Overview → `/partner/create` → `/partner/review` → publish/submit  
-6. Studio chat bar: "what's waiting on me?" (read), then a real write; confirm it lands in the DB  
-7. From NMH: `/canvas/web` → attach brand ref → chat Dekaz → mission on `sweetoh-os`  
-8. Orders: `/partner/orders` (Catalog and Custom tabs) when fulfillment is needed  
+6. Storefront: `/collections` → Kids / Apparel / … → product grid  
+7. `/partner/library` → upload / approve → `/partner/canvas` place+rotate → save  
+8. `/partner/create` photo → draft + design appears in library → Studio Place mode  
+9. Studio chat bar: "what's waiting on me?" (read), then a real write; confirm it lands in the DB  
+10. From NMH: `/canvas/web` → attach brand ref → chat Dekaz → mission on `sweetoh-os`  
+11. Orders: `/partner/orders` (Catalog and Custom tabs) when fulfillment is needed  
 
 ## Explicitly later
 

@@ -1,4 +1,8 @@
 import {
+  AUTOMATIC_COLLECTIONS,
+  type ProductCategory,
+} from "@/lib/domains/catalog";
+import {
   getStorefrontNavCollections,
   listActiveProducts,
 } from "@/lib/domains/catalog/service";
@@ -19,12 +23,9 @@ export type OloStorefrontContext = {
   productCount: number;
 };
 
-const COLLECTION_HINTS: Record<string, string> = {
-  "baby-me": "Baby + Me — essentials for little ones and caregivers.",
-  "toys-and-sensory": "Toys & Sensory — playful, sensory-friendly picks.",
-  "sweetoh-creations": "Sweet'Oh Creations — personalized gifts and apparel.",
-  "island-sprouts-originals": "Island Sprouts Originals — signature designs from the brand.",
-};
+const COLLECTION_HINTS: Record<string, string> = Object.fromEntries(
+  AUTOMATIC_COLLECTIONS.map((item) => [item.slug, item.blurb]),
+);
 
 function normalizeQuestion(input: string): string {
   return input.trim().toLowerCase();
@@ -53,20 +54,22 @@ export async function getOloGuideResponse(
 
   if (
     normalized.includes("collection") ||
+    normalized.includes("categor") ||
     normalized.includes("shop") ||
-    normalized.includes("browse")
+    normalized.includes("browse") ||
+    normalized.includes("aisle")
   ) {
     if (collections.length === 0) {
       return {
         reply:
-          "Collections will appear here once products are published. Check back soon or browse all products.",
-        suggestions: [{ label: "All products", href: "/collections" }],
+          "Categories will appear here once products are published. Check back soon or browse all products.",
+        suggestions: [{ label: "All products", href: "/products" }],
       };
     }
 
     const names = collections.map((item) => item.name).join(", ");
     return {
-      reply: `You can explore ${names}. Each collection groups related products for easier discovery.`,
+      reply: `Sweet'Oh prints across ${names}. Pick a category to browse blanks and designs.`,
       suggestions: collections.map((item) => ({
         label: item.name,
         href: `/collections/${item.slug}`,
@@ -79,30 +82,30 @@ export async function getOloGuideResponse(
     (normalized.includes("request") ||
       normalized.includes("work") ||
       normalized.includes("submit") ||
-      normalized.includes("create"))
+      normalized.includes("create") ||
+      normalized.includes("design"))
   ) {
     return {
       reply:
-        "Custom Sweet'Oh requests start on the Create page — describe your idea, optional reference image, and our team reviews it before anything is produced or charged.",
+        "Custom designs start on Create — describe your idea, optional reference image, and we'll preview a mockup before anything is produced.",
       suggestions: [
-        { label: "Request a custom design", href: "/create" },
-        { label: "Sweet'Oh Creations", href: "/collections/sweetoh-creations" },
+        { label: "Open Studio", href: "/studio" },
+        { label: "Custom aisle", href: "/collections/custom" },
       ],
     };
   }
 
   if (
-    normalized.includes("sweet") ||
-    normalized.includes("custom") ||
-    normalized.includes("personal")
+    normalized.includes("kids") ||
+    normalized.includes("baby") ||
+    normalized.includes("toddler")
   ) {
-    const sweetoh = collections.find((item) => item.slug === "sweetoh-creations");
     return {
-      reply:
-        "Sweet'Oh Creations are personalized items made through our studio workflow. Browse the collection for current offerings.",
-      suggestions: sweetoh
-        ? [{ label: "Sweet'Oh Creations", href: `/collections/${sweetoh.slug}` }]
-        : [{ label: "Collections", href: "/collections" }],
+      reply: "Kids gear lives in its own aisle — onesies, youth tees, and littles' prints.",
+      suggestions: [
+        { label: "Kids", href: "/collections/kids" },
+        { label: "Open Studio", href: "/studio" },
+      ],
     };
   }
 
@@ -113,7 +116,7 @@ export async function getOloGuideResponse(
   ) {
     return {
       reply:
-        "Shipping and returns policies are on our help pages. Physical items ship after production or supplier fulfillment.",
+        "Shipping and returns policies are on our help pages. Physical items ship after production.",
       suggestions: [
         { label: "Shipping", href: "/shipping" },
         { label: "Returns", href: "/returns" },
@@ -124,17 +127,17 @@ export async function getOloGuideResponse(
   if (products.length === 0) {
     return {
       reply:
-        "The catalog is still being set up. Ask about collections, shipping, or Sweet'Oh Creations — or check back when new products are live.",
+        "The catalog is still being set up. Ask about categories, shipping, or creating a custom design.",
       suggestions: [
-        { label: "Collections", href: "/collections" },
-        { label: "About", href: "/about" },
+        { label: "Shop categories", href: "/collections" },
+        { label: "Open Studio", href: "/studio" },
       ],
     };
   }
 
   const matches = products
     .filter((product) => {
-      const haystack = `${product.name} ${product.shortDescription ?? ""} ${product.description ?? ""}`.toLowerCase();
+      const haystack = `${product.name} ${product.shortDescription ?? ""} ${product.description ?? ""} ${(product.category as ProductCategory) ?? ""}`.toLowerCase();
       return normalized
         .split(/\s+/)
         .filter((word) => word.length > 3)
@@ -159,7 +162,7 @@ export async function getOloGuideResponse(
   }));
 
   return {
-    reply: `Island Sprouts has ${products.length} active product${products.length === 1 ? "" : "s"} across ${collections.length || "several"} collection${collections.length === 1 ? "" : "s"}. Try browsing a collection or one of these picks.`,
+    reply: `Sweet'Oh has ${products.length} active product${products.length === 1 ? "" : "s"} across ${collections.length} categor${collections.length === 1 ? "y" : "ies"}. Browse an aisle or one of these picks.`,
     suggestions: [
       ...featured.map((product) => ({
         label: product.name,
@@ -174,16 +177,10 @@ export function getOloCollectionHint(slug: string): string | undefined {
   return COLLECTION_HINTS[slug];
 }
 
-const STORE_STARTER_QUESTIONS = [
-  "What collections can I browse?",
-  "Show me Sweet'Oh Creations",
-  "Where are shipping and returns?",
-  "What products do you have?",
-];
-
 const SWEETOH_STARTER_QUESTIONS = [
-  "How do custom requests work?",
-  "Show me Sweet'Oh Creations",
+  "What categories can I browse?",
+  "Show me kids products",
+  "How do custom designs work?",
   "Where are shipping and returns?",
 ];
 

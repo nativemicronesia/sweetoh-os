@@ -42,7 +42,11 @@ import {
   resolveInactiveDraftStatus,
   type ProductDraftStatus,
 } from "./draft-status";
-import { productMediaPublicUrl, uploadToBucket } from "@/lib/storage/client";
+import {
+  downloadFromBucket,
+  productMediaPublicUrl,
+  uploadToBucket,
+} from "@/lib/storage/client";
 import {
   productMediaObjectKey,
   STORAGE_BUCKETS,
@@ -102,6 +106,24 @@ export async function getPrimaryProductImageUrl(
   const primary = media[0];
 
   return primary?.objectKey ? productMediaPublicUrl(primary.objectKey) : null;
+}
+
+/** Bytes for the blank's primary catalog image — used by Studio mockup compositing. */
+export async function getPrimaryProductImageBuffer(
+  productId: string,
+): Promise<Buffer | null> {
+  const media = await getProductMedia(productId);
+  const primary = media[0];
+  if (!primary?.objectKey) return null;
+
+  try {
+    return await downloadFromBucket({
+      bucket: STORAGE_BUCKETS.productMedia,
+      objectKey: primary.objectKey,
+    });
+  } catch {
+    return null;
+  }
 }
 
 async function countProductMedia(productId: string): Promise<number> {
@@ -1342,7 +1364,7 @@ export async function getStorefrontNavCollections(ventureId: string) {
   const collections = await listCollections(ventureId);
   const collectionBySlug = new Map(collections.map((item) => [item.slug, item]));
 
-  const counts = await Promise.all(
+  return Promise.all(
     AUTOMATIC_COLLECTIONS.map(async (item) => {
       const row = collectionBySlug.get(item.slug);
       const activeCount = row
@@ -1358,8 +1380,25 @@ export async function getStorefrontNavCollections(ventureId: string) {
       };
     }),
   );
+}
 
-  return counts.filter((item) => item.category !== "originals" || item.activeCount > 0);
+export async function listActiveProductsByCategory(input: {
+  ventureId: string;
+  category: ProductCategory;
+}) {
+  const db = getDb();
+
+  return db
+    .select()
+    .from(product)
+    .where(
+      and(
+        eq(product.ventureId, input.ventureId),
+        eq(product.category, input.category),
+        eq(product.active, true),
+      ),
+    )
+    .orderBy(desc(product.updatedAt));
 }
 
 export async function upsertAutomaticCollection(input: {

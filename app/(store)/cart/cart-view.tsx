@@ -9,24 +9,38 @@ export function CartView() {
 
   if (items.length === 0) {
     return (
-      <div className="space-y-4">
-        <h1 className="text-2xl font-semibold">Cart</h1>
-        <p className="text-sm text-neutral-500">Your cart is empty.</p>
-        <Link href="/products" className="text-sm text-rose-700 hover:underline">
-          Continue shopping
+      <div className="mx-auto w-full max-w-6xl space-y-6 px-5 py-12 sm:px-8 sm:py-16">
+        <p className="so-eyebrow">Cart</p>
+        <h1 className="so-display text-3xl text-[color:var(--so-cream)] sm:text-4xl">
+          Your cart is empty
+        </h1>
+        <Link href="/collections" className="so-btn-primary inline-flex">
+          Shop
         </Link>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Cart</h1>
+    <div className="mx-auto w-full max-w-6xl space-y-8 px-5 py-12 sm:px-8 sm:py-16">
+      <div>
+        <p className="so-eyebrow">Cart</p>
+        <h1 className="so-display mt-3 text-3xl text-[color:var(--so-cream)] sm:text-4xl">
+          Ready to print
+        </h1>
+      </div>
 
-      <ul className="divide-y divide-neutral-200 rounded-lg border border-neutral-200 bg-white">
+      <ul className="divide-y" style={{ borderColor: "var(--so-border)" }}>
         {items.map((item) => (
-          <li key={item.productId} className="flex items-center gap-4 px-6 py-4">
-            <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded bg-neutral-100">
+          <li
+            key={item.productId}
+            className="flex flex-wrap items-center gap-4 border-t py-5"
+            style={{ borderColor: "var(--so-border)" }}
+          >
+            <div
+              className="h-20 w-20 flex-shrink-0 overflow-hidden"
+              style={{ background: "var(--so-surface)" }}
+            >
               {item.imageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -37,9 +51,9 @@ export function CartView() {
               ) : null}
             </div>
 
-            <div className="flex-1">
-              <p className="font-medium text-neutral-900">{item.name}</p>
-              <p className="text-sm text-neutral-500">{formatPrice(item.priceCents)}</p>
+            <div className="min-w-[10rem] flex-1">
+              <p className="font-medium text-[color:var(--so-cream)]">{item.name}</p>
+              <p className="text-sm so-muted">{formatPrice(item.priceCents)}</p>
             </div>
 
             <input
@@ -49,17 +63,18 @@ export function CartView() {
               onChange={(event) =>
                 setQuantity(item.productId, Number(event.target.value))
               }
-              className="w-16 rounded border border-neutral-300 px-2 py-1 text-sm"
+              className="w-16 border bg-transparent px-2 py-1 text-sm text-[color:var(--so-cream)]"
+              style={{ borderColor: "var(--so-border)" }}
             />
 
-            <p className="w-20 text-right text-sm font-medium">
+            <p className="w-20 text-right text-sm font-medium text-[color:var(--so-cream)]">
               {formatPrice(item.priceCents * item.quantity)}
             </p>
 
             <button
               type="button"
               onClick={() => removeItem(item.productId)}
-              className="text-sm text-neutral-400 hover:text-red-700"
+              className="text-sm so-muted hover:text-[color:var(--so-gold)]"
             >
               Remove
             </button>
@@ -67,15 +82,17 @@ export function CartView() {
         ))}
       </ul>
 
-      <div className="flex items-center justify-between rounded-lg border border-neutral-200 bg-white px-6 py-4">
-        <p className="text-sm text-neutral-600">Subtotal</p>
-        <p className="text-lg font-semibold">{formatPrice(subtotalCents)}</p>
+      <div
+        className="flex items-center justify-between border px-6 py-4"
+        style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}
+      >
+        <p className="text-sm so-muted">Subtotal</p>
+        <p className="text-lg font-semibold text-[color:var(--so-cream)]">
+          {formatPrice(subtotalCents)}
+        </p>
       </div>
 
-      <Link
-        href="/checkout"
-        className="block w-full rounded bg-rose-700 px-6 py-3 text-center text-sm font-medium text-white hover:bg-rose-800"
-      >
+      <Link href="/checkout" className="so-btn-primary block w-full text-center">
         Proceed to checkout
       </Link>
     </div>

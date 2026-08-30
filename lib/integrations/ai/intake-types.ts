@@ -26,8 +26,10 @@ export type VisualIntakeAnalyzer = (
 ) => Promise<{ output: VisualIntakeOutput; rawResponse: unknown }>;
 
 export const VISUAL_INTAKE_CATEGORIES: ProductCategory[] = [
-  "baby_me",
-  "toys_sensory",
-  "sweetoh_creations",
-  "originals",
+  "apparel",
+  "kids",
+  "home",
+  "drinkware",
+  "accessories",
+  "custom",
 ];

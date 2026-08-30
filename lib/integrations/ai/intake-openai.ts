@@ -5,10 +5,12 @@ import { ValidationError } from "@/lib/shared/errors";
 import type { VisualIntakeAnalyzer } from "./intake-types";
 
 const CATEGORY_VALUES = [
-  "baby_me",
-  "toys_sensory",
-  "sweetoh_creations",
-  "originals",
+  "apparel",
+  "kids",
+  "home",
+  "drinkware",
+  "accessories",
+  "custom",
 ] as const;
 
 function coerceOptionalString(value: unknown): string | undefined {
@@ -88,7 +90,7 @@ const SYSTEM_PROMPT = `You are the visual intake assistant for Island Sprouts Sw
 
 Analyze a photograph of a physical product (apparel, print, accessory, blank, etc.) and return JSON with:
 - title, description, shortDescription, seoTitle, seoDescription
-- category: one of "baby_me", "toys_sensory", "sweetoh_creations", "originals" (prefer sweetoh_creations for personalized/custom items)
+- category: one of "apparel", "kids", "home", "drinkware", "accessories", "custom" (prefer apparel/kids/home/drinkware/accessories when clear; use custom for one-offs)
 - suggestedTags: 3-8 lowercase keywords
 - suggestedCollections: 1-3 collection name suggestions
 - suggestedPriceCents: recommended retail price in USD cents (integer, e.g. 2499 for $24.99)

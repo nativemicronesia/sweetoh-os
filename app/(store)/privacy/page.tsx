@@ -12,7 +12,7 @@ export default function PrivacyPage() {
         Payment processing is handled by Stripe. We do not store full card numbers on our
         servers. We may use email providers to send order and request updates.
       </p>
-      <p className="text-xs text-neutral-400">
+      <p className="text-xs so-muted">
         Placeholder pending legal review — replace before public marketing launch if
         required in your jurisdiction.
       </p>

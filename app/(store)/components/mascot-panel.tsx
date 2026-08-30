@@ -57,7 +57,7 @@ export function MascotPanel({ onClose }: { onClose: () => void }) {
 
       <div className="flex-1 space-y-3 overflow-y-auto p-3">
         {turns.length === 0 && (
-          <p className="text-xs text-neutral-500">
+          <p className="text-xs text-neutral-600">
             Ask me about products, sizing, or shipping — I&apos;m happy to help.
           </p>
         )}
@@ -66,19 +66,19 @@ export function MascotPanel({ onClose }: { onClose: () => void }) {
             key={index}
             className={`max-w-[85%] rounded-xl px-3 py-2 text-sm ${
               turn.role === "user"
-                ? "ml-auto bg-white text-neutral-900"
-                : "bg-neutral-100 text-neutral-800"
+                ? "ml-auto bg-[color:var(--so-dark)] text-[color:var(--so-cream)]"
+                : "bg-white text-neutral-800"
             }`}
           >
             {turn.content}
           </div>
         ))}
         {pending && (
-          <div className="max-w-[85%] rounded-xl bg-neutral-100 px-3 py-2 text-sm text-neutral-400">
+          <div className="max-w-[85%] rounded-xl bg-white px-3 py-2 text-sm text-neutral-500">
             Thinking…
           </div>
         )}
-        {error && <p className="text-xs text-rose-600">{error}</p>}
+        {error && <p className="text-xs text-[color:var(--so-rose)]">{error}</p>}
       </div>
 
       <div className="flex gap-2 border-t p-3" style={{ borderColor: "var(--so-border)" }}>
@@ -89,14 +89,14 @@ export function MascotPanel({ onClose }: { onClose: () => void }) {
             if (event.key === "Enter") send();
           }}
           placeholder="Ask a question…"
-          className="flex-1 rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+          className="flex-1 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
         />
         <button
           type="button"
           onClick={send}
           disabled={pending || !input.trim()}
-          className="rounded-lg px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
-          style={{ background: "var(--so-black)" }}
+          className="rounded-lg px-3 py-2 text-sm font-medium disabled:opacity-50"
+          style={{ background: "var(--so-gold)", color: "var(--so-black)" }}
         >
           Send
         </button>

@@ -1,7 +1,9 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { isAiProductBuilderConfigured } from "@/lib/config/env";
+import { canModerateListings } from "@/lib/domains/catalog/partner-listings";
 import {
   createPieProductDraft,
   describePieInputMode,
@@ -11,6 +13,15 @@ import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
 import { getActionErrorMessage } from "@/lib/shared/action-errors";
 
 const CREATE_PATH = "/partner/create";
+
+function isNextRedirect(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "digest" in error &&
+    String((error as { digest?: unknown }).digest).startsWith("NEXT_REDIRECT")
+  );
+}
 
 function redirectPartnerPieError(message: string): never {
   redirect(`${CREATE_PATH}?error=${encodeURIComponent(message)}`);
@@ -37,6 +48,7 @@ export async function generatePartnerPieDraftAction(
       ventureSlug: session.ventureSlug,
       actorUserId: session.appUser.id,
       textPrompt,
+      libraryAutoApprove: canModerateListings(session),
     });
 
     redirect(
@@ -45,6 +57,7 @@ export async function generatePartnerPieDraftAction(
       )}`,
     );
   } catch (error) {
+    if (isNextRedirect(error)) throw error;
     redirectPartnerPieError(getActionErrorMessage(error));
   }
 }
@@ -70,6 +83,7 @@ export async function generatePartnerPieIntakeAction(
       ).trim() || null;
     const file = formData.get("file");
     const hasImage = file instanceof File && file.size > 0;
+    const libraryAutoApprove = canModerateListings(session);
 
     const mode = resolvePieInputMode({ textPrompt, hasImage });
 
@@ -87,6 +101,7 @@ export async function generatePartnerPieIntakeAction(
           filename: uploadFile.name,
           mimeType: uploadFile.type || "image/jpeg",
         },
+        libraryAutoApprove,
       });
     } else {
       product = await createPieProductDraft({
@@ -94,17 +109,29 @@ export async function generatePartnerPieIntakeAction(
         ventureSlug: session.ventureSlug,
         actorUserId: session.appUser.id,
         textPrompt,
+        libraryAutoApprove,
       });
     }
+
+    revalidatePath("/partner/library");
+    revalidatePath("/studio");
+    revalidatePath("/partner/canvas");
+
+    const libraryNote = hasImage
+      ? libraryAutoApprove
+        ? " Artwork also saved to your Design library for Studio."
+        : " Artwork saved to Design library as a draft — approve it for Studio."
+      : "";
 
     redirect(
       `/partner/review/${product.id}?success=${encodeURIComponent(
         `Draft "${product.name}" created (${describePieInputMode(
           mode,
-        )}). Review, set price, then publish.`,
+        )}). Review, set price, then publish.${libraryNote}`,
       )}`,
     );
   } catch (error) {
+    if (isNextRedirect(error)) throw error;
     redirectPartnerPieError(getActionErrorMessage(error));
   }
 }

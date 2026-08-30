@@ -4,3 +4,4 @@ node_modules/
 *.tsbuildinfo
 .supabase-db-password
 .vercel
+supabase/.temp/

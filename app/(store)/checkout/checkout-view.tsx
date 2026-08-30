@@ -30,63 +30,86 @@ export function CheckoutView({ stripeReady }: CheckoutViewProps) {
 
   if (items.length === 0) {
     return (
-      <div className="space-y-4">
-        <h1 className="text-2xl font-semibold">Checkout</h1>
-        <p className="text-sm text-neutral-500">Your cart is empty.</p>
-        <Link href="/products" className="text-sm text-rose-700 hover:underline">
-          Continue shopping
+      <div className="mx-auto w-full max-w-6xl space-y-6 px-5 py-12 sm:px-8 sm:py-16">
+        <p className="so-eyebrow">Checkout</p>
+        <h1 className="so-display text-3xl text-[color:var(--so-cream)]">Your cart is empty</h1>
+        <Link href="/collections" className="so-btn-primary inline-flex">
+          Shop
         </Link>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Checkout</h1>
+    <div className="mx-auto w-full max-w-6xl space-y-8 px-5 py-12 sm:px-8 sm:py-16">
+      <div>
+        <p className="so-eyebrow">Checkout</p>
+        <h1 className="so-display mt-3 text-3xl text-[color:var(--so-cream)] sm:text-4xl">
+          Confirm &amp; pay
+        </h1>
+        <p className="mt-2 text-sm so-muted">
+          After payment we print, pack, and ship. Then you wait for the package.
+        </p>
+      </div>
 
       {!stripeReady ? (
-        <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          Checkout is not live yet — Stripe keys are not configured for this
-          deployment. Add STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET to enable
-          payment.
+        <p
+          className="border px-4 py-3 text-sm"
+          style={{
+            borderColor: "var(--so-gold-dim)",
+            background: "rgba(201,168,76,0.08)",
+            color: "var(--so-cream)",
+          }}
+        >
+          Checkout is not live yet — Stripe keys are not configured. Add STRIPE_SECRET_KEY
+          and STRIPE_WEBHOOK_SECRET to enable payment.
         </p>
       ) : null}
 
-      <ul className="divide-y divide-neutral-200 rounded-lg border border-neutral-200 bg-white">
+      <ul className="divide-y border" style={{ borderColor: "var(--so-border)" }}>
         {items.map((item) => (
-          <li key={item.productId} className="flex items-center justify-between px-6 py-4">
+          <li
+            key={item.productId}
+            className="flex items-center justify-between px-5 py-4"
+            style={{ background: "var(--so-dark)" }}
+          >
             <div>
-              <p className="font-medium text-neutral-900">{item.name}</p>
-              <p className="text-sm text-neutral-500">Qty {item.quantity}</p>
+              <p className="font-medium text-[color:var(--so-cream)]">{item.name}</p>
+              <p className="text-sm so-muted">Qty {item.quantity}</p>
             </div>
-            <p className="text-sm font-medium">
+            <p className="text-sm font-medium text-[color:var(--so-cream)]">
               {formatPrice(item.priceCents * item.quantity)}
             </p>
           </li>
         ))}
       </ul>
 
-      <div className="flex items-center justify-between rounded-lg border border-neutral-200 bg-white px-6 py-4">
-        <p className="text-sm text-neutral-600">Total due</p>
-        <p className="text-lg font-semibold">{formatPrice(subtotalCents)}</p>
+      <div
+        className="flex items-center justify-between border px-6 py-4"
+        style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}
+      >
+        <p className="text-sm so-muted">Total due</p>
+        <p className="text-lg font-semibold text-[color:var(--so-cream)]">
+          {formatPrice(subtotalCents)}
+        </p>
       </div>
 
-      {error ? <p className="text-sm text-red-700">{error}</p> : null}
+      {error ? <p className="text-sm text-[color:var(--so-rose)]">{error}</p> : null}
 
       <button
         type="button"
         onClick={handlePay}
         disabled={pending || !stripeReady}
-        className="w-full rounded bg-rose-700 px-6 py-3 text-sm font-medium text-white hover:bg-rose-800 disabled:cursor-not-allowed disabled:opacity-60"
+        className="so-btn-primary w-full disabled:cursor-not-allowed"
       >
-        {pending ? "Redirecting to secure payment..." : "Pay with card"}
+        {pending ? "Redirecting to secure payment…" : "Pay with card"}
       </button>
 
-      <p className="text-center text-xs text-neutral-500">
+      <p className="text-center text-xs so-muted">
         Payment is completed on Stripe&apos;s secure checkout page.
       </p>
 
-      <Link href="/cart" className="block text-center text-sm text-neutral-500 hover:underline">
+      <Link href="/cart" className="so-link block text-center text-sm so-muted">
         Back to cart
       </Link>
     </div>

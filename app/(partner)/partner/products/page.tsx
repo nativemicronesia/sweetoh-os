@@ -39,8 +39,23 @@ export default async function PartnerProductsPage({
             Products
           </h1>
           <p className="mt-1 text-sm" style={{ color: "var(--so-cream-dim)" }}>
-            Published catalog. Facebook stays your customer channel until you share
-            them there.
+            Published catalog.{" "}
+            <Link
+              href="/partner/library"
+              className="underline"
+              style={{ color: "var(--so-gold)" }}
+            >
+              Design library
+            </Link>{" "}
+            ·{" "}
+            <Link
+              href="/partner/canvas"
+              className="underline"
+              style={{ color: "var(--so-gold)" }}
+            >
+              Canvas
+            </Link>
+            . Facebook stays your customer channel until you share them there.
           </p>
         </div>
         <Link

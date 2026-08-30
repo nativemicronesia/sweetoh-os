@@ -63,9 +63,9 @@ export default async function PartnerSettingsPage() {
           Design uploads
         </p>
         <p className="mt-1 text-sm" style={{ color: "var(--so-cream-dim)" }}>
-          Raw design files you upload for the library live under{" "}
-          <Link href="/partner/uploads" className="underline">
-            Uploads
+          Raw design files live in the{" "}
+          <Link href="/partner/library" className="underline">
+            Design library
           </Link>
           .
         </p>

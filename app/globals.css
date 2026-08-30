@@ -1,17 +1,22 @@
 @import "tailwindcss";
 
 :root {
-  /* Sweet'Oh brand tokens */
-  --so-black: #0C0A09;
-  --so-dark: #141210;
-  --so-surface: #1E1A17;
-  --so-border: #2C2620;
-  --so-gold: #C9A84C;
-  --so-gold-dim: #8A6F32;
-  --so-cream: #F5F0E8;
-  --so-cream-dim: #9E9589;
-  --so-rose: #C4677A;
-  --so-rose-dim: #7A3D4A;
+  /* Sweet'Oh brand tokens — luxury Micronesian POD */
+  --so-black: #0a0908;
+  --so-ink: #070605;
+  --so-dark: #12100e;
+  --so-surface: #1a1714;
+  --so-border: #2e2923;
+  --so-gold: #c9a84c;
+  --so-gold-dim: #8a6f32;
+  --so-cream: #f5f0e8;
+  --so-cream-dim: #a89f93;
+  --so-mist: #d4cdc2;
+  --so-rose: #c4677a;
+  --so-rose-dim: #7a3d4a;
+  --so-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --font-display: "Syne", system-ui, sans-serif;
+  --font-body: "Outfit", system-ui, sans-serif;
 }
 
 * {
@@ -21,11 +26,158 @@
 body {
   background: var(--so-black);
   color: var(--so-cream);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: var(--so-dark); }
-::-webkit-scrollbar-thumb { background: var(--so-border); border-radius: 2px; }
+::selection {
+  background: color-mix(in srgb, var(--so-gold) 40%, transparent);
+  color: var(--so-cream);
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: var(--so-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--so-border);
+  border-radius: 2px;
+}
+
+/* Storefront type */
+.so-display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 0.95;
+}
+
+.so-eyebrow {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--so-gold);
+}
+
+.so-muted {
+  color: var(--so-cream-dim);
+}
+
+.so-link {
+  color: var(--so-cream);
+  text-decoration: none;
+  background-image: linear-gradient(var(--so-gold), var(--so-gold));
+  background-size: 0% 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size 0.35s var(--so-ease), color 0.2s ease;
+}
+.so-link:hover {
+  color: var(--so-gold);
+  background-size: 100% 1px;
+}
+
+.so-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.85rem 1.75rem;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 550;
+  letter-spacing: 0.02em;
+  background: var(--so-gold);
+  color: var(--so-black);
+  border: none;
+  transition: transform 0.35s var(--so-ease), background 0.2s ease, opacity 0.2s ease;
+}
+.so-btn-primary:hover {
+  background: color-mix(in srgb, var(--so-gold) 88%, white);
+  transform: translateY(-1px);
+}
+.so-btn-primary:disabled {
+  opacity: 0.5;
+  transform: none;
+}
+
+.so-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.85rem 1.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--so-cream);
+  border: 1px solid color-mix(in srgb, var(--so-cream) 28%, transparent);
+  background: transparent;
+  transition: border-color 0.25s ease, color 0.25s ease, background 0.25s ease;
+}
+.so-btn-ghost:hover {
+  border-color: var(--so-gold);
+  color: var(--so-gold);
+}
+
+/* Hero atmosphere */
+.so-hero-wash {
+  background:
+    radial-gradient(ellipse 80% 60% at 70% 40%, rgba(201, 168, 76, 0.14), transparent 55%),
+    radial-gradient(ellipse 50% 45% at 15% 80%, rgba(80, 120, 130, 0.12), transparent 50%),
+    linear-gradient(165deg, var(--so-ink) 0%, var(--so-dark) 45%, #151210 100%);
+}
+
+.so-grain::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+}
+
+@keyframes so-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes so-drift {
+  from {
+    transform: scale(1.06) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.12) translate3d(-1.5%, 1%, 0);
+  }
+}
+
+.so-animate-in {
+  animation: so-fade-up 0.9s var(--so-ease) both;
+}
+.so-animate-in-delay {
+  animation: so-fade-up 0.9s var(--so-ease) 0.12s both;
+}
+.so-animate-in-delay-2 {
+  animation: so-fade-up 0.9s var(--so-ease) 0.24s both;
+}
+.so-hero-image {
+  animation: so-drift 18s ease-in-out alternate infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .so-animate-in,
+  .so-animate-in-delay,
+  .so-animate-in-delay-2,
+  .so-hero-image {
+    animation: none;
+  }
+}

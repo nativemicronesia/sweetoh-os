@@ -5,10 +5,12 @@ import { ValidationError } from "@/lib/shared/errors";
 import type { ProductDraftGenerator } from "./types";
 
 const CATEGORY_VALUES = [
-  "baby_me",
-  "toys_sensory",
-  "sweetoh_creations",
-  "originals",
+  "apparel",
+  "kids",
+  "home",
+  "drinkware",
+  "accessories",
+  "custom",
 ] as const;
 
 const productDraftSchema = z.object({
@@ -57,7 +59,7 @@ Given a short operator description, produce a JSON object with exactly these fie
 - shortDescription: a one-sentence summary for listings
 - seoTitle: an SEO-friendly title, under 60 characters
 - seoDescription: an SEO meta description, under 160 characters
-- category: exactly one of "baby_me", "toys_sensory", "sweetoh_creations", "originals"
+- category: exactly one of "apparel", "kids", "home", "drinkware", "accessories", "custom" (printable product family)
 - suggestedTags: an array of 3-8 lowercase keyword strings
 - suggestedCollections: an array of 1-3 free-text collection name suggestions
 - suggestedPriceCents: recommended retail price in USD cents (integer, e.g. 1999 for $19.99). Use realistic Island Sprouts / Sweet'Oh pricing for the product type.
@@ -146,32 +148,47 @@ const TRANSCRIPTION_MODEL = "whisper-1";
 
 /**
  * Generates a product mockup preview from a text prompt, optionally guided
- * by a reference image. No pixel-accurate placement-region compositing —
- * this repo's template system doesn't support that yet (see
- * lib/domains/intelligence/pie-processors.ts) — this is a full-image
- * generation/edit call, not compositing onto an exact print area.
- * Returns null on any failure or misconfiguration, same convention as
- * answerCustomerQuestion above.
+ * by blank + design reference images. Prefer editing the blank (and design
+ * when the API accepts multi-image). Returns null on failure.
  */
 export async function generateProductMockup(input: {
   prompt: string;
   referenceImageBuffer?: Buffer;
   referenceImageMimeType?: string;
+  blankImageBuffer?: Buffer;
+  blankImageMimeType?: string;
 }): Promise<Buffer | null> {
   if (!isOpenAiConfigured()) return null;
 
   try {
     const openai = getOpenAiClient();
 
-    if (input.referenceImageBuffer) {
-      const file = await OpenAI.toFile(
-        input.referenceImageBuffer,
-        `reference.${(input.referenceImageMimeType ?? "image/png").split("/")[1] ?? "png"}`,
-        { type: input.referenceImageMimeType },
+    const files: Awaited<ReturnType<typeof OpenAI.toFile>>[] = [];
+
+    if (input.blankImageBuffer) {
+      files.push(
+        await OpenAI.toFile(
+          input.blankImageBuffer,
+          `blank.${(input.blankImageMimeType ?? "image/png").split("/")[1] ?? "png"}`,
+          { type: input.blankImageMimeType ?? "image/png" },
+        ),
       );
+    }
+
+    if (input.referenceImageBuffer) {
+      files.push(
+        await OpenAI.toFile(
+          input.referenceImageBuffer,
+          `design.${(input.referenceImageMimeType ?? "image/png").split("/")[1] ?? "png"}`,
+          { type: input.referenceImageMimeType ?? "image/png" },
+        ),
+      );
+    }
+
+    if (files.length > 0) {
       const result = await openai.images.edit({
         model: IMAGE_MODEL,
-        image: file,
+        image: files.length === 1 ? files[0]! : files,
         prompt: input.prompt,
       });
       const b64 = result.data?.[0]?.b64_json;

@@ -18,13 +18,28 @@ export type ProductCollectionAssignment = {
 };
 
 const COLLECTION_ALIASES: Record<string, string> = {
-  "baby and me": "baby-me",
-  "baby me": "baby-me",
-  "toys and sensory": "toys-and-sensory",
-  "sweet oh creations": "sweetoh-creations",
-  sweetoh: "sweetoh-creations",
-  "island sprouts originals": "island-sprouts-originals",
-  originals: "island-sprouts-originals",
+  // POD aisles
+  apparel: "apparel",
+  clothing: "apparel",
+  tees: "apparel",
+  hoodies: "apparel",
+  kids: "kids",
+  children: "kids",
+  baby: "kids",
+  "baby and me": "kids",
+  "baby me": "kids",
+  home: "home",
+  drinkware: "drinkware",
+  mugs: "drinkware",
+  accessories: "accessories",
+  totes: "accessories",
+  custom: "custom",
+  // Legacy Island Sprouts labels → new aisles
+  "toys and sensory": "kids",
+  "sweet oh creations": "custom",
+  sweetoh: "custom",
+  "island sprouts originals": "custom",
+  originals: "custom",
 };
 
 function normalizeCollectionLabel(value: string): string {

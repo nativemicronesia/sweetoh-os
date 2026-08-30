@@ -9,11 +9,14 @@ export function CartIcon() {
   return (
     <Link
       href="/cart"
-      className="relative text-sm font-medium text-neutral-700 hover:text-rose-700"
+      className="so-link relative text-sm text-[color:var(--so-mist)]"
     >
       Cart
       {itemCount > 0 ? (
-        <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-700 px-1.5 text-xs font-semibold text-white">
+        <span
+          className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center px-1.5 text-[10px] font-semibold tabular-nums"
+          style={{ background: "var(--so-gold)", color: "var(--so-black)" }}
+        >
           {itemCount}
         </span>
       ) : null}

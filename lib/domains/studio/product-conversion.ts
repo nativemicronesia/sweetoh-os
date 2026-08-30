@@ -77,7 +77,7 @@ export async function createProductFromCustomerRequest(input: {
     name,
     description: parsed.prompt,
     priceCents: 0,
-    category: "sweetoh_creations",
+    category: "custom",
     fulfillmentType: "sweetoh",
     actorUserId: input.actorUserId,
   });

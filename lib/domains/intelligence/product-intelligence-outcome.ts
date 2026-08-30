@@ -155,6 +155,6 @@ export function shouldCompoundPilOnProductPublish(input: {
   return (
     input.hasAiSession ||
     input.fulfillmentType === "sweetoh" ||
-    input.category === "sweetoh_creations"
+    input.category === "custom"
   );
 }

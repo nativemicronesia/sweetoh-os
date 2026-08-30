@@ -13,6 +13,7 @@ import {
   publishProduct,
   syncAutomaticCollections,
 } from "@/lib/domains/catalog/service";
+import { syncProductCollectionAssignments } from "@/lib/domains/catalog/collection-assignment";
 import { MOCK_PLACEHOLDER_PNG } from "@/lib/domains/intelligence/mock-fixtures";
 import { logger } from "@/lib/shared/logger";
 import {
@@ -29,17 +30,51 @@ const LAUNCH_PRODUCTS = [
     slug: "sweetoh-everyday-tee",
     name: "Everyday Custom Tee",
     description:
-      "Soft unisex tee — base product for Sweet'Oh AI create-your-own designs. Printed on demand.",
+      "Soft unisex tee — base blank for Sweet'Oh designs. Printed on demand.",
     priceCents: 3200,
+    category: "apparel" as const,
     designName: "Launch — Everyday Tee base",
   },
   {
     slug: "sweetoh-island-hoodie",
     name: "Island Hoodie",
     description:
-      "Cozy hoodie ready for custom Sweet'Oh artwork. Sample catalog product for launch.",
+      "Cozy hoodie ready for custom artwork. Sample apparel blank for launch.",
     priceCents: 4800,
+    category: "apparel" as const,
     designName: "Launch — Island Hoodie base",
+  },
+  {
+    slug: "sweetoh-kids-onesie",
+    name: "Little Island Onesie",
+    description: "Soft infant onesie — kids aisle blank for custom prints.",
+    priceCents: 2800,
+    category: "kids" as const,
+    designName: "Launch — Kids Onesie base",
+  },
+  {
+    slug: "sweetoh-throw-blanket",
+    name: "Coast Throw Blanket",
+    description: "Soft throw for home — print your design edge to edge.",
+    priceCents: 5200,
+    category: "home" as const,
+    designName: "Launch — Throw Blanket base",
+  },
+  {
+    slug: "sweetoh-ceramic-mug",
+    name: "Harbor Ceramic Mug",
+    description: "Classic ceramic mug — drinkware blank for everyday designs.",
+    priceCents: 2200,
+    category: "drinkware" as const,
+    designName: "Launch — Ceramic Mug base",
+  },
+  {
+    slug: "sweetoh-canvas-tote",
+    name: "Market Canvas Tote",
+    description: "Sturdy tote — accessories blank for logos and island art.",
+    priceCents: 2600,
+    category: "accessories" as const,
+    designName: "Launch — Canvas Tote base",
   },
 ] as const;
 
@@ -61,6 +96,7 @@ async function seedLaunchProduct(input: {
   name: string;
   description: string;
   priceCents: number;
+  category: (typeof LAUNCH_PRODUCTS)[number]["category"];
   designName: string;
 }) {
   const db = getDb();
@@ -74,11 +110,27 @@ async function seedLaunchProduct(input: {
     .limit(1);
 
   if (existing?.active) {
-    logger.info("sweetoh_catalog_product_exists", {
-      slug: input.slug,
-      productId: existing.id,
-    });
-    return existing;
+    if (existing.category !== input.category) {
+      await db
+        .update(product)
+        .set({ category: input.category, updatedAt: new Date() })
+        .where(eq(product.id, existing.id));
+      await syncProductCollectionAssignments({
+        ventureId: input.ventureId,
+        productId: existing.id,
+        actorUserId: input.ownerAppUserId,
+      });
+      logger.info("sweetoh_catalog_product_category_updated", {
+        slug: input.slug,
+        category: input.category,
+      });
+    } else {
+      logger.info("sweetoh_catalog_product_exists", {
+        slug: input.slug,
+        productId: existing.id,
+      });
+    }
+    return { ...existing, category: input.category };
   }
 
   const designAsset = await createAssetWithUpload({
@@ -107,7 +159,7 @@ async function seedLaunchProduct(input: {
       name: input.name,
       description: input.description,
       priceCents: input.priceCents,
-      category: "sweetoh_creations",
+      category: input.category,
       fulfillmentType: "sweetoh",
       sourceAssetId: designAsset.id,
       actorUserId: input.ownerAppUserId,
@@ -133,6 +185,7 @@ async function seedLaunchProduct(input: {
   logger.info("sweetoh_catalog_product_published", {
     slug: published.slug,
     productId: published.id,
+    category: published.category,
   });
 
   return published;
@@ -243,10 +296,12 @@ async function main() {
   const site = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3002";
   console.log("\nSweet'Oh catalog seed complete.\n");
   console.log("Test URLs:");
-  console.log(`  Home:     ${site}/`);
-  console.log(`  Products: ${site}/products`);
-  console.log(`  Create:   ${site}/create`);
-  console.log(`  Partner:  ${site}/partner/login`);
+  console.log(`  Home:        ${site}/`);
+  console.log(`  Categories:  ${site}/collections`);
+  console.log(`  Kids aisle:  ${site}/collections/kids`);
+  console.log(`  Products:    ${site}/products`);
+  console.log(`  Create:      ${site}/create`);
+  console.log(`  Partner:     ${site}/partner/login`);
   console.log("");
 }
 

@@ -35,10 +35,12 @@ import {
 type DbClient = ReturnType<typeof getDb>;
 
 const VALID_CATEGORIES: ProductCategory[] = [
-  "baby_me",
-  "toys_sensory",
-  "sweetoh_creations",
-  "originals",
+  "apparel",
+  "kids",
+  "home",
+  "drinkware",
+  "accessories",
+  "custom",
 ];
 
 function slugify(input: string): string {
@@ -80,14 +82,15 @@ async function generateUniqueSlug(
 function normalizeCategory(category: ProductCategory): ProductCategory {
   if (!VALID_CATEGORIES.includes(category)) {
     logger.warn("ai_product_draft_invalid_category", { returned: category });
-    return "sweetoh_creations";
+    return "custom";
   }
 
   return category;
 }
 
-function inferFulfillmentType(category: ProductCategory): "dropship" | "sweetoh" {
-  return category === "sweetoh_creations" ? "sweetoh" : "dropship";
+function inferFulfillmentType(_category: ProductCategory): "dropship" | "sweetoh" {
+  // Local Sweet'Oh print is the default for this POD shop.
+  return "sweetoh";
 }
 
 function buildVisualIntakeSessionPrompt(input: {

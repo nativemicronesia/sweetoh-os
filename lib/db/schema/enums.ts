@@ -36,10 +36,12 @@ export const assetTypeEnum = pgEnum("asset_type", [
 ]);
 
 export const productCategoryEnum = pgEnum("product_category", [
-  "baby_me",
-  "toys_sensory",
-  "sweetoh_creations",
-  "originals",
+  "apparel",
+  "kids",
+  "home",
+  "drinkware",
+  "accessories",
+  "custom",
 ]);
 
 export const fulfillmentTypeEnum = pgEnum("fulfillment_type", [

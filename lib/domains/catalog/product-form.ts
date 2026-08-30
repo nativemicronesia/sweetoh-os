@@ -1,13 +1,8 @@
 import { parseDelimitedList } from "@/lib/shared/format";
 import { ValidationError } from "@/lib/shared/errors";
-import type { ProductCategory } from "./publish";
+import { PRODUCT_CATEGORIES, type ProductCategory } from "./categories";
 
-const CATEGORIES: ProductCategory[] = [
-  "baby_me",
-  "toys_sensory",
-  "sweetoh_creations",
-  "originals",
-];
+const CATEGORIES: ProductCategory[] = [...PRODUCT_CATEGORIES];
 
 export type ParsedProductFormFields = {
   slug: string;

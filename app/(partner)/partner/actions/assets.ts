@@ -6,10 +6,21 @@ import { createAssetWithUpload } from "@/lib/domains/assets/service";
 import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
 import { getActionErrorMessage } from "@/lib/shared/action-errors";
 
-function redirectWithError(message: string): never {
-  redirect(`/partner/uploads?error=${encodeURIComponent(message)}`);
+function isNextRedirect(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "digest" in error &&
+    String((error as { digest?: unknown }).digest).startsWith("NEXT_REDIRECT")
+  );
 }
 
+function redirectLibrary(message: string, kind: "error" | "success"): never {
+  const key = kind === "error" ? "error" : "success";
+  redirect(`/partner/library?${key}=${encodeURIComponent(message)}`);
+}
+
+/** @deprecated Prefer uploadLibraryDesignAction — kept for any lingering forms. */
 export async function uploadSweetohDesignAction(formData: FormData): Promise<void> {
   try {
     const session = await requirePartnerWorkspace();
@@ -18,11 +29,11 @@ export async function uploadSweetohDesignAction(formData: FormData): Promise<voi
     const file = formData.get("file");
 
     if (!name) {
-      redirectWithError("Design name is required.");
+      redirectLibrary("Design name is required.", "error");
     }
 
     if (!(file instanceof File) || file.size === 0) {
-      redirectWithError("File is required.");
+      redirectLibrary("File is required.", "error");
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
@@ -39,9 +50,11 @@ export async function uploadSweetohDesignAction(formData: FormData): Promise<voi
       notes,
     });
 
-    revalidatePath("/partner/uploads");
-    redirect("/partner/uploads?success=Design%20uploaded%20as%20draft%20for%20owner%20review.");
+    revalidatePath("/partner/library");
+    revalidatePath("/studio");
+    redirectLibrary("Design uploaded as draft for review.", "success");
   } catch (error) {
-    redirectWithError(getActionErrorMessage(error));
+    if (isNextRedirect(error)) throw error;
+    redirectLibrary(getActionErrorMessage(error), "error");
   }
 }

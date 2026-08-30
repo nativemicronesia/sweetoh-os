@@ -1,8 +1,6 @@
-export type ProductCategory =
-  | "baby_me"
-  | "toys_sensory"
-  | "sweetoh_creations"
-  | "originals";
+import type { ProductCategory } from "./categories";
+
+export type { ProductCategory } from "./categories";
 
 export type FulfillmentType = "dropship" | "sweetoh" | "digital";
 
@@ -114,7 +112,7 @@ export function canPublishProduct(input: PublishCheckInput): PublishCheckResult 
     }
   }
 
-  // Originals and all categories use the same gate (ADR-006) — no category bypass.
+  // All POD categories use the same gate — no category bypass.
   void input.category;
 
   return { ok: true };

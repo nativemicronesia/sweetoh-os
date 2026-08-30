@@ -12,7 +12,7 @@ export default function ReturnsPage() {
         Design preview approvals and custom requests are confirmed before production when
         the flow requires it — please review carefully before paying.
       </p>
-      <p className="text-xs text-neutral-400">
+      <p className="text-xs so-muted">
         Placeholder pending legal / ops review.
       </p>
     </StaticPage>

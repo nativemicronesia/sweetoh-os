@@ -32,10 +32,12 @@ import {
  */
 
 const CATEGORIES: { value: ProductCategory; label: string }[] = [
-  { value: "sweetoh_creations", label: "Sweet'Oh Creations" },
-  { value: "baby_me", label: "Baby + Me" },
-  { value: "toys_sensory", label: "Toys & Sensory" },
-  { value: "originals", label: "Originals" },
+  { value: "apparel", label: "Apparel" },
+  { value: "kids", label: "Kids" },
+  { value: "home", label: "Home" },
+  { value: "drinkware", label: "Drinkware" },
+  { value: "accessories", label: "Accessories" },
+  { value: "custom", label: "Custom" },
 ];
 
 type PartnerReviewDetailPageProps = {
