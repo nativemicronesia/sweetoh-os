@@ -23,6 +23,17 @@ function redirectLibrary(message: string, kind: "error" | "success"): never {
   redirect(`/partner/library?${key}=${encodeURIComponent(message)}`);
 }
 
+/** "island-tote_v2.png" -> "Island Tote V2" — a sane default name for a bulk import. */
+function nameFromFilename(filename: string): string {
+  const base = filename.replace(/\.[^./]+$/, "");
+  const spaced = base.replace(/[_-]+/g, " ").trim();
+  return spaced
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word[0].toUpperCase() + word.slice(1))
+    .join(" ") || "Untitled design";
+}
+
 export async function uploadLibraryDesignAction(formData: FormData): Promise<void> {
   try {
     const session = await requirePartnerWorkspace();
@@ -160,5 +171,72 @@ export async function setBlankPrintAreaAction(input: {
     return {};
   } catch (error) {
     return { error: getActionErrorMessage(error) };
+  }
+}
+
+/**
+ * Bring in a batch of already-finished design files at once — separate from
+ * the AI photo-intake lane on Create, which is for photographing a physical
+ * product, not importing existing artwork. Best-effort: one bad file
+ * doesn't block the rest of the batch.
+ */
+export async function bulkUploadLibraryDesignsAction(formData: FormData): Promise<void> {
+  try {
+    const session = await requirePartnerWorkspace();
+    const files = formData
+      .getAll("files")
+      .filter((entry): entry is File => entry instanceof File && entry.size > 0);
+
+    if (files.length === 0) {
+      redirect(
+        `/partner/create?error=${encodeURIComponent("Pick at least one design file.")}`,
+      );
+    }
+
+    const autoApprove = canModerateListings(session);
+    let succeeded = 0;
+    const failed: string[] = [];
+
+    for (const file of files) {
+      try {
+        const buffer = Buffer.from(await file.arrayBuffer());
+        await uploadPartnerDesign({
+          ventureId: session.ventureId,
+          ventureSlug: session.ventureSlug,
+          uploadedById: session.appUser.id,
+          name: nameFromFilename(file.name),
+          notes: null,
+          file: buffer,
+          filename: file.name,
+          mimeType: file.type || "image/png",
+          autoApprove,
+        });
+        succeeded += 1;
+      } catch {
+        failed.push(file.name);
+      }
+    }
+
+    revalidatePath("/partner/library");
+    revalidatePath("/partner/canvas");
+    revalidatePath("/studio");
+
+    if (succeeded === 0) {
+      redirect(
+        `/partner/create?error=${encodeURIComponent("None of those files could be uploaded.")}`,
+      );
+    }
+
+    const message =
+      failed.length === 0
+        ? `${succeeded} design${succeeded === 1 ? "" : "s"} added to your library.`
+        : `${succeeded} design${succeeded === 1 ? "" : "s"} added; ${failed.length} failed (${failed.join(", ")}).`;
+
+    redirect(`/partner/library?success=${encodeURIComponent(message)}`);
+  } catch (error) {
+    if (isNextRedirect(error)) throw error;
+    redirect(
+      `/partner/create?error=${encodeURIComponent(getActionErrorMessage(error))}`,
+    );
   }
 }

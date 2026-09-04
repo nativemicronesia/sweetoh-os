@@ -12,6 +12,7 @@ import {
   generatePartnerPieDraftAction,
   generatePartnerPieIntakeAction,
 } from "../actions/intelligence";
+import { bulkUploadLibraryDesignsAction } from "../actions/library";
 
 /**
  * One Create screen. Photo lane and text lane share the same PIE pipeline
@@ -198,6 +199,50 @@ export default async function PartnerCreatePage({
             style={{ borderColor: "var(--so-gold-dim)", color: "var(--so-gold)" }}
           >
             Prepare listing from text
+          </button>
+        </form>
+      </section>
+
+      <section
+        className="rounded-xl border p-6"
+        style={{ borderColor: "var(--so-border)", background: "var(--so-violet-dim)" }}
+      >
+        <h2 className="text-sm font-medium" style={{ color: "var(--so-violet)" }}>
+          Upload existing designs
+        </h2>
+        <p className="mt-1 text-sm" style={{ color: "var(--so-cream-dim)" }}>
+          Already have finished artwork? Drop in as many files as you want — each one
+          goes straight into your{" "}
+          <Link href="/partner/library" className="underline" style={{ color: "var(--so-violet)" }}>
+            Design library
+          </Link>
+          , ready to place on a blank in Canvas. No AI drafting, no photo needed.
+        </p>
+        <form action={bulkUploadLibraryDesignsAction} className="mt-4 space-y-4">
+          <label className="block text-sm">
+            <span className="mb-1 block" style={{ color: "var(--so-cream)" }}>
+              Design files
+            </span>
+            <input
+              name="files"
+              type="file"
+              accept="image/*"
+              multiple
+              required
+              className="w-full text-sm"
+              style={{ color: "var(--so-cream-dim)" }}
+            />
+            <span className="mt-1 block text-xs" style={{ color: "var(--so-cream-dim)" }}>
+              Select multiple at once — each file becomes its own library entry, named
+              from the filename.
+            </span>
+          </label>
+          <button
+            type="submit"
+            className="rounded-full px-5 py-2.5 text-sm font-medium"
+            style={{ background: "var(--so-violet)", color: "var(--so-ink)" }}
+          >
+            Upload to library
           </button>
         </form>
       </section>
