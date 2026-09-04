@@ -132,7 +132,7 @@ export function DesignCanvas({
       : "border-neutral-300 text-neutral-700";
   const exportBtn =
     tone === "dark"
-      ? { background: "var(--so-gold)", color: "var(--so-black)" }
+      ? { background: "var(--so-gold)", color: "var(--so-ink)" }
       : { background: "#171717", color: "#fff" };
 
   const redraw = useCallback(() => {

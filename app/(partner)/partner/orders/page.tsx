@@ -104,7 +104,7 @@ export default async function PartnerOrdersPage({
               className="rounded-full px-4 py-1.5 transition-colors"
               style={
                 active
-                  ? { background: "var(--so-gold)", color: "var(--so-black)" }
+                  ? { background: "var(--so-gold)", color: "var(--so-ink)" }
                   : {
                       border: "1px solid var(--so-border)",
                       color: "var(--so-cream-dim)",

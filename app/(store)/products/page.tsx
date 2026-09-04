@@ -57,7 +57,7 @@ export default async function ProductsPage({ searchParams }: PageProps) {
           className="border px-3 py-1.5 text-xs transition-colors"
           style={
             !category
-              ? { borderColor: "var(--so-gold)", background: "var(--so-gold)", color: "var(--so-black)" }
+              ? { borderColor: "var(--so-gold)", background: "var(--so-gold)", color: "var(--so-ink)" }
               : { borderColor: "var(--so-border)", color: "var(--so-cream-dim)" }
           }
         >
@@ -70,7 +70,7 @@ export default async function ProductsPage({ searchParams }: PageProps) {
             className="border px-3 py-1.5 text-xs transition-colors"
             style={
               category === item.category
-                ? { borderColor: "var(--so-gold)", background: "var(--so-gold)", color: "var(--so-black)" }
+                ? { borderColor: "var(--so-gold)", background: "var(--so-gold)", color: "var(--so-ink)" }
                 : { borderColor: "var(--so-border)", color: "var(--so-cream-dim)" }
             }
           >

@@ -148,7 +148,7 @@ export default async function PartnerOverviewPage() {
                       ? "var(--so-gold-dim)"
                       : "var(--so-border)",
                     background: item.hot
-                      ? "rgba(201,168,76,0.06)"
+                      ? "rgba(201,168,76,0.12)"
                       : "var(--so-dark)",
                   }}
                 >
@@ -178,7 +178,7 @@ export default async function PartnerOverviewPage() {
         className="flex flex-col gap-2 rounded-xl border px-5 py-5 transition-colors hover:border-[var(--so-gold-dim)]"
         style={{
           borderColor: "var(--so-gold-dim)",
-          background: "rgba(201,168,76,0.1)",
+          background: "rgba(201,168,76,0.16)",
         }}
       >
         <span className="text-sm font-medium" style={{ color: "var(--so-gold)" }}>

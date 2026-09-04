@@ -96,7 +96,7 @@ export function MascotPanel({ onClose }: { onClose: () => void }) {
           onClick={send}
           disabled={pending || !input.trim()}
           className="rounded-lg px-3 py-2 text-sm font-medium disabled:opacity-50"
-          style={{ background: "var(--so-gold)", color: "var(--so-black)" }}
+          style={{ background: "var(--so-gold)", color: "var(--so-ink)" }}
         >
           Send
         </button>

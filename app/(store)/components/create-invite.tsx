@@ -8,13 +8,19 @@ export function CreateInvite() {
         style={{
           borderColor: "var(--so-border)",
           background:
-            "linear-gradient(135deg, var(--so-surface) 0%, var(--so-dark) 55%, #16130f 100%)",
+            "linear-gradient(135deg, #fbf3e2 0%, #f6ecf7 55%, #fbeaef 100%)",
         }}
       >
         <div
-          className="pointer-events-none absolute -right-16 top-0 h-64 w-64 rounded-full opacity-30"
+          className="pointer-events-none absolute -right-16 top-0 h-64 w-64 rounded-full opacity-60"
           style={{
-            background: "radial-gradient(circle, rgba(201,168,76,0.35), transparent 70%)",
+            background: "radial-gradient(circle, rgba(201,168,76,0.4), transparent 70%)",
+          }}
+        />
+        <div
+          className="pointer-events-none absolute -bottom-20 -left-10 h-56 w-56 rounded-full opacity-50"
+          style={{
+            background: "radial-gradient(circle, rgba(124,92,196,0.32), transparent 70%)",
           }}
         />
         <p className="so-eyebrow relative">Studio</p>

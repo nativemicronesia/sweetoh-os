@@ -31,7 +31,7 @@ export default function StoreLayout({
 
         <footer
           className="mt-auto border-t"
-          style={{ borderColor: "var(--so-border)", background: "var(--so-ink)" }}
+          style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}
         >
           <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-5 py-12 sm:px-8 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-sm space-y-3">

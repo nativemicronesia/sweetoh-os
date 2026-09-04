@@ -15,7 +15,7 @@ export function CartIcon() {
       {itemCount > 0 ? (
         <span
           className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center px-1.5 text-[10px] font-semibold tabular-nums"
-          style={{ background: "var(--so-gold)", color: "var(--so-black)" }}
+          style={{ background: "var(--so-gold)", color: "var(--so-ink)" }}
         >
           {itemCount}
         </span>

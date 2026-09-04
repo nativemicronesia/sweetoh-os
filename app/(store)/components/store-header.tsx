@@ -27,7 +27,7 @@ export function StoreHeader() {
     <header
       className={`fixed inset-x-0 top-0 z-40 transition-[background,border-color,backdrop-filter] duration-300 ${
         solid
-          ? "border-b border-[color:var(--so-border)] bg-[color:var(--so-ink)]/90 backdrop-blur-md"
+          ? "border-b border-[color:var(--so-border)] bg-[color:var(--so-black)]/90 backdrop-blur-md"
           : "border-b border-transparent bg-transparent"
       }`}
     >

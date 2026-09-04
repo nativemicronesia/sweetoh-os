@@ -61,7 +61,7 @@ export default async function PartnerProductsPage({
         <Link
           href="/partner/create"
           className="rounded-full px-4 py-2 text-sm font-medium"
-          style={{ background: "var(--so-gold)", color: "var(--so-black)" }}
+          style={{ background: "var(--so-gold)", color: "var(--so-ink)" }}
         >
           New piece
         </Link>

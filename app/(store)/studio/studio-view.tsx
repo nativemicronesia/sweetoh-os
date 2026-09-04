@@ -220,7 +220,7 @@ export function StudioView({
               onClick={() => setStep(item.n)}
               className={`rounded-full px-3 py-1 ${
                 step === item.n
-                  ? "bg-[color:var(--so-gold)] text-[color:var(--so-black)]"
+                  ? "bg-[color:var(--so-gold)] text-[color:var(--so-ink)]"
                   : "border border-[color:var(--so-border)] so-muted hover:border-[color:var(--so-gold)]"
               }`}
             >
@@ -245,7 +245,7 @@ export function StudioView({
               onClick={() => setCategoryFilter("all")}
               className={`rounded-full border px-3 py-1 text-xs ${
                 categoryFilter === "all"
-                  ? "border-[color:var(--so-gold)] bg-[color:var(--so-gold)] text-[color:var(--so-black)]"
+                  ? "border-[color:var(--so-gold)] bg-[color:var(--so-gold)] text-[color:var(--so-ink)]"
                   : "border-[color:var(--so-border)] text-[color:var(--so-mist)]"
               }`}
             >
@@ -258,7 +258,7 @@ export function StudioView({
                 onClick={() => setCategoryFilter(item.value)}
                 className={`rounded-full border px-3 py-1 text-xs ${
                   categoryFilter === item.value
-                    ? "border-[color:var(--so-gold)] bg-[color:var(--so-gold)] text-[color:var(--so-black)]"
+                    ? "border-[color:var(--so-gold)] bg-[color:var(--so-gold)] text-[color:var(--so-ink)]"
                     : "border-[color:var(--so-border)] text-[color:var(--so-mist)]"
                 }`}
               >
@@ -343,7 +343,7 @@ export function StudioView({
                   }}
                   className={`rounded-full border px-3 py-1.5 text-xs font-medium ${
                     designMode === mode
-                      ? "border-[color:var(--so-gold)] bg-[color:var(--so-gold)] text-[color:var(--so-black)]"
+                      ? "border-[color:var(--so-gold)] bg-[color:var(--so-gold)] text-[color:var(--so-ink)]"
                       : "border-[color:var(--so-border)] text-[color:var(--so-mist)]"
                   }`}
                 >
@@ -597,7 +597,7 @@ export function StudioView({
                 type="button"
                 onClick={generate}
                 disabled={generating}
-                className="w-full rounded-lg bg-[color:var(--so-gold)] px-4 py-3 text-sm font-medium text-[color:var(--so-black)] disabled:opacity-50"
+                className="w-full rounded-lg bg-[color:var(--so-gold)] px-4 py-3 text-sm font-medium text-[color:var(--so-ink)] disabled:opacity-50"
               >
                 {generating ? "Building preview…" : "Preview on mockup"}
               </button>
@@ -671,7 +671,7 @@ export function StudioView({
                 onClick={confirmAndAddToCart}
                 disabled={confirming || !previewUrl}
                 className="rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-50"
-                style={{ background: "var(--so-gold)", color: "var(--so-black)" }}
+                style={{ background: "var(--so-gold)", color: "var(--so-ink)" }}
               >
                 {added ? "Added to cart!" : confirming ? "Adding…" : "Add to cart"}
               </button>

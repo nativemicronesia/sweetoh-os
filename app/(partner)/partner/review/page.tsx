@@ -156,7 +156,7 @@ export default async function PartnerReviewPage({
                         <button
                           type="submit"
                           className="rounded-full px-3 py-1.5 text-xs font-medium"
-                          style={{ background: "var(--so-gold)", color: "var(--so-black)" }}
+                          style={{ background: "var(--so-gold)", color: "var(--so-ink)" }}
                         >
                           Approve
                         </button>
@@ -239,7 +239,7 @@ export default async function PartnerReviewPage({
                           <button
                             type="submit"
                             className="rounded-lg px-3 py-1.5 text-sm font-medium"
-                            style={{ background: "var(--so-gold)", color: "var(--so-black)" }}
+                            style={{ background: "var(--so-gold)", color: "var(--so-ink)" }}
                           >
                             Publish
                           </button>
@@ -263,7 +263,7 @@ export default async function PartnerReviewPage({
                         <button
                           type="submit"
                           className="rounded-lg px-3 py-1.5 text-sm font-medium"
-                          style={{ background: "var(--so-gold)", color: "var(--so-black)" }}
+                          style={{ background: "var(--so-gold)", color: "var(--so-ink)" }}
                         >
                           Submit for review
                         </button>

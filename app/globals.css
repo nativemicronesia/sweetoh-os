@@ -1,19 +1,31 @@
 @import "tailwindcss";
 
 :root {
-  /* Sweet'Oh brand tokens — luxury Micronesian POD */
-  --so-black: #0a0908;
-  --so-ink: #070605;
-  --so-dark: #12100e;
-  --so-surface: #1a1714;
-  --so-border: #2e2923;
-  --so-gold: #c9a84c;
-  --so-gold-dim: #8a6f32;
-  --so-cream: #f5f0e8;
-  --so-cream-dim: #a89f93;
-  --so-mist: #d4cdc2;
-  --so-rose: #c4677a;
-  --so-rose-dim: #7a3d4a;
+  /* Sweet'Oh brand tokens — creative Micronesian POD, white/paper theme.
+     Names kept stable across ~250 call sites; --so-black is now the base
+     (lightest) surface and --so-cream the primary (darkest) text — the
+     tokens describe a ROLE (surface vs. ink vs. accent), not a literal
+     shade, which is what let this flip happen without touching call sites.
+     --so-ink stays genuinely dark: the one token still meant for dark text
+     sitting on a bright --so-gold fill (buttons, badges), a role that
+     doesn't change with the theme. */
+  --so-black: #fffdf8;
+  --so-ink: #221b13;
+  --so-dark: #f7f0e2;
+  --so-surface: #ffffff;
+  --so-border: #e8dfcd;
+  --so-gold: #9c701f;
+  --so-gold-dim: #d9bd7c;
+  --so-cream: #241d14;
+  --so-cream-dim: #786a56;
+  --so-mist: #a89a86;
+  --so-rose: #b8546c;
+  --so-rose-dim: #f2d6dc;
+  /* Creative accent trio — gold, rose, violet — used sparingly for blooms,
+     tags, and gradient washes so the brand reads as playful, not just
+     luxury-neutral. */
+  --so-violet: #7c5cc4;
+  --so-violet-dim: #e6ddf7;
   --so-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --font-display: "Syne", system-ui, sans-serif;
   --font-body: "Outfit", system-ui, sans-serif;
@@ -91,12 +103,12 @@ body {
   font-weight: 550;
   letter-spacing: 0.02em;
   background: var(--so-gold);
-  color: var(--so-black);
+  color: var(--so-ink);
   border: none;
   transition: transform 0.35s var(--so-ease), background 0.2s ease, opacity 0.2s ease;
 }
 .so-btn-primary:hover {
-  background: color-mix(in srgb, var(--so-gold) 88%, white);
+  background: color-mix(in srgb, var(--so-gold) 85%, black);
   transform: translateY(-1px);
 }
 .so-btn-primary:disabled {
@@ -122,12 +134,14 @@ body {
   color: var(--so-gold);
 }
 
-/* Hero atmosphere */
+/* Hero atmosphere — soft paint-bloom wash on warm paper: gold, rose, and
+   violet blooms standing in for "creativity," never a dark corner. */
 .so-hero-wash {
   background:
-    radial-gradient(ellipse 80% 60% at 70% 40%, rgba(201, 168, 76, 0.14), transparent 55%),
-    radial-gradient(ellipse 50% 45% at 15% 80%, rgba(80, 120, 130, 0.12), transparent 50%),
-    linear-gradient(165deg, var(--so-ink) 0%, var(--so-dark) 45%, #151210 100%);
+    radial-gradient(ellipse 75% 60% at 78% 30%, rgba(201, 168, 76, 0.22), transparent 55%),
+    radial-gradient(ellipse 55% 50% at 12% 85%, rgba(124, 92, 196, 0.16), transparent 52%),
+    radial-gradient(ellipse 45% 40% at 55% 95%, rgba(184, 84, 108, 0.14), transparent 50%),
+    linear-gradient(165deg, #fffdf8 0%, #fbf4e6 45%, #f7f0e0 100%);
 }
 
 .so-grain::after {

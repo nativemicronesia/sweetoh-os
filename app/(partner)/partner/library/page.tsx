@@ -36,7 +36,7 @@ export default async function PartnerLibraryPage({ searchParams }: PageProps) {
         <Link
           href="/partner/canvas"
           className="rounded-lg px-4 py-2 text-sm font-medium"
-          style={{ background: "var(--so-gold)", color: "var(--so-black)" }}
+          style={{ background: "var(--so-gold)", color: "var(--so-ink)" }}
         >
           Open Canvas
         </Link>
@@ -83,7 +83,7 @@ export default async function PartnerLibraryPage({ searchParams }: PageProps) {
           <button
             type="submit"
             className="rounded-lg px-4 py-2 text-sm font-medium"
-            style={{ background: "var(--so-gold)", color: "var(--so-black)" }}
+            style={{ background: "var(--so-gold)", color: "var(--so-ink)" }}
           >
             {canApprove ? "Upload to library" : "Upload draft"}
           </button>
@@ -111,7 +111,7 @@ export default async function PartnerLibraryPage({ searchParams }: PageProps) {
                 className="overflow-hidden rounded-lg border"
                 style={{ borderColor: "var(--so-border)" }}
               >
-                <div className="aspect-square bg-black/40">
+                <div className="aspect-square bg-neutral-100">
                   {design.previewUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img

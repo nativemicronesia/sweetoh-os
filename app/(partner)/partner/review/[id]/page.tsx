@@ -229,7 +229,7 @@ export default async function PartnerReviewDetailPage({
                   <button
                     type="submit"
                     className="rounded-full px-4 py-2 text-sm font-medium"
-                    style={{ background: "var(--so-gold)", color: "var(--so-black)" }}
+                    style={{ background: "var(--so-gold)", color: "var(--so-ink)" }}
                   >
                     Approve &amp; publish
                   </button>
@@ -251,7 +251,7 @@ export default async function PartnerReviewDetailPage({
                 <button
                   type="submit"
                   className="rounded-full px-4 py-2 text-sm font-medium"
-                  style={{ background: "var(--so-gold)", color: "var(--so-black)" }}
+                  style={{ background: "var(--so-gold)", color: "var(--so-ink)" }}
                 >
                   Submit for review
                 </button>
@@ -283,7 +283,7 @@ export default async function PartnerReviewDetailPage({
           <ul className="mt-4 space-y-2">
             {readiness.checks.map((check) => (
               <li key={check.label} className="flex items-start gap-2 text-sm">
-                <span style={{ color: check.passed ? "var(--so-gold)" : "#f87171" }}>
+                <span style={{ color: check.passed ? "var(--so-gold)" : "#dc2626" }}>
                   {check.passed ? "✓" : "✗"}
                 </span>
                 <span style={{ color: "var(--so-cream-dim)" }}>
@@ -302,7 +302,7 @@ export default async function PartnerReviewDetailPage({
                   type="submit"
                   disabled={!readiness.canPublish}
                   className="rounded-full px-5 py-2.5 text-sm font-medium disabled:opacity-50"
-                  style={{ background: "var(--so-gold)", color: "var(--so-black)" }}
+                  style={{ background: "var(--so-gold)", color: "var(--so-ink)" }}
                 >
                   Publish to catalog
                 </button>
@@ -340,7 +340,7 @@ export default async function PartnerReviewDetailPage({
           <ul className="mt-4 space-y-2">
             {draftCompleteness.checks.map((check) => (
               <li key={check.label} className="flex items-start gap-2 text-sm">
-                <span style={{ color: check.passed ? "var(--so-gold)" : "#f87171" }}>
+                <span style={{ color: check.passed ? "var(--so-gold)" : "#dc2626" }}>
                   {check.passed ? "✓" : "✗"}
                 </span>
                 <span style={{ color: "var(--so-cream-dim)" }}>
@@ -536,7 +536,7 @@ export default async function PartnerReviewDetailPage({
               <button
                 type="submit"
                 className="rounded-full px-5 py-2.5 text-sm font-medium"
-                style={{ background: "var(--so-gold)", color: "var(--so-black)" }}
+                style={{ background: "var(--so-gold)", color: "var(--so-ink)" }}
               >
                 Save listing
               </button>

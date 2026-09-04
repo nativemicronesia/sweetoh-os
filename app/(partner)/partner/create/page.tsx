@@ -71,7 +71,7 @@ export default async function PartnerCreatePage({
           style={{
             borderColor: "var(--so-gold-dim)",
             color: "var(--so-cream)",
-            background: "rgba(201,168,76,0.07)",
+            background: "rgba(201,168,76,0.13)",
           }}
         >
           Add <code>OPENAI_API_KEY</code> for live AI, or{" "}
@@ -92,7 +92,7 @@ export default async function PartnerCreatePage({
           style={{
             borderColor: "var(--so-gold-dim)",
             color: "var(--so-cream)",
-            background: "rgba(201,168,76,0.07)",
+            background: "rgba(201,168,76,0.13)",
           }}
         >
           Storage buckets missing (<code>design-library</code>,{" "}
@@ -105,7 +105,7 @@ export default async function PartnerCreatePage({
         className="rounded-xl border p-6"
         style={{
           borderColor: "var(--so-gold-dim)",
-          background: "rgba(201,168,76,0.05)",
+          background: "rgba(201,168,76,0.10)",
         }}
       >
         <h2 className="text-sm font-medium" style={{ color: "var(--so-gold)" }}>
@@ -154,7 +154,7 @@ export default async function PartnerCreatePage({
             type="submit"
             disabled={!photoReady}
             className="rounded-full px-5 py-2.5 text-sm font-medium disabled:opacity-60"
-            style={{ background: "var(--so-gold)", color: "var(--so-black)" }}
+            style={{ background: "var(--so-gold)", color: "var(--so-ink)" }}
           >
             Prepare listing from photo
           </button>

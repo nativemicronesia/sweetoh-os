@@ -57,7 +57,7 @@ export function CheckoutView({ stripeReady }: CheckoutViewProps) {
           className="border px-4 py-3 text-sm"
           style={{
             borderColor: "var(--so-gold-dim)",
-            background: "rgba(201,168,76,0.08)",
+            background: "rgba(201,168,76,0.14)",
             color: "var(--so-cream)",
           }}
         >

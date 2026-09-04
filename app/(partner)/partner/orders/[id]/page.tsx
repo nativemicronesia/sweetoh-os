@@ -151,7 +151,7 @@ export default async function PartnerOrderJobPage({
             <button
               type="submit"
               className="rounded-full px-5 py-2.5 text-sm font-medium"
-              style={{ background: "var(--so-gold)", color: "var(--so-black)" }}
+              style={{ background: "var(--so-gold)", color: "var(--so-ink)" }}
             >
               Save
             </button>

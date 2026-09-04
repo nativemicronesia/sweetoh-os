@@ -72,7 +72,7 @@ export default async function PartnerLoginPage({
             className="mt-4 rounded-lg border px-3 py-2 text-sm"
             style={{
               borderColor: "var(--so-rose-dim)",
-              background: "rgba(196,103,122,0.12)",
+              background: "rgba(196,103,122,0.16)",
               color: "var(--so-cream)",
             }}
           >
@@ -118,7 +118,7 @@ export default async function PartnerLoginPage({
           <button
             type="submit"
             className="w-full rounded-full px-4 py-2.5 text-sm font-medium"
-            style={{ background: "var(--so-gold)", color: "var(--so-black)" }}
+            style={{ background: "var(--so-gold)", color: "var(--so-ink)" }}
           >
             Sign in to Studio
           </button>

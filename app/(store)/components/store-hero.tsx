@@ -21,7 +21,7 @@ export function StoreHero({ heroImageUrl, heroImageAlt }: StoreHeroProps) {
               className="absolute inset-0"
               style={{
                 background:
-                  "linear-gradient(105deg, rgba(7,6,5,0.92) 0%, rgba(7,6,5,0.72) 42%, rgba(7,6,5,0.35) 100%)",
+                  "linear-gradient(105deg, rgba(255,253,248,0.92) 0%, rgba(255,253,248,0.72) 42%, rgba(255,253,248,0.3) 100%)",
               }}
             />
           </div>

@@ -241,8 +241,8 @@ export function StudioChat() {
                       ? "var(--so-gold-dim)"
                       : "var(--so-rose-dim)",
                     background: entry.card.ok
-                      ? "rgba(201,168,76,0.08)"
-                      : "rgba(196,103,122,0.1)",
+                      ? "rgba(201,168,76,0.13)"
+                      : "rgba(196,103,122,0.14)",
                     color: "var(--so-cream)",
                   }}
                 >
@@ -265,7 +265,7 @@ export function StudioChat() {
                 key={entry.id}
                 className="max-w-[85%] rounded-xl px-3 py-2 text-sm"
                 style={{
-                  background: "rgba(196,103,122,0.12)",
+                  background: "rgba(196,103,122,0.16)",
                   color: "var(--so-cream)",
                 }}
                 role="alert"
@@ -332,7 +332,7 @@ export function StudioChat() {
           type="submit"
           disabled={pending || !input.trim()}
           className="rounded-full px-4 py-2 text-sm font-medium disabled:opacity-50"
-          style={{ background: "var(--so-gold)", color: "var(--so-black)" }}
+          style={{ background: "var(--so-gold)", color: "var(--so-ink)" }}
         >
           {pending ? "…" : "Send"}
         </button>

@@ -55,7 +55,7 @@ export function PartnerJobCard({
             <span
               className="rounded-full px-2 py-0.5 text-xs font-medium"
               style={{
-                background: "rgba(201,168,76,0.15)",
+                background: "rgba(201,168,76,0.2)",
                 color: "var(--so-gold)",
               }}
             >
