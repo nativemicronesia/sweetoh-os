@@ -3,7 +3,13 @@ import { CartProvider } from "@/lib/cart/cart-context";
 import { Mascot } from "./components/mascot";
 import { StoreHeader } from "./components/store-header";
 
-export const dynamic = "force-dynamic";
+// Product/venture data should stay fresh, but force-dynamic reran every
+// page from scratch on every click (a real Supabase round-trip per nav,
+// worse on a cold Vercel serverless invocation) — that's what made storefront
+// navigation feel like it needed several clicks. A 30s revalidation window
+// keeps pages served from cache almost all the time while still catching up
+// to catalog changes well within a minute.
+export const revalidate = 30;
 
 const FOOTER_LINKS = [
   { href: "/collections", label: "Shop" },
