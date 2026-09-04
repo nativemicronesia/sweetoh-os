@@ -2,19 +2,50 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+export type CanvasTransform = {
+  offsetX: number;
+  offsetY: number;
+  scale: number;
+  rotation: number;
+  canvasSize: number;
+};
+
+export type CanvasPrintArea = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
 type Props = {
   blankUrl: string | null;
   designUrl: string | null;
   blankLabel: string;
   designLabel: string;
-  /** Called with a PNG blob when the user exports. */
-  onExport: (blob: Blob, suggestedName: string) => void | Promise<void>;
+  /** Called with a PNG blob when the user exports, plus the placement used. */
+  onExport: (
+    blob: Blob,
+    suggestedName: string,
+    transform: CanvasTransform,
+  ) => void | Promise<void>;
   exportLabel?: string;
   /** Partner dark desk vs storefront light chrome. */
   tone?: "light" | "dark";
+  /** Reopen a previously-saved composition at this exact placement. */
+  initialTransform?: Pick<CanvasTransform, "offsetX" | "offsetY" | "scale" | "rotation"> | null;
+  /**
+   * This blank's saved print-safe rectangle (fractions 0-1 of the canvas).
+   * A fresh composition (no initialTransform) auto-fits the design inside
+   * it; always drawn as a guide when present.
+   */
+  printArea?: CanvasPrintArea | null;
+  /** Lets the partner draw/save a new print area for this blank. */
+  onSavePrintArea?: (area: CanvasPrintArea) => void | Promise<void>;
 };
 
 const CANVAS_SIZE = 720;
+const DEFAULT_OFFSET = { x: CANVAS_SIZE * 0.25, y: CANVAS_SIZE * 0.25 };
+const DEFAULT_SCALE = 0.45;
 
 function loadImage(url: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -26,9 +57,29 @@ function loadImage(url: string): Promise<HTMLImageElement> {
   });
 }
 
+/** Contain-fit `w x h` inside a `boxW x boxH` box, centered. */
+function fitInsideBox(
+  w: number,
+  h: number,
+  boxX: number,
+  boxY: number,
+  boxW: number,
+  boxH: number,
+) {
+  const fit = Math.min(boxW / w, boxH / h);
+  const fw = w * fit;
+  const fh = h * fit;
+  return {
+    scale: fit,
+    offsetX: boxX + (boxW - fw) / 2,
+    offsetY: boxY + (boxH - fh) / 2,
+  };
+}
+
 /**
  * Printify-style placer: blank as the stage, design as a draggable /
- * scalable / rotatable layer. Export flattens to PNG for library or Studio.
+ * scalable / rotatable layer. Export flattens to PNG for library or Studio,
+ * and reports the placement so it can be persisted and reopened later.
  */
 export function DesignCanvas({
   blankUrl,
@@ -38,11 +89,18 @@ export function DesignCanvas({
   onExport,
   exportLabel = "Save composition",
   tone = "light",
+  initialTransform = null,
+  printArea = null,
+  onSavePrintArea,
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [offset, setOffset] = useState({ x: CANVAS_SIZE * 0.25, y: CANVAS_SIZE * 0.25 });
-  const [scale, setScale] = useState(0.45);
-  const [rotation, setRotation] = useState(0);
+  const [offset, setOffset] = useState(
+    initialTransform
+      ? { x: initialTransform.offsetX, y: initialTransform.offsetY }
+      : DEFAULT_OFFSET,
+  );
+  const [scale, setScale] = useState(initialTransform?.scale ?? DEFAULT_SCALE);
+  const [rotation, setRotation] = useState(initialTransform?.rotation ?? 0);
   const [dragging, setDragging] = useState(false);
   const dragOrigin = useRef({ x: 0, y: 0, ox: 0, oy: 0 });
   const [ready, setReady] = useState(false);
@@ -52,6 +110,16 @@ export function DesignCanvas({
     blank: null,
     design: null,
   });
+
+  // Print-area editing (independent of design placement).
+  const [editingArea, setEditingArea] = useState(false);
+  const [areaDraft, setAreaDraft] = useState<CanvasPrintArea | null>(printArea);
+  const [savingArea, setSavingArea] = useState(false);
+  const areaDragStart = useRef<{ x: number; y: number } | null>(null);
+
+  useEffect(() => {
+    setAreaDraft(printArea);
+  }, [printArea]);
 
   const muted = tone === "dark" ? "text-[color:var(--so-cream-dim)]" : "text-neutral-600";
   const border =
@@ -97,7 +165,22 @@ export function DesignCanvas({
       ctx.drawImage(design, -w / 2, -h / 2, w, h);
       ctx.restore();
     }
-  }, [offset.x, offset.y, scale, rotation]);
+
+    // Print-area guide — dashed outline, drawn last so it stays visible.
+    if (areaDraft) {
+      ctx.save();
+      ctx.strokeStyle = editingArea ? "#e11d48" : "rgba(201,168,76,0.85)";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 5]);
+      ctx.strokeRect(
+        areaDraft.x * CANVAS_SIZE,
+        areaDraft.y * CANVAS_SIZE,
+        areaDraft.width * CANVAS_SIZE,
+        areaDraft.height * CANVAS_SIZE,
+      );
+      ctx.restore();
+    }
+  }, [offset.x, offset.y, scale, rotation, areaDraft, editingArea]);
 
   useEffect(() => {
     let cancelled = false;
@@ -109,8 +192,28 @@ export function DesignCanvas({
         imagesRef.current.blank = blankUrl ? await loadImage(blankUrl) : null;
         imagesRef.current.design = designUrl ? await loadImage(designUrl) : null;
         if (cancelled) return;
+
+        // Fresh composition (no saved transform) on a blank with a known
+        // print area: auto-fit the design there instead of the generic
+        // centered default.
+        const design = imagesRef.current.design;
+        if (!initialTransform && printArea && design) {
+          const fitted = fitInsideBox(
+            design.width,
+            design.height,
+            printArea.x * CANVAS_SIZE,
+            printArea.y * CANVAS_SIZE,
+            printArea.width * CANVAS_SIZE,
+            printArea.height * CANVAS_SIZE,
+          );
+          setScale(fitted.scale);
+          setOffset({ x: fitted.offsetX, y: fitted.offsetY });
+          setRotation(0);
+        }
+
         setReady(true);
         redraw();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
       } catch {
         if (!cancelled) {
           setError("Couldn't load images for the canvas (signed URLs may have expired).");
@@ -121,35 +224,64 @@ export function DesignCanvas({
     return () => {
       cancelled = true;
     };
-  }, [blankUrl, designUrl, redraw]);
+    // Re-run only when the images themselves change — placement defaults
+    // shouldn't reset on every prop identity change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [blankUrl, designUrl]);
 
   useEffect(() => {
     if (ready) redraw();
   }, [ready, redraw]);
 
-  function onPointerDown(event: React.PointerEvent<HTMLCanvasElement>) {
-    if (!imagesRef.current.design) return;
+  function canvasPoint(event: React.PointerEvent<HTMLCanvasElement>) {
     const rect = event.currentTarget.getBoundingClientRect();
-    const x = ((event.clientX - rect.left) / rect.width) * CANVAS_SIZE;
-    const y = ((event.clientY - rect.top) / rect.height) * CANVAS_SIZE;
-    setDragging(true);
-    dragOrigin.current = { x, y, ox: offset.x, oy: offset.y };
+    return {
+      x: ((event.clientX - rect.left) / rect.width) * CANVAS_SIZE,
+      y: ((event.clientY - rect.top) / rect.height) * CANVAS_SIZE,
+    };
+  }
+
+  function onPointerDown(event: React.PointerEvent<HTMLCanvasElement>) {
+    const point = canvasPoint(event);
     event.currentTarget.setPointerCapture(event.pointerId);
+
+    if (editingArea) {
+      areaDragStart.current = { x: point.x / CANVAS_SIZE, y: point.y / CANVAS_SIZE };
+      setAreaDraft({ x: areaDragStart.current.x, y: areaDragStart.current.y, width: 0, height: 0 });
+      return;
+    }
+
+    if (!imagesRef.current.design) return;
+    setDragging(true);
+    dragOrigin.current = { x: point.x, y: point.y, ox: offset.x, oy: offset.y };
   }
 
   function onPointerMove(event: React.PointerEvent<HTMLCanvasElement>) {
+    const point = canvasPoint(event);
+
+    if (editingArea) {
+      if (!areaDragStart.current) return;
+      const start = areaDragStart.current;
+      const cur = { x: point.x / CANVAS_SIZE, y: point.y / CANVAS_SIZE };
+      setAreaDraft({
+        x: Math.min(start.x, cur.x),
+        y: Math.min(start.y, cur.y),
+        width: Math.abs(cur.x - start.x),
+        height: Math.abs(cur.y - start.y),
+      });
+      return;
+    }
+
     if (!dragging) return;
-    const rect = event.currentTarget.getBoundingClientRect();
-    const x = ((event.clientX - rect.left) / rect.width) * CANVAS_SIZE;
-    const y = ((event.clientY - rect.top) / rect.height) * CANVAS_SIZE;
     setOffset({
-      x: dragOrigin.current.ox + (x - dragOrigin.current.x),
-      y: dragOrigin.current.oy + (y - dragOrigin.current.y),
+      x: dragOrigin.current.ox + (point.x - dragOrigin.current.x),
+      y: dragOrigin.current.oy + (point.y - dragOrigin.current.y),
     });
   }
 
   function onPointerUp(event: React.PointerEvent<HTMLCanvasElement>) {
     setDragging(false);
+    areaDragStart.current = null;
     try {
       event.currentTarget.releasePointerCapture(event.pointerId);
     } catch {
@@ -175,9 +307,33 @@ export function DesignCanvas({
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-|-$/g, "")
         .slice(0, 60);
-      await onExport(blob, suggested || "composition");
+      await onExport(blob, suggested || "composition", {
+        offsetX: offset.x,
+        offsetY: offset.y,
+        scale,
+        rotation,
+        canvasSize: CANVAS_SIZE,
+      });
     } finally {
       setExporting(false);
+    }
+  }
+
+  async function handleSaveArea() {
+    if (!areaDraft || !onSavePrintArea) return;
+    if (areaDraft.width < 0.02 || areaDraft.height < 0.02) {
+      setError("Drag out a print area first — that box is too small.");
+      return;
+    }
+    setSavingArea(true);
+    setError(null);
+    try {
+      await onSavePrintArea(areaDraft);
+      setEditingArea(false);
+    } catch {
+      setError("Couldn't save the print area.");
+    } finally {
+      setSavingArea(false);
     }
   }
 
@@ -205,6 +361,7 @@ export function DesignCanvas({
             max={1.2}
             step={0.01}
             value={scale}
+            disabled={editingArea}
             onChange={(event) => setScale(Number(event.target.value))}
             className="w-36"
           />
@@ -217,6 +374,7 @@ export function DesignCanvas({
             max={180}
             step={1}
             value={rotation}
+            disabled={editingArea}
             onChange={(event) => setRotation(Number(event.target.value))}
             className="w-36"
           />
@@ -224,32 +382,82 @@ export function DesignCanvas({
         </label>
         <button
           type="button"
+          disabled={editingArea}
           onClick={() => setRotation((prev) => ((prev + 90 + 180) % 360) - 180)}
-          className={`rounded-lg border px-3 py-1.5 text-xs ${btnSecondary}`}
+          className={`rounded-lg border px-3 py-1.5 text-xs disabled:opacity-40 ${btnSecondary}`}
         >
           +90°
         </button>
         <button
           type="button"
+          disabled={editingArea}
           onClick={() => {
-            setOffset({ x: CANVAS_SIZE * 0.25, y: CANVAS_SIZE * 0.25 });
-            setScale(0.45);
+            if (printArea && imagesRef.current.design) {
+              const fitted = fitInsideBox(
+                imagesRef.current.design.width,
+                imagesRef.current.design.height,
+                printArea.x * CANVAS_SIZE,
+                printArea.y * CANVAS_SIZE,
+                printArea.width * CANVAS_SIZE,
+                printArea.height * CANVAS_SIZE,
+              );
+              setScale(fitted.scale);
+              setOffset({ x: fitted.offsetX, y: fitted.offsetY });
+            } else {
+              setOffset(DEFAULT_OFFSET);
+              setScale(DEFAULT_SCALE);
+            }
             setRotation(0);
           }}
-          className={`rounded-lg border px-3 py-1.5 text-xs ${btnSecondary}`}
+          className={`rounded-lg border px-3 py-1.5 text-xs disabled:opacity-40 ${btnSecondary}`}
         >
           Reset
         </button>
         <button
           type="button"
           onClick={handleExport}
-          disabled={!ready || !designUrl || exporting}
+          disabled={!ready || !designUrl || exporting || editingArea}
           className="rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-50"
           style={exportBtn}
         >
           {exporting ? "Saving…" : exportLabel}
         </button>
       </div>
+
+      {onSavePrintArea ? (
+        <div
+          className={`flex flex-wrap items-center gap-3 rounded-lg border px-3 py-2 ${btnSecondary}`}
+        >
+          <button
+            type="button"
+            onClick={() => setEditingArea((v) => !v)}
+            className="rounded-lg border px-3 py-1.5 text-xs"
+            style={
+              editingArea
+                ? { background: "#e11d48", color: "#fff", borderColor: "#e11d48" }
+                : undefined
+            }
+          >
+            {editingArea ? "Cancel" : printArea ? "Redo print area" : "Set print area"}
+          </button>
+          {editingArea ? (
+            <>
+              <span className={`text-xs ${muted}`}>
+                Drag on the canvas to mark where the print sits on this blank.
+              </span>
+              <button
+                type="button"
+                onClick={handleSaveArea}
+                disabled={savingArea}
+                className="rounded-lg px-3 py-1.5 text-xs font-medium disabled:opacity-50"
+                style={exportBtn}
+              >
+                {savingArea ? "Saving…" : "Save print area"}
+              </button>
+            </>
+          ) : null}
+        </div>
+      ) : null}
 
       {!blankUrl || !designUrl ? (
         <p className={`text-sm ${muted}`}>Pick a blank and a design to start placing.</p>

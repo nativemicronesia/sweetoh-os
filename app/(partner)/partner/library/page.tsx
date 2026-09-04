@@ -136,13 +136,23 @@ export default async function PartnerLibraryPage({ searchParams }: PageProps) {
                     {design.status} · {design.createdAt.toLocaleString()}
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    <Link
-                      href={`/partner/canvas?design=${design.id}`}
-                      className="text-xs underline"
-                      style={{ color: "var(--so-gold)" }}
-                    >
-                      Place on blank
-                    </Link>
+                    {design.isComposition ? (
+                      <Link
+                        href={`/partner/canvas?composition=${design.id}`}
+                        className="text-xs underline"
+                        style={{ color: "var(--so-gold)" }}
+                      >
+                        Edit composition
+                      </Link>
+                    ) : (
+                      <Link
+                        href={`/partner/canvas?design=${design.id}`}
+                        className="text-xs underline"
+                        style={{ color: "var(--so-gold)" }}
+                      >
+                        Place on blank
+                      </Link>
+                    )}
                     {canApprove && design.status === "draft" ? (
                       <form action={approveLibraryDesignAction}>
                         <input type="hidden" name="assetId" value={design.id} />

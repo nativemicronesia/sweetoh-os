@@ -57,6 +57,18 @@ export const product = pgTable(
      */
     brandVentureSlug: text("brand_venture_slug").notNull().default("sweetoh"),
     submittedByUserId: uuid("submitted_by_user_id"),
+    /**
+     * Print-safe area on this product's blank photo, as fractions (0-1) of
+     * the rendered canvas bounding box. Set once from the partner Canvas so
+     * new compositions on this blank auto-fit the design there instead of a
+     * generic centered default.
+     */
+    printArea: jsonb("print_area").$type<{
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    }>(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),

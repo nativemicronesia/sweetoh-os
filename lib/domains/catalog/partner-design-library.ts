@@ -2,10 +2,14 @@ import { and, desc, eq, inArray } from "drizzle-orm";
 import {
   approveAsset,
   createAssetWithUpload,
+  getAssetById,
   getAssetSignedUrl,
+  type AssetCompositionLayout,
 } from "@/lib/domains/assets/service";
 import { getDb } from "@/lib/db/client";
 import { asset } from "@/lib/db/schema";
+
+export type { AssetCompositionLayout };
 
 export type PartnerLibraryDesign = {
   id: string;
@@ -14,6 +18,8 @@ export type PartnerLibraryDesign = {
   notes: string | null;
   createdAt: Date;
   previewUrl: string | null;
+  /** Saved from the partner Canvas with its placement — reopenable for editing. */
+  isComposition: boolean;
 };
 
 export async function listPartnerLibraryDesigns(
@@ -38,6 +44,7 @@ export async function listPartnerLibraryDesigns(
       name: row.name,
       status: row.status,
       notes: row.notes,
+      isComposition: row.compositionLayout != null,
       createdAt: row.createdAt,
       previewUrl: await getAssetSignedUrl({
         ventureId,
@@ -58,6 +65,8 @@ export async function uploadPartnerDesign(input: {
   mimeType: string;
   /** Partner/owner designs go live for customer Studio immediately. */
   autoApprove: boolean;
+  /** Set when this upload is a Canvas composition export — lets it be reopened for editing. */
+  compositionLayout?: AssetCompositionLayout | null;
 }) {
   const created = await createAssetWithUpload({
     ventureId: input.ventureId,
@@ -69,6 +78,7 @@ export async function uploadPartnerDesign(input: {
     filename: input.filename,
     mimeType: input.mimeType,
     notes: input.notes,
+    compositionLayout: input.compositionLayout ?? null,
   });
 
   if (input.autoApprove) {
@@ -80,4 +90,13 @@ export async function uploadPartnerDesign(input: {
   }
 
   return created;
+}
+
+/** Reload a previously-saved Canvas composition's placement, for reopening it in the editor. */
+export async function getSavedComposition(input: {
+  ventureId: string;
+  assetId: string;
+}): Promise<AssetCompositionLayout | null> {
+  const row = await getAssetById(input);
+  return row.compositionLayout ?? null;
 }

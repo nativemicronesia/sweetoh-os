@@ -175,6 +175,16 @@ export async function getAssetPreviewUrl(input: {
   });
 }
 
+export type AssetCompositionLayout = {
+  blankProductId: string;
+  designAssetId: string;
+  offsetX: number;
+  offsetY: number;
+  scale: number;
+  rotation: number;
+  canvasSize: number;
+};
+
 export async function createAssetWithUpload(input: {
   ventureId: string;
   ventureSlug: string;
@@ -185,6 +195,7 @@ export async function createAssetWithUpload(input: {
   filename: string;
   mimeType: string;
   notes?: string | null;
+  compositionLayout?: AssetCompositionLayout | null;
 }) {
   const db = getDb();
   const assetId = crypto.randomUUID();
@@ -215,6 +226,7 @@ export async function createAssetWithUpload(input: {
       fileSizeBytes: input.file.length,
       uploadedById: input.uploadedById,
       notes: input.notes ?? null,
+      compositionLayout: input.compositionLayout ?? null,
     })
     .returning();
 

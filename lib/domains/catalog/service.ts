@@ -1434,3 +1434,38 @@ export async function upsertAutomaticCollection(input: {
 
   return row;
 }
+
+export type ProductPrintArea = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
+/**
+ * Set once from the partner Canvas — the print-safe rectangle on this
+ * product's blank photo, as fractions (0-1) of the rendered canvas bounding
+ * box. New compositions on this blank default the design there instead of a
+ * generic centered placement.
+ */
+export async function setProductPrintArea(input: {
+  ventureId: string;
+  productId: string;
+  printArea: ProductPrintArea;
+}) {
+  const db = getDb();
+
+  const [row] = await db
+    .update(product)
+    .set({ printArea: input.printArea, updatedAt: new Date() })
+    .where(
+      and(eq(product.id, input.productId), eq(product.ventureId, input.ventureId)),
+    )
+    .returning();
+
+  if (!row) {
+    throw new NotFoundError("Product not found");
+  }
+
+  return row;
+}

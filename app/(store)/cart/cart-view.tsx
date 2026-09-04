@@ -4,6 +4,41 @@ import Link from "next/link";
 import { useCart } from "@/lib/cart/cart-context";
 import { formatPrice } from "@/lib/shared/format";
 
+function QuantityStepper({
+  quantity,
+  onChange,
+}: {
+  quantity: number;
+  onChange: (next: number) => void;
+}) {
+  return (
+    <div
+      className="flex items-center border"
+      style={{ borderColor: "var(--so-border)" }}
+    >
+      <button
+        type="button"
+        aria-label="Decrease quantity"
+        onClick={() => onChange(quantity - 1)}
+        className="w-8 py-1 text-sm text-[color:var(--so-cream)] hover:bg-[color:var(--so-surface)]"
+      >
+        −
+      </button>
+      <span className="w-8 text-center text-sm tabular-nums text-[color:var(--so-cream)]">
+        {quantity}
+      </span>
+      <button
+        type="button"
+        aria-label="Increase quantity"
+        onClick={() => onChange(quantity + 1)}
+        className="w-8 py-1 text-sm text-[color:var(--so-cream)] hover:bg-[color:var(--so-surface)]"
+      >
+        +
+      </button>
+    </div>
+  );
+}
+
 export function CartView() {
   const { items, subtotalCents, removeItem, setQuantity } = useCart();
 
@@ -56,15 +91,9 @@ export function CartView() {
               <p className="text-sm so-muted">{formatPrice(item.priceCents)}</p>
             </div>
 
-            <input
-              type="number"
-              min={1}
-              value={item.quantity}
-              onChange={(event) =>
-                setQuantity(item.productId, Number(event.target.value))
-              }
-              className="w-16 border bg-transparent px-2 py-1 text-sm text-[color:var(--so-cream)]"
-              style={{ borderColor: "var(--so-border)" }}
+            <QuantityStepper
+              quantity={item.quantity}
+              onChange={(next) => setQuantity(item.productId, Math.max(1, next))}
             />
 
             <p className="w-20 text-right text-sm font-medium text-[color:var(--so-cream)]">

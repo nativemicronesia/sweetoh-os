@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { FlashBanner } from "@/app/(owner)/owner/components/flash-banner";
-import { listPartnerLibraryDesigns } from "@/lib/domains/catalog/partner-design-library";
+import {
+  getSavedComposition,
+  listPartnerLibraryDesigns,
+} from "@/lib/domains/catalog/partner-design-library";
 import {
   getPrimaryProductImageUrl,
   listActiveProducts,
@@ -9,16 +12,19 @@ import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
 import { PartnerCanvasClient } from "./canvas-client";
 
 type PageProps = {
-  searchParams: Promise<{ design?: string; error?: string }>;
+  searchParams: Promise<{ design?: string; composition?: string; error?: string }>;
 };
 
 export default async function PartnerCanvasPage({ searchParams }: PageProps) {
   const session = await requirePartnerWorkspace();
   const query = await searchParams;
 
-  const [products, designs] = await Promise.all([
+  const [products, designs, savedComposition] = await Promise.all([
     listActiveProducts(session.ventureId),
     listPartnerLibraryDesigns(session.ventureId),
+    query.composition
+      ? getSavedComposition({ ventureId: session.ventureId, assetId: query.composition })
+      : Promise.resolve(null),
   ]);
 
   const images = await Promise.all(
@@ -29,6 +35,7 @@ export default async function PartnerCanvasPage({ searchParams }: PageProps) {
     id: product.id,
     name: product.name,
     imageUrl: images[index],
+    printArea: product.printArea ?? null,
   }));
 
   const designOptions = designs
@@ -74,7 +81,18 @@ export default async function PartnerCanvasPage({ searchParams }: PageProps) {
         <PartnerCanvasClient
           blanks={blanks}
           designs={designOptions}
-          initialDesignId={query.design ?? null}
+          initialDesignId={savedComposition?.designAssetId ?? query.design ?? null}
+          initialBlankId={savedComposition?.blankProductId ?? null}
+          initialTransform={
+            savedComposition
+              ? {
+                  offsetX: savedComposition.offsetX,
+                  offsetY: savedComposition.offsetY,
+                  scale: savedComposition.scale,
+                  rotation: savedComposition.rotation,
+                }
+              : null
+          }
         />
       )}
     </div>

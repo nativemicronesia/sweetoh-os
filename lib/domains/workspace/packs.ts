@@ -119,7 +119,7 @@ export const SWEETOH_PARTNER_PACK: WorkspacePack = {
   agentSlot: {
     status: "reserved",
     label: "Your agent",
-    note: "Her AI avatar — Dekaz, catered to Sweet'Oh. Reserved, not built yet.",
+    note: "Her personal AI avatar — separate from Sweet'Oh AI, for anything outside the business. Reserved, not built yet.",
   },
 };
 

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { approveAsset } from "@/lib/domains/assets/service";
 import { uploadPartnerDesign } from "@/lib/domains/catalog/partner-design-library";
 import { canModerateListings } from "@/lib/domains/catalog/partner-listings";
+import { setProductPrintArea } from "@/lib/domains/catalog/service";
 import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
 import { getActionErrorMessage } from "@/lib/shared/action-errors";
 
@@ -102,6 +103,19 @@ export async function saveCanvasCompositionAction(formData: FormData): Promise<v
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
+
+    const blankProductId = String(formData.get("blankProductId") ?? "").trim();
+    const designAssetId = String(formData.get("designAssetId") ?? "").trim();
+    const offsetX = Number(formData.get("offsetX"));
+    const offsetY = Number(formData.get("offsetY"));
+    const scale = Number(formData.get("scale"));
+    const rotation = Number(formData.get("rotation"));
+    const canvasSize = Number(formData.get("canvasSize"));
+    const hasLayout =
+      blankProductId &&
+      designAssetId &&
+      [offsetX, offsetY, scale, rotation, canvasSize].every(Number.isFinite);
+
     await uploadPartnerDesign({
       ventureId: session.ventureId,
       ventureSlug: session.ventureSlug,
@@ -112,6 +126,9 @@ export async function saveCanvasCompositionAction(formData: FormData): Promise<v
       filename: file.name || "composition.png",
       mimeType: file.type || "image/png",
       autoApprove: canModerateListings(session),
+      compositionLayout: hasLayout
+        ? { blankProductId, designAssetId, offsetX, offsetY, scale, rotation, canvasSize }
+        : null,
     });
 
     revalidatePath("/partner/library");
@@ -125,5 +142,23 @@ export async function saveCanvasCompositionAction(formData: FormData): Promise<v
     redirect(
       `/partner/canvas?error=${encodeURIComponent(getActionErrorMessage(error))}`,
     );
+  }
+}
+
+export async function setBlankPrintAreaAction(input: {
+  productId: string;
+  printArea: { x: number; y: number; width: number; height: number };
+}): Promise<{ error?: string }> {
+  try {
+    const session = await requirePartnerWorkspace();
+    await setProductPrintArea({
+      ventureId: session.ventureId,
+      productId: input.productId,
+      printArea: input.printArea,
+    });
+    revalidatePath("/partner/canvas");
+    return {};
+  } catch (error) {
+    return { error: getActionErrorMessage(error) };
   }
 }

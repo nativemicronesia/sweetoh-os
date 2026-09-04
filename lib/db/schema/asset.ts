@@ -1,5 +1,6 @@
 import {
   integer,
+  jsonb,
   pgTable,
   text,
   timestamp,
@@ -36,6 +37,21 @@ export const asset = pgTable("asset", {
   }),
   approvedAt: timestamp("approved_at", { withTimezone: true }),
   notes: text("notes"),
+  /**
+   * Editable placement state for a Canvas composition (blank + design +
+   * transform). Set only on assets created by the partner Canvas — lets the
+   * composition be reopened and adjusted instead of only existing as the
+   * flattened export PNG.
+   */
+  compositionLayout: jsonb("composition_layout").$type<{
+    blankProductId: string;
+    designAssetId: string;
+    offsetX: number;
+    offsetY: number;
+    scale: number;
+    rotation: number;
+    canvasSize: number;
+  }>(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
