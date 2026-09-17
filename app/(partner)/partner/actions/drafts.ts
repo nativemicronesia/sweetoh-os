@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { unstable_rethrow } from "next/navigation";
 import { redirect } from "next/navigation";
 import {
   parsePartnerProductFields,
@@ -66,6 +67,7 @@ export async function publishPartnerDraftAction(
       }),
     );
   } catch (error) {
+    unstable_rethrow(error);
     redirect(
       reviewDetailPath(productId, { error: getActionErrorMessage(error) }),
     );
@@ -87,6 +89,7 @@ export async function unpublishPartnerProductAction(
       }),
     );
   } catch (error) {
+    unstable_rethrow(error);
     redirect(productsPath({ error: getActionErrorMessage(error) }));
   }
 }
@@ -109,6 +112,7 @@ export async function submitPartnerDraftForReviewAction(
       }),
     );
   } catch (error) {
+    unstable_rethrow(error);
     redirect(
       reviewDetailPath(productId, { error: getActionErrorMessage(error) }),
     );
@@ -132,6 +136,7 @@ export async function approvePendingListingAction(
       }),
     );
   } catch (error) {
+    unstable_rethrow(error);
     redirect(reviewPath({ error: getActionErrorMessage(error) }));
   }
 }
@@ -147,6 +152,7 @@ export async function rejectPendingListingAction(
 
     redirect(reviewPath({ success: `"${row.name}" rejected.` }));
   } catch (error) {
+    unstable_rethrow(error);
     redirect(reviewPath({ error: getActionErrorMessage(error) }));
   }
 }
@@ -170,6 +176,7 @@ export async function updatePartnerDraftAction(
       }),
     );
   } catch (error) {
+    unstable_rethrow(error);
     redirect(
       reviewDetailPath(productId, { error: getActionErrorMessage(error) }),
     );

@@ -17,7 +17,9 @@ export type PartnerSurfaceId =
   | "review"
   | "orders"
   | "products"
-  | "settings";
+  | "settings"
+  | "canvas"
+  | "library";
 
 export type WorkspaceNavItem = {
   id: PartnerSurfaceId;
@@ -47,7 +49,7 @@ export type WorkspacePack = {
 
 const NAV_OVERVIEW: WorkspaceNavItem = {
   id: "overview",
-  label: "Overview",
+  label: "My workspace",
   href: "/partner",
   note: "What needs you today",
 };
@@ -57,12 +59,12 @@ const NAV_CREATE: WorkspaceNavItem = {
   label: "Create",
   href: "/partner/create",
   note: "New piece — photo or description",
-  matchPrefixes: ["/partner/create", "/partner/visual-intake", "/partner/intelligence"],
+  matchPrefixes: ["/partner/create", "/partner/builder", "/partner/visual-intake", "/partner/intelligence"],
 };
 
 const NAV_REVIEW: WorkspaceNavItem = {
   id: "review",
-  label: "Review",
+  label: "Listings",
   href: "/partner/review",
   note: "Listings waiting on a decision",
   matchPrefixes: ["/partner/review", "/partner/drafts", "/partner/studio/print"],
@@ -84,8 +86,7 @@ const NAV_PRODUCTS: WorkspaceNavItem = {
   matchPrefixes: [
     "/partner/products",
     "/partner/uploads",
-    "/partner/library",
-    "/partner/canvas",
+
   ],
 };
 
@@ -101,7 +102,7 @@ export const SWEETOH_PARTNER_PACK: WorkspacePack = {
   label: "Sweet'Oh Studio",
   roleLabel: "Partner",
   tagline:
-    "Create, review, and ship for the NMH POD network. Ask the Studio bar above to do it for you.",
+    "Your products, your creativity, your shop. Prepare a blank, make a design, and bring it to life.",
   primaryCta: {
     label: "New piece",
     href: "/partner/create",
@@ -110,6 +111,8 @@ export const SWEETOH_PARTNER_PACK: WorkspacePack = {
   nav: [
     NAV_OVERVIEW,
     NAV_CREATE,
+    { id: "canvas", label: "Design studio", href: "/partner/canvas", note: "Create on your blanks" },
+    { id: "library", label: "Artwork library", href: "/partner/library", note: "Your reusable designs" },
     NAV_REVIEW,
     NAV_ORDERS,
     NAV_PRODUCTS,

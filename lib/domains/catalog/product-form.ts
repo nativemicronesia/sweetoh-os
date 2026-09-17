@@ -38,7 +38,11 @@ export function parsePartnerProductFields(
 ): ParsedPartnerProductFormFields {
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim() || null;
-  const priceCents = Number(formData.get("priceCents") ?? 0);
+  const dollars = formData.get("priceDollars");
+  if (dollars !== null && !/^\d+(?:\.\d{1,2})?$/.test(String(dollars).trim())) {
+    throw new ValidationError("Enter a price in dollars, with up to two decimal places.");
+  }
+  const priceCents = dollars === null ? Number(formData.get("priceCents") ?? 0) : Math.round(Number(dollars) * 100);
   const category = String(formData.get("category") ?? "") as ProductCategory;
   const shortDescription =
     String(formData.get("shortDescription") ?? "").trim() || null;
@@ -77,7 +81,7 @@ export function validatePartnerProductFields(
     throw new ValidationError("Invalid category.");
   }
 
-  if (!Number.isFinite(fields.priceCents) || fields.priceCents < 0) {
+  if (!Number.isSafeInteger(fields.priceCents) || fields.priceCents < 0 || fields.priceCents > 2147483647) {
     throw new ValidationError(
       "Price must be a non-negative number of cents.",
     );

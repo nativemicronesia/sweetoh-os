@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import {
   isAiProductBuilderConfigured,
   isMockAiEnabled,
@@ -28,6 +29,7 @@ export default async function PartnerCreatePage({
   searchParams,
 }: PartnerCreatePageProps) {
   const session = await requirePartnerWorkspace();
+  if (session.role === "partner" || session.role === "owner") redirect("/partner/builder");
   const pack = resolvePartnerWorkspacePack({
     role: session.role,
     ventureSlug: session.ventureSlug,

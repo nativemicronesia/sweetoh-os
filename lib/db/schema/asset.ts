@@ -44,6 +44,8 @@ export const asset = pgTable("asset", {
    * flattened export PNG.
    */
   compositionLayout: jsonb("composition_layout").$type<{
+    text?: { value: string; x: number; y: number; size: number; color: string };
+    studio?: import("@/lib/domains/catalog/studio-layout").StudioLayout;
     blankProductId: string;
     designAssetId: string;
     offsetX: number;

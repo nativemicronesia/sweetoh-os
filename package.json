@@ -18,6 +18,7 @@
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.49.8",
     "drizzle-orm": "^0.44.2",
+    "fabric": "^6.9.1",
     "next": "16.2.9",
     "openai": "^6.44.0",
     "postgres": "^3.4.7",

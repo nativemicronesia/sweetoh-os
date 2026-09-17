@@ -32,7 +32,7 @@ const PARTNER_EDITABLE_STATUSES: ProductDraftStatus[] = [
 
 /** Partner/owner may publish, approve, and reject. Creators submit only. */
 export function canModerateListings(session: SessionUser): boolean {
-  return session.role !== "creator";
+  return session.role === "partner" || session.role === "owner";
 }
 
 export async function assertPartnerOwnsDraft(
@@ -102,6 +102,7 @@ export async function unpublishPartnerProduct(
   session: SessionUser,
   productId: string,
 ) {
+  if (!canModerateListings(session)) throw new ValidationError("Only the shop partner or owner can unpublish products.");
   await getProductById({ ventureId: session.ventureId, productId });
 
   return unpublishProduct({

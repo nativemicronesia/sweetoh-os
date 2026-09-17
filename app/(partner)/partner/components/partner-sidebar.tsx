@@ -31,7 +31,7 @@ export function PartnerSidebar({
 
   return (
     <aside
-      className="flex w-56 shrink-0 flex-col border-r"
+      className="studio-sidebar flex w-full shrink-0 flex-col border-b md:w-52 md:border-b-0 md:border-r"
       style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}
     >
       <div
@@ -50,7 +50,7 @@ export function PartnerSidebar({
       </div>
 
       <div
-        className="border-b px-4 py-3"
+        className="hidden border-b px-4 py-3 md:block"
         style={{ borderColor: "var(--so-border)" }}
       >
         <p className="truncate text-xs font-medium" style={{ color: "var(--so-cream)" }}>
@@ -61,28 +61,25 @@ export function PartnerSidebar({
         </p>
       </div>
 
-      <nav className="flex-1 space-y-0.5 overflow-y-auto p-2 pt-3">
-        {pack.nav.map((item) => {
-          const active = isNavItemActive(path, item);
-          return (
-            <Link
-              key={item.id}
-              href={item.href}
-              title={item.note}
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors"
-              style={{
-                background: active ? "var(--so-surface)" : "transparent",
-                color: active ? "var(--so-gold)" : "var(--so-cream-dim)",
-              }}
-            >
-              <span>{item.label}</span>
-            </Link>
-          );
-        })}
+      <nav className="flex gap-1 overflow-x-auto p-2 md:block md:flex-1 md:space-y-0.5 md:overflow-y-auto md:pt-3">
+        {packId !== "sweetoh_creator" && <Link href="/partner/builder" className="studio-primary">＋ Create product</Link>}
+        {pack.nav.filter(item => ["overview", "library", "orders"].includes(item.id)).map(item => (
+          <Link key={item.id} href={item.href} aria-current={isNavItemActive(path, item) ? "page" : undefined}
+            className="flex shrink-0 items-center gap-3 whitespace-nowrap rounded-lg px-3 py-2 text-sm"
+            style={{ background: isNavItemActive(path, item) ? "var(--so-surface)" : "transparent", color: isNavItemActive(path, item) ? "var(--so-gold)" : "var(--so-cream-dim)" }}>
+            {item.id === "overview" ? "My products" : item.id === "library" ? "Artwork" : "Orders"}
+          </Link>
+        ))}
+        <details className="studio-more-nav">
+          <summary>More</summary>
+          <div>{pack.nav.filter(item => !["overview", "library", "orders"].includes(item.id)).map(item => (
+            <Link key={item.id} href={item.href} aria-current={isNavItemActive(path, item) ? "page" : undefined} className="block rounded-lg px-3 py-2 text-sm">{item.label}</Link>
+          ))}</div>
+        </details>
       </nav>
 
       <div
-        className="border-t p-3"
+        className="absolute right-3 top-2 p-1 md:static md:border-t md:p-3"
         style={{ borderColor: "var(--so-border)" }}
       >
         <form action={signOut}>

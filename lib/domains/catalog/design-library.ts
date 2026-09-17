@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, isNull } from "drizzle-orm";
 import {
   getAssetSignedUrl,
 } from "@/lib/domains/assets/service";
@@ -25,6 +25,8 @@ export async function listApprovedDesignsForStudio(
         eq(asset.ventureId, ventureId),
         eq(asset.assetType, "sweetoh_design"),
         eq(asset.status, "approved"),
+        // Product mockups are private saved work, not standalone customer artwork.
+        isNull(asset.compositionLayout),
       ),
     )
     .orderBy(desc(asset.updatedAt))

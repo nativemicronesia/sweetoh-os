@@ -1,4 +1,5 @@
 import { and, count, desc, eq, inArray, isNull } from "drizzle-orm";
+import { builderRecord } from "@/lib/domains/intelligence/product-research-schema";
 import {
   countActiveProductsInCollection,
   ensureAutomaticCollections,
@@ -150,6 +151,7 @@ async function getLatestAiSessionForProduct(input: {
       confidenceScore: aiCreationSession.confidenceScore,
       intakeDetection: aiCreationSession.intakeDetection,
       pieOutput: aiCreationSession.pieOutput,
+      rawResponse: aiCreationSession.rawResponse,
     })
     .from(aiCreationSession)
     .where(
@@ -254,6 +256,11 @@ export async function evaluateProductPublishReadiness(input: {
   productId: string;
 }): Promise<PublishReadiness> {
   const existing = await getProductById(input);
+  const prepared = builderRecord((await getLatestAiSessionForProduct(input))?.rawResponse);
+  if (prepared?.purpose === "blank" || (prepared && !prepared.confirmed)) {
+    const reason = prepared.purpose === "blank" ? "Reusable blank — create a finished design in your studio before publishing." : "Confirm the product details in Product Builder first.";
+    return { canPublish: false, blockingReason: reason, checks: [{ label: "Product Builder review", passed: false, message: reason }] };
+  }
   const mediaCount = await countProductMedia(existing.id);
   const sweetohPathValid = await isSweetohPathValid({
     ventureId: input.ventureId,
@@ -623,6 +630,9 @@ export async function publishProduct(input: {
 }) {
   const db = getDb();
   const existing = await getProductById(input);
+  const prepared = builderRecord((await getLatestAiSessionForProduct(input))?.rawResponse);
+  if (prepared?.purpose === "blank") throw new ValidationError("Blanks stay private. Create a finished design before publishing.");
+  if (prepared && !prepared.confirmed) throw new ValidationError("Confirm the product details in Product Builder before publishing.");
 
   if (existing.draftStatus === "archived") {
     throw new ValidationError("Archived products cannot be published.");

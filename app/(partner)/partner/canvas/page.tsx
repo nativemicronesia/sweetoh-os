@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { getAssetSignedUrl } from "@/lib/domains/assets/service";
+import { CreationSteps } from "../components/creation-steps";
+import { listBuilderBlanks } from "@/lib/domains/intelligence/partner-builder";
 import { FlashBanner } from "@/app/(owner)/owner/components/flash-banner";
 import {
   getSavedComposition,
@@ -11,8 +14,10 @@ import {
 import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
 import { PartnerCanvasClient } from "./canvas-client";
 
+export const maxDuration = 180;
+
 type PageProps = {
-  searchParams: Promise<{ design?: string; composition?: string; error?: string }>;
+  searchParams: Promise<{ design?: string; blank?: string; composition?: string; error?: string }>;
 };
 
 export default async function PartnerCanvasPage({ searchParams }: PageProps) {
@@ -31,58 +36,47 @@ export default async function PartnerCanvasPage({ searchParams }: PageProps) {
     products.map((item) => getPrimaryProductImageUrl(item.id)),
   );
 
-  const blanks = products.map((product, index) => ({
+  const reusableBlanks = await listBuilderBlanks(session);
+  const blanks = [...reusableBlanks, ...products.map((product, index) => ({
     id: product.id,
     name: product.name,
     imageUrl: images[index],
     printArea: product.printArea ?? null,
-  }));
+  })).filter(p => !reusableBlanks.some(b => b.id === p.id))];
 
   const designOptions = designs
-    .filter((item) => item.status === "approved" || item.status === "licensed" || item.status === "draft")
+    .filter((item) => !item.isComposition && (item.status === "approved" || item.status === "licensed" || item.status === "draft"))
     .map((item) => ({
       id: item.id,
       name: item.name,
       previewUrl: item.previewUrl,
     }));
 
+  const surfaceIds = new Set([
+    ...blanks.flatMap(b => b.printArea?.surfaces?.map(s=>s.assetId) ?? []),
+    ...(savedComposition?.studio?.surfaces.flatMap(s=>[s.assetId, ...s.layers.flatMap(l=>l.kind === "image" ? [l.assetId] : [])]) ?? []),
+  ].filter((id): id is string=>Boolean(id)));
+  const surfaceImages = Object.fromEntries(await Promise.all([...surfaceIds].map(async id => [id, await getAssetSignedUrl({ventureId:session.ventureId,assetId:id})])));
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <FlashBanner message={query.error} variant="error" />
 
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-semibold" style={{ color: "var(--so-cream)" }}>
-            Canvas
-          </h1>
-          <p className="mt-1 text-sm" style={{ color: "var(--so-cream-dim)" }}>
-            Place a library design on a blank, scale it, and save the composition back to your
-            library for Studio.
-          </p>
-        </div>
-        <Link
-          href="/partner/library"
-          className="text-sm underline"
-          style={{ color: "var(--so-gold)" }}
-        >
-          Design library
-        </Link>
-      </div>
-
-      {blanks.length === 0 || designOptions.length === 0 ? (
+      {blanks.length === 0 ? (
         <p className="text-sm" style={{ color: "var(--so-cream-dim)" }}>
-          Need at least one live blank and one library design.{" "}
-          <Link href="/partner/library" className="underline" style={{ color: "var(--so-cream)" }}>
-            Upload a design
+          Start by preparing a reusable blank.{" "}
+          <Link href="/partner/builder" className="underline" style={{ color: "var(--so-cream)" }}>
+            Add a blank
           </Link>{" "}
-          or publish blanks from Products.
+          — it stays private while you create.
         </p>
       ) : (
         <PartnerCanvasClient
+          initialStudio={savedComposition?.studio}
+          surfaceImages={Object.fromEntries(Object.entries(surfaceImages).filter((entry): entry is [string,string]=>Boolean(entry[1])))}
           blanks={blanks}
           designs={designOptions}
           initialDesignId={savedComposition?.designAssetId ?? query.design ?? null}
-          initialBlankId={savedComposition?.blankProductId ?? null}
+          initialBlankId={savedComposition?.blankProductId ?? query.blank ?? null}
           initialTransform={
             savedComposition
               ? {
@@ -90,6 +84,7 @@ export default async function PartnerCanvasPage({ searchParams }: PageProps) {
                   offsetY: savedComposition.offsetY,
                   scale: savedComposition.scale,
                   rotation: savedComposition.rotation,
+                  text: savedComposition.text,
                 }
               : null
           }

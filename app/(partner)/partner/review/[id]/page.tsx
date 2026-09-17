@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { CreationSteps } from "../../components/creation-steps";
+import { builderRecord } from "@/lib/domains/intelligence/product-research-schema";
 import { notFound } from "next/navigation";
 import { DraftStatusBadge } from "@/app/(owner)/owner/components/draft-status-badge";
 import { FlashBanner } from "@/app/(owner)/owner/components/flash-banner";
@@ -90,7 +92,7 @@ export default async function PartnerReviewDetailPage({
     getPrimaryProductImageUrl(id),
   ]);
 
-  const draftCompleteness = aiSession
+  const draftCompleteness = aiSession && !builderRecord(aiSession.session.rawResponse) && (aiSession.session.rawResponse as { kind?: string })?.kind !== "canvas_composition"
     ? evaluateAiProductDraftCompleteness({
         product,
         session: aiSession.session,
@@ -133,9 +135,11 @@ export default async function PartnerReviewDetailPage({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="studio-review space-y-6"><CreationSteps current={product.active ? 5 : 4} />
+      {(aiSession?.session.rawResponse as {kind?:string})?.kind === "canvas_composition" && product.sourceAssetId && <Link className="so-link" href={`/partner/canvas?composition=${product.sourceAssetId}`}>← Open saved design</Link>}
       <FlashBanner message={query.error} variant="error" />
       <FlashBanner message={query.success} variant="success" />
+      {builderRecord(aiSession?.session.rawResponse) && <Link href={`/partner/builder/${id}`} className="so-link">Review product research & source details →</Link>}
 
       <div>
         <Link
@@ -143,7 +147,7 @@ export default async function PartnerReviewDetailPage({
           className="text-sm underline"
           style={{ color: "var(--so-cream-dim)" }}
         >
-          ← Review
+          ← All listings
         </Link>
       </div>
 
@@ -272,13 +276,189 @@ export default async function PartnerReviewDetailPage({
         </div>
       </section>
 
+      {canEdit ? (
+        <section
+          className="rounded-xl border p-6"
+          style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}
+        >
+          <h2 className="text-lg font-medium" style={{ color: "var(--so-cream)" }}>
+            Listing details & price
+          </h2>
+          <form action={saveListing} className="mt-4 grid gap-4 md:grid-cols-2">
+            <label className="block text-sm md:col-span-2">
+              <span className="mb-1 block" style={{ color: "var(--so-cream)" }}>
+                Name
+              </span>
+              <input
+                name="name"
+                required
+                defaultValue={product.name}
+                className="w-full rounded-lg border px-3 py-2"
+                style={{
+                  borderColor: "var(--so-border)",
+                  background: "var(--so-black)",
+                  color: "var(--so-cream)",
+                }}
+              />
+            </label>
+            <label className="block text-sm md:col-span-2">
+              <span className="mb-1 block" style={{ color: "var(--so-cream)" }}>
+                Description
+              </span>
+              <textarea
+                name="description"
+                rows={4}
+                defaultValue={product.description ?? ""}
+                className="w-full rounded-lg border px-3 py-2"
+                style={{
+                  borderColor: "var(--so-border)",
+                  background: "var(--so-black)",
+                  color: "var(--so-cream)",
+                }}
+              />
+            </label>
+
+
+            <label className="block text-sm">
+              <span className="mb-1 block" style={{ color: "var(--so-cream)" }}>
+                Selling price (USD)
+              </span>
+              <input
+                name="priceDollars"
+                type="number"
+                min={0}
+                step="0.01"
+                defaultValue={(product.priceCents / 100).toFixed(2)}
+                className="w-full rounded-lg border px-3 py-2"
+                style={{
+                  borderColor: "var(--so-border)",
+                  background: "var(--so-black)",
+                  color: "var(--so-cream)",
+                }}
+              />
+            </label>
+
+            <label className="block text-sm">
+              <span className="mb-1 block" style={{ color: "var(--so-cream)" }}>
+                Category
+              </span>
+              <select
+                name="category"
+                defaultValue={product.category}
+                className="w-full rounded-lg border px-3 py-2"
+                style={{
+                  borderColor: "var(--so-border)",
+                  background: "var(--so-black)",
+                  color: "var(--so-cream)",
+                }}
+              >
+                {CATEGORIES.map((item) => (
+                  <option key={item.value} value={item.value}>
+                    {item.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+
+            <details className="studio-optional md:col-span-2"><summary>More listing options (optional)</summary><div className="mt-4 grid gap-4 md:grid-cols-2">
+            <label className="block text-sm md:col-span-2">
+              <span className="mb-1 block" style={{ color: "var(--so-cream)" }}>
+                Short description
+              </span>
+              <textarea
+                name="shortDescription"
+                rows={2}
+                defaultValue={product.shortDescription ?? ""}
+                className="w-full rounded-lg border px-3 py-2"
+                style={{
+                  borderColor: "var(--so-border)",
+                  background: "var(--so-black)",
+                  color: "var(--so-cream)",
+                }}
+              />
+            </label>
+            <label className="block text-sm">
+              <span className="mb-1 block" style={{ color: "var(--so-cream)" }}>
+                SEO title
+              </span>
+              <input
+                name="seoTitle"
+                defaultValue={product.seoTitle ?? ""}
+                className="w-full rounded-lg border px-3 py-2"
+                style={{
+                  borderColor: "var(--so-border)",
+                  background: "var(--so-black)",
+                  color: "var(--so-cream)",
+                }}
+              />
+            </label>
+            <label className="block text-sm md:col-span-2">
+              <span className="mb-1 block" style={{ color: "var(--so-cream)" }}>
+                SEO description
+              </span>
+              <textarea
+                name="seoDescription"
+                rows={2}
+                defaultValue={product.seoDescription ?? ""}
+                className="w-full rounded-lg border px-3 py-2"
+                style={{
+                  borderColor: "var(--so-border)",
+                  background: "var(--so-black)",
+                  color: "var(--so-cream)",
+                }}
+              />
+            </label>
+            <label className="block text-sm md:col-span-2">
+              <span className="mb-1 block" style={{ color: "var(--so-cream)" }}>
+                Suggested tags (comma-separated)
+              </span>
+              <input
+                name="suggestedTags"
+                defaultValue={product.suggestedTags?.join(", ") ?? ""}
+                className="w-full rounded-lg border px-3 py-2"
+                style={{
+                  borderColor: "var(--so-border)",
+                  background: "var(--so-black)",
+                  color: "var(--so-cream)",
+                }}
+              />
+            </label>
+            <label className="block text-sm md:col-span-2">
+              <span className="mb-1 block" style={{ color: "var(--so-cream)" }}>
+                Suggested collections (comma-separated)
+              </span>
+              <input
+                name="suggestedCollections"
+                defaultValue={product.suggestedCollections?.join(", ") ?? ""}
+                className="w-full rounded-lg border px-3 py-2"
+                style={{
+                  borderColor: "var(--so-border)",
+                  background: "var(--so-black)",
+                  color: "var(--so-cream)",
+                }}
+              />
+            </label>
+            </div></details>
+            <div className="md:col-span-2">
+              <button
+                type="submit"
+                className="rounded-full px-5 py-2.5 text-sm font-medium"
+                style={{ background: "var(--so-gold)", color: "var(--so-ink)" }}
+              >
+                Save listing
+              </button>
+            </div>
+          </form>
+        </section>
+      ) : null}
       {isOwn && canModerate ? (
         <section
           className="rounded-xl border p-6"
           style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}
         >
           <h2 className="text-lg font-medium" style={{ color: "var(--so-cream)" }}>
-            Publish readiness
+            Ready for your shop
           </h2>
           <ul className="mt-4 space-y-2">
             {readiness.checks.map((check) => (
@@ -355,7 +535,7 @@ export default async function PartnerReviewDetailPage({
         </section>
       ) : null}
 
-      {aiSession ? (
+      {aiSession && (aiSession.session.rawResponse as { kind?: string })?.kind !== "canvas_composition" ? (
         <section
           className="rounded-xl border p-6"
           style={{ borderColor: "var(--so-border)", background: "var(--so-black)" }}
@@ -375,175 +555,7 @@ export default async function PartnerReviewDetailPage({
         </section>
       ) : null}
 
-      {canEdit ? (
-        <section
-          className="rounded-xl border p-6"
-          style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}
-        >
-          <h2 className="text-lg font-medium" style={{ color: "var(--so-cream)" }}>
-            Listing copy
-          </h2>
-          <form action={saveListing} className="mt-4 grid gap-4 md:grid-cols-2">
-            <label className="block text-sm md:col-span-2">
-              <span className="mb-1 block" style={{ color: "var(--so-cream)" }}>
-                Name
-              </span>
-              <input
-                name="name"
-                required
-                defaultValue={product.name}
-                className="w-full rounded-lg border px-3 py-2"
-                style={{
-                  borderColor: "var(--so-border)",
-                  background: "var(--so-black)",
-                  color: "var(--so-cream)",
-                }}
-              />
-            </label>
-            <label className="block text-sm md:col-span-2">
-              <span className="mb-1 block" style={{ color: "var(--so-cream)" }}>
-                Description
-              </span>
-              <textarea
-                name="description"
-                rows={4}
-                defaultValue={product.description ?? ""}
-                className="w-full rounded-lg border px-3 py-2"
-                style={{
-                  borderColor: "var(--so-border)",
-                  background: "var(--so-black)",
-                  color: "var(--so-cream)",
-                }}
-              />
-            </label>
-            <label className="block text-sm md:col-span-2">
-              <span className="mb-1 block" style={{ color: "var(--so-cream)" }}>
-                Short description
-              </span>
-              <textarea
-                name="shortDescription"
-                rows={2}
-                defaultValue={product.shortDescription ?? ""}
-                className="w-full rounded-lg border px-3 py-2"
-                style={{
-                  borderColor: "var(--so-border)",
-                  background: "var(--so-black)",
-                  color: "var(--so-cream)",
-                }}
-              />
-            </label>
-            <label className="block text-sm">
-              <span className="mb-1 block" style={{ color: "var(--so-cream)" }}>
-                SEO title
-              </span>
-              <input
-                name="seoTitle"
-                defaultValue={product.seoTitle ?? ""}
-                className="w-full rounded-lg border px-3 py-2"
-                style={{
-                  borderColor: "var(--so-border)",
-                  background: "var(--so-black)",
-                  color: "var(--so-cream)",
-                }}
-              />
-            </label>
-            <label className="block text-sm">
-              <span className="mb-1 block" style={{ color: "var(--so-cream)" }}>
-                Price (cents)
-              </span>
-              <input
-                name="priceCents"
-                type="number"
-                min={0}
-                step={1}
-                defaultValue={product.priceCents}
-                className="w-full rounded-lg border px-3 py-2"
-                style={{
-                  borderColor: "var(--so-border)",
-                  background: "var(--so-black)",
-                  color: "var(--so-cream)",
-                }}
-              />
-            </label>
-            <label className="block text-sm md:col-span-2">
-              <span className="mb-1 block" style={{ color: "var(--so-cream)" }}>
-                SEO description
-              </span>
-              <textarea
-                name="seoDescription"
-                rows={2}
-                defaultValue={product.seoDescription ?? ""}
-                className="w-full rounded-lg border px-3 py-2"
-                style={{
-                  borderColor: "var(--so-border)",
-                  background: "var(--so-black)",
-                  color: "var(--so-cream)",
-                }}
-              />
-            </label>
-            <label className="block text-sm">
-              <span className="mb-1 block" style={{ color: "var(--so-cream)" }}>
-                Category
-              </span>
-              <select
-                name="category"
-                defaultValue={product.category}
-                className="w-full rounded-lg border px-3 py-2"
-                style={{
-                  borderColor: "var(--so-border)",
-                  background: "var(--so-black)",
-                  color: "var(--so-cream)",
-                }}
-              >
-                {CATEGORIES.map((item) => (
-                  <option key={item.value} value={item.value}>
-                    {item.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="block text-sm md:col-span-2">
-              <span className="mb-1 block" style={{ color: "var(--so-cream)" }}>
-                Suggested tags (comma-separated)
-              </span>
-              <input
-                name="suggestedTags"
-                defaultValue={product.suggestedTags?.join(", ") ?? ""}
-                className="w-full rounded-lg border px-3 py-2"
-                style={{
-                  borderColor: "var(--so-border)",
-                  background: "var(--so-black)",
-                  color: "var(--so-cream)",
-                }}
-              />
-            </label>
-            <label className="block text-sm md:col-span-2">
-              <span className="mb-1 block" style={{ color: "var(--so-cream)" }}>
-                Suggested collections (comma-separated)
-              </span>
-              <input
-                name="suggestedCollections"
-                defaultValue={product.suggestedCollections?.join(", ") ?? ""}
-                className="w-full rounded-lg border px-3 py-2"
-                style={{
-                  borderColor: "var(--so-border)",
-                  background: "var(--so-black)",
-                  color: "var(--so-cream)",
-                }}
-              />
-            </label>
-            <div className="md:col-span-2">
-              <button
-                type="submit"
-                className="rounded-full px-5 py-2.5 text-sm font-medium"
-                style={{ background: "var(--so-gold)", color: "var(--so-ink)" }}
-              >
-                Save listing
-              </button>
-            </div>
-          </form>
-        </section>
-      ) : null}
+
     </div>
   );
 }

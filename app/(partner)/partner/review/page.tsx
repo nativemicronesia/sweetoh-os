@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { builderRecord } from "@/lib/domains/intelligence/product-research-schema";
 import { DraftStatusBadge } from "@/app/(owner)/owner/components/draft-status-badge";
 import { FlashBanner } from "@/app/(owner)/owner/components/flash-banner";
 import {
@@ -64,7 +65,7 @@ export default async function PartnerReviewPage({
       : Promise.resolve([]),
   ]);
 
-  const openDrafts = drafts.filter(({ product }) => !product.active);
+  const openDrafts = drafts.filter(({ product, session }) => !product.active && builderRecord(session.rawResponse)?.purpose !== "blank");
   const pendingIds = new Set(pending.map((product) => product.id));
   // Submissions already listed in "Waiting on you" are not repeated below.
   const ownDrafts = openDrafts.filter(({ product }) => !pendingIds.has(product.id));

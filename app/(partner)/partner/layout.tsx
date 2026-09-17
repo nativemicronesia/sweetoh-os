@@ -2,7 +2,8 @@ import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
 import { resolvePartnerWorkspacePack } from "@/lib/domains/workspace/packs";
 import { signOutAction } from "./actions/auth";
 import { PartnerSidebar } from "./components/partner-sidebar";
-import { StudioChat } from "./components/studio-chat";
+import { StudioShell } from "./components/studio-shell";
+import "./studio.css";
 
 /**
  * Command center shell: sidebar on the left, the persistent Studio chat bar
@@ -23,7 +24,7 @@ export default async function PartnerLayout({
 
   return (
     <div
-      className="flex h-screen overflow-hidden"
+      className="sweetoh-studio flex h-dvh flex-col overflow-hidden md:flex-row"
       style={{ background: "var(--so-black)" }}
     >
       <PartnerSidebar
@@ -33,13 +34,7 @@ export default async function PartnerLayout({
         signOut={signOutAction}
       />
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <StudioChat />
-
-        <main className="flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-5xl px-6 py-8">{children}</div>
-        </main>
-      </div>
+      <StudioShell>{children}</StudioShell>
     </div>
   );
 }

@@ -64,6 +64,7 @@ export const product = pgTable(
      * generic centered default.
      */
     printArea: jsonb("print_area").$type<{
+      surfaces?: import("@/lib/domains/catalog/studio-layout").StudioSurface[];
       x: number;
       y: number;
       width: number;

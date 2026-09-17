@@ -176,6 +176,8 @@ export async function getAssetPreviewUrl(input: {
 }
 
 export type AssetCompositionLayout = {
+  text?: { value: string; x: number; y: number; size: number; color: string };
+  studio?: import("@/lib/domains/catalog/studio-layout").StudioLayout;
   blankProductId: string;
   designAssetId: string;
   offsetX: number;

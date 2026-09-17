@@ -29,8 +29,8 @@ export default async function PartnerLibraryPage({ searchParams }: PageProps) {
             Design library
           </h1>
           <p className="mt-1 text-sm" style={{ color: "var(--so-cream-dim)" }}>
-            Upload artwork, approve drafts, and place designs on blanks in Canvas. Approved
-            designs show up in the customer Studio library.
+            Keep your artwork together, reuse favorite designs, and reopen compositions in your
+            design studio.
           </p>
         </div>
         <Link
@@ -42,13 +42,11 @@ export default async function PartnerLibraryPage({ searchParams }: PageProps) {
         </Link>
       </div>
 
-      <section
+      <details
         className="rounded-xl border p-5"
         style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}
       >
-        <h2 className="text-sm font-medium" style={{ color: "var(--so-gold)" }}>
-          Upload design
-        </h2>
+        <summary className="cursor-pointer font-medium">＋ Upload artwork to your library</summary>
         <form action={uploadLibraryDesignAction} className="mt-4 space-y-3">
           <label className="block text-sm" style={{ color: "var(--so-cream-dim)" }}>
             Name
@@ -88,7 +86,7 @@ export default async function PartnerLibraryPage({ searchParams }: PageProps) {
             {canApprove ? "Upload to library" : "Upload draft"}
           </button>
         </form>
-      </section>
+      </details>
 
       <section
         className="rounded-xl border"
@@ -104,7 +102,7 @@ export default async function PartnerLibraryPage({ searchParams }: PageProps) {
             No designs yet — upload one or compose in Canvas.
           </p>
         ) : (
-          <ul className="grid gap-3 p-4 sm:grid-cols-2">
+          <ul className="grid gap-5 p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {designs.map((design) => (
               <li
                 key={design.id}

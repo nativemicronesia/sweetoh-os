@@ -1,8 +1,14 @@
 "use server";
 
+import { studioLayoutSchema, surfaceSchema } from "@/lib/domains/catalog/studio-layout";
+import { assertBuilderRole } from "@/lib/domains/intelligence/partner-builder";
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import { redirect } from "next/navigation";
-import { approveAsset } from "@/lib/domains/assets/service";
+import { approveAsset, getAssetById, validateImageUpload } from "@/lib/domains/assets/service";
+import { persistDraftProduct } from "@/lib/domains/intelligence/service";
+import { getProductById, addProductMediaUpload } from "@/lib/domains/catalog/service";
+import { ValidationError } from "@/lib/shared/errors";
 import { uploadPartnerDesign } from "@/lib/domains/catalog/partner-design-library";
 import { canModerateListings } from "@/lib/domains/catalog/partner-listings";
 import { setProductPrintArea } from "@/lib/domains/catalog/service";
@@ -103,7 +109,7 @@ export async function approveLibraryDesignAction(formData: FormData): Promise<vo
   }
 }
 
-export async function saveCanvasCompositionAction(formData: FormData): Promise<void> {
+export async function saveCanvasCompositionAction(formData: FormData): Promise<{ error: string } | void> {
   try {
     const session = await requirePartnerWorkspace();
     const name = String(formData.get("name") ?? "").trim() || "Canvas composition";
@@ -116,18 +122,54 @@ export async function saveCanvasCompositionAction(formData: FormData): Promise<v
     const buffer = Buffer.from(await file.arrayBuffer());
 
     const blankProductId = String(formData.get("blankProductId") ?? "").trim();
-    const designAssetId = String(formData.get("designAssetId") ?? "").trim();
-    const offsetX = Number(formData.get("offsetX"));
+    let designAssetId = String(formData.get("designAssetId") ?? "").trim();
+    const studioInput = formData.get("studioLayout");
+    const studio = studioInput ? studioLayoutSchema.parse(JSON.parse(String(studioInput))) : undefined;
+    const surfaceFiles = formData.getAll("surfaceFiles").filter((f): f is File => f instanceof File && f.size > 0);
+    if (studio) {
+      if (!studio.surfaces.some(s => s.layers.length)) throw new ValidationError("Add artwork or text before saving.");
+      if (surfaceFiles.length !== studio.surfaces.length - 1) throw new ValidationError("Preview every surface before saving.");
+      const ids = new Set(studio.surfaces.flatMap(s => [s.assetId, ...s.layers.flatMap(l => l.kind === "image" ? [l.assetId] : [])]).filter((id): id is string => Boolean(id)));
+      for (const id of ids) {
+        const asset = await getAssetById({ventureId: session.ventureId, assetId:id});
+        if (!["sweetoh_design", "product_asset"].includes(asset.assetType)) throw new ValidationError("Choose a product photo or library artwork.");
+      }
+      for (const image of surfaceFiles) validateImageUpload({mimeType:image.type,sizeBytes:image.size});
+      const firstImage = studio.surfaces.flatMap(s=>s.layers).find(l=>l.kind === "image");
+      if (firstImage?.kind === "image") designAssetId = firstImage.assetId;
+    }
+    const offsetX = Number(formData.get("offsetX") ?? 0);
     const offsetY = Number(formData.get("offsetY"));
-    const scale = Number(formData.get("scale"));
+    const scale = Number(formData.get("scale") ?? 1);
     const rotation = Number(formData.get("rotation"));
-    const canvasSize = Number(formData.get("canvasSize"));
+    const canvasSize = Number(formData.get("canvasSize") ?? 720);
+    const textInput = String(formData.get("textLayer") || "null");
+    const text = z.object({ value: z.string().max(120), x: z.number().min(0).max(720), y: z.number().min(0).max(720), size: z.number().min(12).max(120), color: z.string().regex(/^#[0-9a-f]{6}$/i) }).nullable().parse(JSON.parse(textInput)) ?? undefined;
     const hasLayout =
       blankProductId &&
       designAssetId &&
       [offsetX, offsetY, scale, rotation, canvasSize].every(Number.isFinite);
 
-    await uploadPartnerDesign({
+    validateImageUpload({ mimeType: file.type, sizeBytes: file.size });
+    if (!studio && !hasLayout) throw new ValidationError("Choose a blank and an artwork before saving.");
+    const blank = await getProductById({ ventureId: session.ventureId, productId: blankProductId });
+    if (designAssetId) {
+      const design = await getAssetById({ ventureId: session.ventureId, assetId: designAssetId });
+      if (design.assetType !== "sweetoh_design") throw new ValidationError("Choose an artwork from your library.");
+    }
+    const saveAsProduct = formData.get("saveAsProduct") === "true";
+    if (saveAsProduct && !canModerateListings(session)) throw new ValidationError("Only the shop partner can prepare a finished listing here.");
+
+    // Text-only compositions retain a real asset reference for legacy consumers.
+    if (studio && !designAssetId) {
+      const artwork = await uploadPartnerDesign({ventureId:session.ventureId,ventureSlug:session.ventureSlug,uploadedById:session.appUser.id,name:`${name} — text preview`,notes:"Text composition reference",file:buffer,filename:"text-preview.png",mimeType:"image/png",autoApprove:false});
+      designAssetId = artwork.id;
+    }
+    if (studio && canModerateListings(session)) {
+      const surfaces = studio.surfaces.map(({layers,...surface})=>surface);
+      await setProductPrintArea({ventureId:session.ventureId,productId:blank.id,printArea:{...surfaces[0].area,...{surfaces}}});
+    }
+    const composition = await uploadPartnerDesign({
       ventureId: session.ventureId,
       ventureSlug: session.ventureSlug,
       uploadedById: session.appUser.id,
@@ -137,10 +179,31 @@ export async function saveCanvasCompositionAction(formData: FormData): Promise<v
       filename: file.name || "composition.png",
       mimeType: file.type || "image/png",
       autoApprove: canModerateListings(session),
-      compositionLayout: hasLayout
-        ? { blankProductId, designAssetId, offsetX, offsetY, scale, rotation, canvasSize }
+      compositionLayout: studio || hasLayout
+        ? { blankProductId, designAssetId, offsetX, offsetY, scale, rotation, canvasSize, text, studio }
         : null,
     });
+
+    if (saveAsProduct) {
+      const saved = await persistDraftProduct({ ventureId: session.ventureId, actorUserId: session.appUser.id,
+        mode: "visual_intake", prompt: "Partner canvas composition — no AI call", rawResponse: { kind: "canvas_composition", blankProductId, designAssetId },
+        sourceAssetId: composition.id, primaryAssetId: composition.id,
+        output: { title: name, description: blank.description || "", shortDescription: blank.shortDescription || "",
+          seoTitle: name.slice(0, 60), seoDescription: blank.seoDescription || "", category: blank.category,
+          suggestedTags: blank.suggestedTags || [], suggestedCollections: [], suggestedPriceCents: 0,
+          internalNotes: `Created on ${blank.name}. Review print area and product options before production.` },
+      });
+      await addProductMediaUpload({ ventureId: session.ventureId, ventureSlug: session.ventureSlug,
+        productId: saved.product.id, actorUserId: session.appUser.id, file: buffer, filename: "mockup.png", mimeType: "image/png", assetId: composition.id });
+      for (const [index, image] of surfaceFiles.entries()) {
+        await addProductMediaUpload({ ventureId: session.ventureId, ventureSlug: session.ventureSlug,
+          productId: saved.product.id, actorUserId: session.appUser.id, file: Buffer.from(await image.arrayBuffer()), filename: `surface-${index+2}.png`, mimeType: image.type });
+      }
+      revalidatePath("/partner");
+      revalidatePath("/partner/builder");
+      revalidatePath("/partner/review");
+      redirect(`/partner/review/${saved.product.id}`);
+    }
 
     revalidatePath("/partner/library");
     revalidatePath("/partner/canvas");
@@ -150,9 +213,7 @@ export async function saveCanvasCompositionAction(formData: FormData): Promise<v
     );
   } catch (error) {
     if (isNextRedirect(error)) throw error;
-    redirect(
-      `/partner/canvas?error=${encodeURIComponent(getActionErrorMessage(error))}`,
-    );
+    return { error: getActionErrorMessage(error) };
   }
 }
 
@@ -239,4 +300,15 @@ export async function bulkUploadLibraryDesignsAction(formData: FormData): Promis
       `/partner/create?error=${encodeURIComponent(getActionErrorMessage(error))}`,
     );
   }
+}
+
+export async function saveBlankSurfacesAction(productId: string, input: unknown): Promise<{error?:string}> {
+  try {
+    const session=await requirePartnerWorkspace(); assertBuilderRole(session);
+    const surfaces=z.array(surfaceSchema).min(1).max(12).parse(input);
+    await getProductById({ventureId:session.ventureId,productId:z.string().uuid().parse(productId)});
+    for(const s of surfaces) if(s.assetId) await getAssetById({ventureId:session.ventureId,assetId:s.assetId});
+    await setProductPrintArea({ventureId:session.ventureId,productId,printArea:{...surfaces[0].area,...{surfaces}}});
+    revalidatePath("/partner/builder");return {};
+  } catch(error) {return {error:getActionErrorMessage(error)};}
 }

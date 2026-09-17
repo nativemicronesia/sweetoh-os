@@ -106,7 +106,7 @@ function buildVisualIntakeSessionPrompt(input: {
   return `Visual intake (image only): analyze ${input.filename} and draft "${input.title}".`;
 }
 
-async function persistDraftProduct(input: {
+export async function persistDraftProduct(input: {
   ventureId: string;
   actorUserId: string;
   output: ProductDraftOutput;
