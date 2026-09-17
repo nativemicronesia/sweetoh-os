@@ -15,9 +15,7 @@ export default async function CollectionsIndexPage() {
         </h1>
         <p className="mt-3 max-w-xl text-sm so-muted">
           Browse everything Sweet&apos;Oh prints — or{" "}
-          <Link href="/studio" className="so-link text-[color:var(--so-cream)]">
-            create your own design
-          </Link>
+          <Link href="/products" className="so-link">Browse products</Link>
           .
         </p>
       </div>

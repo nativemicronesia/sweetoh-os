@@ -1,8 +1,8 @@
 const STEPS = [
   {
     n: "01",
-    title: "Choose or create",
-    body: "Browse ready designs, or open Studio and place your art on a blank.",
+    title: "Find your piece",
+    body: "Explore apparel, gifts, and everyday pieces from our shop.",
   },
   {
     n: "02",

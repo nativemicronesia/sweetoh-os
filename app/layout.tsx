@@ -20,11 +20,11 @@ export const metadata: Metadata = {
     template: "%s · Sweet'Oh Creations",
   },
   description:
-    "Micronesian print-on-demand. Shop ready designs or create your own — order once, wait for the package.",
+    "Micronesian-owned creative print shop in Lacey, Washington. Apparel and gifts for everyone.",
   openGraph: {
     title: "Sweet'Oh Creations",
     description:
-      "Micronesian print-on-demand. Shop or create — then wait for your package.",
+      "Creative apparel and gifts from Sweet’Oh Creations in Lacey, Washington.",
     siteName: "Sweet'Oh Creations",
     type: "website",
   },

@@ -1,49 +1,16 @@
-/**
- * Sweet'Oh's mascot — a simple, friendly icon-level character (not a
- * detailed illustration), built from Sweet'Oh's own brand tokens so it reads
- * as on-brand from day one. Deliberately easy to swap for real character art
- * later: every consumer only ever renders <MascotCharacter />, never the SVG
- * markup directly, so replacing this with an <img> or a commissioned SVG
- * later touches exactly one file.
- */
-export function MascotCharacter({
-  size = 48,
-  className = "",
-}: {
-  size?: number;
-  className?: string;
-}) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 64 64"
-      className={className}
-      role="img"
-      aria-label="Sweet'Oh AI"
-    >
-      {/* ears */}
-      <circle cx="16" cy="16" r="9" fill="var(--so-gold)" />
-      <circle cx="48" cy="16" r="9" fill="var(--so-gold)" />
-      <circle cx="16" cy="16" r="4" fill="var(--so-cream)" />
-      <circle cx="48" cy="16" r="4" fill="var(--so-cream)" />
-      {/* head */}
-      <circle cx="32" cy="34" r="24" fill="var(--so-gold)" />
-      {/* muzzle */}
-      <ellipse cx="32" cy="40" rx="12" ry="9" fill="var(--so-cream)" />
-      {/* eyes */}
-      <circle cx="24" cy="30" r="3" fill="var(--so-black)" />
-      <circle cx="40" cy="30" r="3" fill="var(--so-black)" />
-      {/* nose */}
-      <ellipse cx="32" cy="37" rx="2.5" ry="2" fill="var(--so-black)" />
-      {/* smile */}
-      <path
-        d="M32 39 Q32 44 26 43 M32 39 Q32 44 38 43"
-        stroke="var(--so-black)"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        fill="none"
-      />
-    </svg>
-  );
+/** Sweet'Oh's green tree skink, Lamprolepis smaragdina. */
+export function MascotCharacter({ size = 48, className = "" }: { size?: number; className?: string }) {
+  return <svg width={size} height={size} viewBox="0 0 80 80" className={className} role="img" aria-label="Sweet'Oh green tree skink">
+    <circle cx="40" cy="40" r="38" fill="#e9f3df" />
+    <path d="M43 55 C65 57 72 38 63 28 C79 36 74 67 48 68" fill="#429453" />
+    <path d="M26 47 L13 54 M16 48 L13 54 L19 56 M49 48 L59 57 M54 56 L59 57 L60 51" fill="none" stroke="#388648" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+    <ellipse cx="37" cy="47" rx="16" ry="22" fill="#66b747" transform="rotate(-15 37 47)" />
+    <ellipse cx="35" cy="51" rx="9" ry="14" fill="#cde895" />
+    <path d="M19 31 Q17 14 36 14 Q52 13 57 30 Q57 39 40 41 Q24 41 19 31" fill="#79c94f" />
+    <ellipse cx="29" cy="25" rx="5" ry="6" fill="#e8f5ce" /><ellipse cx="46" cy="25" rx="5" ry="6" fill="#e8f5ce" />
+    <circle cx="30" cy="25" r="3" fill="#193d28" /><circle cx="45" cy="25" r="3" fill="#193d28" />
+    <circle cx="31" cy="24" r="1" fill="white" /><circle cx="46" cy="24" r="1" fill="white" />
+    <path d="M30 34 Q38 39 47 33" stroke="#285d35" strokeWidth="2" fill="none" strokeLinecap="round" />
+    <path d="M30 17 L37 20 L44 17 M28 43 L31 45 M45 44 L48 46" stroke="#97dc6e" strokeWidth="2" fill="none" />
+  </svg>;
 }

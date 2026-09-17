@@ -9,6 +9,8 @@ import { createProductFromGeneratedDesign } from "@/lib/domains/studio/product-c
 import { getPrimaryProductImageUrl } from "@/lib/domains/catalog/service";
 import { transcribeVoicePrompt } from "@/lib/integrations/ai/openai";
 import { ValidationError } from "@/lib/shared/errors";
+import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
+import { assertBuilderRole } from "@/lib/domains/intelligence/partner-builder";
 
 export async function generateDesignPreview(
   formData: FormData,
@@ -16,6 +18,7 @@ export async function generateDesignPreview(
   | { ok: true; projectId: string; mockupPreviewUrl: string | null }
   | { ok: false; error: string }
 > {
+  assertBuilderRole(await requirePartnerWorkspace());
   const venture = await getDefaultVenture();
 
   const prompt = String(formData.get("prompt") ?? "");
@@ -94,6 +97,7 @@ export async function confirmDesignAndAddToCart(input: {
     }
   | { ok: false; error: string }
 > {
+  assertBuilderRole(await requirePartnerWorkspace());
   const venture = await getDefaultVenture();
 
   try {
@@ -125,6 +129,7 @@ export async function confirmDesignAndAddToCart(input: {
 export async function transcribeVoiceNote(
   formData: FormData,
 ): Promise<{ ok: true; text: string } | { ok: false; error: string }> {
+  assertBuilderRole(await requirePartnerWorkspace());
   const audio = formData.get("audio");
   if (!(audio instanceof File)) {
     return { ok: false, error: "No audio received." };

@@ -35,15 +35,12 @@ export function StoreHero({ heroImageUrl, heroImageAlt }: StoreHeroProps) {
             Wear the future.
           </h1>
           <p className="so-animate-in-delay-2 mt-5 max-w-md text-base leading-relaxed so-muted sm:text-lg">
-            Micronesian print-on-demand. Shop a piece, or create yours — then wait for the
-            package.
+            Micronesian-owned, made with care in Lacey, Washington. Creative apparel
+            and gifts for every kind of person.
           </p>
           <div className="so-animate-in-delay-2 mt-9 flex flex-wrap gap-3">
             <Link href="/collections" className="so-btn-primary">
               Shop
-            </Link>
-            <Link href="/studio" className="so-btn-ghost">
-              Create
             </Link>
           </div>
         </div>

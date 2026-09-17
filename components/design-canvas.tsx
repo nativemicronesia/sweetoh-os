@@ -2,7 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+export type CanvasText = { value: string; x: number; y: number; size: number; color: string };
+
 export type CanvasTransform = {
+  text?: CanvasText;
   offsetX: number;
   offsetY: number;
   scale: number;
@@ -18,6 +21,8 @@ export type CanvasPrintArea = {
 };
 
 type Props = {
+  studioSidebar?: React.ReactNode;
+  studioSaveOptions?: React.ReactNode;
   blankUrl: string | null;
   designUrl: string | null;
   blankLabel: string;
@@ -32,7 +37,7 @@ type Props = {
   /** Partner dark desk vs storefront light chrome. */
   tone?: "light" | "dark";
   /** Reopen a previously-saved composition at this exact placement. */
-  initialTransform?: Pick<CanvasTransform, "offsetX" | "offsetY" | "scale" | "rotation"> | null;
+  initialTransform?: Pick<CanvasTransform, "offsetX" | "offsetY" | "scale" | "rotation" | "text"> | null;
   /**
    * This blank's saved print-safe rectangle (fractions 0-1 of the canvas).
    * A fresh composition (no initialTransform) auto-fits the design inside
@@ -92,8 +97,14 @@ export function DesignCanvas({
   initialTransform = null,
   printArea = null,
   onSavePrintArea,
+  studioSidebar,
+  studioSaveOptions,
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const textInput = useRef<HTMLInputElement>(null);
+  const [textEditing, setTextEditing] = useState(Boolean(initialTransform?.text?.value));
+  const dragTarget = useRef<"artwork" | "text">("artwork");
+  const [textLayer, setTextLayer] = useState<CanvasText>(initialTransform?.text ?? { value: "", x: 360, y: 420, size: 44, color: "#193d28" });
   const [offset, setOffset] = useState(
     initialTransform
       ? { x: initialTransform.offsetX, y: initialTransform.offsetY }
@@ -111,6 +122,22 @@ export function DesignCanvas({
     design: null,
   });
 
+  type Snapshot = { offset: { x: number; y: number }; scale: number; rotation: number; text: CanvasText };
+  const history = useRef<Snapshot[]>([]);
+  const [undoCount, setUndoCount] = useState(0);
+  function checkpoint() {
+    const snapshot = { offset: { ...offset }, scale, rotation, text: { ...textLayer } };
+    if (JSON.stringify(history.current.at(-1)) !== JSON.stringify(snapshot)) {
+      history.current = [...history.current.slice(-39), snapshot];
+      setUndoCount(history.current.length);
+    }
+  }
+  function undo() {
+    const prior = history.current.pop();
+    if (!prior) return;
+    setOffset(prior.offset); setScale(prior.scale); setRotation(prior.rotation); setTextLayer(prior.text);
+    setUndoCount(history.current.length);
+  }
   // Print-area editing (independent of design placement).
   const [editingArea, setEditingArea] = useState(false);
   const [areaDraft, setAreaDraft] = useState<CanvasPrintArea | null>(printArea);
@@ -135,7 +162,7 @@ export function DesignCanvas({
       ? { background: "var(--so-gold)", color: "var(--so-ink)" }
       : { background: "#171717", color: "#fff" };
 
-  const redraw = useCallback(() => {
+  const redraw = useCallback((includeGuides = true) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -166,8 +193,18 @@ export function DesignCanvas({
       ctx.restore();
     }
 
-    // Print-area guide — dashed outline, drawn last so it stays visible.
-    if (areaDraft) {
+    if (textLayer.value) {
+      ctx.save();
+      ctx.font = `bold ${textLayer.size}px sans-serif`;
+      ctx.fillStyle = textLayer.color;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(textLayer.value, textLayer.x, textLayer.y);
+      ctx.restore();
+    }
+
+    // Guides are editor-only, never part of the exported product image.
+    if (areaDraft && includeGuides) {
       ctx.save();
       ctx.strokeStyle = editingArea ? "#e11d48" : "rgba(201,168,76,0.85)";
       ctx.lineWidth = 2;
@@ -180,7 +217,7 @@ export function DesignCanvas({
       );
       ctx.restore();
     }
-  }, [offset.x, offset.y, scale, rotation, areaDraft, editingArea]);
+  }, [offset.x, offset.y, scale, rotation, areaDraft, editingArea, textLayer]);
 
   useEffect(() => {
     let cancelled = false;
@@ -251,9 +288,15 @@ export function DesignCanvas({
       return;
     }
 
-    if (!imagesRef.current.design) return;
-    setDragging(true);
-    dragOrigin.current = { x: point.x, y: point.y, ox: offset.x, oy: offset.y };
+    const ctx = canvasRef.current?.getContext("2d");
+    if (ctx) ctx.font = `bold ${textLayer.size}px sans-serif`;
+    const textWidth = ctx?.measureText(textLayer.value).width ?? 0;
+    const hitText = Boolean(textLayer.value) && Math.abs(point.x - textLayer.x) <= textWidth / 2 + 12 && Math.abs(point.y - textLayer.y) <= textLayer.size / 2 + 12;
+    if (!hitText && !imagesRef.current.design) return;
+    dragTarget.current = hitText ? "text" : "artwork";
+    if (hitText) setTextEditing(true);
+    checkpoint(); setDragging(true);
+    dragOrigin.current = { x: point.x, y: point.y, ox: hitText ? textLayer.x : offset.x, oy: hitText ? textLayer.y : offset.y };
   }
 
   function onPointerMove(event: React.PointerEvent<HTMLCanvasElement>) {
@@ -273,6 +316,10 @@ export function DesignCanvas({
     }
 
     if (!dragging) return;
+    if (dragTarget.current === "text") {
+      setTextLayer(previous => ({ ...previous, x: Math.max(0, Math.min(720, dragOrigin.current.ox + point.x - dragOrigin.current.x)), y: Math.max(0, Math.min(720, dragOrigin.current.oy + point.y - dragOrigin.current.y)) }));
+      return;
+    }
     setOffset({
       x: dragOrigin.current.ox + (point.x - dragOrigin.current.x),
       y: dragOrigin.current.oy + (point.y - dragOrigin.current.y),
@@ -295,6 +342,7 @@ export function DesignCanvas({
     setExporting(true);
     setError(null);
     try {
+      redraw(false);
       const blob = await new Promise<Blob | null>((resolve) =>
         canvas.toBlob((b) => resolve(b), "image/png"),
       );
@@ -313,8 +361,12 @@ export function DesignCanvas({
         scale,
         rotation,
         canvasSize: CANVAS_SIZE,
+        text: textLayer,
       });
+    } catch {
+      setError("Couldn’t save the composition. Please try again.");
     } finally {
+      redraw(true);
       setExporting(false);
     }
   }
@@ -338,9 +390,13 @@ export function DesignCanvas({
   }
 
   return (
-    <div className="space-y-4">
-      <div className={`overflow-hidden rounded-xl border ${border}`}>
+    <div className={studioSidebar ? "studio-editor easy-editor" : "space-y-4"}>
+      {studioSidebar}
+      {studioSidebar && <div className="studio-canvas-toolbar"><span>PRODUCT PREVIEW</span><button type="button" onClick={undo} disabled={!undoCount || editingArea}>↶ Undo</button><span>Drag your design to move it</span></div>}
+      <div className={`studio-canvas-stage overflow-hidden rounded-xl border ${border}`}>
+        {!ready && <p role="status" className="studio-canvas-loading">Loading your product preview…</p> }
         <canvas
+          aria-label="Product design canvas"
           ref={canvasRef}
           width={CANVAS_SIZE}
           height={CANVAS_SIZE}
@@ -352,7 +408,23 @@ export function DesignCanvas({
         />
       </div>
 
-      <div className="flex flex-wrap items-center gap-4">
+
+      <div className={studioSidebar ? "studio-inspector" : "space-y-4"}>
+      {studioSidebar && !textEditing && <button type="button" className="easy-add-button" onClick={() => { checkpoint(); setTextEditing(true); setTextLayer(previous => ({ ...previous, value: previous.value || "Your text" })); setTimeout(() => { textInput.current?.focus(); textInput.current?.select(); }, 0); }}>＋ Add text</button>}
+      {tone === "dark" && (!studioSidebar || textEditing) && <fieldset onFocusCapture={checkpoint} onPointerDownCapture={checkpoint} className="studio-text-controls grid gap-3 rounded-xl border border-[var(--so-border)] p-4 sm:grid-cols-2">
+        <legend className="px-2 text-sm font-medium">Personalize with text</legend>
+        <label className="text-sm sm:col-span-2">Your text<input ref={textInput} value={textLayer.value} maxLength={120} onChange={e => setTextLayer({ ...textLayer, value: e.target.value })} placeholder="A name, a birthday, your own words…" className="mt-1 w-full rounded-lg border border-[var(--so-border)] bg-white p-2" /></label>
+        <details className="studio-optional w-full sm:col-span-2"><summary>Text size, color & position</summary><div className="mt-3 space-y-3">
+        <label className="text-sm">Size<input type="range" min="12" max="120" value={textLayer.size} onChange={e => setTextLayer({ ...textLayer, size: Number(e.target.value) })} className="ml-2" /></label>
+        <label className="text-sm">Color<input type="color" value={textLayer.color} onChange={e => setTextLayer({ ...textLayer, color: e.target.value })} className="ml-2" /></label>
+        <label className="text-sm">Left / right<input type="range" min="0" max="720" value={textLayer.x} onChange={e => setTextLayer({ ...textLayer, x: Number(e.target.value) })} className="ml-2" /></label>
+        <label className="text-sm">Up / down<input type="range" min="0" max="720" value={textLayer.y} onChange={e => setTextLayer({ ...textLayer, y: Number(e.target.value) })} className="ml-2" /></label>
+        </div></details>
+        {studioSidebar && <button type="button" className="easy-remove-text" onClick={() => { checkpoint(); setTextLayer(previous => ({ ...previous, value: "" })); setTextEditing(false); }}>Remove text</button>}
+      </fieldset>}
+      <div className="studio-placement-controls flex flex-wrap items-center gap-4" onFocusCapture={checkpoint} onPointerDownCapture={checkpoint}>
+        <details hidden={Boolean(studioSidebar) && !designUrl} open={studioSidebar ? undefined : true} className="studio-optional w-full"><summary>Resize or rotate artwork</summary><div className="mt-3 flex flex-wrap gap-4">
+
         <label className={`flex items-center gap-2 text-sm ${muted}`}>
           Size
           <input
@@ -413,10 +485,12 @@ export function DesignCanvas({
         >
           Reset
         </button>
+        </div></details>
+        {studioSaveOptions}
         <button
           type="button"
           onClick={handleExport}
-          disabled={!ready || !designUrl || exporting || editingArea}
+          disabled={!ready || (!designUrl && !(studioSidebar && textLayer.value.trim())) || exporting || editingArea}
           className="rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-50"
           style={exportBtn}
         >
@@ -424,10 +498,9 @@ export function DesignCanvas({
         </button>
       </div>
 
+      </div>
       {onSavePrintArea ? (
-        <div
-          className={`flex flex-wrap items-center gap-3 rounded-lg border px-3 py-2 ${btnSecondary}`}
-        >
+        <details className={`studio-print-controls easy-print-options rounded-lg border px-3 py-2 ${btnSecondary}`}><summary>Print setup (optional)</summary><div className="mt-3 flex flex-wrap items-center gap-3">
           <button
             type="button"
             onClick={() => setEditingArea((v) => !v)}
@@ -456,15 +529,13 @@ export function DesignCanvas({
               </button>
             </>
           ) : null}
-        </div>
+        </div></details>
       ) : null}
 
-      {!blankUrl || !designUrl ? (
-        <p className={`text-sm ${muted}`}>Pick a blank and a design to start placing.</p>
-      ) : null}
+      {studioSidebar && !designUrl && !textLayer.value && <p className="easy-start-hint">Start with Upload artwork or Add text. Then drag it onto your product.</p>}
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}
-      <p className={`text-xs ${muted}`}>
-        Drag to place. Size and Rotate to fit. Export saves a flat mockup PNG.
+      <p className={`studio-canvas-hint text-xs ${muted}`}>
+        {studioSidebar ? "Your work stays private until you publish." : "Drag to place. Size and Rotate to fit."}
       </p>
     </div>
   );

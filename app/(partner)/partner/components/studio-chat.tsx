@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { MascotCharacter } from "@/app/(store)/components/mascot-character";
 
 /**
  * Persistent Studio chat bar — docked above the workspace in the partner
@@ -310,10 +311,11 @@ export function StudioChat() {
         }}
       >
         <span
-          className="hidden text-xs font-medium sm:block"
+          className="flex shrink-0 items-center gap-2 text-xs font-medium"
           style={{ color: "var(--so-gold)" }}
         >
-          Sweet&apos;Oh AI
+          <MascotCharacter size={26} />
+          <span className="hidden sm:inline">Sweet&apos;Oh AI</span>
         </span>
         <input
           value={input}

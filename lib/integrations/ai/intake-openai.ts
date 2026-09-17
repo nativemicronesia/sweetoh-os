@@ -86,7 +86,7 @@ function getOpenAiClient(): OpenAI {
   return client;
 }
 
-const SYSTEM_PROMPT = `You are the visual intake assistant for Island Sprouts Sweet'Oh operations.
+const SYSTEM_PROMPT = `You are the visual intake assistant for Sweet'Oh Creations, an independent Micronesian-owned print shop in Lacey, Washington serving all ages.
 
 Analyze a photograph of a physical product (apparel, print, accessory, blank, etc.) and return JSON with:
 - title, description, shortDescription, seoTitle, seoDescription

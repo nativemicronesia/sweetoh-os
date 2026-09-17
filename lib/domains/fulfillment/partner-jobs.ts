@@ -53,6 +53,7 @@ export async function updatePartnerJobStatus(
     notes?: string | null;
   },
 ) {
+  if (session.role !== "partner" && session.role !== "owner") throw new ForbiddenError("Only the shop partner or owner can manage fulfillment.");
   await assertPartnerSweetohJob(session.ventureId, input.jobId);
 
   if (!isPartnerJobStatus(input.status)) {

@@ -83,9 +83,7 @@ export function ProductsView({ products }: { products: ProductListItem[] }) {
       {filtered.length === 0 ? (
         <p className="text-sm so-muted">
           Products are coming soon — or{" "}
-          <Link href="/studio" className="so-link text-[color:var(--so-cream)]">
-            create your own
-          </Link>
+          <Link href="/products" className="so-link">Browse products</Link>
           .
         </p>
       ) : (

@@ -13,7 +13,6 @@ export const revalidate = 30;
 
 const FOOTER_LINKS = [
   { href: "/collections", label: "Shop" },
-  { href: "/studio", label: "Create" },
   { href: "/shipping", label: "Shipping" },
   { href: "/returns", label: "Returns" },
   { href: "/privacy", label: "Privacy" },

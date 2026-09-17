@@ -73,9 +73,7 @@ export default async function CollectionPage({ params }: PageProps) {
       {products.length === 0 ? (
         <p className="text-sm so-muted">
           Nothing in this aisle yet.{" "}
-          <Link href="/studio" className="so-link text-[color:var(--so-cream)]">
-            Create a custom design
-          </Link>{" "}
+          <Link href="/products" className="so-link">Browse products</Link>{" "}
           or{" "}
           <Link href="/products" className="so-link text-[color:var(--so-cream)]">
             browse all products
