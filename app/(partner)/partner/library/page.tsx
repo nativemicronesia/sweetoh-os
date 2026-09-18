@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { ImageIcon } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import { FlashBanner } from "@/app/(owner)/owner/components/flash-banner";
 import { listPartnerLibraryDesigns } from "@/lib/domains/catalog/partner-design-library";
 import { canModerateListings } from "@/lib/domains/catalog/partner-listings";
@@ -23,24 +26,15 @@ export default async function PartnerLibraryPage({ searchParams }: PageProps) {
       <FlashBanner message={query.error} variant="error" />
       <FlashBanner message={query.success} variant="success" />
 
-      <div className="flex flex-wrap items-end justify-between gap-3">
+      <header className="studio-page-heading">
         <div>
-          <h1 className="text-xl font-semibold" style={{ color: "var(--so-cream)" }}>
-            Design library
-          </h1>
-          <p className="mt-1 text-sm" style={{ color: "var(--so-cream-dim)" }}>
-            Keep your artwork together, reuse favorite designs, and reopen compositions in your
-            design studio.
-          </p>
+          <h1>My files</h1>
+          <p>Your artwork and saved designs, ready to place on any product.</p>
         </div>
-        <Link
-          href="/partner/canvas"
-          className="rounded-lg px-4 py-2 text-sm font-medium"
-          style={{ background: "var(--so-gold)", color: "var(--so-ink)" }}
-        >
-          Open Canvas
+        <Link href="/partner/catalog" className="studio-primary">
+          ＋ Create product
         </Link>
-      </div>
+      </header>
 
       <details
         className="rounded-xl border p-5"
@@ -98,9 +92,11 @@ export default async function PartnerLibraryPage({ searchParams }: PageProps) {
           </h2>
         </div>
         {designs.length === 0 ? (
-          <p className="px-5 py-8 text-sm" style={{ color: "var(--so-cream-dim)" }}>
-            No designs yet — upload one or compose in Canvas.
-          </p>
+          <div className="catalog-empty">
+            <ImageIcon size={36} strokeWidth={1.5} />
+            <h3>No files yet</h3>
+            <p>Upload artwork above, or save a design from the design studio.</p>
+          </div>
         ) : (
           <ul className="grid gap-5 p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {designs.map((design) => (
@@ -109,13 +105,13 @@ export default async function PartnerLibraryPage({ searchParams }: PageProps) {
                 className="overflow-hidden rounded-lg border"
                 style={{ borderColor: "var(--so-border)" }}
               >
-                <div className="aspect-square bg-neutral-100">
+                <div className="library-thumb aspect-square">
                   {design.previewUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={design.previewUrl}
                       alt={design.name}
-                      className="h-full w-full object-cover"
+                      className="h-full w-full object-contain"
                     />
                   ) : (
                     <div
@@ -130,25 +126,26 @@ export default async function PartnerLibraryPage({ searchParams }: PageProps) {
                   <p className="text-sm font-medium" style={{ color: "var(--so-cream)" }}>
                     {design.name}
                   </p>
-                  <p className="text-xs" style={{ color: "var(--so-cream-dim)" }}>
-                    {design.status} · {design.createdAt.toLocaleString()}
+                  <p className="flex items-center gap-2 text-xs" style={{ color: "var(--so-cream-dim)" }}>
+                    <Badge variant={design.status === "draft" ? "secondary" : "default"}>
+                      {design.isComposition ? "Design" : design.status === "draft" ? "Draft" : "Ready"}
+                    </Badge>
+                    {design.createdAt.toLocaleDateString()}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {design.isComposition ? (
                       <Link
                         href={`/partner/canvas?composition=${design.id}`}
-                        className="text-xs underline"
-                        style={{ color: "var(--so-gold)" }}
+                        className={buttonVariants({ size: "sm" })}
                       >
-                        Edit composition
+                        Open in studio
                       </Link>
                     ) : (
                       <Link
                         href={`/partner/canvas?design=${design.id}`}
-                        className="text-xs underline"
-                        style={{ color: "var(--so-gold)" }}
+                        className={buttonVariants({ size: "sm" })}
                       >
-                        Place on blank
+                        Use on a product
                       </Link>
                     )}
                     {canApprove && design.status === "draft" ? (
@@ -156,8 +153,7 @@ export default async function PartnerLibraryPage({ searchParams }: PageProps) {
                         <input type="hidden" name="assetId" value={design.id} />
                         <button
                           type="submit"
-                          className="text-xs underline"
-                          style={{ color: "var(--so-cream)" }}
+                          className={buttonVariants({ size: "sm", variant: "outline" })}
                         >
                           Approve
                         </button>

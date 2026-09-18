@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ShoppingBag } from "lucide-react";
 import { FlashBanner } from "@/app/(owner)/owner/components/flash-banner";
 import {
   listFulfillmentJobs,
@@ -84,15 +85,12 @@ export default async function PartnerOrdersPage({
       <FlashBanner message={query.error} variant="error" />
       <FlashBanner message={query.success} variant="success" />
 
-      <div>
-        <h1 className="text-xl font-semibold" style={{ color: "var(--so-cream)" }}>
-          Orders
-        </h1>
-        <p className="mt-1 text-sm" style={{ color: "var(--so-cream-dim)" }}>
-          Everything moving through the shop — customer customization jobs on the
-          press, and catalog orders out the door.
-        </p>
-      </div>
+      <header className="studio-page-heading">
+        <div>
+          <h1>Orders</h1>
+          <p>Everything you’re producing locally, from new order to delivered.</p>
+        </div>
+      </header>
 
       <div className="flex flex-wrap gap-2 text-sm">
         {tabs.map((item) => {
@@ -150,9 +148,11 @@ export default async function PartnerOrdersPage({
             style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}
           >
             {catalogJobs.length === 0 ? (
-              <p className="px-6 py-8 text-sm" style={{ color: "var(--so-cream-dim)" }}>
-                No orders in this stage.
-              </p>
+              <div className="catalog-empty">
+                <ShoppingBag size={36} strokeWidth={1.5} />
+                <h3>No orders in this stage</h3>
+                <p>New orders show up here the moment a customer checks out.</p>
+              </div>
             ) : (
               <ul className="divide-y" style={{ borderColor: "var(--so-border)" }}>
                 {catalogJobs.map(({ job, lineItem, order }) => (
