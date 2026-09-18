@@ -1,3 +1,4 @@
+import { SubmitButton } from "../../components/submit-button";
 import Link from "next/link";
 import { CreationSteps } from "../../components/creation-steps";
 import { builderRecord } from "@/lib/domains/intelligence/product-research-schema";
@@ -21,10 +22,10 @@ import { formatPrice } from "@/lib/shared/format";
 import { NotFoundError } from "@/lib/shared/errors";
 import {
   approvePendingListingAction,
-  publishPartnerDraftAction,
   rejectPendingListingAction,
   submitPartnerDraftForReviewAction,
   updatePartnerDraftAction,
+  unpublishPartnerProductAction,
 } from "../../actions/drafts";
 
 /**
@@ -114,9 +115,9 @@ export default async function PartnerReviewDetailPage({
     await updatePartnerDraftAction(id, formData);
   }
 
-  async function publishNow() {
+  async function unpublishNow() {
     "use server";
-    await publishPartnerDraftAction(id);
+    await unpublishPartnerProductAction(id);
   }
 
   async function submitForReview() {
@@ -143,11 +144,11 @@ export default async function PartnerReviewDetailPage({
 
       <div>
         <Link
-          href="/partner/review"
+          href="/partner"
           className="text-sm underline"
           style={{ color: "var(--so-cream-dim)" }}
         >
-          ← All listings
+          ← My products
         </Link>
       </div>
 
@@ -272,6 +273,7 @@ export default async function PartnerReviewDetailPage({
                 View live listing
               </Link>
             ) : null}
+            {product.active && canModerate && <form action={unpublishNow}><SubmitButton pendingLabel="Unpublishing…">Unpublish</SubmitButton></form>}
           </div>
         </div>
       </section>
@@ -440,14 +442,9 @@ export default async function PartnerReviewDetailPage({
               />
             </label>
             </div></details>
-            <div className="md:col-span-2">
-              <button
-                type="submit"
-                className="rounded-full px-5 py-2.5 text-sm font-medium"
-                style={{ background: "var(--so-gold)", color: "var(--so-ink)" }}
-              >
-                Save listing
-              </button>
+            <div className="flex flex-wrap gap-3 md:col-span-2">
+              <SubmitButton variant="outline" pendingLabel="Saving…">Save draft</SubmitButton>
+              {canModerate && <SubmitButton name="intent" value="publish" pendingLabel="Saving & publishing…">Publish to shop</SubmitButton>}
             </div>
           </form>
         </section>
@@ -477,16 +474,7 @@ export default async function PartnerReviewDetailPage({
           </ul>
           {!product.active ? (
             <div className="mt-4 flex flex-wrap gap-2">
-              <form action={publishNow}>
-                <button
-                  type="submit"
-                  disabled={!readiness.canPublish}
-                  className="rounded-full px-5 py-2.5 text-sm font-medium disabled:opacity-50"
-                  style={{ background: "var(--so-gold)", color: "var(--so-ink)" }}
-                >
-                  Publish to catalog
-                </button>
-              </form>
+
               <form action={submitForReview}>
                 <button
                   type="submit"
@@ -500,7 +488,7 @@ export default async function PartnerReviewDetailPage({
           ) : (
             <p className="mt-4 text-sm" style={{ color: "var(--so-gold)" }}>
               Live — manage from{" "}
-              <Link href="/partner/products" className="underline">
+              <Link href="/partner" className="underline">
                 Products
               </Link>
               .

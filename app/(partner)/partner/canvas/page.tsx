@@ -1,16 +1,11 @@
 import Link from "next/link";
 import { getAssetSignedUrl } from "@/lib/domains/assets/service";
-import { CreationSteps } from "../components/creation-steps";
-import { listBuilderBlanks } from "@/lib/domains/intelligence/partner-builder";
+import { listPartnerCatalog } from "@/lib/domains/catalog/partner-catalog";
 import { FlashBanner } from "@/app/(owner)/owner/components/flash-banner";
 import {
   getSavedComposition,
   listPartnerLibraryDesigns,
 } from "@/lib/domains/catalog/partner-design-library";
-import {
-  getPrimaryProductImageUrl,
-  listActiveProducts,
-} from "@/lib/domains/catalog/service";
 import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
 import { PartnerCanvasClient } from "./canvas-client";
 
@@ -24,25 +19,13 @@ export default async function PartnerCanvasPage({ searchParams }: PageProps) {
   const session = await requirePartnerWorkspace();
   const query = await searchParams;
 
-  const [products, designs, savedComposition] = await Promise.all([
-    listActiveProducts(session.ventureId),
+  const [blanks, designs, savedComposition] = await Promise.all([
+    listPartnerCatalog(session).then(rows => rows.filter(b => Boolean(b.imageUrl))),
     listPartnerLibraryDesigns(session.ventureId),
     query.composition
       ? getSavedComposition({ ventureId: session.ventureId, assetId: query.composition })
       : Promise.resolve(null),
   ]);
-
-  const images = await Promise.all(
-    products.map((item) => getPrimaryProductImageUrl(item.id)),
-  );
-
-  const reusableBlanks = await listBuilderBlanks(session);
-  const blanks = [...reusableBlanks, ...products.map((product, index) => ({
-    id: product.id,
-    name: product.name,
-    imageUrl: images[index],
-    printArea: product.printArea ?? null,
-  })).filter(p => !reusableBlanks.some(b => b.id === p.id))];
 
   const designOptions = designs
     .filter((item) => !item.isComposition && (item.status === "approved" || item.status === "licensed" || item.status === "draft"))
@@ -64,7 +47,7 @@ export default async function PartnerCanvasPage({ searchParams }: PageProps) {
       {blanks.length === 0 ? (
         <p className="text-sm" style={{ color: "var(--so-cream-dim)" }}>
           Start by preparing a reusable blank.{" "}
-          <Link href="/partner/builder" className="underline" style={{ color: "var(--so-cream)" }}>
+          <Link href="/partner/catalog" className="underline" style={{ color: "var(--so-cream)" }}>
             Add a blank
           </Link>{" "}
           — it stays private while you create.

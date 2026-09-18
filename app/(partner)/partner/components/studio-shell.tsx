@@ -8,7 +8,7 @@ export function StudioShell({ children }: { children: React.ReactNode }) {
   const [help, setHelp] = useState(false);
   const editor = path === "/partner/canvas";
   return <div className="studio-main">
-    <header className="studio-topbar"><span className="studio-breadcrumb">Your workspace <span>/</span> <strong>{editor ? "Design studio" : path.includes("builder") ? "Create a product" : path.includes("review") ? "Listings" : path.includes("library") ? "Artwork library" : "Sweet’Oh Studio"}</strong></span>
+    <header className="studio-topbar"><span className="studio-breadcrumb">Your workspace <span>/</span> <strong>{editor ? "Design studio" : path.includes("catalog") || path.includes("builder") ? "Catalog" : path.includes("review") ? "Listings" : path.includes("library") ? "Artwork library" : path.includes("orders") ? "Orders" : path === "/partner" || path.includes("products") ? "My products" : "Sweet’Oh Studio"}</strong></span>
       <div className="flex items-center gap-3"><Link href="/" target="_blank" className="studio-shop-link">View shop ↗</Link><button className="studio-help" aria-expanded={help} onClick={() => setHelp(!help)}>{help ? "Close assistant" : "✦ Ask Sweet’Oh"}</button></div>
     </header>
     <div hidden={!help} className="studio-assistant"><StudioChat /></div>

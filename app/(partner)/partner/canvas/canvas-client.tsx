@@ -614,6 +614,22 @@ export function PartnerCanvasClient({
       setBusy(false);
     }
   }
+  async function downloadPrint(surfaceIndex: number) {
+    setBusy(true);
+    setError("");
+    const surface = documentRef.current.surfaces[surfaceIndex];
+    const canvas = new StaticCanvas(document.createElement("canvas"), { width: size, height: size });
+    try {
+      for (const layer of surface.layers) canvas.add(await makeLayer(layer));
+      const area = surface.area;
+      const link = document.createElement("a");
+      link.download = `${name || blank.name}-${surface.name}-print.png`;
+      link.href = canvas.toDataURL({ format: "png", multiplier: 4, left: area.x * size, top: area.y * size, width: area.width * size, height: area.height * size });
+      link.click();
+    } catch { setError("Couldn’t export this print file. Try again."); }
+    finally { await canvas.dispose(); setBusy(false); }
+  }
+
   async function save(product: boolean) {
     if (!preview) return;
     setBusy(true);
@@ -683,6 +699,7 @@ export function PartnerCanvasClient({
           )}
         </div>
       </header>
+      {!ready && !error && <p role="status" className="easy-help">Loading your product…</p>}
       {error && (
         <p role="alert" className="print-error">
           {error}
@@ -1029,6 +1046,7 @@ export function PartnerCanvasClient({
               <figure key={i}>
                 <img src={p.url} alt={`${name} — ${p.name} mockup`} />
                 <figcaption>{p.name}</figcaption>
+                <button className="so-btn-ghost" disabled={busy} onClick={() => void downloadPrint(i)}>Download print file</button>
               </figure>
             ))}
           </div>
@@ -1057,7 +1075,7 @@ export function PartnerCanvasClient({
             </button>
           </div>
           <p className="easy-help">
-            Your product stays private until you publish.
+            Your product stays private until you publish. Print files contain artwork on a transparent background, cropped to your print area. Set the physical size in your print software.
           </p>
         </section>
       )}

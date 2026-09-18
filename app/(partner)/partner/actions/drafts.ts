@@ -41,7 +41,7 @@ function reviewPath(query?: Record<string, string>): string {
 function productsPath(query?: Record<string, string>): string {
   const params = new URLSearchParams(query);
   const suffix = params.toString();
-  return suffix ? `/partner/products?${suffix}` : "/partner/products";
+  return suffix ? `/partner?${suffix}` : "/partner";
 }
 
 function revalidateListingSurfaces(productId: string): void {
@@ -168,6 +168,11 @@ export async function updatePartnerDraftAction(
 
     const row = await updatePartnerDraftFields(session, productId, fields);
 
+    if (formData.get("intent") === "publish") {
+      await publishPartnerDraft(session, productId);
+      revalidateListingSurfaces(productId);
+      redirect(productsPath({ success: `"${row.name}" is live in your Sweet’Oh shop.` }));
+    }
     revalidateListingSurfaces(productId);
 
     redirect(

@@ -113,7 +113,7 @@ export async function listBuilderBlanks(session: SessionUser) {
   }).map(async row => {
     const data = builderRecord(row.session.rawResponse)!;
     const assetId = data.mockupAssetId || row.product.sourceAssetId;
-    return { id: row.product.id, name: row.product.name, printArea: row.product.printArea,
+    return { id: row.product.id, name: row.product.name, category: row.product.category, description: row.product.description, printArea: row.product.printArea,
       imageUrl: assetId ? await getAssetSignedUrl({ ventureId: session.ventureId, assetId }) : null };
   }));
 }

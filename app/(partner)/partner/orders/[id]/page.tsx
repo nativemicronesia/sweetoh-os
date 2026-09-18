@@ -1,3 +1,5 @@
+import { getProductById, getPrimaryProductImageUrl } from "@/lib/domains/catalog/service";
+import { getAssetById, getAssetSignedUrl } from "@/lib/domains/assets/service";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { FlashBanner } from "@/app/(owner)/owner/components/flash-banner";
@@ -40,6 +42,10 @@ export default async function PartnerOrderJobPage({
 
   const { job, lineItem, order, events } = result;
 
+  const product = await getProductById({ ventureId: session.ventureId, productId: lineItem.productId });
+  const [photo, source] = await Promise.all([getPrimaryProductImageUrl(product.id), product.sourceAssetId ? getAssetById({ ventureId: session.ventureId, assetId: product.sourceAssetId }) : null]);
+  const sourceUrl = source ? await getAssetSignedUrl({ ventureId: session.ventureId, assetId: source.id }) : null;
+
   async function updateStatus(formData: FormData) {
     "use server";
     await updatePartnerFulfillmentJobStatusAction(id, formData);
@@ -71,6 +77,13 @@ export default async function PartnerOrderJobPage({
         </p>
       </div>
 
+      <section className="flex flex-wrap items-center gap-5 rounded-xl border bg-white p-6" style={{borderColor:"var(--so-border)"}}>
+        {photo && <img src={photo} alt={product.name} className="h-28 w-28 rounded-lg object-contain"/>}
+        <div className="space-y-2"><h2 className="font-semibold">Local production · {lineItem.quantity} {lineItem.quantity === 1 ? "item" : "items"}</h2>
+          <p className="text-sm so-muted">{product.name}</p>
+          {source?.compositionLayout ? <Link className="studio-primary" href={`/partner/canvas?composition=${source.id}`}>Open design & download print files</Link> : sourceUrl ? <a href={sourceUrl} target="_blank" rel="noreferrer" className="so-link">Open source artwork ↗</a> : <p className="text-sm so-muted">No artwork attached to this product.</p>}
+        </div>
+      </section>
       <section
         className="rounded-xl border p-6"
         style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}

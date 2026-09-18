@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { BookOpen, Package, ShoppingBag, ImageIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import {
   SWEETOH_CREATOR_PACK,
@@ -62,17 +63,18 @@ export function PartnerSidebar({
       </div>
 
       <nav className="flex gap-1 overflow-x-auto p-2 md:block md:flex-1 md:space-y-0.5 md:overflow-y-auto md:pt-3">
-        {packId !== "sweetoh_creator" && <Link href="/partner/builder" className="studio-primary">＋ Create product</Link>}
+        {packId !== "sweetoh_creator" && <Link href="/partner/catalog" aria-current={path.includes("catalog") || path.includes("builder") || path.includes("canvas") ? "page" : undefined} className="studio-nav-link"><BookOpen size={19}/> Catalog</Link>}
         {pack.nav.filter(item => ["overview", "library", "orders"].includes(item.id)).map(item => (
           <Link key={item.id} href={item.href} aria-current={isNavItemActive(path, item) ? "page" : undefined}
             className="flex shrink-0 items-center gap-3 whitespace-nowrap rounded-lg px-3 py-2 text-sm"
             style={{ background: isNavItemActive(path, item) ? "var(--so-surface)" : "transparent", color: isNavItemActive(path, item) ? "var(--so-gold)" : "var(--so-cream-dim)" }}>
-            {item.id === "overview" ? "My products" : item.id === "library" ? "Artwork" : "Orders"}
+            {item.id === "overview" ? <Package size={19}/> : item.id === "library" ? <ImageIcon size={19}/> : <ShoppingBag size={19}/>}
+            {item.id === "overview" ? "My products" : item.id === "library" ? "My files" : "Orders"}
           </Link>
         ))}
         <details className="studio-more-nav">
           <summary>More</summary>
-          <div>{pack.nav.filter(item => !["overview", "library", "orders"].includes(item.id)).map(item => (
+          <div>{pack.nav.filter(item => !(packId === "sweetoh_creator" ? ["overview", "library", "orders"] : ["overview", "library", "orders", "create", "canvas", "products"]).includes(item.id)).map(item => (
             <Link key={item.id} href={item.href} aria-current={isNavItemActive(path, item) ? "page" : undefined} className="block rounded-lg px-3 py-2 text-sm">{item.label}</Link>
           ))}</div>
         </details>

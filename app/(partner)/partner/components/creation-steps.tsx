@@ -9,7 +9,7 @@ export function CreationSteps({
   return (
     <nav aria-label="Product creation progress" className="creation-steps">
       {[
-        "Choose blank",
+        "Catalog",
         "Design",
         "Preview",
         "Details & pricing",
@@ -24,7 +24,7 @@ export function CreationSteps({
         >
           <b>{i + 1 < current ? "✓" : i + 1}</b>
           {i === 0 && current > 1 ? (
-            <Link href={productHref ?? "/partner/builder"}>{label}</Link>
+            <Link href={productHref ?? "/partner/catalog"}>{label}</Link>
           ) : (
             label
           )}
