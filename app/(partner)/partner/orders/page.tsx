@@ -164,6 +164,7 @@ export default async function PartnerOrdersPage({
                         style={{ color: "var(--so-gold)" }}
                       >
                         {lineItem.productName} × {lineItem.quantity}
+                        {lineItem.color || lineItem.size ? ` · ${[lineItem.color, lineItem.size].filter(Boolean).join(" / ")}` : ""}
                       </Link>
                       <span className="text-sm" style={{ color: "var(--so-cream-dim)" }}>
                         {job.status.replaceAll("_", " ")}

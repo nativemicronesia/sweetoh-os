@@ -33,15 +33,18 @@ export async function findOrCreateCustomer(
   return row;
 }
 
-export async function createOrderFromCheckoutSession(session: Stripe.Checkout.Session) {
+export async function createOrderFromCheckoutSession(
+  session: Stripe.Checkout.Session,
+  cartItems: CheckoutCartItemMetadata[],
+) {
   const ventureId = session.metadata?.ventureId;
-  const cartItemsRaw = session.metadata?.cartItems;
 
-  if (!ventureId || !cartItemsRaw) {
+  if (!ventureId || cartItems.length === 0) {
     throw new ValidationError("Checkout session is missing required metadata.");
   }
 
-  const cartItems: CheckoutCartItemMetadata[] = JSON.parse(cartItemsRaw);
+  const shipping =
+    session.collected_information?.shipping_details ?? session.shipping_details ?? null;
   const email = session.customer_details?.email ?? session.customer_email;
 
   if (!email) {
@@ -78,6 +81,18 @@ export async function createOrderFromCheckoutSession(session: Stripe.Checkout.Se
         subtotalCents,
         totalCents: session.amount_total ?? subtotalCents,
         currency: session.currency ?? "usd",
+        shippingName: shipping?.name ?? session.customer_details?.name ?? null,
+        shippingPhone: session.customer_details?.phone ?? null,
+        shippingAddress: shipping?.address
+          ? {
+              line1: shipping.address.line1 ?? null,
+              line2: shipping.address.line2 ?? null,
+              city: shipping.address.city ?? null,
+              state: shipping.address.state ?? null,
+              postalCode: shipping.address.postal_code ?? null,
+              country: shipping.address.country ?? null,
+            }
+          : null,
       })
       .onConflictDoNothing({ target: order.stripeCheckoutSessionId })
       .returning();
@@ -112,6 +127,8 @@ export async function createOrderFromCheckoutSession(session: Stripe.Checkout.Se
           productName: item.productName,
           priceCentsAtPurchase: item.priceCentsAtPurchase,
           quantity: item.quantity,
+          color: item.color ?? null,
+          size: item.size ?? null,
         })),
       )
       .returning();

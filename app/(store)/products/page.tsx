@@ -26,6 +26,7 @@ export default async function ProductsPage() {
           priceCents: product.priceCents,
           category: product.category,
           imageUrl: images[index],
+          variantOptions: product.variantOptions,
         }))}
       />
     </Suspense>

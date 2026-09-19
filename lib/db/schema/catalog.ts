@@ -70,6 +70,14 @@ export const product = pgTable(
       width: number;
       height: number;
     }>(),
+    /** Colors and sizes this product is sold in, plus per-size upcharges. */
+    variantOptions: jsonb("variant_options").$type<
+      import("@/lib/domains/catalog/variants").VariantOptions
+    >(),
+    /** Where the blank came from (e.g. the Printify catalog) and its real print areas. */
+    catalogSource: jsonb("catalog_source").$type<
+      import("@/lib/domains/catalog/variants").CatalogSource
+    >(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -89,6 +97,8 @@ export const productMedia = pgTable("product_media", {
     onDelete: "set null",
   }),
   objectKey: text("object_key"),
+  /** Color name this mockup shows; null for color-neutral images. */
+  color: text("color"),
   sortOrder: integer("sort_order").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()

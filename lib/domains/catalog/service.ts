@@ -1,3 +1,4 @@
+import type { CatalogSource, VariantOptions } from "./variants";
 import { and, count, desc, eq, inArray, isNull } from "drizzle-orm";
 import { builderRecord } from "@/lib/domains/intelligence/product-research-schema";
 import {
@@ -532,6 +533,7 @@ export async function addProductMediaUpload(input: {
   filename: string;
   mimeType: string;
   assetId?: string | null;
+  color?: string | null;
 }) {
   await getProductById({
     ventureId: input.ventureId,
@@ -560,6 +562,7 @@ export async function addProductMediaUpload(input: {
       productId: input.productId,
       objectKey,
       assetId: input.assetId ?? null,
+      color: input.color ?? null,
       sortOrder: existingMedia.length,
     })
     .returning();
@@ -1450,6 +1453,7 @@ export type ProductPrintArea = {
   y: number;
   width: number;
   height: number;
+  surfaces?: import("./studio-layout").StudioSurface[];
 };
 
 /**
@@ -1478,4 +1482,37 @@ export async function setProductPrintArea(input: {
   }
 
   return row;
+}
+
+/** Colors, sizes and catalog origin for a product (or the blank it's made on). */
+export async function setProductVariantSetup(input: {
+  ventureId: string;
+  productId: string;
+  variantOptions: VariantOptions | null;
+  catalogSource?: CatalogSource | null;
+}) {
+  const db = getDb();
+  const [row] = await db
+    .update(product)
+    .set({
+      variantOptions: input.variantOptions,
+      ...(input.catalogSource !== undefined ? { catalogSource: input.catalogSource } : {}),
+      updatedAt: new Date(),
+    })
+    .where(and(eq(product.id, input.productId), eq(product.ventureId, input.ventureId)))
+    .returning();
+  if (!row) throw new NotFoundError("Product not found");
+  return row;
+}
+
+/** Public image URL per color for a product's color-tagged mockups. */
+export async function getProductColorImageUrls(
+  productId: string,
+): Promise<Record<string, string>> {
+  const media = await getProductMedia(productId);
+  return Object.fromEntries(
+    media
+      .filter((m) => m.color && m.objectKey)
+      .map((m) => [m.color!, productMediaPublicUrl(m.objectKey!)]),
+  );
 }

@@ -10,12 +10,18 @@ import {
   confirmBuilderProduct,
 } from "@/lib/domains/intelligence/partner-builder";
 import {
+  getBlueprintOptions,
   getPrintifyBlueprint,
   downloadCatalogImage,
   catalogCategory,
   plainCatalogDescription,
 } from "@/lib/integrations/printify/catalog";
-import { updateProduct } from "@/lib/domains/catalog/service";
+import {
+  setProductPrintArea,
+  setProductVariantSetup,
+  updateProduct,
+} from "@/lib/domains/catalog/service";
+import { defaultPrintAreaFor, defaultUpcharges, sortSizes } from "@/lib/domains/catalog/variants";
 
 export async function startCatalogDesign(form: FormData) {
   const session = await requirePartnerWorkspace();
@@ -35,11 +41,36 @@ export async function startCatalogDesign(form: FormData) {
       .filter(Boolean)
       .join(" · ")
       .slice(0, 180);
+    // Only colors and sizes Printify actually lists for this product.
+    const options = await getBlueprintOptions(id).catch(() => null);
+    const picked = (key: string) =>
+      z.array(z.string()).max(200).catch([]).parse(JSON.parse(String(form.get(key) ?? "[]")));
+    const colors = (options?.colors ?? []).filter((c) => picked("colors").includes(c.name));
+    const sizes = sortSizes(picked("sizes").filter((s) => options?.sizes.includes(s)));
+    if (options?.colors.length && !colors.length) throw new Error("Pick at least one color.");
+    const variantOptions = { colors, sizes, sizeUpchargeCents: defaultUpcharges(sizes) };
+    const catalogSource = {
+      provider: "printify" as const,
+      blueprintId: id,
+      brand: blueprint.brand,
+      model: blueprint.model,
+      printAreas: options?.printAreas ?? [],
+      availableColors: options?.colors ?? [],
+      availableSizes: options?.sizes ?? [],
+    };
     // Reuse the local blank if this catalog product was already chosen.
     const existing = (await listBuilderBlanks(session)).find(
-      (b) => b.name === name,
+      (b) => b.catalogSource?.blueprintId === id || b.name === name,
     );
-    if (existing) redirect(`/partner/canvas?blank=${existing.id}`);
+    if (existing) {
+      await setProductVariantSetup({
+        ventureId: session.ventureId,
+        productId: existing.id,
+        variantOptions,
+        catalogSource,
+      });
+      redirect(`/partner/canvas?blank=${existing.id}`);
+    }
     const product = await preparePartnerProduct(session, {
       file: image.bytes,
       mimeType: image.mimeType,
@@ -55,6 +86,18 @@ export async function startCatalogDesign(form: FormData) {
       ventureId: session.ventureId,
       productId: product.id,
       category: catalogCategory(blueprint.title),
+    });
+    await setProductVariantSetup({
+      ventureId: session.ventureId,
+      productId: product.id,
+      variantOptions,
+      catalogSource,
+    });
+    const area = defaultPrintAreaFor(catalogSource.printAreas);
+    await setProductPrintArea({
+      ventureId: session.ventureId,
+      productId: product.id,
+      printArea: { ...area, surfaces: [{ id: "front", name: "Front", assetId: null, area }] },
     });
     await confirmBuilderProduct(session, product.id);
     revalidatePath("/partner/catalog");

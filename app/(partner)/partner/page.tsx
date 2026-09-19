@@ -198,7 +198,8 @@ export default async function PartnerHomePage() {
                     <span>
                       <strong>{lineItem.productName}</strong>
                       <small>
-                        Qty {lineItem.quantity} ·{" "}
+                        {[lineItem.color, lineItem.size].filter(Boolean).join(" / ")}
+                        {lineItem.color || lineItem.size ? " · " : ""}Qty {lineItem.quantity} ·{" "}
                         {formatPrice(lineItem.priceCentsAtPurchase * lineItem.quantity)}
                       </small>
                     </span>

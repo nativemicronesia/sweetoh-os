@@ -19,7 +19,12 @@ export function CheckoutView({ stripeReady }: CheckoutViewProps) {
     setError(null);
     startTransition(async () => {
       const result = await createCheckoutSessionAction(
-        items.map((item) => ({ productId: item.productId, quantity: item.quantity })),
+        items.map((item) => ({
+          productId: item.productId,
+          color: item.color ?? null,
+          size: item.size ?? null,
+          quantity: item.quantity,
+        })),
       );
 
       if (result?.error) {
@@ -69,12 +74,15 @@ export function CheckoutView({ stripeReady }: CheckoutViewProps) {
       <ul className="divide-y border" style={{ borderColor: "var(--so-border)" }}>
         {items.map((item) => (
           <li
-            key={item.productId}
+            key={item.lineId}
             className="flex items-center justify-between px-5 py-4"
             style={{ background: "var(--so-dark)" }}
           >
             <div>
               <p className="font-medium text-[color:var(--so-cream)]">{item.name}</p>
+              {item.color || item.size ? (
+                <p className="text-xs so-muted">{[item.color, item.size].filter(Boolean).join(" / ")}</p>
+              ) : null}
               <p className="text-sm so-muted">Qty {item.quantity}</p>
             </div>
             <p className="text-sm font-medium text-[color:var(--so-cream)]">

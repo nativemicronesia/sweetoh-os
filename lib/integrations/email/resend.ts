@@ -122,7 +122,7 @@ export async function sendOrderConfirmationEmail(input: {
   to: string;
   orderId: string;
   totalCents: number;
-  lineItems: { productName: string; quantity: number; priceCentsAtPurchase: number }[];
+  lineItems: { productName: string; quantity: number; priceCentsAtPurchase: number; color?: string | null; size?: string | null }[];
   /** Venture-appropriate support inbox — defaults to Island Sprouts support. */
   replyTo?: string;
 }) {
@@ -131,7 +131,7 @@ export async function sendOrderConfirmationEmail(input: {
   const itemLines = input.lineItems
     .map(
       (item) =>
-        `${item.productName} × ${item.quantity} — ${formatPrice(item.priceCentsAtPurchase * item.quantity)}`,
+        `${item.productName}${item.color || item.size ? ` (${[item.color, item.size].filter(Boolean).join(" / ")})` : ""} × ${item.quantity} — ${formatPrice(item.priceCentsAtPurchase * item.quantity)}`,
     )
     .join("\n");
 
@@ -170,14 +170,14 @@ export async function sendStorefrontOrderConfirmationEmail(input: {
   to: string;
   orderId: string;
   totalCents: number;
-  lineItems: { productName: string; quantity: number; priceCentsAtPurchase: number }[];
+  lineItems: { productName: string; quantity: number; priceCentsAtPurchase: number; color?: string | null; size?: string | null }[];
 }) {
   const supportEmail = sweetohReplyTo();
 
   const itemLines = input.lineItems
     .map(
       (item) =>
-        `${item.productName} × ${item.quantity} — ${formatPrice(item.priceCentsAtPurchase * item.quantity)}`,
+        `${item.productName}${item.color || item.size ? ` (${[item.color, item.size].filter(Boolean).join(" / ")})` : ""} × ${item.quantity} — ${formatPrice(item.priceCentsAtPurchase * item.quantity)}`,
     )
     .join("\n");
 

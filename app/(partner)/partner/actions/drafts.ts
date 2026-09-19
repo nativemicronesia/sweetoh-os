@@ -17,6 +17,9 @@ import {
 } from "@/lib/domains/catalog/partner-listings";
 import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
 import { getActionErrorMessage } from "@/lib/shared/action-errors";
+import { ValidationError } from "@/lib/shared/errors";
+import { getProductById, setProductVariantSetup } from "@/lib/domains/catalog/service";
+import { sortSizes } from "@/lib/domains/catalog/variants";
 
 /**
  * Thin redirect/revalidate shells. Every role and ownership check lives in
@@ -167,6 +170,7 @@ export async function updatePartnerDraftAction(
     validatePartnerProductFields(fields);
 
     const row = await updatePartnerDraftFields(session, productId, fields);
+    if (formData.get("variantsPresent") === "1") await saveVariantFields(session, productId, formData);
 
     if (formData.get("intent") === "publish") {
       await publishPartnerDraft(session, productId);
@@ -186,4 +190,39 @@ export async function updatePartnerDraftAction(
       reviewDetailPath(productId, { error: getActionErrorMessage(error) }),
     );
   }
+}
+
+/** Colors, sizes and upcharges posted from the Details & pricing form. */
+async function saveVariantFields(
+  session: Awaited<ReturnType<typeof requirePartnerWorkspace>>,
+  productId: string,
+  formData: FormData,
+) {
+  const product = await getProductById({ ventureId: session.ventureId, productId });
+  const pool = {
+    colors: product.catalogSource?.availableColors.length
+      ? product.catalogSource.availableColors
+      : (product.variantOptions?.colors ?? []),
+    sizes: product.catalogSource?.availableSizes.length
+      ? product.catalogSource.availableSizes
+      : (product.variantOptions?.sizes ?? []),
+  };
+  const colorNames = formData.getAll("variantColor").map(String);
+  const colors = pool.colors.filter((c) => colorNames.includes(c.name));
+  const sizes = sortSizes(formData.getAll("variantSize").map(String).filter((s) => pool.sizes.includes(s)));
+  if (pool.colors.length && !colors.length) throw new ValidationError("Offer at least one color.");
+  if (pool.sizes.length && !sizes.length) throw new ValidationError("Offer at least one size.");
+  const sizeUpchargeCents = Object.fromEntries(
+    sizes.map((s) => {
+      const dollars = Number(formData.get(`upcharge:${s}`) ?? 0);
+      if (!Number.isFinite(dollars) || dollars < 0 || dollars > 1000)
+        throw new ValidationError(`Enter a valid extra charge for ${s}.`);
+      return [s, Math.round(dollars * 100)];
+    }),
+  );
+  await setProductVariantSetup({
+    ventureId: session.ventureId,
+    productId,
+    variantOptions: { colors, sizes, sizeUpchargeCents },
+  });
 }

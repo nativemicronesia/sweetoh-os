@@ -4,6 +4,7 @@ import { getServerEnv, isStripeConfigured } from "@/lib/config/env";
 import { createOrderFromCheckoutSession } from "@/lib/domains/commerce/service";
 import { sendStorefrontOrderConfirmationEmail } from "@/lib/integrations/email/resend";
 import { getStripeClient } from "@/lib/integrations/stripe/client";
+import { readCheckoutCartItems } from "@/lib/integrations/stripe/checkout";
 import { logger } from "@/lib/shared/logger";
 
 export async function POST(request: Request) {
@@ -37,7 +38,8 @@ export async function POST(request: Request) {
     const session = event.data.object as Stripe.Checkout.Session;
 
     try {
-      const { order, lineItems, isNew } = await createOrderFromCheckoutSession(session);
+      const cartItems = await readCheckoutCartItems(session);
+      const { order, lineItems, isNew } = await createOrderFromCheckoutSession(session, cartItems);
 
       if (isNew) {
         await sendStorefrontOrderConfirmationEmail({

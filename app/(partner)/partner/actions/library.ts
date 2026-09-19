@@ -7,7 +7,7 @@ import { z } from "zod";
 import { redirect } from "next/navigation";
 import { approveAsset, getAssetById, validateImageUpload } from "@/lib/domains/assets/service";
 import { persistDraftProduct } from "@/lib/domains/intelligence/service";
-import { getProductById, addProductMediaUpload } from "@/lib/domains/catalog/service";
+import { getProductById, addProductMediaUpload, setProductVariantSetup } from "@/lib/domains/catalog/service";
 import { ValidationError } from "@/lib/shared/errors";
 import { uploadPartnerDesign } from "@/lib/domains/catalog/partner-design-library";
 import { canModerateListings } from "@/lib/domains/catalog/partner-listings";
@@ -193,8 +193,22 @@ export async function saveCanvasCompositionAction(formData: FormData): Promise<{
           suggestedTags: blank.suggestedTags || [], suggestedCollections: [], suggestedPriceCents: 0,
           internalNotes: `Created on ${blank.name}. Review print area and product options before production.` },
       });
+      if (blank.variantOptions || blank.catalogSource)
+        await setProductVariantSetup({ ventureId: session.ventureId, productId: saved.product.id,
+          variantOptions: blank.variantOptions, catalogSource: blank.catalogSource });
+      const colorFiles = formData.getAll("colorFiles").filter((f): f is File => f instanceof File && f.size > 0);
+      const offered = new Set(blank.variantOptions?.colors.map((c) => c.name) ?? []);
       await addProductMediaUpload({ ventureId: session.ventureId, ventureSlug: session.ventureSlug,
         productId: saved.product.id, actorUserId: session.appUser.id, file: buffer, filename: "mockup.png", mimeType: "image/png", assetId: composition.id });
+      // One mockup per color the product is sold in, tagged so the storefront can switch.
+      for (const [index, image] of colorFiles.entries()) {
+        const color = image.name.replace(/\.(png|jpe?g)$/i, "");
+        if (!offered.has(color)) continue;
+        validateImageUpload({ mimeType: image.type, sizeBytes: image.size });
+        await addProductMediaUpload({ ventureId: session.ventureId, ventureSlug: session.ventureSlug,
+          productId: saved.product.id, actorUserId: session.appUser.id, file: Buffer.from(await image.arrayBuffer()),
+          filename: `color-${index + 1}.jpg`, mimeType: image.type, color });
+      }
       for (const [index, image] of surfaceFiles.entries()) {
         await addProductMediaUpload({ ventureId: session.ventureId, ventureSlug: session.ventureSlug,
           productId: saved.product.id, actorUserId: session.appUser.id, file: Buffer.from(await image.arrayBuffer()), filename: `surface-${index+2}.png`, mimeType: image.type });

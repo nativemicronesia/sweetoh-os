@@ -26,6 +26,8 @@ import {
   type StudioLayer,
   type StudioSurface,
 } from "@/lib/domains/catalog/studio-layout";
+import { tintGarment } from "@/lib/studio/tint";
+import type { CatalogSource, VariantOptions } from "@/lib/domains/catalog/variants";
 type CanvasPrintArea = StudioSurface["area"];
 type LegacyTransform = {
   offsetX: number;
@@ -40,6 +42,8 @@ export type CanvasBlankOption = {
   name: string;
   imageUrl: string | null;
   printArea: (CanvasPrintArea & { surfaces?: StudioSurface[] }) | null;
+  variantOptions?: VariantOptions | null;
+  catalogSource?: CatalogSource | null;
 };
 export type CanvasDesignOption = {
   id: string;
@@ -109,6 +113,13 @@ export function PartnerCanvasClient({
   const [preview, setPreview] = useState<
     { name: string; url: string }[] | null
   >(null);
+  const colors = blank?.variantOptions?.colors ?? [];
+  const [colorName, setColorName] = useState<string | null>(colors[0]?.name ?? null);
+  const colorRef = useRef<string | null>(colors[0]?.hex ?? null);
+  const tinted = useRef(new Map<string, Promise<string | null>>());
+  const [colorPreview, setColorPreview] = useState<
+    { color: string; hex: string; url: string }[]
+  >([]);
   const [areaEditing, setAreaEditing] = useState(false);
   const [surfaceName, setSurfaceName] = useState("");
   const [brief, setBrief] = useState("");
@@ -186,20 +197,35 @@ export function PartnerCanvasClient({
     metadata.current.set(obj, layer);
     return obj;
   }
+  /** The blank photo recolored to a garment color; null keeps the original. */
+  function recolored(src: string, hex: string | null, area: CanvasPrintArea) {
+    if (!hex || /^#f[a-f0-9]f[a-f0-9]f[a-f0-9]$/i.test(hex)) return Promise.resolve(null);
+    const key = `${src}|${hex}`;
+    if (!tinted.current.has(key))
+      tinted.current.set(
+        key,
+        tintGarment(src, hex, { x: area.x + area.width / 2, y: area.y + area.height / 2 })
+          .then((r) => r?.url ?? null)
+          .catch(() => null),
+      );
+    return tinted.current.get(key)!;
+  }
   async function paint(
     canvas: StaticCanvas,
     surface: Surface,
     withGuide = false,
+    hex: string | null = colorRef.current,
   ) {
     canvas.clear();
     canvas.backgroundColor = "#faf8f2";
-    const source = surface.assetId
+    const original = surface.assetId
       ? urls.current[surface.assetId]
       : blank?.imageUrl;
-    if (!source)
+    if (!original)
       throw new Error(
         "This surface photo is unavailable. Refresh or upload it again.",
       );
+    const source = (await recolored(original, hex, surface.area)) ?? original;
     const image = await FabricImage.fromURL(source, {
       crossOrigin: "anonymous",
     });
@@ -606,6 +632,25 @@ export function PartnerCanvasClient({
         }
       }
       setPreview(previews);
+      const front = documentRef.current.surfaces[0];
+      const perColor = [];
+      for (const c of colors) {
+        const canvas = new StaticCanvas(document.createElement("canvas"), {
+          width: size,
+          height: size,
+        });
+        try {
+          await paint(canvas, front, false, c.hex);
+          perColor.push({
+            color: c.name,
+            hex: c.hex,
+            url: canvas.toDataURL({ format: "jpeg", quality: 0.88, multiplier: 1 }),
+          });
+        } finally {
+          await canvas.dispose();
+        }
+      }
+      setColorPreview(perColor);
     } catch {
       setError(
         "Couldn’t prepare preview. Check that each surface photo is available.",
@@ -622,9 +667,18 @@ export function PartnerCanvasClient({
     try {
       for (const layer of surface.layers) canvas.add(await makeLayer(layer));
       const area = surface.area;
+      // Export at the product's real print size when the catalog provides it.
+      const areas = blank?.catalogSource?.printAreas ?? [];
+      const spec =
+        areas.find((a) => surface.name.toLowerCase().includes(a.position.replace(/_/g, " "))) ??
+        (surfaceIndex === 0 ? areas.find((a) => a.position === "front") : undefined);
+      // Artwork and text re-render at full resolution, so only the output size is capped.
+      const multiplier = spec
+        ? Math.min(spec.width, 6000) / (area.width * size)
+        : 4;
       const link = document.createElement("a");
       link.download = `${name || blank.name}-${surface.name}-print.png`;
-      link.href = canvas.toDataURL({ format: "png", multiplier: 4, left: area.x * size, top: area.y * size, width: area.width * size, height: area.height * size });
+      link.href = canvas.toDataURL({ format: "png", multiplier, left: area.x * size, top: area.y * size, width: area.width * size, height: area.height * size });
       link.click();
     } catch { setError("Couldn’t export this print file. Try again."); }
     finally { await canvas.dispose(); setBusy(false); }
@@ -646,6 +700,10 @@ export function PartnerCanvasClient({
           i === 0 ? "file" : "surfaceFiles",
           new File([blob], `${preview[i].name}.png`, { type: "image/png" }),
         );
+      }
+      for (const c of colorPreview) {
+        const blob = await (await fetch(c.url)).blob();
+        form.append("colorFiles", new File([blob], `${c.color}.jpg`, { type: "image/jpeg" }));
       }
       dirty.current = false;
       const result = await saveCanvasCompositionAction(form);
@@ -790,6 +848,31 @@ export function PartnerCanvasClient({
           </details>
         </aside>
         <section className="print-design">
+          {colors.length > 0 && (
+            <div className="color-bar" role="group" aria-label="Preview color">
+              <span>Color</span>
+              {colors.map((c) => (
+                <button
+                  key={c.name}
+                  type="button"
+                  className="swatch"
+                  title={c.name}
+                  aria-label={c.name}
+                  aria-pressed={colorName === c.name}
+                  disabled={isLocked || areaEditing}
+                  style={{ background: c.hex }}
+                  onClick={() => {
+                    if (colorName === c.name) return;
+                    capture();
+                    colorRef.current = c.hex;
+                    setColorName(c.name);
+                    void loadSurface(currentId.current);
+                  }}
+                />
+              ))}
+              <small>{colorName}</small>
+            </div>
+          )}
           <div className="print-surface-tabs" aria-label="Product surfaces">
             {surfaces.map((s) => (
               <button
@@ -1050,6 +1133,21 @@ export function PartnerCanvasClient({
               </figure>
             ))}
           </div>
+          {colorPreview.length > 1 && (
+            <div className="color-previews">
+              <h3>All colors</h3>
+              <div>
+                {colorPreview.map((c) => (
+                  <figure key={c.color}>
+                    <img src={c.url} alt={`${name} — ${c.color}`} />
+                    <figcaption>
+                      <span className="swatch" style={{ background: c.hex }} /> {c.color}
+                    </figcaption>
+                  </figure>
+                ))}
+              </div>
+            </div>
+          )}
           <div className="print-preview-footer">
             <label className="studio-field">
               Product name

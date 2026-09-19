@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCart } from "@/lib/cart/cart-context";
 import { formatPrice } from "@/lib/shared/format";
+import { variantLabel } from "@/lib/domains/catalog/variants";
 
 function QuantityStepper({
   quantity,
@@ -68,7 +69,7 @@ export function CartView() {
       <ul className="divide-y" style={{ borderColor: "var(--so-border)" }}>
         {items.map((item) => (
           <li
-            key={item.productId}
+            key={item.lineId}
             className="flex flex-wrap items-center gap-4 border-t py-5"
             style={{ borderColor: "var(--so-border)" }}
           >
@@ -88,12 +89,15 @@ export function CartView() {
 
             <div className="min-w-[10rem] flex-1">
               <p className="font-medium text-[color:var(--so-cream)]">{item.name}</p>
+              {variantLabel(item.color, item.size) ? (
+                <p className="text-sm so-muted">{variantLabel(item.color, item.size)}</p>
+              ) : null}
               <p className="text-sm so-muted">{formatPrice(item.priceCents)}</p>
             </div>
 
             <QuantityStepper
               quantity={item.quantity}
-              onChange={(next) => setQuantity(item.productId, Math.max(1, next))}
+              onChange={(next) => setQuantity(item.lineId, Math.max(1, next))}
             />
 
             <p className="w-20 text-right text-sm font-medium text-[color:var(--so-cream)]">
@@ -102,7 +106,7 @@ export function CartView() {
 
             <button
               type="button"
-              onClick={() => removeItem(item.productId)}
+              onClick={() => removeItem(item.lineId)}
               className="text-sm so-muted hover:text-[color:var(--so-gold)]"
             >
               Remove

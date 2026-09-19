@@ -1,5 +1,6 @@
 import {
   integer,
+  jsonb,
   pgTable,
   text,
   timestamp,
@@ -48,6 +49,16 @@ export const order = pgTable(
     subtotalCents: integer("subtotal_cents").notNull(),
     totalCents: integer("total_cents").notNull(),
     currency: text("currency").notNull().default("usd"),
+    shippingName: text("shipping_name"),
+    shippingPhone: text("shipping_phone"),
+    shippingAddress: jsonb("shipping_address").$type<{
+      line1: string | null;
+      line2: string | null;
+      city: string | null;
+      state: string | null;
+      postalCode: string | null;
+      country: string | null;
+    }>(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -73,6 +84,8 @@ export const orderLineItem = pgTable("order_line_item", {
   productName: text("product_name").notNull(),
   priceCentsAtPurchase: integer("price_cents_at_purchase").notNull(),
   quantity: integer("quantity").notNull(),
+  color: text("color"),
+  size: text("size"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

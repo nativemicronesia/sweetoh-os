@@ -6,7 +6,12 @@ import { createCartCheckoutSession } from "@/lib/integrations/stripe/checkout";
 import { getActionErrorMessage } from "@/lib/shared/action-errors";
 
 export async function createCheckoutSessionAction(
-  items: { productId: string; quantity: number }[],
+  items: {
+    productId: string;
+    color?: string | null;
+    size?: string | null;
+    quantity: number;
+  }[],
 ): Promise<{ error: string } | void> {
   let checkoutUrl: string;
 

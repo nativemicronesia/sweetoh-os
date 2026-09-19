@@ -1,4 +1,5 @@
-import { getProductById, getPrimaryProductImageUrl } from "@/lib/domains/catalog/service";
+import { getProductById, getPrimaryProductImageUrl, getProductColorImageUrls } from "@/lib/domains/catalog/service";
+import { variantLabel } from "@/lib/domains/catalog/variants";
 import { getAssetById, getAssetSignedUrl } from "@/lib/domains/assets/service";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -43,7 +44,11 @@ export default async function PartnerOrderJobPage({
   const { job, lineItem, order, events } = result;
 
   const product = await getProductById({ ventureId: session.ventureId, productId: lineItem.productId });
-  const [photo, source] = await Promise.all([getPrimaryProductImageUrl(product.id), product.sourceAssetId ? getAssetById({ ventureId: session.ventureId, assetId: product.sourceAssetId }) : null]);
+  const [primaryPhoto, colorPhotos, source] = await Promise.all([getPrimaryProductImageUrl(product.id), getProductColorImageUrls(product.id), product.sourceAssetId ? getAssetById({ ventureId: session.ventureId, assetId: product.sourceAssetId }) : null]);
+  const photo = (lineItem.color && colorPhotos[lineItem.color]) || primaryPhoto;
+  const swatch = product.variantOptions?.colors.find((c) => c.name === lineItem.color)?.hex;
+  const blankName = product.catalogSource ? [product.catalogSource.brand, product.catalogSource.model].filter(Boolean).join(" ") : null;
+  const ship = order.shippingAddress;
   const sourceUrl = source ? await getAssetSignedUrl({ ventureId: session.ventureId, assetId: source.id }) : null;
 
   async function updateStatus(formData: FormData) {
@@ -70,6 +75,9 @@ export default async function PartnerOrderJobPage({
         >
           {lineItem.productName} × {lineItem.quantity}
         </h1>
+        {variantLabel(lineItem.color, lineItem.size) ? (
+          <p className="mt-1 text-base font-medium">{variantLabel(lineItem.color, lineItem.size)}</p>
+        ) : null}
         <p className="mt-1 text-sm" style={{ color: "var(--so-cream-dim)" }}>
           {order.customerEmail} · {formatPrice(lineItem.priceCentsAtPurchase)}{" "}
           each ·{" "}
@@ -81,8 +89,30 @@ export default async function PartnerOrderJobPage({
         {photo && <img src={photo} alt={product.name} className="h-28 w-28 rounded-lg object-contain"/>}
         <div className="space-y-2"><h2 className="font-semibold">Local production · {lineItem.quantity} {lineItem.quantity === 1 ? "item" : "items"}</h2>
           <p className="text-sm so-muted">{product.name}</p>
+          <dl className="order-spec">
+            {blankName ? <div><dt>Blank</dt><dd>{blankName}</dd></div> : null}
+            {lineItem.color ? <div><dt>Color</dt><dd>{swatch ? <span className="order-swatch" style={{ background: swatch }} /> : null}{lineItem.color}</dd></div> : null}
+            {lineItem.size ? <div><dt>Size</dt><dd>{lineItem.size}</dd></div> : null}
+            <div><dt>Quantity</dt><dd>{lineItem.quantity}</dd></div>
+          </dl>
           {source?.compositionLayout ? <Link className="studio-primary" href={`/partner/canvas?composition=${source.id}`}>Open design & download print files</Link> : sourceUrl ? <a href={sourceUrl} target="_blank" rel="noreferrer" className="so-link">Open source artwork ↗</a> : <p className="text-sm so-muted">No artwork attached to this product.</p>}
         </div>
+      </section>
+      <section className="rounded-xl border bg-white p-6" style={{ borderColor: "var(--so-border)" }}>
+        <h2 className="font-semibold">Ship to</h2>
+        {ship || order.shippingName ? (
+          <address className="mt-2 text-sm not-italic leading-6">
+            {order.shippingName ? <strong className="block">{order.shippingName}</strong> : null}
+            {ship?.line1 ? <span className="block">{ship.line1}</span> : null}
+            {ship?.line2 ? <span className="block">{ship.line2}</span> : null}
+            <span className="block">{[ship?.city, ship?.state, ship?.postalCode].filter(Boolean).join(", ")}</span>
+            {ship?.country ? <span className="block">{ship.country}</span> : null}
+            {order.shippingPhone ? <span className="block so-muted">{order.shippingPhone}</span> : null}
+            <span className="block so-muted">{order.customerEmail}</span>
+          </address>
+        ) : (
+          <p className="mt-2 text-sm so-muted">No shipping address on this order — contact {order.customerEmail}.</p>
+        )}
       </section>
       <section
         className="rounded-xl border p-6"

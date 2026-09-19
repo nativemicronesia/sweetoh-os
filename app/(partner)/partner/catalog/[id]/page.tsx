@@ -1,4 +1,5 @@
-import { getPrintifyBlueprint, catalogCategory, plainCatalogDescription } from "@/lib/integrations/printify/catalog";
+import { getPrintifyBlueprint, getBlueprintOptions, catalogCategory, plainCatalogDescription } from "@/lib/integrations/printify/catalog";
+import { listBuilderBlanks } from "@/lib/domains/intelligence/partner-builder";
 import { CatalogProduct } from "../catalog-product";
 import { FlashBanner } from "@/app/(owner)/owner/components/flash-banner";
 import Link from "next/link";
@@ -21,7 +22,12 @@ export default async function CatalogProductPage({ params, searchParams }: { par
     let blueprint;
     try { blueprint = await getPrintifyBlueprint(Number(id.slice("printify-".length))); }
     catch { return <div className="space-y-5"><h1 className="text-2xl font-semibold">Catalog temporarily unavailable</h1><p>Your saved products are still available.</p><Link href="/partner/catalog">← Back to catalog</Link></div>; }
-    return <div className="space-y-7"><CreationSteps current={1}/><Link href="/partner/catalog" className="inline-flex items-center gap-2"><ArrowLeft size={16}/> All products</Link><FlashBanner message={query.error} variant="error"/><CatalogProduct product={{id:blueprint.id,name:blueprint.title,brand:blueprint.brand,model:blueprint.model,images:blueprint.images,description:plainCatalogDescription(blueprint.description),category:categoryLabel(catalogCategory(blueprint.title))}}/></div>;
+    const [options, blanks] = await Promise.all([
+      getBlueprintOptions(blueprint.id).catch(() => null),
+      listBuilderBlanks(session),
+    ]);
+    const saved = blanks.find((b) => b.catalogSource?.blueprintId === blueprint.id)?.variantOptions;
+    return <div className="space-y-7"><CreationSteps current={1}/><Link href="/partner/catalog" className="inline-flex items-center gap-2"><ArrowLeft size={16}/> All products</Link><FlashBanner message={query.error} variant="error"/><CatalogProduct options={options} initial={saved ? { colors: saved.colors.map((c) => c.name), sizes: saved.sizes } : null} product={{id:blueprint.id,name:blueprint.title,brand:blueprint.brand,model:blueprint.model,images:blueprint.images,description:plainCatalogDescription(blueprint.description),category:categoryLabel(catalogCategory(blueprint.title))}}/></div>;
   }
   const item = (await listPartnerCatalog(session)).find(p => p.id === id);
   if (!item) notFound();

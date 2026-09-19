@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { ProductCategory } from "@/lib/domains/catalog/categories";
+import { colorHex, sortColors, sortSizes } from "@/lib/domains/catalog/variants";
 
 const blueprintSchema = z.object({
   id: z.number().int(),
@@ -139,4 +140,60 @@ export async function listBestsellerBlueprints(): Promise<Blueprint[]> {
   return BESTSELLERS.map((re) => rows.find((b) => re.test(b.title))).filter(
     (b): b is Blueprint => b !== undefined,
   );
+}
+
+const variantSchema = z.object({
+  options: z.record(z.string(), z.string()).default({}),
+  placeholders: z
+    .array(z.object({ position: z.string(), width: z.number(), height: z.number() }))
+    .default([]),
+});
+export type BlueprintOptions = {
+  colors: { name: string; hex: string }[];
+  sizes: string[];
+  printAreas: { position: string; width: number; height: number }[];
+};
+const optionCache = new Map<number, { expires: number; value: Promise<BlueprintOptions> }>();
+
+/**
+ * Colors, sizes and print areas for a catalog product, merged across the
+ * print providers Printify lists. The partner buys blanks herself, so the
+ * union of what's offered is what she can choose from.
+ */
+export function getBlueprintOptions(id: number): Promise<BlueprintOptions> {
+  if (!Number.isSafeInteger(id) || id <= 0)
+    return Promise.reject(new Error("Choose a valid catalog product."));
+  const hit = optionCache.get(id);
+  if (hit && hit.expires > Date.now()) return hit.value;
+  const value = (async () => {
+    const providers = z
+      .array(z.object({ id: z.number().int() }))
+      .parse(await readCatalog(`/${id}/print_providers`));
+    const lists = await Promise.all(
+      providers.slice(0, 8).map(async (p) =>
+        z
+          .object({ variants: z.array(variantSchema) })
+          .parse(await readCatalog(`/${id}/print_providers/${p.id}/variants`)).variants,
+      ),
+    );
+    const colors = new Set<string>();
+    const sizes = new Set<string>();
+    for (const v of lists.flat()) {
+      if (v.options.color) colors.add(v.options.color);
+      if (v.options.size) sizes.add(v.options.size);
+    }
+    // Print areas from the provider with the most variants (widest coverage).
+    const richest = [...lists].sort((a, b) => b.length - a.length)[0] ?? [];
+    const areas = new Map<string, { position: string; width: number; height: number }>();
+    for (const p of richest.flatMap((v) => v.placeholders))
+      if (!areas.has(p.position)) areas.set(p.position, p);
+    return {
+      colors: sortColors([...colors].map((name) => ({ name, hex: colorHex(name) }))),
+      sizes: sortSizes([...sizes]),
+      printAreas: [...areas.values()],
+    };
+  })();
+  optionCache.set(id, { expires: Date.now() + 3_600_000, value });
+  value.catch(() => optionCache.delete(id));
+  return value;
 }

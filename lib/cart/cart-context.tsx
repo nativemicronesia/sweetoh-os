@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useMemo, useSyncExternalStore } from "react";
-import type { CartLineItem } from "./types";
+import { cartLineId, type CartLineItem } from "./types";
 
 const STORAGE_KEY = "sweetoh-cart";
 
@@ -14,7 +14,12 @@ function loadItems(): CartLineItem[] {
 
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as CartLineItem[]) : [];
+    const parsed = raw ? (JSON.parse(raw) as CartLineItem[]) : [];
+    // Carts saved before variants existed have no lineId.
+    return parsed.map((line) => ({
+      ...line,
+      lineId: line.lineId ?? cartLineId(line.productId, line.color, line.size),
+    }));
   } catch {
     return [];
   }
@@ -42,29 +47,30 @@ function createCartStore() {
     getServerSnapshot(): CartLineItem[] {
       return [];
     },
-    addItem(item: Omit<CartLineItem, "quantity">, quantity = 1) {
-      const existing = items.find((line) => line.productId === item.productId);
+    addItem(item: Omit<CartLineItem, "quantity" | "lineId">, quantity = 1) {
+      const lineId = cartLineId(item.productId, item.color, item.size);
+      const existing = items.find((line) => line.lineId === lineId);
 
       items = existing
         ? items.map((line) =>
-            line.productId === item.productId
+            line.lineId === lineId
               ? { ...line, quantity: line.quantity + quantity }
               : line,
           )
-        : [...items, { ...item, quantity }];
+        : [...items, { ...item, lineId, quantity }];
 
       emit();
     },
-    removeItem(productId: string) {
-      items = items.filter((line) => line.productId !== productId);
+    removeItem(lineId: string) {
+      items = items.filter((line) => line.lineId !== lineId);
       emit();
     },
-    setQuantity(productId: string, quantity: number) {
+    setQuantity(lineId: string, quantity: number) {
       items =
         quantity <= 0
-          ? items.filter((line) => line.productId !== productId)
+          ? items.filter((line) => line.lineId !== lineId)
           : items.map((line) =>
-              line.productId === productId ? { ...line, quantity } : line,
+              line.lineId === lineId ? { ...line, quantity } : line,
             );
       emit();
     },
@@ -81,9 +87,9 @@ type CartContextValue = {
   items: CartLineItem[];
   itemCount: number;
   subtotalCents: number;
-  addItem: (item: Omit<CartLineItem, "quantity">, quantity?: number) => void;
-  removeItem: (productId: string) => void;
-  setQuantity: (productId: string, quantity: number) => void;
+  addItem: (item: Omit<CartLineItem, "quantity" | "lineId">, quantity?: number) => void;
+  removeItem: (lineId: string) => void;
+  setQuantity: (lineId: string, quantity: number) => void;
   clearCart: () => void;
 };
 

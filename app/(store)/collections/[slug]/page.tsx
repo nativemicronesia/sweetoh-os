@@ -90,6 +90,7 @@ export default async function CollectionPage({ params }: PageProps) {
               name={product.name}
               priceCents={product.priceCents}
               imageUrl={images[index]}
+              variantOptions={product.variantOptions}
             />
           ))}
         </div>

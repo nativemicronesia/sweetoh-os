@@ -31,6 +31,8 @@ export const listPartnerCatalog = cache(async (session: SessionUser) => {
           category: p.category,
           description: p.description,
           printArea: p.printArea,
+          variantOptions: p.variantOptions,
+          catalogSource: p.catalogSource,
           imageUrl: placeholder ? null : await getPrimaryProductImageUrl(p.id),
         };
       }),

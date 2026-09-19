@@ -1,4 +1,5 @@
 import { SubmitButton } from "../../components/submit-button";
+import { VariantPricing } from "../../components/variant-pricing";
 import Link from "next/link";
 import { CreationSteps } from "../../components/creation-steps";
 import { builderRecord } from "@/lib/domains/intelligence/product-research-schema";
@@ -362,6 +363,20 @@ export default async function PartnerReviewDetailPage({
               </select>
             </label>
 
+
+            {(product.catalogSource || product.variantOptions) && (
+              <VariantPricing
+                available={{
+                  colors: product.catalogSource?.availableColors.length
+                    ? product.catalogSource.availableColors
+                    : product.variantOptions?.colors ?? [],
+                  sizes: product.catalogSource?.availableSizes.length
+                    ? product.catalogSource.availableSizes
+                    : product.variantOptions?.sizes ?? [],
+                }}
+                current={product.variantOptions ?? null}
+              />
+            )}
 
             <details className="studio-optional md:col-span-2"><summary>More listing options (optional)</summary><div className="mt-4 grid gap-4 md:grid-cols-2">
             <label className="block text-sm md:col-span-2">

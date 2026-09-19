@@ -74,6 +74,7 @@ export async function FeaturedProducts({
             name={product.name}
             priceCents={product.priceCents}
             imageUrl={imageUrl}
+            variantOptions={product.variantOptions}
           />
         ))}
       </div>

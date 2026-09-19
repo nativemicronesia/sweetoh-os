@@ -13,6 +13,7 @@ type ProductListItem = {
   priceCents: number;
   category: string;
   imageUrl: string | null;
+  variantOptions?: import("@/lib/domains/catalog/variants").VariantOptions | null;
 };
 
 /**
@@ -96,6 +97,7 @@ export function ProductsView({ products }: { products: ProductListItem[] }) {
               name={product.name}
               priceCents={product.priceCents}
               imageUrl={product.imageUrl}
+              variantOptions={product.variantOptions}
             />
           ))}
         </div>
