@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import OpenAI from "openai";
 import { z } from "zod";
-import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
+import { requirePartnerWorkspace, requireStudioWorkspace } from "@/lib/domains/identity/service";
 import { assertBuilderRole, preparePartnerProduct, confirmBuilderProduct, prepareBlankPreview, reservePartnerAi } from "@/lib/domains/intelligence/partner-builder";
 import { safeSourceUrl } from "@/lib/domains/intelligence/product-research-schema";
 import { generatePartnerArtwork } from "@/lib/integrations/ai/product-research";
@@ -60,12 +60,12 @@ export async function generateBlankAction(id: string) {
 }
 
 export async function generateArtworkAction(prompt: string): Promise<{ assetId?: string; previewUrl?: string | null; name?: string; error?: string }> {
-  const session = await requirePartnerWorkspace();
+  const session = await requireStudioWorkspace();
   try {
     assertBuilderRole(session);
     const brief = z.string().trim().min(8).max(2000).parse(prompt);
-    await reservePartnerAi(session, `art:${brief}`);
-    const bytes = await generatePartnerArtwork(brief);
+    const refund = await reservePartnerAi(session, `art:${brief}`);
+    const bytes = await generatePartnerArtwork(brief).catch(async (error) => { await refund(); throw error; });
     const art = await uploadPartnerDesign({ ventureId: session.ventureId, ventureSlug: session.ventureSlug,
       uploadedById: session.appUser.id, name: brief.slice(0, 100), notes: `AI artwork. Brief: ${brief}`,
       file: bytes, filename: "artwork.png", mimeType: "image/png", autoApprove: false });
@@ -75,7 +75,7 @@ export async function generateArtworkAction(prompt: string): Promise<{ assetId?:
 }
 
 export async function uploadCanvasArtworkAction(form: FormData): Promise<{ assetId?: string; previewUrl?: string | null; name?: string; error?: string }> {
-  const session = await requirePartnerWorkspace();
+  const session = await requireStudioWorkspace();
   try {
     const file = form.get("artwork");
     if (!(file instanceof File)) throw new ValidationError("Choose an artwork file.");
@@ -89,7 +89,7 @@ export async function uploadCanvasArtworkAction(form: FormData): Promise<{ asset
 }
 
 export async function uploadSurfaceAction(form: FormData) {
-  const session = await requirePartnerWorkspace();
+  const session = await requireStudioWorkspace();
   try {
     assertBuilderRole(session);
     const file = form.get("photo");

@@ -12,7 +12,9 @@ import { ValidationError } from "@/lib/shared/errors";
 import { uploadPartnerDesign } from "@/lib/domains/catalog/partner-design-library";
 import { canModerateListings } from "@/lib/domains/catalog/partner-listings";
 import { setProductPrintArea } from "@/lib/domains/catalog/service";
-import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
+import { requirePartnerWorkspace, requireStudioWorkspace, studioBase } from "@/lib/domains/identity/service";
+import { getCreditBalance } from "@/lib/domains/creator/credits";
+import { listPartnerLibraryDesigns } from "@/lib/domains/catalog/partner-design-library";
 import { getActionErrorMessage } from "@/lib/shared/action-errors";
 
 function isNextRedirect(error: unknown): boolean {
@@ -111,12 +113,13 @@ export async function approveLibraryDesignAction(formData: FormData): Promise<vo
 
 export async function saveCanvasCompositionAction(formData: FormData): Promise<{ error: string } | void> {
   try {
-    const session = await requirePartnerWorkspace();
+    const session = await requireStudioWorkspace();
+    const paths = studioBase(session);
     const name = String(formData.get("name") ?? "").trim() || "Canvas composition";
     const file = formData.get("file");
 
     if (!(file instanceof File) || file.size === 0) {
-      redirect(`/partner/canvas?error=${encodeURIComponent("Export failed — try again.")}`);
+      redirect(`${paths.canvas}?error=${encodeURIComponent("Export failed — try again.")}`);
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
@@ -165,7 +168,15 @@ export async function saveCanvasCompositionAction(formData: FormData): Promise<{
       const artwork = await uploadPartnerDesign({ventureId:session.ventureId,ventureSlug:session.ventureSlug,uploadedById:session.appUser.id,name:`${name} — text preview`,notes:"Text composition reference",file:buffer,filename:"text-preview.png",mimeType:"image/png",autoApprove:false});
       designAssetId = artwork.id;
     }
-    if (studio && canModerateListings(session)) {
+    if (session.role === "creator") {
+      const { plan } = await getCreditBalance(session.appUser.id);
+      if (plan.savedDesigns !== null) {
+        const count = (await listPartnerLibraryDesigns(session.ventureId)).filter((d) => d.isComposition).length;
+        if (count >= plan.savedDesigns) throw new ValidationError(`The ${plan.name} plan saves up to ${plan.savedDesigns} designs. Upgrade on the Plans page to save unlimited designs — or delete an old one.`);
+      }
+    }
+    // A creator's blank lives in their own workspace, so they own its print setup too.
+    if (studio && (canModerateListings(session) || session.role === "creator")) {
       const surfaces = studio.surfaces.map(({layers,...surface})=>surface);
       await setProductPrintArea({ventureId:session.ventureId,productId:blank.id,printArea:{...surfaces[0].area,...{surfaces}}});
     }
@@ -221,9 +232,10 @@ export async function saveCanvasCompositionAction(formData: FormData): Promise<{
       redirect(`/partner/review/${saved.product.id}`);
     }
 
-    revalidatePath("/partner/library");
-    revalidatePath("/partner/canvas");
-    revalidatePath("/studio");
+    revalidatePath(paths.library);
+    revalidatePath(paths.canvas);
+    revalidatePath(paths.home);
+    if (session.role === "creator") redirect(`/studio/designs?saved=${composition.id}`);
     redirect(
       `/partner/library?success=${encodeURIComponent("Composition saved to your library.")}`,
     );
@@ -320,13 +332,13 @@ export async function bulkUploadLibraryDesignsAction(formData: FormData): Promis
 
 export async function saveBlankSurfacesAction(productId: string, input: unknown): Promise<{error?:string}> {
   try {
-    const session=await requirePartnerWorkspace(); assertBuilderRole(session);
+    const session=await requireStudioWorkspace(); assertBuilderRole(session);
     const surfaces=z.array(surfaceSchema).min(1).max(12).refine(ss => new Set(ss.map(s => s.id)).size === ss.length, "Surface IDs must be unique.").parse(input);
     const blank=await getProductById({ventureId:session.ventureId,productId:z.string().uuid().parse(productId)});
     for(const s of surfaces) if(s.assetId) await getAssetById({ventureId:session.ventureId,assetId:s.assetId});
     const photos=new Set(blank.catalogSource?.images ?? []);
     for(const s of surfaces) if(s.imageUrl && !photos.has(s.imageUrl)) throw new ValidationError("Choose a photo of this product.");
     await setProductPrintArea({ventureId:session.ventureId,productId,printArea:{...surfaces[0].area,...{surfaces}}});
-    revalidatePath("/partner/builder"); revalidatePath("/partner/canvas"); revalidatePath("/partner/catalog"); return {};
+    const paths=studioBase(session); revalidatePath(paths.canvas); revalidatePath(paths.catalog); if(session.role==="partner") revalidatePath("/partner/builder"); return {};
   } catch(error) {return {error:getActionErrorMessage(error)};}
 }

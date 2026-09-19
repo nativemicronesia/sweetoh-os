@@ -106,7 +106,24 @@ export type CanvasBlankOption = {
 };
 export type CanvasDesignOption = { id: string; name: string; previewUrl: string | null };
 export type SavedDesignOption = { id: string; name: string; previewUrl: string | null };
+/** What the creator-side "Sell it" panel can ask the editor for. */
+export type PrintFile = { surfaceId: string; surfaceName: string; position: string; region: string; blob: Blob; width: number; height: number };
+export type EditorPublishApi = {
+  name: string;
+  blank: CanvasBlankOption;
+  colors: { name: string; hex: string }[];
+  sizes: string[];
+  /** One transparent print file per decorated view (its first print area). */
+  printFiles: () => Promise<PrintFile[]>;
+  /** Front mockup, per-color mockups and every view as PNG blobs. */
+  mockups: () => Promise<{ front: Blob; colors: { color: string; blob: Blob }[] }>;
+  setBusy: (message: string | null) => void;
+  close: () => void;
+};
 type Props = {
+  /** "creator" = Create with Sweet'Oh: save + sell panel instead of shop pricing. */
+  mode?: "partner" | "creator";
+  PublishPanel?: React.ComponentType<{ api: EditorPublishApi }>;
   blanks: CanvasBlankOption[];
   designs: CanvasDesignOption[];
   initialDesignId: string | null;
@@ -177,7 +194,11 @@ export function ProductEditor({
   initialStudio,
   surfaceImages = {},
   savedDesigns = [],
+  mode = "partner",
+  PublishPanel,
 }: Props) {
+  const base = mode === "creator" ? { catalog: "/studio/catalog", canvas: "/studio/design" } : { catalog: "/partner/catalog", canvas: "/partner/canvas" };
+  const [publishOpen, setPublishOpen] = useState(false);
   const blank = blanks.find((b) => b.id === initialBlankId) ?? blanks[0];
   const colors = blank?.variantOptions?.colors ?? [];
   const sizes = blank?.variantOptions?.sizes ?? [];
@@ -1294,11 +1315,10 @@ export function ProductEditor({
       setBusy(null);
     }
   }
-  async function downloadPrint(s: Surface, region = regionsFor(s)[0]) {
-    if (!region) return;
-    capture();
+  /** Transparent print file for one print area, at 300 DPI when its size is known. */
+  async function renderPrint(s: Surface, region = regionsFor(s)[0]): Promise<{ blob: Blob; width: number; height: number } | null> {
+    if (!region) return null;
     s = { ...s, area: region.bounds, printRegions: [region] };
-    setBusy("Exporting print file…");
     const canvas = new StaticCanvas(document.createElement("canvas"), { width: SIZE, height: SIZE });
     try {
       for (const layer of s.layers.filter(l => !l.hidden)) { const object = await makeLayer(layer); object.clipPath = printClip(s, layer); canvas.add(object); }
@@ -1313,17 +1333,56 @@ export function ProductEditor({
       const rendered = canvas.toCanvasElement(multiplier, { left: a.x * SIZE, top: a.y * SIZE, width: a.width * SIZE, height: a.height * SIZE });
       const output = document.createElement("canvas"); output.width = width; output.height = height;
       output.getContext("2d")!.drawImage(rendered, 0, 0, width, height);
+      const blob = await new Promise<Blob | null>((resolve) => output.toBlob(resolve, "image/png"));
+      return blob ? { blob, width, height } : null;
+    } finally {
+      await canvas.dispose();
+    }
+  }
+  async function downloadPrint(s: Surface, region = regionsFor(s)[0]) {
+    if (!region) return;
+    capture();
+    setBusy("Exporting print file…");
+    try {
+      const file = await renderPrint(s, region);
+      if (!file) throw new Error("empty");
       const link = document.createElement("a");
       link.download = `${name || blank.name}-${s.name}-${region.name}-print.png`;
-      link.href = output.toDataURL("image/png");
+      link.href = URL.createObjectURL(file.blob);
       link.click();
+      setTimeout(() => URL.revokeObjectURL(link.href), 10_000);
     } catch {
       setError("Couldn’t export this print file. Try again.");
     } finally {
-      await canvas.dispose();
       setBusy(null);
     }
   }
+  const publishApi = (): EditorPublishApi => ({
+    name: name.trim() || blank.name,
+    blank,
+    colors,
+    sizes,
+    setBusy,
+    close: () => setPublishOpen(false),
+    printFiles: async () => {
+      capture();
+      const files: PrintFile[] = [];
+      for (const sf of doc.current.surfaces.filter((x) => x.layers.some((l) => !l.hidden))) {
+        const region = regionsFor(sf)[0];
+        const out = region ? await renderPrint(sf, region) : null;
+        if (out) files.push({ surfaceId: sf.id, surfaceName: sf.name, position: sf.position ?? sf.id, region: region!.name, ...out });
+      }
+      return files;
+    },
+    mockups: async () => {
+      const data = await buildPreview();
+      const toBlob = async (url: string) => (await fetch(url)).blob();
+      return {
+        front: await toBlob(data.views[0].url),
+        colors: await Promise.all(data.colors.map(async (c) => ({ color: c.color, blob: await toBlob(c.url) }))),
+      };
+    },
+  });
   async function save(asProduct: boolean) {
     setBusy(asProduct ? "Preparing your product…" : "Saving to My files…");
     setError("");
@@ -1373,7 +1432,7 @@ export function ProductEditor({
   return (
     <div className="pe">
       <header className="pe-top">
-        <Link href="/partner/catalog" className="pe-icon-btn" aria-label="Back to catalog" title="Back to catalog">
+        <Link href={base.catalog} className="pe-icon-btn" aria-label="Back to catalog" title="Back to catalog">
           <ArrowLeft size={18} />
         </Link>
         <div className="pe-title">
@@ -1387,14 +1446,20 @@ export function ProductEditor({
           </button>
           <button className="pe-icon-btn" onClick={() => void redo()} disabled={!redoCount || locked} aria-label="Redo" title="Redo"><Redo2 size={17}/></button>
           <button className="pe-btn pe-btn-ghost" onClick={() => void save(false)} disabled={!hasDesign || locked}>
-            Save to My files
+            {mode === "creator" ? "Save design" : "Save to My files"}
           </button>
           <button className="pe-btn pe-btn-ghost" onClick={() => void openPreview()} disabled={!hasDesign || locked}>
             <Eye size={16} /> Preview
           </button>
-          <button className="pe-btn pe-btn-primary" onClick={() => void save(true)} disabled={!hasDesign || locked}>
-            Continue to pricing
-          </button>
+          {mode === "creator" ? (
+            <button className="pe-btn pe-btn-primary" onClick={() => { capture(); setPublishOpen(true); }} disabled={!hasDesign || locked || !PublishPanel}>
+              Sell it →
+            </button>
+          ) : (
+            <button className="pe-btn pe-btn-primary" onClick={() => void save(true)} disabled={!hasDesign || locked}>
+              Continue to pricing
+            </button>
+          )}
         </div>
       </header>
 
@@ -1470,7 +1535,7 @@ export function ProductEditor({
                     </p>
                     <div className="pe-files">
                       {savedDesigns.map((d) => (
-                        <Link key={d.id} href={`/partner/canvas?composition=${d.id}`} title={`Open ${d.name}`} className="pe-saved">
+                        <Link key={d.id} href={`${base.canvas}?composition=${d.id}`} title={`Open ${d.name}`} className="pe-saved">
                           {d.previewUrl ? <img src={d.previewUrl} alt="" loading="lazy" /> : <FolderOpen size={20} />}
                           <span>{d.name}</span>
                         </Link>
@@ -2036,14 +2101,22 @@ export function ProductEditor({
                   )))}
                   <p className="pe-muted pe-small">Transparent PNGs, up to 6,000 px per side. Set dimensions in Product setup for 300 DPI output.</p>
                 </div>
-                <button className="pe-btn pe-btn-primary pe-block pe-mt" disabled={Boolean(busy)} onClick={() => void save(true)}>
-                  Continue to pricing
-                </button>
+                {mode === "creator" ? (
+                  <button className="pe-btn pe-btn-primary pe-block pe-mt" disabled={Boolean(busy) || !PublishPanel} onClick={() => { setPreview(null); setPublishOpen(true); }}>
+                    Sell it →
+                  </button>
+                ) : (
+                  <button className="pe-btn pe-btn-primary pe-block pe-mt" disabled={Boolean(busy)} onClick={() => void save(true)}>
+                    Continue to pricing
+                  </button>
+                )}
               </div>
             </div>
           </div>
         </div>
       )}
+
+      {publishOpen && PublishPanel && <PublishPanel api={publishApi()} />}
 
       {setupOpen && <ProductSetup surfaces={doc.current.surfaces.map(s => {
         if (s.printRegions !== undefined) return s;

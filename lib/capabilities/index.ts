@@ -148,8 +148,10 @@ async function cutoutOf(session: SessionUser, image: Buffer, subject: "product" 
     const local = await removeUniformBackground(image, { dropIslands: subject === "product" });
     if (local.ok && (subject === "artwork" || (await skinShare(local.png)) < 0.015)) return { png: local.png, method: "local" as const };
   }
-  await reservePartnerAi(session, key);
-  return { png: await aiCutout(image, subject), method: "ai" as const };
+  const refund = await reservePartnerAi(session, key);
+  try {
+    return { png: await aiCutout(image, subject), method: "ai" as const };
+  } catch (error) { await refund(); throw error; }
 }
 
 /* ---------- Turn Photo Into Blank ---------- */
@@ -362,8 +364,8 @@ export async function editDesign(session: SessionUser, assetId: string, instruct
   const brief = instruction.trim().slice(0, 1000);
   if (brief.length < 4) throw new ValidationError("Describe the change you want.");
   const { asset: source, bytes } = await assetBytes(session, assetId);
-  await reservePartnerAi(session, `edit:${assetId}:${brief}`);
-  const png = await editArtwork(await normalize(bytes), brief);
+  const refund = await reservePartnerAi(session, `edit:${assetId}:${brief}`);
+  const png = await editArtwork(await normalize(bytes), brief).catch(async (error) => { await refund(); throw error; });
   return saveDesign(session, `${source.name} — edited`, png, `AI edit. Instruction: ${brief}`);
 }
 
@@ -375,8 +377,8 @@ export async function generateDesign(
   const brief = input.brief.trim().slice(0, 2000);
   if (brief.length < 8) throw new ValidationError("Describe the design in a few more words.");
   const reference = input.referenceAssetId ? await normalize((await assetBytes(session, input.referenceAssetId)).bytes) : null;
-  await reservePartnerAi(session, `${input.seamless ? "pattern" : "art"}:${brief}:${input.referenceAssetId ?? ""}`);
-  const png = await aiGenerateDesign({ brief, seamless: input.seamless, reference });
+  const refund = await reservePartnerAi(session, `${input.seamless ? "pattern" : "art"}:${brief}:${input.referenceAssetId ?? ""}`);
+  const png = await aiGenerateDesign({ brief, seamless: input.seamless, reference }).catch(async (error) => { await refund(); throw error; });
   return saveDesign(session, brief.slice(0, 100), png, `${input.seamless ? "AI seamless pattern" : "AI design"}. Brief: ${brief}`);
 }
 

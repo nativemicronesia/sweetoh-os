@@ -9,16 +9,27 @@ import { addProductMediaUpload } from "@/lib/domains/catalog/service";
 import { downloadFromBucket } from "@/lib/storage/client";
 import { researchProduct, generateBlankMockup } from "@/lib/integrations/ai/product-research";
 import { ValidationError } from "@/lib/shared/errors";
+import { refundCredits, spendCredits } from "@/lib/domains/creator/credits";
+import { actionCreditsForKey } from "@/lib/domains/creator/plans";
 import { getActorProductDraft, listActorProductDrafts, persistDraftProduct } from "./service";
 import { builderRecord, type BuilderRecord, type ProductResearch } from "./product-research-schema";
 
 export function assertBuilderRole(session: SessionUser) {
-  if (session.role !== "partner" && session.role !== "owner") throw new ValidationError("Only the shop partner or owner can manage product blanks.");
+  // Creators manage blanks inside their own private workspace (session.ventureId).
+  if (session.role !== "partner" && session.role !== "owner" && session.role !== "creator") throw new ValidationError("Sign in to manage product blanks.");
 }
 
-/** Durable reservation: parallel clicks and multiple server instances share the same budget. */
-export async function reservePartnerAi(session: SessionUser, key: string) {
+/**
+ * Durable reservation: parallel clicks and multiple server instances share the same budget.
+ * Creators pay in credits (see lib/domains/creator/plans.ts); the partner keeps her daily
+ * allowance. Returns a refund callback for when the AI call itself fails.
+ */
+export async function reservePartnerAi(session: SessionUser, key: string): Promise<() => Promise<void>> {
   assertBuilderRole(session);
+  if (session.role === "creator") {
+    const ledgerId = await spendCredits({ userId: session.appUser.id, amount: actionCreditsForKey(key), reason: studioReason(key), metadata: { key: key.slice(0, 200) } });
+    return () => refundCredits(session.appUser.id, ledgerId).catch(() => undefined);
+  }
   await getDb().transaction(async tx => {
     await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${session.appUser.id}))`);
     const recent = await tx.select().from(auditEvent).where(and(
@@ -34,6 +45,13 @@ export async function reservePartnerAi(session: SessionUser, key: string) {
     await tx.insert(auditEvent).values({ ventureId: session.ventureId, actorUserId: session.appUser.id,
       action: "partner_ai.reserved", entityType: "partner_builder", entityId: session.appUser.id, metadata: { key } });
   });
+  return async () => undefined;
+}
+
+function studioReason(key: string) {
+  const prefix = key.split(":")[0];
+  return ({ art: "AI design", pattern: "AI pattern", edit: "AI edit", bg: "Remove background", "blank-cutout": "Product cutout",
+    "blank-screen": "Read product photo", "blank-understand": "Find print areas", blank: "Blank preview" } as Record<string, string>)[prefix] ?? "Product research";
 }
 
 export async function preparePartnerProduct(session: SessionUser, input: {

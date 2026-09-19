@@ -38,9 +38,10 @@ test("partner prices use dollars without silently accepting fractional cents", (
   form.set("priceDollars", "1.999"); assert.throws(() => parsePartnerProductFields(form), /decimal/);
   form.set("priceDollars", "-4"); assert.throws(() => parsePartnerProductFields(form), /dollars/);
 });
-test("creators cannot use partner research, unpublish products or change fulfillment", async () => {
+test("creators build only in their own workspace and cannot unpublish shop products or change fulfillment", async () => {
   const creator = { role: "creator", ventureId: "unused", appUser: { id: "unused" } } as SessionUser;
-  assert.throws(() => assertBuilderRole(creator), /partner or owner/);
+  // Blanks are scoped to session.ventureId, which for a creator is their private workspace.
+  assert.doesNotThrow(() => assertBuilderRole(creator));
   await assert.rejects(() => unpublishPartnerProduct(creator, "unused"), /partner or owner/);
   await assert.rejects(() => updatePartnerJobStatus(creator, { jobId: "unused", status: "shipped" }), /partner or owner/);
 });

@@ -18,14 +18,9 @@ const PARTNER_PERMISSIONS = new Set<string>([
 
 export function hasPermission(role: AppRole, permission: string): boolean {
   if (role === "owner") return true;
-  if (role === "creator") {
-    return (
-      permission === PERMISSIONS.PARTNER_ACCESS ||
-      permission === PERMISSIONS.PARTNER_SWEETOH_READ ||
-      permission === PERMISSIONS.PARTNER_SWEETOH_WRITE ||
-      permission === PERMISSIONS.PARTNER_AI_BUILDER_RUN
-    );
-  }
+  // Creators work in their own Create with Sweet'Oh workspace, never the
+  // partner back office.
+  if (role === "creator") return false;
   if (permission.startsWith("partner:sweetoh:")) {
     return PARTNER_PERMISSIONS.has(permission);
   }

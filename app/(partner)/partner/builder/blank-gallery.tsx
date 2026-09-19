@@ -12,7 +12,11 @@ import {
 } from "@/lib/domains/catalog/categories";
 export function BlankGallery({
   blanks,
+  hrefBase = "/partner/catalog",
+  tagline = "Choose a blank for your local shop",
 }: {
+  hrefBase?: string;
+  tagline?: string;
   blanks: {
     id: string;
     name: string;
@@ -98,13 +102,13 @@ export function BlankGallery({
         </div>
         <p className="mb-5 text-sm text-muted-foreground" aria-live="polite">
           {visible.length} {visible.length === 1 ? "product" : "products"} ·
-          Choose a blank for your local shop
+          {tagline}
         </p>
         <div className="studio-product-grid catalog-grid">
           {visible.slice((page - 1) * 24, page * 24).map((b) => (
             <Link
               key={b.id}
-              href={`/partner/catalog/${b.id}`}
+              href={`${hrefBase}/${b.id}`}
               className="studio-product-card"
             >
               <div className="studio-product-image">

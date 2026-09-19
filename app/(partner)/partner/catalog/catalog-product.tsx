@@ -25,6 +25,7 @@ export function CatalogProduct({
   product,
   options,
   initial,
+  provider = { title: "Sweet’Oh · Local production", text: "You buy the blanks and print them yourself." },
 }: {
   product: {
     id: number;
@@ -37,6 +38,8 @@ export function CatalogProduct({
   };
   options: Options | null;
   initial?: { colors: string[]; sizes: string[] } | null;
+  /** Who produces it — the partner prints locally; creators use Printify or request Sweet'Oh. */
+  provider?: { title: string; text: string };
 }) {
   const [index, setIndex] = useState(0);
   const [best, setBest] = useState<number | null>(null);
@@ -223,8 +226,8 @@ export function CatalogProduct({
         <div className="catalog-provider">
           <MapPin size={20} />
           <div>
-            <strong>Sweet’Oh · Local production</strong>
-            <p>You buy the blanks and print them yourself.</p>
+            <strong>{provider.title}</strong>
+            <p>{provider.text}</p>
           </div>
         </div>
 

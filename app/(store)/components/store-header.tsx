@@ -42,6 +42,9 @@ export function StoreHeader() {
           <Link href="/collections" className="so-link text-sm text-[color:var(--so-mist)]">
             Shop
           </Link>
+          <Link href="/create" className="so-link text-sm text-[color:var(--so-mist)]">
+            Create
+          </Link>
           <CartIcon />
         </nav>
       </div>

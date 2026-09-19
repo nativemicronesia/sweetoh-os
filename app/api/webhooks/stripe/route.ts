@@ -6,6 +6,7 @@ import { sendStorefrontOrderConfirmationEmail } from "@/lib/integrations/email/r
 import { getStripeClient } from "@/lib/integrations/stripe/client";
 import { readCheckoutCartItems } from "@/lib/integrations/stripe/checkout";
 import { logger } from "@/lib/shared/logger";
+import { handleCreatorBillingEvent } from "@/lib/integrations/stripe/billing";
 
 export async function POST(request: Request) {
   if (!isStripeConfigured()) {
@@ -32,6 +33,14 @@ export async function POST(request: Request) {
   } catch (error) {
     logger.error("stripe_webhook_signature_invalid", { error: String(error) });
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
+  }
+
+  // Create with Sweet'Oh: creator subscriptions, credit top-ups, print-request payments.
+  try {
+    if (await handleCreatorBillingEvent(event)) return NextResponse.json({ received: true });
+  } catch (error) {
+    logger.error("stripe_webhook_creator_billing_failed", { error: String(error), type: event.type });
+    return NextResponse.json({ error: "Creator billing update failed" }, { status: 500 });
   }
 
   if (event.type === "checkout.session.completed") {

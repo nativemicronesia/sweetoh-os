@@ -2,7 +2,7 @@
 import { redirect, unstable_rethrow } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
+import { requireStudioWorkspace, studioBase } from "@/lib/domains/identity/service";
 import {
   assertBuilderRole,
   preparePartnerProduct,
@@ -26,8 +26,9 @@ import { areaSchema } from "@/lib/domains/catalog/studio-layout";
 import { getProductById } from "@/lib/domains/catalog/service";
 
 export async function startCatalogDesign(form: FormData) {
-  const session = await requirePartnerWorkspace();
+  const session = await requireStudioWorkspace();
   assertBuilderRole(session);
+  const paths = studioBase(session);
   const id = z.coerce.number().int().positive().parse(form.get("blueprintId"));
   try {
     const blueprint = await getPrintifyBlueprint(id);
@@ -95,7 +96,7 @@ export async function startCatalogDesign(form: FormData) {
           printArea: { ...frontArea, surfaces: [frontView, ...others] },
         });
       }
-      redirect(`/partner/canvas?blank=${existing.id}`);
+      redirect(`${paths.canvas}?blank=${existing.id}`);
     }
     const product = await preparePartnerProduct(session, {
       file: image.bytes,
@@ -125,14 +126,13 @@ export async function startCatalogDesign(form: FormData) {
       printArea: { ...frontArea, surfaces: [frontView] },
     });
     await confirmBuilderProduct(session, product.id);
-    revalidatePath("/partner/catalog");
-    revalidatePath("/partner");
-    revalidatePath("/partner/products");
-    redirect(`/partner/canvas?blank=${product.id}`);
+    revalidatePath(paths.catalog);
+    revalidatePath(paths.home);
+    redirect(`${paths.canvas}?blank=${product.id}`);
   } catch (error) {
     unstable_rethrow(error);
     redirect(
-      `/partner/catalog/printify-${id}?error=${encodeURIComponent("Couldn’t prepare this product. Try again or choose another product image.")}`,
+      `${paths.catalog}/printify-${id}?error=${encodeURIComponent("Couldn’t prepare this product. Try again or choose another product image.")}`,
     );
   }
 }

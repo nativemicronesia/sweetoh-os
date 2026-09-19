@@ -19,6 +19,7 @@ import { isPartnerProductionJobStatus } from "@/lib/domains/studio/customer-requ
 import { listBestsellerBlueprints } from "@/lib/integrations/printify/catalog";
 import { formatPrice } from "@/lib/shared/format";
 import { OperationsOverview } from "./components/operations-overview";
+import { countOpenShopRequests } from "@/lib/domains/creator/print-requests";
 
 const JOB_LABEL: Record<string, string> = {
   new: "New",
@@ -32,7 +33,7 @@ export default async function PartnerHomePage() {
   const session = await requirePartnerWorkspace();
   if (session.role === "creator") return <OperationsOverview />;
 
-  const [drafts, published, jobs, customRequests, picks] =
+  const [drafts, published, jobs, customRequests, picks, creatorOpen] =
     await Promise.all([
       listActorProductDrafts({
         ventureId: session.ventureId,
@@ -42,6 +43,7 @@ export default async function PartnerHomePage() {
       listFulfillmentJobs({ ventureId: session.ventureId, path: "sweetoh" }),
       listCustomerCustomizationRequests(session.ventureId),
       listBestsellerBlueprints(),
+      countOpenShopRequests(session.ventureId).catch(() => 0),
     ]);
 
   const open = drafts.filter(({ product }) => product.draftStatus !== "archived");
@@ -112,6 +114,16 @@ export default async function PartnerHomePage() {
           Create product <ArrowRight size={16} />
         </Link>
       </header>
+
+      {creatorOpen > 0 && (
+        <Link href="/partner/creator-requests" className="home-card" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, textDecoration: "none" }}>
+          <span>
+            <strong>{creatorOpen} creator {creatorOpen === 1 ? "request needs" : "requests need"} you</strong>
+            <span style={{ display: "block", fontSize: 13, color: "var(--so-cream-dim)" }}>Print jobs from Sweet&apos;Oh AI creators — separate from your shop orders.</span>
+          </span>
+          <ArrowRight size={18} />
+        </Link>
+      )}
 
       {!allDone && (
         <section className="home-card home-setup" aria-labelledby="setup-title">

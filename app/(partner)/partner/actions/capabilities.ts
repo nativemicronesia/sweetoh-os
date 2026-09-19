@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import OpenAI from "openai";
 import { z } from "zod";
-import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
+import { requirePartnerWorkspace, requireStudioWorkspace } from "@/lib/domains/identity/service";
 import {
   addInspiration,
   createOwnBlank,
@@ -92,7 +92,7 @@ export async function createOwnBlankAction(input: unknown): Promise<{ ok: false;
 type Design = { assetId: string; name: string; previewUrl: string };
 
 export async function removeBackgroundAction(assetId: string): Promise<Result<Design & { method: string }>> {
-  const session = await requirePartnerWorkspace();
+  const session = await requireStudioWorkspace();
   try {
     const result = await removeBackground(session, z.string().uuid().parse(assetId));
     revalidatePath("/partner/library");
@@ -103,7 +103,7 @@ export async function removeBackgroundAction(assetId: string): Promise<Result<De
 }
 
 export async function editDesignAction(assetId: string, instruction: string): Promise<Result<Design>> {
-  const session = await requirePartnerWorkspace();
+  const session = await requireStudioWorkspace();
   try {
     const result = await editDesign(session, z.string().uuid().parse(assetId), instruction);
     revalidatePath("/partner/library");
@@ -114,7 +114,7 @@ export async function editDesignAction(assetId: string, instruction: string): Pr
 }
 
 export async function generateDesignAction(input: { brief: string; seamless?: boolean; referenceAssetId?: string | null }): Promise<Result<Design>> {
-  const session = await requirePartnerWorkspace();
+  const session = await requireStudioWorkspace();
   try {
     const result = await generateDesign(session, {
       brief: input.brief,
@@ -129,7 +129,7 @@ export async function generateDesignAction(input: { brief: string; seamless?: bo
 }
 
 export async function addInspirationAction(form: FormData): Promise<Result<{ item: { id: string; name: string; previewUrl: string } }>> {
-  const session = await requirePartnerWorkspace();
+  const session = await requireStudioWorkspace();
   try {
     const file = form.get("photo");
     if (!(file instanceof File) || !file.size) throw new ValidationError("Choose an image.");
@@ -141,7 +141,7 @@ export async function addInspirationAction(form: FormData): Promise<Result<{ ite
 }
 
 export async function listInspirationAction(): Promise<Result<{ items: { id: string; name: string; previewUrl: string }[] }>> {
-  const session = await requirePartnerWorkspace();
+  const session = await requireStudioWorkspace();
   try {
     return { ok: true, items: await listInspiration(session) };
   } catch (error) {

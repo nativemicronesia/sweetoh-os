@@ -4,6 +4,12 @@ import { z } from "zod";
 import { getServerEnv } from "@/lib/config/env";
 import { groundResearch, researchSchema, type ProductResearch } from "@/lib/domains/intelligence/product-research-schema";
 import { ValidationError } from "@/lib/shared/errors";
+import { imageModel } from "@/lib/ai/router";
+
+/** gpt-image-1 supports high input fidelity for edits; the 2.5 models reject the parameter. */
+function fidelity(): { input_fidelity?: "high" } {
+  return imageModel() === "gpt-image-1" ? { input_fidelity: "high" } : {};
+}
 
 // The provider supports a narrower JSON Schema subset than our local validator
 // (in particular, URL formats). Validate lengths and URLs after generation.
@@ -70,7 +76,7 @@ export async function researchProduct(input: { image: Buffer; mimeType: string; 
 
 export async function generateBlankMockup(image: Buffer, mimeType: string, research: Pick<ProductResearch, "mockupPrompt">) {
   const result = await client().images.edit({
-    model: process.env.PRODUCT_IMAGE_MODEL || "gpt-image-1",
+    model: imageModel(),
     image: await toFile(image, "product.png", { type: mimeType }),
     prompt: `Create a clean blank product mockup from this reference. Preserve the actual silhouette, visible color, seams, proportions and construction. Remove decorative prints and background clutter. Do not add branding or accessories. One product, front view, fully visible, centered on white. This is a generated preview, not a specification or manufacturing template. Product guidance: ${research.mockupPrompt}`,
     size: "1024x1024", n: 1,
@@ -82,7 +88,7 @@ export async function generateBlankMockup(image: Buffer, mimeType: string, resea
 
 export async function generatePartnerArtwork(prompt: string) {
   const result = await client().images.generate({
-    model: process.env.PRODUCT_IMAGE_MODEL || "gpt-image-1",
+    model: imageModel(),
     prompt: `Create standalone print artwork, not a photo of a product or a mockup. Transparent background where appropriate. Follow this design brief: ${prompt}`,
     background: "transparent", size: "1024x1024", n: 1,
   });
@@ -136,13 +142,13 @@ export async function understandProduct(image: Buffer): Promise<ProductUnderstan
 /** Clean cutout of the main subject on a transparent background. */
 export async function aiCutout(image: Buffer, subject: "product" | "artwork") {
   const result = await client().images.edit({
-    model: process.env.PRODUCT_IMAGE_MODEL || "gpt-image-1",
+    model: imageModel(),
     image: await toFile(image, "input.png", { type: "image/png" }),
     prompt: subject === "product"
       ? "Cut out the physical product exactly as it is: same shape, color, fabric texture, seams, stitching and proportions. Remove the background, people, hands, hangers, tags and props. Remove any printed decoration so the product is blank. Keep it front-facing and fully visible. Transparent background."
       : "Cut out the main artwork exactly as it is: same shapes, colors, lettering and linework. Remove only the background. Do not redraw or add anything. Transparent background.",
     background: "transparent",
-    input_fidelity: "high",
+    ...fidelity(),
     output_format: "png",
     size: "auto",
     n: 1,
@@ -155,11 +161,11 @@ export async function aiCutout(image: Buffer, subject: "product" | "artwork") {
 /** Edit an existing design by instruction ("make it navy", "add palm trees"). */
 export async function editArtwork(image: Buffer, instruction: string) {
   const result = await client().images.edit({
-    model: process.env.PRODUCT_IMAGE_MODEL || "gpt-image-1",
+    model: imageModel(),
     image: await toFile(image, "design.png", { type: "image/png" }),
     prompt: `Edit this print artwork. Keep everything the instruction doesn't mention. Output standalone artwork (not a product photo), transparent background where appropriate. Instruction: ${instruction}`,
     background: "auto",
-    input_fidelity: "high",
+    ...fidelity(),
     output_format: "png",
     size: "1024x1024",
     n: 1,
@@ -176,7 +182,7 @@ export async function generateDesign(input: { brief: string; seamless?: boolean;
     : "Create standalone print artwork, not a photo of a product or a mockup. Transparent background where appropriate.";
   if (input.reference) {
     const result = await client().images.edit({
-      model: process.env.PRODUCT_IMAGE_MODEL || "gpt-image-1",
+      model: imageModel(),
       image: await toFile(input.reference, "reference.png", { type: "image/png" }),
       prompt: `${style} Use the attached image only as inspiration for mood, palette and motifs; create an original design, do not copy logos or text from it. Brief: ${input.brief}`,
       background: input.seamless ? "opaque" : "auto",
@@ -189,7 +195,7 @@ export async function generateDesign(input: { brief: string; seamless?: boolean;
     return Buffer.from(data, "base64");
   }
   const result = await client().images.generate({
-    model: process.env.PRODUCT_IMAGE_MODEL || "gpt-image-1",
+    model: imageModel(),
     prompt: `${style} Brief: ${input.brief}`,
     background: input.seamless ? "opaque" : "transparent",
     size: "1024x1024",

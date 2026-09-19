@@ -52,6 +52,12 @@ const PARTNER_NAV: NavItem[] = [
     match: (p) => /^\/partner\/(orders|queue|jobs)/.test(p),
   },
   {
+    href: "/partner/creator-requests",
+    label: "Creator requests",
+    icon: Sparkles,
+    match: (p) => p.startsWith("/partner/creator-requests"),
+  },
+  {
     href: "/partner/library",
     label: "My files",
     icon: ImageIcon,

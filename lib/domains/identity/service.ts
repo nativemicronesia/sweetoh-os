@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/auth/supabase/server";
 import { getServerEnv } from "@/lib/config/env";
 import { getDb } from "@/lib/db/client";
-import { appUser, venture } from "@/lib/db/schema";
+import { appUser, creatorProfile, venture } from "@/lib/db/schema";
 import { ForbiddenError, UnauthorizedError } from "@/lib/shared/errors";
 import type { AppRole, SessionUser, SyncAppUserInput } from "./types";
 
@@ -108,6 +108,56 @@ export async function requirePartnerWorkspace(): Promise<SessionUser> {
   }
 
   return session;
+}
+
+/**
+ * The design Studio is shared: the partner uses it from her back office and
+ * creators use it from Create with Sweet'Oh. Every query below it is scoped to
+ * session.ventureId, so a creator only ever touches their own workspace.
+ */
+export async function requireStudioWorkspace(): Promise<SessionUser> {
+  const session = await getSessionUser();
+  if (!session) redirect("/studio/login");
+  if (session.role !== "partner" && session.role !== "creator") redirect("/studio/login?error=creators_only");
+  return session;
+}
+
+/** Create with Sweet'Oh — creator accounts only. */
+export async function requireCreator(): Promise<SessionUser> {
+  const session = await getSessionUser();
+  if (!session) redirect("/studio/login");
+  if (session.role !== "creator") redirect(session.role === "partner" ? "/partner" : "/studio/login?error=creators_only");
+  return session;
+}
+
+/** Where the shared Studio lives for this person. */
+export function studioBase(session: Pick<SessionUser, "role">) {
+  return session.role === "creator"
+    ? { canvas: "/studio/design", catalog: "/studio/catalog", library: "/studio/designs", home: "/studio" }
+    : { canvas: "/partner/canvas", catalog: "/partner/catalog", library: "/partner/library", home: "/partner" };
+}
+
+/**
+ * New creator: their own private workspace (a venture row nobody else is a
+ * member of) plus a creator app_user. Idempotent per auth user.
+ */
+export async function createCreatorAccount(input: { authUserId: string; email: string; name: string | null }) {
+  const db = getDb();
+  const [existing] = await db.select().from(appUser).where(eq(appUser.authUserId, input.authUserId)).limit(1);
+  if (existing) return existing;
+  return db.transaction(async (tx) => {
+    const slug = `creator-${crypto.randomUUID().replace(/-/g, "").slice(0, 12)}`;
+    const [workspace] = await tx
+      .insert(venture)
+      .values({ slug, name: input.name ? `${input.name}'s studio` : "Creator studio" })
+      .returning();
+    const [user] = await tx
+      .insert(appUser)
+      .values({ ventureId: workspace.id, authUserId: input.authUserId, email: input.email, name: input.name, role: "creator", active: true })
+      .returning();
+    await tx.insert(creatorProfile).values({ userId: user.id, ventureId: workspace.id });
+    return user;
+  });
 }
 
 export async function syncAppUser(supabaseUser: SyncAppUserInput) {
