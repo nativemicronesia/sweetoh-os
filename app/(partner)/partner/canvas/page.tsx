@@ -7,7 +7,7 @@ import {
   listPartnerLibraryDesigns,
 } from "@/lib/domains/catalog/partner-design-library";
 import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
-import { PartnerCanvasClient } from "./canvas-client";
+import { ProductEditor } from "./product-editor";
 
 export const maxDuration = 180;
 
@@ -53,7 +53,7 @@ export default async function PartnerCanvasPage({ searchParams }: PageProps) {
           — it stays private while you create.
         </p>
       ) : (
-        <PartnerCanvasClient
+        <ProductEditor
           initialStudio={savedComposition?.studio}
           surfaceImages={Object.fromEntries(Object.entries(surfaceImages).filter((entry): entry is [string,string]=>Boolean(entry[1])))}
           blanks={blanks}

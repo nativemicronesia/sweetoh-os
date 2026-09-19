@@ -22,6 +22,8 @@ import {
   updateProduct,
 } from "@/lib/domains/catalog/service";
 import { defaultPrintAreaFor, defaultUpcharges, sortSizes } from "@/lib/domains/catalog/variants";
+import { areaSchema } from "@/lib/domains/catalog/studio-layout";
+import { getProductById } from "@/lib/domains/catalog/service";
 
 export async function startCatalogDesign(form: FormData) {
   const session = await requirePartnerWorkspace();
@@ -57,7 +59,21 @@ export async function startCatalogDesign(form: FormData) {
       printAreas: options?.printAreas ?? [],
       availableColors: options?.colors ?? [],
       availableSizes: options?.sizes ?? [],
+      images: blueprint.images,
     };
+    // The photo she designs on becomes the Front view, with the print area
+    // the catalog page placed on the garment (or a proportional default).
+    const detected = areaSchema.safeParse(
+      (() => {
+        try {
+          return JSON.parse(String(form.get("area") ?? ""));
+        } catch {
+          return null;
+        }
+      })(),
+    );
+    const frontArea = detected.success ? detected.data : defaultPrintAreaFor(catalogSource.printAreas);
+    const frontView = { id: "front", name: "Front", position: "front", assetId: null, imageUrl: url, area: frontArea };
     // Reuse the local blank if this catalog product was already chosen.
     const existing = (await listBuilderBlanks(session)).find(
       (b) => b.catalogSource?.blueprintId === id || b.name === name,
@@ -69,6 +85,16 @@ export async function startCatalogDesign(form: FormData) {
         variantOptions,
         catalogSource,
       });
+      // Older blanks designed on a downloaded photo move to the chosen catalog photo.
+      const current = (await getProductById({ ventureId: session.ventureId, productId: existing.id })).printArea;
+      if (!current?.surfaces?.[0]?.imageUrl) {
+        const others = current?.surfaces?.slice(1) ?? [];
+        await setProductPrintArea({
+          ventureId: session.ventureId,
+          productId: existing.id,
+          printArea: { ...frontArea, surfaces: [frontView, ...others] },
+        });
+      }
       redirect(`/partner/canvas?blank=${existing.id}`);
     }
     const product = await preparePartnerProduct(session, {
@@ -93,11 +119,10 @@ export async function startCatalogDesign(form: FormData) {
       variantOptions,
       catalogSource,
     });
-    const area = defaultPrintAreaFor(catalogSource.printAreas);
     await setProductPrintArea({
       ventureId: session.ventureId,
       productId: product.id,
-      printArea: { ...area, surfaces: [{ id: "front", name: "Front", assetId: null, area }] },
+      printArea: { ...frontArea, surfaces: [frontView] },
     });
     await confirmBuilderProduct(session, product.id);
     revalidatePath("/partner/catalog");

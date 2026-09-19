@@ -115,6 +115,6 @@ export async function listBuilderBlanks(session: SessionUser) {
     const assetId = data.mockupAssetId || row.product.sourceAssetId;
     return { id: row.product.id, name: row.product.name, category: row.product.category, description: row.product.description, printArea: row.product.printArea,
       variantOptions: row.product.variantOptions, catalogSource: row.product.catalogSource,
-      imageUrl: assetId ? await getAssetSignedUrl({ ventureId: session.ventureId, assetId }) : null };
+      imageUrl: row.product.printArea?.surfaces?.[0]?.imageUrl ?? (assetId ? await getAssetSignedUrl({ ventureId: session.ventureId, assetId }) : null) };
   }));
 }

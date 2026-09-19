@@ -1,6 +1,7 @@
 "use client";
-import { useState } from "react";
-import { Check, MapPin, Ruler } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Check, MapPin, Ruler, Sparkles } from "lucide-react";
+import { analyzePhoto, printAreaInBox, type PhotoInfo } from "@/lib/studio/tint";
 import { Badge } from "@/components/ui/badge";
 import { isLightColor, type VariantColor } from "@/lib/domains/catalog/variants";
 import { SubmitButton } from "../components/submit-button";
@@ -38,6 +39,32 @@ export function CatalogProduct({
   initial?: { colors: string[]; sizes: string[] } | null;
 }) {
   const [index, setIndex] = useState(0);
+  const [best, setBest] = useState<number | null>(null);
+  const picked = useRef(false);
+  const [info, setInfo] = useState<Record<number, PhotoInfo>>({});
+  // Find the cleanest flat photo to design on, like Printify's editor view.
+  useEffect(() => {
+    let live = true;
+    (async () => {
+      const found: Record<number, PhotoInfo> = {};
+      for (const [i, src] of product.images.slice(0, 12).entries()) {
+        found[i] = await analyzePhoto(src).catch(() => ({ score: -2, box: null }));
+        if (!live) return;
+      }
+      const top = Object.entries(found).sort((a, b) => b[1].score - a[1].score)[0];
+      setInfo(found);
+      if (top && top[1].score > 0) {
+        setBest(Number(top[0]));
+        if (!picked.current) setIndex(Number(top[0]));
+      }
+    })();
+    return () => {
+      live = false;
+    };
+  }, [product.images]);
+  const front = options?.printAreas.find((a) => a.position === "front") ?? options?.printAreas[0];
+  const box = info[index]?.box;
+  const area = box ? printAreaInBox(box, front ? front.height / front.width : 1) : null;
   const [more, setMore] = useState(false);
   const colorNames = options?.colors.map((c) => c.name) ?? [];
   const basics = colorNames.filter((c) => c === "White" || c === "Black");
@@ -61,7 +88,20 @@ export function CatalogProduct({
     <section className="catalog-detail">
       <div>
         <div className="catalog-detail-image">
-          <img src={product.images[index]} alt={product.name} />
+          <img key={product.images[index]} src={product.images[index]} alt={product.name} />
+          {area && (
+            <span
+              className="detail-print-area"
+              style={{
+                left: `${area.x * 100}%`,
+                top: `${area.y * 100}%`,
+                width: `${area.width * 100}%`,
+                height: `${area.height * 100}%`,
+              }}
+            >
+              Print area
+            </span>
+          )}
         </div>
         <div className="catalog-thumbnails" aria-label="Product images">
           {product.images.map((src, i) => (
@@ -70,9 +110,17 @@ export function CatalogProduct({
               type="button"
               aria-label={`Product view ${i + 1}`}
               aria-pressed={index === i}
-              onClick={() => setIndex(i)}
+              onClick={() => {
+                picked.current = true;
+                setIndex(i);
+              }}
             >
               <img src={src} alt="" loading="lazy" />
+              {best === i && (
+                <span className="thumb-best" title="Best photo for designing">
+                  <Sparkles size={11} />
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -183,6 +231,7 @@ export function CatalogProduct({
         <form action={startCatalogDesign} className="space-y-3">
           <input type="hidden" name="blueprintId" value={product.id} />
           <input type="hidden" name="imageIndex" value={index} />
+          <input type="hidden" name="area" value={area ? JSON.stringify(area) : ""} />
           <input type="hidden" name="colors" value={JSON.stringify(colors)} />
           <input type="hidden" name="sizes" value={JSON.stringify(sizes)} />
           <SubmitButton pendingLabel="Preparing your product…" disabled={needsColor || needsSize}>
@@ -193,7 +242,9 @@ export function CatalogProduct({
               ? "Pick at least one color."
               : needsSize
                 ? "Pick at least one size."
-                : "The selected photo becomes your mockup. You’ll set prices after designing."}
+                : best === index
+                  ? "This flat photo is best for designing. You’ll set prices after designing."
+                  : "The selected photo is what you’ll design on. You’ll set prices after designing."}
           </p>
         </form>
 

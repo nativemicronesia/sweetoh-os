@@ -25,6 +25,8 @@ export type CatalogSource = {
   printAreas: PrintAreaSpec[];
   availableColors: VariantColor[];
   availableSizes: string[];
+  /** All catalog photos, for choosing views in the editor. */
+  images?: string[];
 };
 
 const SIZE_ORDER = [

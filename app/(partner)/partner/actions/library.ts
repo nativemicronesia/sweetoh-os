@@ -320,8 +320,10 @@ export async function saveBlankSurfacesAction(productId: string, input: unknown)
   try {
     const session=await requirePartnerWorkspace(); assertBuilderRole(session);
     const surfaces=z.array(surfaceSchema).min(1).max(12).parse(input);
-    await getProductById({ventureId:session.ventureId,productId:z.string().uuid().parse(productId)});
+    const blank=await getProductById({ventureId:session.ventureId,productId:z.string().uuid().parse(productId)});
     for(const s of surfaces) if(s.assetId) await getAssetById({ventureId:session.ventureId,assetId:s.assetId});
+    const photos=new Set(blank.catalogSource?.images ?? []);
+    for(const s of surfaces) if(s.imageUrl && !photos.has(s.imageUrl)) throw new ValidationError("Choose a photo of this product.");
     await setProductPrintArea({ventureId:session.ventureId,productId,printArea:{...surfaces[0].area,...{surfaces}}});
     revalidatePath("/partner/builder");return {};
   } catch(error) {return {error:getActionErrorMessage(error)};}

@@ -11,10 +11,22 @@ export const areaSchema = z
     (a) => a.x + a.width <= 1.001 && a.y + a.height <= 1.001,
     "Keep the print area inside the image.",
   );
+/** Catalog product photos come only from Printify's image CDN. */
+export const catalogImageUrl = z
+  .string()
+  .url()
+  .refine((u) => {
+    const url = new URL(u);
+    return url.protocol === "https:" && url.hostname === "images.printify.com";
+  }, "Unsupported product photo.");
 export const surfaceSchema = z.object({
   id: z.string().min(1).max(80),
   name: z.string().trim().min(1).max(60),
   assetId: z.string().uuid().nullable(),
+  /** A catalog photo for this view, used when there's no uploaded photo. */
+  imageUrl: catalogImageUrl.nullable().optional(),
+  /** Print area position on the product (front, back, left_sleeve…). */
+  position: z.string().max(40).optional(),
   area: areaSchema,
 });
 const placement = {
@@ -37,6 +49,9 @@ export const layerSchema = z.discriminatedUnion("kind", [
     text: z.string().max(120),
     color: z.string().regex(/^#[0-9a-f]{6}$/i),
     fontSize: z.number().min(12).max(120),
+    /** Key into the editor's font list; missing means the default font. */
+    font: z.string().max(40).optional(),
+    bold: z.boolean().optional(),
   }),
 ]);
 export const studioLayoutSchema = z
