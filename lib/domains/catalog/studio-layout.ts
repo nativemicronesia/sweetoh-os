@@ -4,13 +4,27 @@ export const areaSchema = z
   .object({
     x: z.number().min(0).max(1),
     y: z.number().min(0).max(1),
-    width: z.number().min(0.02).max(1),
-    height: z.number().min(0.02).max(1),
+    width: z.number().min(0.001).max(1),
+    height: z.number().min(0.001).max(1),
   })
   .refine(
     (a) => a.x + a.width <= 1.001 && a.y + a.height <= 1.001,
     "Keep the print area inside the image.",
   );
+/** Partner-authored production geometry; points are relative to the area's box. */
+export const printRegionSchema = z.object({
+  id: z.string().min(1).max(80),
+  name: z.string().trim().min(1).max(60),
+  bounds: areaSchema,
+  shape: z.enum(["rectangle", "ellipse", "polygon"]),
+  points: z.array(z.object({ x: z.number().min(0).max(1), y: z.number().min(0).max(1) })).min(3).max(32).optional(),
+  dimensions: z.object({ width: z.number().positive().max(1200), height: z.number().positive().max(1200), unit: z.enum(["in", "cm"]) }).optional(),
+}).refine(a => a.shape !== "polygon" || Boolean(a.points?.length), "Draw at least three points for a custom shape.");
+export type PrintRegion = z.infer<typeof printRegionSchema>;
+export function regionsFor(surface: StudioSurface): PrintRegion[] {
+  return surface.printRegions ?? [{ id: "default", name: "Print area", bounds: surface.area, shape: "rectangle" }];
+}
+
 /** Catalog product photos come only from Printify's image CDN. */
 export const catalogImageUrl = z
   .string()
@@ -28,8 +42,13 @@ export const surfaceSchema = z.object({
   /** Print area position on the product (front, back, left_sleeve…). */
   position: z.string().max(40).optional(),
   area: areaSchema,
+  /** Missing means a legacy rectangle; an empty list means no printable area. */
+  printRegions: z.array(printRegionSchema).max(24).refine(a => new Set(a.map(r => r.id)).size === a.length, "Area IDs must be unique.").optional(),
 });
 const placement = {
+  printRegionId: z.string().min(1).max(80).optional(),
+  hidden: z.boolean().optional(),
+  locked: z.boolean().optional(),
   id: z.string().min(1).max(80),
   x: z.number().finite().min(-720).max(1440),
   y: z.number().finite().min(-720).max(1440),
@@ -93,7 +112,7 @@ export const studioLayoutSchema = z
   })
   .refine(
     (v) => new Set(v.surfaces.map((s) => s.id)).size === v.surfaces.length,
-    "Surface names must be unique.",
+    "Surface IDs must be unique.",
   );
 export type StudioLayout = z.infer<typeof studioLayoutSchema>;
 export type StudioLayer = z.infer<typeof layerSchema>;

@@ -41,7 +41,7 @@ export default async function PartnerCanvasPage({ searchParams }: PageProps) {
 
   const surfaceIds = new Set([
     ...blanks.flatMap(b => b.printArea?.surfaces?.map(s=>s.assetId) ?? []),
-    ...(savedComposition?.studio?.surfaces.flatMap(s=>[s.assetId, ...s.layers.flatMap(l=>l.kind === "image" ? [l.assetId] : [])]) ?? []),
+    ...(savedComposition?.studio?.surfaces.flatMap(s=>[s.assetId, ...s.layers.flatMap(l=>l.kind === "image" || l.kind === "pattern" ? [l.assetId] : [])]) ?? []),
   ].filter((id): id is string=>Boolean(id)));
   const surfaceImages = Object.fromEntries(await Promise.all([...surfaceIds].map(async id => [id, await getAssetSignedUrl({ventureId:session.ventureId,assetId:id})])));
   return (

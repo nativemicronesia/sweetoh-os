@@ -129,7 +129,7 @@ export async function saveCanvasCompositionAction(formData: FormData): Promise<{
     if (studio) {
       if (!studio.surfaces.some(s => s.layers.length)) throw new ValidationError("Add artwork or text before saving.");
       if (surfaceFiles.length !== studio.surfaces.length - 1) throw new ValidationError("Preview every surface before saving.");
-      const ids = new Set(studio.surfaces.flatMap(s => [s.assetId, ...s.layers.flatMap(l => l.kind === "image" ? [l.assetId] : [])]).filter((id): id is string => Boolean(id)));
+      const ids = new Set(studio.surfaces.flatMap(s => [s.assetId, ...s.layers.flatMap(l => (l.kind === "image" || l.kind === "pattern") ? [l.assetId] : [])]).filter((id): id is string => Boolean(id)));
       for (const id of ids) {
         const asset = await getAssetById({ventureId: session.ventureId, assetId:id});
         if (!["sweetoh_design", "product_asset"].includes(asset.assetType)) throw new ValidationError("Choose a product photo or library artwork.");
@@ -193,6 +193,8 @@ export async function saveCanvasCompositionAction(formData: FormData): Promise<{
           suggestedTags: blank.suggestedTags || [], suggestedCollections: [], suggestedPriceCents: 0,
           internalNotes: `Created on ${blank.name}. Review print area and product options before production.` },
       });
+      if (studio) await setProductPrintArea({ ventureId: session.ventureId, productId: saved.product.id,
+        printArea: { ...studio.surfaces[0].area, surfaces: studio.surfaces.map(({ layers: _layers, ...surface }) => surface) } });
       if (blank.variantOptions || blank.catalogSource)
         await setProductVariantSetup({ ventureId: session.ventureId, productId: saved.product.id,
           variantOptions: blank.variantOptions, catalogSource: blank.catalogSource });
@@ -319,12 +321,12 @@ export async function bulkUploadLibraryDesignsAction(formData: FormData): Promis
 export async function saveBlankSurfacesAction(productId: string, input: unknown): Promise<{error?:string}> {
   try {
     const session=await requirePartnerWorkspace(); assertBuilderRole(session);
-    const surfaces=z.array(surfaceSchema).min(1).max(12).parse(input);
+    const surfaces=z.array(surfaceSchema).min(1).max(12).refine(ss => new Set(ss.map(s => s.id)).size === ss.length, "Surface IDs must be unique.").parse(input);
     const blank=await getProductById({ventureId:session.ventureId,productId:z.string().uuid().parse(productId)});
     for(const s of surfaces) if(s.assetId) await getAssetById({ventureId:session.ventureId,assetId:s.assetId});
     const photos=new Set(blank.catalogSource?.images ?? []);
     for(const s of surfaces) if(s.imageUrl && !photos.has(s.imageUrl)) throw new ValidationError("Choose a photo of this product.");
     await setProductPrintArea({ventureId:session.ventureId,productId,printArea:{...surfaces[0].area,...{surfaces}}});
-    revalidatePath("/partner/builder");return {};
+    revalidatePath("/partner/builder"); revalidatePath("/partner/canvas"); revalidatePath("/partner/catalog"); return {};
   } catch(error) {return {error:getActionErrorMessage(error)};}
 }

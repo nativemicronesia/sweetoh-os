@@ -5,6 +5,7 @@ import { ArrowLeft, Camera, Check, ImagePlus, Loader2, Plus, Sparkles, Trash2, X
 import { colorHex, type VariantColor } from "@/lib/domains/catalog/variants";
 import type { BlankProposal } from "@/lib/capabilities";
 import { createOwnBlankAction, turnPhotoIntoBlankAction } from "../../actions/capabilities";
+import { uploadSurfaceAction } from "../../actions/builder";
 import { AreaEditor, type Area } from "./area-editor";
 
 type TypeOption = { value: string; label: string; category: string; w: number; h: number; sizes: string[] };
@@ -29,6 +30,7 @@ export function OwnProductWizard({ types }: { types: TypeOption[] }) {
   const [sizes, setSizes] = useState<string[]>([]);
   const [newColor, setNewColor] = useState("");
   const [newSize, setNewSize] = useState("");
+  const [manual, setManual] = useState(false);
   const [saving, setSaving] = useState(false);
   const upload = useRef<HTMLInputElement>(null);
   const camera = useRef<HTMLInputElement>(null);
@@ -54,7 +56,23 @@ export function OwnProductWizard({ types }: { types: TypeOption[] }) {
     setPhotos(next);
   }
 
+  async function usePhotos() {
+    setManual(true); setError(""); setStep("working");
+    try {
+      const next: View[] = [];
+      for (const p of photos) {
+        const data = new FormData(); data.set("photo", p.file);
+        const result = await uploadSurfaceAction(data);
+        if (result.error || !result.assetId || !result.previewUrl) throw new Error(result.error || "Photo upload failed.");
+        next.push({ label: p.label, position: p.label.toLowerCase().replaceAll(" ", "_"), originalAssetId: result.assetId, originalUrl: result.previewUrl, cutoutAssetId: null, cutoutUrl: null, useCutout: false, area: { x: 0, y: 0, width: 1, height: 1 }, printWidthIn: 10, printHeightIn: 10 });
+      }
+      setViews(next); setName(photos[0]?.file.name.replace(/\.[^.]+$/, "") ?? "My product");
+      setProductType(typeHint || "other"); setColors([]); setSizes([]); setActive(0); setStep("confirm");
+    } catch (e) { setError(e instanceof Error ? e.message : "Upload failed."); setStep("photos"); }
+  }
+
   async function process() {
+    setManual(false);
     setError("");
     setStep("working");
     const form = new FormData();
@@ -88,20 +106,15 @@ export function OwnProductWizard({ types }: { types: TypeOption[] }) {
   }
   function setInches(i: number, key: "printWidthIn" | "printHeightIn", value: number) {
     if (!Number.isFinite(value) || value <= 0) return;
-    const v = views[i];
-    const next = { ...v, [key]: value };
-    // Keep the rectangle's shape in step with the real print size.
-    const ratio = next.printHeightIn / next.printWidthIn;
-    const width = v.area.width;
-    const height = Math.min(0.96, width * ratio);
-    patchView(i, { [key]: value, area: { ...v.area, height, y: Math.min(v.area.y, 1 - height) } });
+    patchView(i, { [key]: value });
   }
+
   function changeType(value: string) {
     setProductType(value);
     const t = types.find((x) => x.value === value);
     if (!t) return;
     setSizes(t.sizes);
-    setViews((vs) => vs.map((v) => ({ ...v, printWidthIn: t.w, printHeightIn: t.h })));
+
   }
   function addColor() {
     const n = newColor.trim();
@@ -129,6 +142,7 @@ export function OwnProductWizard({ types }: { types: TypeOption[] }) {
         assetId: v.useCutout && v.cutoutAssetId ? v.cutoutAssetId : v.originalAssetId,
         originalAssetId: v.originalAssetId,
         area: v.area,
+        printRegions: manual ? [] : undefined,
         printWidthIn: v.printWidthIn,
         printHeightIn: v.printHeightIn,
       })),
@@ -152,7 +166,7 @@ export function OwnProductWizard({ types }: { types: TypeOption[] }) {
               <Sparkles size={14} /> Turn photo into blank
             </span>
             <h1>Add your own product</h1>
-            <p>Photograph any product you print on — a tee, mug, tote, towel, anything. We’ll remove the background, find where you can print, and turn it into a reusable blank.</p>
+            <p>Start with your product photos. Set up the surfaces and print areas for the way you produce it. AI can suggest a starting point if you want.</p>
           </header>
 
           {step === "photos" && (
@@ -206,9 +220,10 @@ export function OwnProductWizard({ types }: { types: TypeOption[] }) {
                   ))}
                 </select>
               </label>
-              <div className="own-actions">
-                <button className="pf-btn pf-btn-primary pf-btn-lg" disabled={!photos.length} onClick={() => void process()}>
-                  <Sparkles size={16} /> Turn into a blank
+              <div className="own-actions" style={{ gap: 10, flexWrap: "wrap" }}>
+                <button className="pf-btn pf-btn-primary pf-btn-lg" disabled={!photos.length} onClick={() => void usePhotos()}>Use my photos</button>
+                <button className="pf-btn pf-btn-outline pf-btn-lg" disabled={!photos.length} onClick={() => void process()}>
+                  <Sparkles size={16} /> Suggest setup with AI
                 </button>
               </div>
             </>
@@ -223,9 +238,9 @@ export function OwnProductWizard({ types }: { types: TypeOption[] }) {
                 <span className="own-scan" />
               </div>
               <p>
-                <Loader2 size={18} className="pe-spin" /> {WORKING[tick % WORKING.length]}
+                <Loader2 size={18} className="pe-spin" /> {manual ? "Uploading your product photos…" : WORKING[tick % WORKING.length]}
               </p>
-              <small>This takes about a minute. Keep this page open.</small>
+              <small>Keep this page open while your photos are prepared.</small>
             </div>
           )}
           {error && <p role="alert" className="own-error">{error}</p>}
@@ -243,13 +258,13 @@ export function OwnProductWizard({ types }: { types: TypeOption[] }) {
                 </button>
               ))}
             </div>
-            <AreaEditor
+            {manual ? <><img src={view.originalUrl} alt={view.label} style={{ width: "100%", maxHeight: "60vh", objectFit: "contain" }}/><p className="own-note">Next, add any number of print areas in Product setup. You choose their shapes, sizes and placement.</p></> : <AreaEditor
               src={view.useCutout && view.cutoutUrl ? view.cutoutUrl : view.originalUrl}
               area={view.area}
               checker={view.useCutout}
               onChange={(a: Area) => patchView(active, { area: a })}
-            />
-            <p className="own-hint">Drag the box to where you print on this {typeOption?.label.toLowerCase() ?? "product"}. Pull the corners to resize.</p>
+            />}
+            {!manual && <p className="own-hint">Drag the box to where you print on this {typeOption?.label.toLowerCase() ?? "product"}. Pull the corners to resize.</p>}
             {view.cutoutUrl && (
               <label className="own-check">
                 <input type="checkbox" checked={view.useCutout} onChange={(e) => patchView(active, { useCutout: e.target.checked })} />
@@ -275,14 +290,14 @@ export function OwnProductWizard({ types }: { types: TypeOption[] }) {
                 ))}
               </select>
             </label>
-            <div className="own-field">
+            {!manual && <div className="own-field">
               {view.label} print size (inches)
               <div className="own-inches">
                 <input type="number" min={0.5} step={0.5} value={view.printWidthIn} onChange={(e) => setInches(active, "printWidthIn", Number(e.target.value))} aria-label="Print width in inches" />
                 <span>×</span>
                 <input type="number" min={0.5} step={0.5} value={view.printHeightIn} onChange={(e) => setInches(active, "printHeightIn", Number(e.target.value))} aria-label="Print height in inches" />
               </div>
-            </div>
+            </div>}
             <div className="own-field">
               Colors you stock
               <div className="own-chips">
@@ -330,7 +345,7 @@ export function OwnProductWizard({ types }: { types: TypeOption[] }) {
               </button>
             )}
             {error && <p role="alert" className="own-error">{error}</p>}
-            <button className="pf-btn pf-btn-primary pf-btn-lg own-save" disabled={saving || !name.trim() || !colors.length} onClick={() => void save()}>
+            <button className="pf-btn pf-btn-primary pf-btn-lg own-save" disabled={saving || !name.trim()} onClick={() => void save()}>
               {saving ? <Loader2 size={16} className="pe-spin" /> : <Check size={16} />} Save & start designing
             </button>
             <p className="own-small">Saved privately as a reusable blank. It works like any catalog product.</p>

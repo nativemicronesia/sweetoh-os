@@ -270,6 +270,7 @@ export async function createOwnBlank(
       assetId: string;
       originalAssetId: string;
       area: Area;
+      printRegions?: import("@/lib/domains/catalog/studio-layout").PrintRegion[];
       printWidthIn: number;
       printHeightIn: number;
     }[];
@@ -311,7 +312,7 @@ export async function createOwnBlank(
     let id = v.position.replace(/[^a-z0-9_]/gi, "_").toLowerCase() || `view_${i + 1}`;
     while (used.has(id)) id = `${id}_${i + 1}`;
     used.add(id);
-    return { id, name: v.label.slice(0, 60) || `View ${i + 1}`, position: v.position, assetId: v.assetId, area: areaSchema.parse(v.area) };
+    return { id, name: v.label.slice(0, 60) || `View ${i + 1}`, position: v.position, assetId: v.assetId, area: areaSchema.parse(v.area), printRegions: v.printRegions };
   });
   await setProductPrintArea({
     ventureId: session.ventureId, productId: saved.product.id,
@@ -326,11 +327,9 @@ export async function createOwnBlank(
       provider: "own",
       brand: "",
       model: preset.label,
-      printAreas: input.views.map((v, i) => ({
-        position: surfaces[i].position ?? surfaces[i].id,
-        width: Math.round(v.printWidthIn * 300),
-        height: Math.round(v.printHeightIn * 300),
-      })),
+      printAreas: input.views.flatMap((v, i) => v.printRegions !== undefined
+        ? v.printRegions.flatMap(r => r.dimensions ? [{ position: `${surfaces[i].id}:${r.id}`, width: Math.round(r.dimensions.width * (r.dimensions.unit === "cm" ? 300 / 2.54 : 300)), height: Math.round(r.dimensions.height * (r.dimensions.unit === "cm" ? 300 / 2.54 : 300)) }] : [])
+        : [{ position: surfaces[i].position ?? surfaces[i].id, width: Math.round(v.printWidthIn * 300), height: Math.round(v.printHeightIn * 300) }]),
       availableColors: colors,
       availableSizes: sizes,
     },

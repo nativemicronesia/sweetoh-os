@@ -16,7 +16,7 @@ import {
   PRODUCT_TYPE_OPTIONS,
   type BlankProposal,
 } from "@/lib/capabilities";
-import { areaSchema } from "@/lib/domains/catalog/studio-layout";
+import { areaSchema, printRegionSchema } from "@/lib/domains/catalog/studio-layout";
 import { variantColorSchema } from "@/lib/domains/catalog/variants";
 import { ValidationError } from "@/lib/shared/errors";
 
@@ -67,6 +67,7 @@ const blankInput = z.object({
         assetId: z.string().uuid(),
         originalAssetId: z.string().uuid(),
         area: areaSchema,
+        printRegions: z.array(printRegionSchema).max(24).optional(),
         printWidthIn: z.number().min(0.5).max(120),
         printHeightIn: z.number().min(0.5).max(120),
       }),

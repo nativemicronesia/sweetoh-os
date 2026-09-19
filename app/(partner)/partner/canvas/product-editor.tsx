@@ -9,6 +9,7 @@ import {
   FabricObject,
   IText,
   Rect,
+  Path,
 } from "fabric";
 import {
   AlignCenterHorizontal,
@@ -46,6 +47,10 @@ import {
   Trash2,
   Type,
   Undo2,
+  Redo2,
+  LockKeyhole,
+  UnlockKeyhole,
+  EyeOff,
   Upload,
   X,
 } from "lucide-react";
@@ -60,6 +65,7 @@ import {
 } from "../actions/library";
 import {
   defaultArea,
+  regionsFor,
   type StudioLayout,
   type StudioLayer,
   type StudioSurface,
@@ -77,6 +83,8 @@ import {
   listInspirationAction,
   removeBackgroundAction,
 } from "../actions/capabilities";
+import { regionPath } from "@/lib/studio/print-regions";
+import { ProductSetup } from "./product-setup";
 import { CropDialog, type CropPixels } from "./crop-dialog";
 
 type Area = StudioSurface["area"];
@@ -117,6 +125,7 @@ type Selected =
       flipX: boolean;
       flipY: boolean;
       assetId?: string;
+      printRegionId?: string;
       fill?: string;
       tile?: number;
       gap?: number;
@@ -199,7 +208,9 @@ export function ProductEditor({
   const guide = useRef<Rect | null>(null);
   const meta = useRef(new WeakMap<FabricObject, StudioLayer>());
   const history = useRef<StudioLayout[]>([]);
+  const future = useRef<StudioLayout[]>([]);
   const tinted = useRef(new Map<string, Promise<string | null>>());
+  const patternRevision = useRef(0);
   const mockTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const colorRef = useRef<string | null>(colors[0]?.hex ?? null);
   const booted = useRef(false);
@@ -209,7 +220,7 @@ export function ProductEditor({
 
   const [library, setLibrary] = useState(designs);
   const [colorName, setColorName] = useState<string | null>(colors[0]?.name ?? null);
-  const [panel, setPanel] = useState<Panel>("files");
+  const [panel, setPanel] = useState<Panel>(null);
   const [zoom, setZoom] = useState(1);
   const [ready, setReady] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
@@ -217,10 +228,15 @@ export function ProductEditor({
   const [name, setName] = useState(blank?.name ?? "My product");
   const [layers, setLayers] = useState<StudioLayer[]>([]);
   const [selected, setSelected] = useState<Selected>(null);
+  const [redoCount, setRedoCount] = useState(0);
   const [undoCount, setUndoCount] = useState(0);
   const [search, setSearch] = useState("");
   const [brief, setBrief] = useState("");
-  const [areaEditing, setAreaEditing] = useState(false);
+  const [setupOpen, setSetupOpen] = useState(false);
+  const [activeRegionId, setActiveRegionState] = useState<string | null>(null);
+  const activeRegionRef = useRef<string | null>(null);
+  const setActiveRegionId = (id: string | null) => { activeRegionRef.current = id; setActiveRegionState(id); };
+  const [setupSaved, setSetupSaved] = useState(false);
   const [outside, setOutside] = useState(false);
   const [mockups, setMockups] = useState<Mockup[]>([]);
   const [preview, setPreview] = useState<PreviewData | null>(null);
@@ -236,15 +252,26 @@ export function ProductEditor({
   const [viewPicker, setViewPicker] = useState<{ mode: "add" | "replace"; position: string } | null>(null);
 
   const surface = () => doc.current.surfaces.find((s) => s.id === currentId.current)!;
-  const spec = (s: Surface = surface()) =>
-    specs.find((a) => a.position === s.position) ??
-    (s.id === doc.current.surfaces[0].id ? specs.find((a) => a.position === "front") : undefined);
+  const spec = (s: Surface = surface()) => {
+    const region = regionsFor(s).find(r => s.id === currentId.current && r.id === activeRegionRef.current) ?? regionsFor(s).find(r => r.bounds.x === s.area.x && r.bounds.y === s.area.y && r.bounds.width === s.area.width && r.bounds.height === s.area.height) ?? regionsFor(s)[0];
+    if (region?.dimensions) {
+      const d = region.dimensions, factor = d.unit === "cm" ? DPI / 2.54 : DPI;
+      return { position: s.position ?? s.id, width: Math.round(d.width * factor), height: Math.round(d.height * factor) };
+    }
+    if (s.printRegions !== undefined) return undefined;
+    return specs.find(a => a.position === s.position) ?? (s.id === doc.current.surfaces[0].id ? specs.find(a => a.position === "front") : undefined);
+  };
+  function printClip(s: Surface, layer?: StudioLayer) {
+    const regions = regionsFor(s).filter(r => !layer?.printRegionId || r.id === layer.printRegionId);
+    return new Path(regions.map(r => regionPath(r)).join(" ") || "M 0 0 Z", { absolutePositioned: true, fill: "black", strokeWidth: 0 });
+  }
   /** Printed inches per canvas pixel for the current view, when the real print size is known. */
-  const inchesPerPx = (s: Surface = surface()) => {
+  const inchesPerPx = (s: Surface = surface(), axis: "x" | "y" = "x") => {
     const sp = spec(s);
-    return sp ? sp.width / DPI / (s.area.width * SIZE) : null;
+    return sp ? (axis === "x" ? sp.width / s.area.width : sp.height / s.area.height) / DPI / SIZE : null;
   };
   const locked = Boolean(busy) || !ready;
+  const canDesign = () => { if (regionsFor(surface()).length) return true; setSetupOpen(true); return false; };
 
   /* ---------- document <-> canvas ---------- */
 
@@ -284,6 +311,7 @@ export function ProductEditor({
   }
   function checkpoint() {
     capture();
+    future.current = []; setRedoCount(0);
     history.current = [...history.current.slice(-39), structuredClone(doc.current)];
     setUndoCount(history.current.length);
     dirty.current = true;
@@ -291,18 +319,17 @@ export function ProductEditor({
   function checkOutside() {
     const canvas = editor.current;
     if (!canvas) return;
-    const a = surface().area;
-    const [l, t, r, b] = [a.x * SIZE, a.y * SIZE, (a.x + a.width) * SIZE, (a.y + a.height) * SIZE];
-    setOutside(
-      canvas
-        .getObjects()
-        .filter((o) => meta.current.has(o))
-        .some((o) => {
-          const br = o.getBoundingRect();
-          return br.left < l - 1 || br.top < t - 1 || br.left + br.width > r + 1 || br.top + br.height > b + 1;
-        }),
-    );
+    const regions = regionsFor(surface());
+    const ctx = document.createElement("canvas").getContext("2d")!;
+    setOutside(canvas.getObjects().filter(o => meta.current.has(o) && o.visible).some(o => {
+      const regionId = meta.current.get(o)?.printRegionId;
+      const paths = regions.filter(r => !regionId || r.id === regionId).map(r => new Path2D(regionPath(r)));
+      const b = o.getBoundingRect();
+      return [0, .25, .5, .75, 1].some(x => [0, .25, .5, .75, 1].some(y =>
+        !paths.some(p => ctx.isPointInPath(p, b.left + b.width * x, b.top + b.height * y))));
+    }));
   }
+
   function readSelection() {
     const o = editor.current?.getActiveObject();
     if (!o || o === guide.current || !meta.current.has(o)) {
@@ -310,8 +337,11 @@ export function ProductEditor({
       return;
     }
     const base = meta.current.get(o)!;
+    const assigned = surface().printRegions?.find(r => r.id === base.printRegionId);
+    if (assigned) { surface().area = assigned.bounds; setActiveRegionId(assigned.id); }
     const a = surface().area;
     const ipp = inchesPerPx();
+    const unitY = inchesPerPx(surface(), "y") ?? 1 / (a.width * SIZE) * 100;
     const unit = ipp ?? 1 / (a.width * SIZE) * 100; // inches, or % of print width
     const br = o.getBoundingRect();
     const text = o instanceof IText;
@@ -323,17 +353,18 @@ export function ProductEditor({
       flipX: o.flipX,
       flipY: o.flipY,
       assetId,
+      printRegionId: base.printRegionId,
       fill: base.kind === "shape" && typeof o.fill === "string" ? o.fill : undefined,
       tile: base.kind === "pattern" ? base.tile : undefined,
       gap: base.kind === "pattern" ? base.gap : undefined,
       brick: base.kind === "pattern" ? base.brick : undefined,
       cropped: base.kind === "image" && Boolean(base.crop),
       left: round((br.left - a.x * SIZE) * unit),
-      top: round((br.top - a.y * SIZE) * unit),
+      top: round((br.top - a.y * SIZE) * unitY),
       width: round(o.getScaledWidth() * unit),
-      height: round(o.getScaledHeight() * unit),
+      height: round(o.getScaledHeight() * unitY),
       angle: Math.round(o.angle),
-      dpi: base.kind === "image" && ipp ? Math.round(1 / (o.scaleX * ipp)) : null,
+      dpi: base.kind === "image" && ipp ? Math.round(Math.min(1 / (o.scaleX * ipp), 1 / (o.scaleY * (inchesPerPx(surface(), "y") ?? ipp)))) : null,
       ...(text
         ? {
             text: (o as IText).text,
@@ -393,6 +424,7 @@ export function ProductEditor({
   }
   /** The view photo cleaned and recolored to a garment color; null keeps the original. */
   function recolored(src: string, hex: string | null, area: Area) {
+    if (!hex) return Promise.resolve(src);
     const target = isWhite(hex) ? "#ffffff" : hex!;
     const key = `${src}|${target}`;
     if (!tinted.current.has(key))
@@ -423,7 +455,9 @@ export function ProductEditor({
     canvas.backgroundImage = image;
     for (const layer of s.layers) {
       const object = await makeLayer(layer);
+      object.set({ visible: !layer.hidden, selectable: !layer.locked, evented: !layer.locked });
       if (withGuide && canvas !== editor.current) return;
+      if (!withGuide) object.clipPath = printClip(s, layer);
       canvas.add(object);
     }
     if (withGuide) {
@@ -449,7 +483,11 @@ export function ProductEditor({
         borderColor: INK,
       });
       guide.current = rect;
-      canvas.add(rect);
+      if (s.printRegions === undefined) canvas.add(rect);
+      else for (const region of regionsFor(s)) canvas.add(new Path(regionPath(region), {
+        fill: "rgba(31,112,72,0.025)", stroke: INK, strokeWidth: 1.2, strokeDashArray: [6, 5],
+        selectable: false, evented: false, excludeFromExport: true,
+      }));
     }
     canvas.renderAll();
   }
@@ -457,13 +495,16 @@ export function ProductEditor({
   async function loadSurface(id: string) {
     setReady(false);
     setError("");
-    setAreaEditing(false);
     currentId.current = id;
     setSurfaceId(id);
     setSelected(null);
     const canvas = editor.current!;
     try {
-      await paint(canvas, doc.current.surfaces.find((s) => s.id === id)!, true);
+      const next = doc.current.surfaces.find(s => s.id === id)!;
+      const region = next.printRegions?.find(r => r.bounds.x === next.area.x && r.bounds.y === next.area.y && r.bounds.width === next.area.width && r.bounds.height === next.area.height) ?? next.printRegions?.[0];
+      setActiveRegionId(region?.id ?? null);
+      if (region) next.area = region.bounds;
+      await paint(canvas, next, true);
       if (editor.current !== canvas) return;
       setLayers([...surface().layers]);
       setReady(true);
@@ -647,12 +688,13 @@ export function ProductEditor({
   // Keyboard: delete, undo, nudge — never while typing.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (document.querySelector('[role="dialog"]')) return;
       const target = e.target as HTMLElement;
       if (target.closest("input, textarea, select, [contenteditable=true]")) return;
       const o = editor.current?.getActiveObject();
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z") {
         e.preventDefault();
-        void undo();
+        if (e.shiftKey) void redo(); else void undo();
         return;
       }
       if (!o || !meta.current.has(o) || (o instanceof IText && o.isEditing)) return;
@@ -677,6 +719,7 @@ export function ProductEditor({
   /* ---------- adding & editing ---------- */
 
   async function addArtwork(id: string) {
+    if (!canDesign()) return;
     if (locked) return;
     setBusy("Adding artwork…");
     setError("");
@@ -687,6 +730,7 @@ export function ProductEditor({
       const scale = Math.min((a.width * SIZE) / image.width, (a.height * SIZE) / image.height) * 0.9;
       const layer: StudioLayer = {
         id: crypto.randomUUID(),
+        printRegionId: surface().printRegions ? activeRegionId ?? surface().printRegions?.[0]?.id : undefined,
         kind: "image",
         assetId: id,
         x: a.x * SIZE + (a.width * SIZE - image.width * scale) / 2,
@@ -731,11 +775,13 @@ export function ProductEditor({
     }
   }
   async function addText(preset: { text: string; size: number; font?: string; bold?: boolean } = { text: "Your text", size: 48 }) {
+    if (!canDesign()) return;
     if (locked) return;
     checkpoint();
     const a = surface().area;
     const layer: StudioLayer = {
       id: crypto.randomUUID(),
+      printRegionId: surface().printRegions ? activeRegionId ?? surface().printRegions?.[0]?.id : undefined,
       kind: "text",
       text: preset.text,
       x: a.x * SIZE + 10,
@@ -761,7 +807,8 @@ export function ProductEditor({
     editor.current!.requestRenderAll();
   }
   function bringGuideToTop() {
-    if (guide.current && editor.current) editor.current.bringObjectToFront(guide.current);
+    if (!editor.current) return;
+    for (const object of editor.current.getObjects()) if (object.excludeFromExport) editor.current.bringObjectToFront(object);
   }
   function changeSelected(change: (obj: FabricObject) => void, record = true) {
     const o = editor.current?.getActiveObject();
@@ -801,7 +848,7 @@ export function ProductEditor({
     if (!Number.isFinite(value)) return;
     changeSelected((o) => {
       const a = surface().area;
-      const ipp = inchesPerPx();
+      const ipp = inchesPerPx(surface(), field === "top" || field === "height" ? "y" : "x");
       const toPx = (v: number) => (ipp ? v / ipp : (v / 100) * a.width * SIZE);
       if (field === "angle") o.rotate(value);
       else if (field === "width" || field === "height") {
@@ -842,12 +889,14 @@ export function ProductEditor({
   /* ---------- Canva-style tools ---------- */
 
   async function addShape(kind: ShapeKind) {
+    if (!canDesign()) return;
     if (locked) return;
     checkpoint();
     const def = SHAPES.find((x) => x.kind === kind)!;
     const a = surface().area;
     const layer: StudioLayer = {
       id: crypto.randomUUID(),
+      printRegionId: surface().printRegions ? activeRegionId ?? surface().printRegions?.[0]?.id : undefined,
       kind: "shape",
       shape: kind,
       fill: isWhite(colorRef.current) ? "#1f7048" : "#ffffff",
@@ -951,11 +1000,12 @@ export function ProductEditor({
     const o = editor.current?.getActiveObject();
     const base = o && meta.current.get(o);
     const source = assetId ?? (base?.kind === "image" ? base.assetId : undefined);
-    if (!source || locked) return;
+    if (!source || locked || !canDesign()) return;
     checkpoint();
     const a = surface().area;
     const layer: StudioLayer = {
       id: crypto.randomUUID(),
+      printRegionId: surface().printRegions ? activeRegionId ?? surface().printRegions?.[0]?.id : undefined,
       kind: "pattern",
       assetId: source,
       tile: 0.22,
@@ -980,6 +1030,8 @@ export function ProductEditor({
       capture();
       readSelection();
       editor.current!.requestRenderAll();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn’t create the pattern.");
     } finally {
       setBusy(null);
     }
@@ -991,7 +1043,11 @@ export function ProductEditor({
     if (!o || base?.kind !== "pattern") return;
     checkpoint();
     const next = { ...base, ...patch };
-    const fresh = await makePatternRect(urls.current[base.assetId], next);
+    const revision = ++patternRevision.current;
+    meta.current.set(o, next);
+    let fresh;
+    try { fresh = await makePatternRect(urls.current[base.assetId], next); } catch { setError("Couldn’t update this pattern."); return; }
+    if (revision !== patternRevision.current || !editor.current?.getObjects().includes(o)) return;
     o.set({ fill: fresh.fill });
     meta.current.set(o, next);
     capture();
@@ -1066,10 +1122,28 @@ export function ProductEditor({
   async function undo() {
     const previous = history.current.pop();
     if (!previous) return;
+    capture(); future.current.push(structuredClone(doc.current)); setRedoCount(future.current.length);
     doc.current = previous;
     setSurfaces([...previous.surfaces]);
     setUndoCount(history.current.length);
     await loadSurface(previous.surfaces.some((s) => s.id === currentId.current) ? currentId.current : previous.surfaces[0].id);
+    const last = surface().layers.filter(l => !l.hidden && !l.locked).at(-1); if (last) selectLayer(last.id);
+  }
+  async function redo() {
+    const next = future.current.pop(); if (!next) return;
+    capture(); history.current.push(structuredClone(doc.current)); setUndoCount(history.current.length);
+    doc.current = next; setSurfaces([...next.surfaces]); setRedoCount(future.current.length);
+    await loadSurface(next.surfaces.some(s => s.id === currentId.current) ? currentId.current : next.surfaces[0].id);
+    const last = surface().layers.filter(l => !l.hidden && !l.locked).at(-1); if (last) selectLayer(last.id);
+  }
+  function toggleLayer(id: string, key: "hidden" | "locked") {
+    checkpoint();
+    const layer = surface().layers.find(l => l.id === id)!;
+    const object = editor.current!.getObjects().find(o => meta.current.get(o)?.id === id)!;
+    const next = { ...layer, [key]: !layer[key] };
+    meta.current.set(object, next);
+    object.set({ visible: !next.hidden, selectable: !next.locked, evented: !next.locked });
+    editor.current!.discardActiveObject(); editor.current!.requestRenderAll(); capture(); readSelection();
   }
   function pickColor(c: { name: string; hex: string }) {
     if (colorName === c.name || locked) return;
@@ -1091,6 +1165,7 @@ export function ProductEditor({
         imageUrl: s.imageUrl ?? null,
         position: s.position,
         area: s.area,
+        printRegions: s.printRegions,
       })),
     );
     if (result.error) throw new Error(result.error);
@@ -1139,7 +1214,7 @@ export function ProductEditor({
         const s = surface();
         s.assetId = assetId;
         s.imageUrl = assetId ? null : photo.imageUrl;
-        s.area = area;
+        if (s.printRegions === undefined) s.area = area;
       } else {
         doc.current.surfaces.push({
           id: `${viewPicker.position}-${crypto.randomUUID().slice(0, 6)}`,
@@ -1162,47 +1237,13 @@ export function ProductEditor({
       setBusy(null);
     }
   }
-  function startAreaEdit() {
-    const r = guide.current;
-    if (!r || !editor.current) return;
-    editor.current.discardActiveObject();
-    r.set({ selectable: true, evented: true, hasRotatingPoint: false, lockRotation: true });
-    r.setControlVisible("mtr", false);
-    editor.current.setActiveObject(r);
-    editor.current.requestRenderAll();
-    setAreaEditing(true);
-  }
-  async function saveArea() {
-    const r = guide.current;
-    if (!r) return;
-    const area = { x: r.left / SIZE, y: r.top / SIZE, width: (r.width * r.scaleX) / SIZE, height: (r.height * r.scaleY) / SIZE };
-    if (area.x < 0 || area.y < 0 || area.width < 0.02 || area.height < 0.02 || area.x + area.width > 1.001 || area.y + area.height > 1.001) {
-      setError("Keep the print area inside the photo.");
-      return;
-    }
-    setBusy("Saving print area…");
-    try {
-      surface().area = area;
-      await persistViews();
-      r.set({ selectable: false, evented: false });
-      editor.current!.discardActiveObject();
-      setAreaEditing(false);
-      checkOutside();
-      editor.current!.requestRenderAll();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn’t save print area.");
-    } finally {
-      setBusy(null);
-    }
-  }
-
   /* ---------- preview, print files, save ---------- */
 
   /** One view's artwork alone, transparent, on the full editor canvas. */
   async function designLayerPng(s: Surface) {
     const canvas = new StaticCanvas(document.createElement("canvas"), { width: SIZE, height: SIZE });
     try {
-      for (const layer of s.layers) canvas.add(await makeLayer(layer));
+      for (const layer of s.layers.filter(l => !l.hidden)) { const object = await makeLayer(layer); object.clipPath = printClip(s, layer); canvas.add(object); }
       canvas.renderAll();
       return canvas.toDataURL({ format: "png", multiplier: 1 });
     } finally {
@@ -1213,7 +1254,6 @@ export function ProductEditor({
     capture();
     const views = [];
     for (const s of doc.current.surfaces) {
-      if (!s.layers.length && s.id !== doc.current.surfaces[0].id) continue;
       const canvas = new StaticCanvas(document.createElement("canvas"), { width: SIZE, height: SIZE });
       try {
         await paint(canvas, s);
@@ -1254,18 +1294,28 @@ export function ProductEditor({
       setBusy(null);
     }
   }
-  async function downloadPrint(s: Surface) {
+  async function downloadPrint(s: Surface, region = regionsFor(s)[0]) {
+    if (!region) return;
+    capture();
+    s = { ...s, area: region.bounds, printRegions: [region] };
     setBusy("Exporting print file…");
     const canvas = new StaticCanvas(document.createElement("canvas"), { width: SIZE, height: SIZE });
     try {
-      for (const layer of s.layers) canvas.add(await makeLayer(layer));
+      for (const layer of s.layers.filter(l => !l.hidden)) { const object = await makeLayer(layer); object.clipPath = printClip(s, layer); canvas.add(object); }
       const a = s.area;
       const sp = spec(s);
-      // Artwork re-renders at full resolution, so only the output size is capped.
-      const multiplier = sp ? Math.min(sp.width, 6000) / (a.width * SIZE) : 4;
+      // Bound memory while preserving the requested physical aspect ratio.
+      const targetWidth = sp?.width ?? Math.round(a.width * SIZE * 4);
+      const targetHeight = sp?.height ?? Math.round(a.height * SIZE * 4);
+      const cap = Math.min(1, 6000 / Math.max(targetWidth, targetHeight));
+      const width = Math.max(1, Math.round(targetWidth * cap)), height = Math.max(1, Math.round(targetHeight * cap));
+      const multiplier = Math.min(6000 / Math.max(a.width * SIZE, a.height * SIZE), Math.max(width / (a.width * SIZE), height / (a.height * SIZE)));
+      const rendered = canvas.toCanvasElement(multiplier, { left: a.x * SIZE, top: a.y * SIZE, width: a.width * SIZE, height: a.height * SIZE });
+      const output = document.createElement("canvas"); output.width = width; output.height = height;
+      output.getContext("2d")!.drawImage(rendered, 0, 0, width, height);
       const link = document.createElement("a");
-      link.download = `${name || blank.name}-${s.name}-print.png`;
-      link.href = canvas.toDataURL({ format: "png", multiplier, left: a.x * SIZE, top: a.y * SIZE, width: a.width * SIZE, height: a.height * SIZE });
+      link.download = `${name || blank.name}-${s.name}-${region.name}-print.png`;
+      link.href = output.toDataURL("image/png");
       link.click();
     } catch {
       setError("Couldn’t export this print file. Try again.");
@@ -1278,7 +1328,7 @@ export function ProductEditor({
     setBusy(asProduct ? "Preparing your product…" : "Saving to My files…");
     setError("");
     try {
-      const data = preview ?? (await buildPreview());
+      const data = await buildPreview();
       const form = new FormData();
       form.set("name", name.trim() || blank.name);
       form.set("saveAsProduct", String(asProduct));
@@ -1307,6 +1357,7 @@ export function ProductEditor({
 
   const current = surfaces.find((s) => s.id === surfaceId) ?? surfaces[0];
   const currentSpec = spec(current);
+  const currentRegions = regionsFor(current);
   const hasDesign = surfaces.some((s) => s.layers.length) || layers.length > 0;
   const usedPositions = new Set(surfaces.map((s) => s.position ?? ""));
   const order = ["front", "back", "left_sleeve", "right_sleeve", "neck"];
@@ -1330,9 +1381,11 @@ export function ProductEditor({
           <span>{blank.catalogSource ? [blank.catalogSource.brand, blank.catalogSource.model].filter(Boolean).join(" ") : blank.name}</span>
         </div>
         <div className="pe-top-actions">
+          <button className="pe-btn pe-btn-ghost pe-setup-button" disabled={locked} onClick={() => { capture(); setSetupOpen(true); }}><Crop size={16}/> Product setup</button>
           <button className="pe-icon-btn" onClick={() => void undo()} disabled={!undoCount || locked} aria-label="Undo" title="Undo (⌘Z)">
             <Undo2 size={17} />
           </button>
+          <button className="pe-icon-btn" onClick={() => void redo()} disabled={!redoCount || locked} aria-label="Redo" title="Redo"><Redo2 size={17}/></button>
           <button className="pe-btn pe-btn-ghost" onClick={() => void save(false)} disabled={!hasDesign || locked}>
             Save to My files
           </button>
@@ -1549,8 +1602,8 @@ export function ProductEditor({
                 {layers.length ? (
                   <ul className="pe-layers">
                     {[...layers].reverse().map((l) => (
-                      <li key={l.id}>
-                        <button onClick={() => selectLayer(l.id)}>
+                      <li key={l.id} className="pe-layer-row" data-hidden={l.hidden}>
+                        <button disabled={l.locked || l.hidden} onClick={() => selectLayer(l.id)}>
                           {l.kind === "text" ? (
                             <Type size={16} />
                           ) : l.kind === "shape" ? (
@@ -1568,6 +1621,8 @@ export function ProductEditor({
                                 : `${library.find((d) => d.id === l.assetId)?.name ?? "Artwork"}${l.kind === "pattern" ? " (pattern)" : ""}`}
                           </span>
                         </button>
+                        <button className="pe-icon-btn" aria-label={`${l.hidden ? "Show" : "Hide"} layer`} onClick={() => toggleLayer(l.id, "hidden")}>{l.hidden ? <EyeOff size={14}/> : <Eye size={14}/>}</button>
+                        <button className="pe-icon-btn" aria-label={`${l.locked ? "Unlock" : "Lock"} layer`} onClick={() => toggleLayer(l.id, "locked")}>{l.locked ? <LockKeyhole size={14}/> : <UnlockKeyhole size={14}/>}</button>
                       </li>
                     ))}
                   </ul>
@@ -1580,8 +1635,15 @@ export function ProductEditor({
         )}
 
         <main className="pe-stage-wrap">
-          <div className="pe-stage" ref={stage}>
+          <div className="pe-surface-bar"><span><strong>{current.name}</strong><small>{setupSaved ? "Product setup saved" : "Design workspace"}</small></span>
+            {currentRegions.length > 0 ? <label>Print area <select aria-label="Active print area" value={activeRegionId ?? currentRegions[0]?.id} onChange={e => {
+              const r = currentRegions.find(r => r.id === e.target.value)!;
+              capture(); editor.current?.discardActiveObject(); surface().area = r.bounds; setActiveRegionId(r.id); setSurfaces([...doc.current.surfaces]); readSelection();
+            }}>{currentRegions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}</select></label> : <button className="pe-btn pe-btn-primary" onClick={() => setSetupOpen(true)}>Add a print area</button>}
+          </div>
+          <div className="pe-stage" ref={stage} onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = "copy"; }} onDrop={e => { e.preventDefault(); if (!locked) void upload(e.dataTransfer.files[0]); }}>
             <div className="pe-canvas" ref={host} />
+            {ready && !layers.length && <div className="pe-start"><button onClick={() => setPanel("files")}><Upload size={15}/> Add artwork</button><button onClick={() => setPanel("text")}><Type size={15}/> Add text</button><span>or drop an image here</span></div>}
             {!ready && !error && (
               <div className="pe-loading">
                 <Loader2 size={22} className="pe-spin" /> Loading product…
@@ -1599,15 +1661,7 @@ export function ProductEditor({
                 <Maximize size={14} />
               </button>
             </div>
-            {areaEditing && (
-              <div className="pe-area-bar">
-                Drag the corners to match where you print on this photo.
-                <button className="pe-btn pe-btn-primary" onClick={() => void saveArea()}>
-                  Done
-                </button>
-              </div>
-            )}
-            {outside && !areaEditing && ready && <div className="pe-warn">Part of your design is outside the print area and won’t be printed.</div>}
+            {outside && ready && <div className="pe-warn">Artwork outside the print areas is clipped in previews and print files.</div>}
           </div>
 
           <div className="pe-views" role="tablist" aria-label="Product views">
@@ -1616,10 +1670,12 @@ export function ProductEditor({
                 key={s.id}
                 role="tab"
                 aria-selected={surfaceId === s.id}
-                disabled={locked || areaEditing}
+                disabled={locked}
                 onClick={() => {
                   if (s.id === surfaceId) return;
                   capture();
+                  setActiveRegionId(null);
+                  s.area = regionsFor(s)[0]?.bounds ?? s.area;
                   void loadSurface(s.id);
                 }}
               >
@@ -1630,14 +1686,14 @@ export function ProductEditor({
                 </span>
               </button>
             ))}
-            {(addablePositions.length > 0 || !specs.length) && (
+            {surfaces.length < 12 && (
               <button
                 className="pe-view-add"
-                disabled={locked || areaEditing}
-                onClick={() => setViewPicker({ mode: "add", position: addablePositions[0] ?? "back" })}
+                disabled={locked}
+                onClick={() => { capture(); setSetupOpen(true); }}
               >
                 <Plus size={18} />
-                <span>Add view</span>
+                <span>Add surface</span>
               </button>
             )}
           </div>
@@ -1674,6 +1730,10 @@ export function ProductEditor({
                 </div>
               </div>
 
+              {current.printRegions && currentRegions.length > 0 && <section className="pe-section"><label className="ps-field">Print in<select className="pe-select" aria-label="Layer print area" value={selected.printRegionId ?? ""} onChange={e => changeSelected(o => {
+                const layer = meta.current.get(o)!;
+                meta.current.set(o, { ...layer, printRegionId: e.target.value || undefined });
+              })}><option value="">All print areas</option>{currentRegions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}</select></label></section>}
               {selected.kind === "text" && (
                 <section className="pe-section">
                   <textarea
@@ -1681,6 +1741,7 @@ export function ProductEditor({
                     rows={2}
                     value={selected.text}
                     onChange={(e) => changeSelected((o) => (o as IText).set({ text: e.target.value }), false)}
+                    onFocus={() => checkpoint()}
                     aria-label="Text"
                   />
                   <div className="pe-row">
@@ -1759,17 +1820,17 @@ export function ProductEditor({
                 <section className="pe-section">
                   <label className="pe-slider">
                     <span>Tile size <b>{Math.round((selected.tile ?? 0.2) * 100)}%</b></span>
-                    <input type="range" min={0.06} max={0.8} step={0.01} defaultValue={selected.tile} onChange={(e) => void updatePattern({ tile: Number(e.target.value) })} />
+                    <input type="range" min={0.06} max={0.8} step={0.01} value={selected.tile} onChange={(e) => void updatePattern({ tile: Number(e.target.value) })} />
                   </label>
                   <label className="pe-slider">
                     <span>Spacing <b>{Math.round((selected.gap ?? 0) * 100)}%</b></span>
-                    <input type="range" min={0} max={0.7} step={0.01} defaultValue={selected.gap} onChange={(e) => void updatePattern({ gap: Number(e.target.value) })} />
+                    <input type="range" min={0} max={0.7} step={0.01} value={selected.gap} onChange={(e) => void updatePattern({ gap: Number(e.target.value) })} />
                   </label>
                   <div className="pe-seg">
                     <button aria-selected={!selected.brick} onClick={() => void updatePattern({ brick: false })}>Grid</button>
                     <button aria-selected={Boolean(selected.brick)} onClick={() => void updatePattern({ brick: true })}>Brick</button>
                   </div>
-                  <p className="pe-muted pe-small">The pattern fills this view’s print area.</p>
+                  <p className="pe-muted pe-small">The pattern fills the chosen print area. Preview shows the final cut shape.</p>
                 </section>
               )}
 
@@ -1839,7 +1900,7 @@ export function ProductEditor({
                   <span>
                     <Blend size={14} /> Opacity <b>{Math.round(selected.opacity * 100)}%</b>
                   </span>
-                  <input type="range" min={0.1} max={1} step={0.01} value={selected.opacity} onChange={(e) => setOpacity(Number(e.target.value))} onPointerUp={() => { checkpoint(); }} />
+                  <input type="range" min={0.1} max={1} step={0.01} value={selected.opacity} onChange={(e) => setOpacity(Number(e.target.value))} onPointerDown={() => { checkpoint(); }} />
                 </label>
               </section>
 
@@ -1891,17 +1952,17 @@ export function ProductEditor({
                     </span>
                   </p>
                 ) : (
-                  <p className="pe-muted">Print size not listed for this view.</p>
+                  <p className="pe-muted">Set optional production dimensions in Product setup.</p>
                 )}
                 <div className="pe-stack">
-                  <button className="pe-btn pe-btn-ghost pe-block" disabled={locked || areaEditing} onClick={startAreaEdit}>
-                    <Crop size={15} /> Adjust print area
+                  <button className="pe-btn pe-btn-ghost pe-block" disabled={locked} onClick={() => { capture(); setSetupOpen(true); }}>
+                    <Crop size={15} /> Edit surfaces & print areas
                   </button>
                   <button className="pe-btn pe-btn-ghost pe-block" disabled={locked} onClick={() => setViewPicker({ mode: "replace", position: current.position ?? "front" })}>
                     <ImageIcon size={15} /> Change photo
                   </button>
                   {current.layers.length > 0 && (
-                    <button className="pe-btn pe-btn-ghost pe-block" disabled={locked} onClick={() => void downloadPrint(current)}>
+                    <button className="pe-btn pe-btn-ghost pe-block" disabled={locked} onClick={() => void downloadPrint(current, currentRegions.find(r => r.id === activeRegionId) ?? currentRegions[0])}>
                       <Download size={15} /> Download print file
                     </button>
                   )}
@@ -1968,13 +2029,12 @@ export function ProductEditor({
                 )}
                 <p className="pe-label">Print files</p>
                 <div className="pe-stack">
-                  {surfaces
-                    .filter((s) => s.layers.length)
-                    .map((s) => (
-                      <button key={s.id} className="pe-btn pe-btn-ghost pe-block" disabled={Boolean(busy)} onClick={() => void downloadPrint(s)}>
-                        <Download size={15} /> {s.name} print file
-                      </button>
-                    ))}
+                  {surfaces.filter(s => s.layers.length).flatMap(s => regionsFor(s).map(r => (
+                    <button key={`${s.id}-${r.id}`} className="pe-btn pe-btn-ghost pe-block" disabled={Boolean(busy)} onClick={() => void downloadPrint(s, r)}>
+                      <Download size={15}/> {s.name} · {r.name}
+                    </button>
+                  )))}
+                  <p className="pe-muted pe-small">Transparent PNGs, up to 6,000 px per side. Set dimensions in Product setup for 300 DPI output.</p>
                 </div>
                 <button className="pe-btn pe-btn-primary pe-block pe-mt" disabled={Boolean(busy)} onClick={() => void save(true)}>
                   Continue to pricing
@@ -1985,6 +2045,20 @@ export function ProductEditor({
         </div>
       )}
 
+      {setupOpen && <ProductSetup surfaces={doc.current.surfaces.map(s => {
+        if (s.printRegions !== undefined) return s;
+        const sp = spec(s);
+        return { ...s, printRegions: regionsFor(s).map(r => ({ ...r, dimensions: sp ? { width: sp.width / DPI, height: sp.height / DPI, unit: "in" as const } : undefined })) };
+      })} initialId={currentId.current} photoFor={photoFor} onClose={() => setSetupOpen(false)} onSave={async (next, newUrls) => {
+        const result = await saveBlankSurfacesAction(blank.id, next.map(({ layers: _layers, ...s }) => s));
+        if (result.error) throw new Error(result.error);
+        Object.assign(urls.current, newUrls);
+        doc.current.surfaces = next;
+        history.current = []; setUndoCount(0); future.current = []; setRedoCount(0);
+        dirty.current = true; setSetupSaved(true); setActiveRegionId(null);
+        setSurfaces([...next]);
+        await loadSurface(next.some(s => s.id === currentId.current) ? currentId.current : next[0].id);
+      }}/>}
       {cropping && (() => {
         const o = editor.current?.getActiveObject();
         const el = o instanceof FabricImage ? (o.getElement() as HTMLImageElement) : null;
@@ -2018,7 +2092,7 @@ export function ProductEditor({
               </div>
             )}
             <p className="pe-muted">Pick a photo that shows this side flat and straight on.</p>
-            {!Object.keys(photoScores).length && (
+            {catalogPhotos.length > 0 && !Object.keys(photoScores).length && (
               <p className="pe-muted pe-small">
                 <Loader2 size={13} className="pe-spin" /> Finding the best photos…
               </p>
