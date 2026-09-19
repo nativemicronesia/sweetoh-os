@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/auth/supabase/server";
+import { getSessionUser } from "@/lib/domains/identity/service";
 
 function redirectLoginError(message: string): never {
   redirect(`/partner/login?error=${encodeURIComponent(message)}`);
@@ -20,6 +21,13 @@ export async function signInAction(formData: FormData): Promise<void> {
 
   if (error) {
     redirectLoginError(error.message);
+  }
+
+  // Only the Sweet'Oh partner may use this login; don't leave anyone else signed in.
+  const session = await getSessionUser().catch(() => null);
+  if (session?.role !== "partner") {
+    await supabase.auth.signOut();
+    redirect("/partner/login?error=partner_only");
   }
 
   redirect("/partner");

@@ -27,18 +27,14 @@ export default async function PartnerLoginPage({
     session = null;
   }
 
-  if (
-    session?.role === "partner" ||
-    session?.role === "owner" ||
-    session?.role === "creator"
-  ) {
+  if (session?.role === "partner") {
     redirect("/partner");
   }
 
   const params = await searchParams;
   const accessError =
     params.error === "partner_only"
-      ? "This account does not have partner access."
+      ? "This login is only for the Sweet’Oh partner."
       : params.error
         ? decodeURIComponent(params.error)
         : null;
