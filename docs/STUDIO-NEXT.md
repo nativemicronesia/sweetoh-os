@@ -16,8 +16,14 @@ Then make the *visualization* ours:
 - realistic 2D mockups the partner and customers trust, and
 - 3D product views customers can spin,
 
-chosen by what actually works for a **local** print shop in Guam and the FSM
-(Micronesia). Don't copy Printify feature for feature.
+chosen by what actually works for a **local** print shop. Don't copy
+Printify feature for feature.
+
+**Where the shop is:** Sweet'Oh Creations is a Micronesian-owned shop that
+prints and fulfills from **Lacey, Washington** today. **Guam and the FSM are
+the next locations in the works.** Build for Lacey now, but don't hard-code a
+single location: production, shipping and (later) per-location stock should
+be able to grow into more than one shop location.
 
 **Research first, then build.** Compare approaches on real products, show
 the owner side-by-side results, pick one, then build it end to end. Don't
@@ -25,7 +31,7 @@ ship a half-integrated experiment.
 
 ## What exists today (don't rebuild it)
 
-Sweet'Oh is a single-partner local POD shop. Only the partner logs in
+Sweet'Oh is a single-partner local POD shop in Lacey, WA. Only the partner logs in
 (`role === "partner"`); the owner uses NMH OS instead of this app.
 
 | Piece | Where | Notes |
@@ -83,9 +89,9 @@ Supabase DB is the only DB, so keep changes additive and nullable.
   them, check licensing).
 - 3D doubles as a 2D mockup generator: render fixed camera angles to PNG
   for the storefront gallery.
-- Watch performance on the partner's devices and customers' phones (the
-  Micronesia connection is often slow): lazy-load 3D, keep 2D as the
-  default.
+- Watch performance on the partner's devices and customers' phones.
+  Many customers are in Micronesia, where connections are often slow, and
+  Guam/FSM are the next locations: lazy-load 3D and keep 2D as the default.
 
 **Decide with evidence:** build a small comparison page (not in the partner
 nav) that renders the same design on 2–3 products through each approach.

@@ -1,7 +1,8 @@
 # Sweet'Oh OS: agent notes
 
-Local print-on-demand shop (Guam / FSM) with a Printify-style partner back
-office. Next.js 16 App Router, Supabase Postgres (Drizzle), Stripe, Fabric.js.
+Micronesian-owned local print-on-demand shop, printing in Lacey, Washington
+today (Guam and the FSM are the next locations in the works), with a
+Printify-style partner back office. Next.js 16 App Router, Supabase Postgres (Drizzle), Stripe, Fabric.js.
 
 **Current mission: read [`docs/STUDIO-NEXT.md`](docs/STUDIO-NEXT.md) first.**
 It explains the intention (our own 2D + 3D mockup engine on top of the
