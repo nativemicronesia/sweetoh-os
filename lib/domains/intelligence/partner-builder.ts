@@ -49,7 +49,7 @@ export async function reservePartnerAi(session: SessionUser, key: string): Promi
 }
 
 function studioReason(key: string) {
-  const prefix = key.split(":")[0];
+  const prefix = key.split(":")[0].replace(/^premium-/, "");
   return ({ art: "AI design", pattern: "AI pattern", edit: "AI edit", bg: "Remove background", "blank-cutout": "Product cutout",
     "blank-screen": "Read product photo", "blank-understand": "Find print areas", blank: "Blank preview" } as Record<string, string>)[prefix] ?? "Product research";
 }

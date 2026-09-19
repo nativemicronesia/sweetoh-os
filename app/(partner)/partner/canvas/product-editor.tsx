@@ -123,6 +123,8 @@ export type EditorPublishApi = {
 type Props = {
   /** "creator" = Create with Sweet'Oh: save + sell panel instead of shop pricing. */
   mode?: "partner" | "creator";
+  /** Name of a reopened saved design. */
+  initialName?: string | null;
   PublishPanel?: React.ComponentType<{ api: EditorPublishApi }>;
   blanks: CanvasBlankOption[];
   designs: CanvasDesignOption[];
@@ -195,6 +197,7 @@ export function ProductEditor({
   surfaceImages = {},
   savedDesigns = [],
   mode = "partner",
+  initialName = null,
   PublishPanel,
 }: Props) {
   const base = mode === "creator" ? { catalog: "/studio/catalog", canvas: "/studio/design" } : { catalog: "/partner/catalog", canvas: "/partner/canvas" };
@@ -246,7 +249,7 @@ export function ProductEditor({
   const [ready, setReady] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState("");
-  const [name, setName] = useState(blank?.name ?? "My product");
+  const [name, setName] = useState(initialName || blank?.name || "My product");
   const [layers, setLayers] = useState<StudioLayer[]>([]);
   const [selected, setSelected] = useState<Selected>(null);
   const [redoCount, setRedoCount] = useState(0);
@@ -1318,12 +1321,16 @@ export function ProductEditor({
   /** Transparent print file for one print area, at 300 DPI when its size is known. */
   async function renderPrint(s: Surface, region = regionsFor(s)[0]): Promise<{ blob: Blob; width: number; height: number } | null> {
     if (!region) return null;
+    // Physical size: the area's own dimensions, else the catalog print area for this view.
+    // (Look it up on the untouched surface — narrowing it to one region first hides the catalog spec.)
+    const sp = region.dimensions
+      ? { width: Math.round(region.dimensions.width * (region.dimensions.unit === "cm" ? DPI / 2.54 : DPI)), height: Math.round(region.dimensions.height * (region.dimensions.unit === "cm" ? DPI / 2.54 : DPI)) }
+      : regionsFor(s).length === 1 ? spec(s) : undefined;
     s = { ...s, area: region.bounds, printRegions: [region] };
     const canvas = new StaticCanvas(document.createElement("canvas"), { width: SIZE, height: SIZE });
     try {
       for (const layer of s.layers.filter(l => !l.hidden)) { const object = await makeLayer(layer); object.clipPath = printClip(s, layer); canvas.add(object); }
       const a = s.area;
-      const sp = spec(s);
       // Bound memory while preserving the requested physical aspect ratio.
       const targetWidth = sp?.width ?? Math.round(a.width * SIZE * 4);
       const targetHeight = sp?.height ?? Math.round(a.height * SIZE * 4);

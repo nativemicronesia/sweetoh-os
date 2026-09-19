@@ -176,13 +176,13 @@ export async function editArtwork(image: Buffer, instruction: string) {
 }
 
 /** New design from a brief, optionally inspired by a reference image, optionally as a seamless tile. */
-export async function generateDesign(input: { brief: string; seamless?: boolean; reference?: Buffer | null }) {
+export async function generateDesign(input: { brief: string; seamless?: boolean; reference?: Buffer | null; premium?: boolean }) {
   const style = input.seamless
     ? "Create a seamless, tileable repeating pattern tile for printing: edges must wrap perfectly left-right and top-bottom, no border, evenly distributed motifs, full-bleed background."
     : "Create standalone print artwork, not a photo of a product or a mockup. Transparent background where appropriate.";
   if (input.reference) {
     const result = await client().images.edit({
-      model: imageModel(),
+      model: imageModel(Boolean(input.premium)),
       image: await toFile(input.reference, "reference.png", { type: "image/png" }),
       prompt: `${style} Use the attached image only as inspiration for mood, palette and motifs; create an original design, do not copy logos or text from it. Brief: ${input.brief}`,
       background: input.seamless ? "opaque" : "auto",
@@ -195,7 +195,7 @@ export async function generateDesign(input: { brief: string; seamless?: boolean;
     return Buffer.from(data, "base64");
   }
   const result = await client().images.generate({
-    model: imageModel(),
+    model: imageModel(Boolean(input.premium)),
     prompt: `${style} Brief: ${input.brief}`,
     background: input.seamless ? "opaque" : "transparent",
     size: "1024x1024",

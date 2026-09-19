@@ -20,10 +20,11 @@ export function Mascot() {
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-label={open ? "Close Sweet'Oh AI" : "Ask Sweet'Oh AI"}
-        className="flex h-11 w-11 items-center justify-center transition-transform hover:scale-105 active:scale-95"
-        style={{ background: "var(--so-gold)", color: "var(--so-ink)" }}
+        className="flex items-center gap-2 rounded-full py-1.5 pl-1.5 pr-4 text-sm font-semibold text-white shadow-lg transition-transform hover:scale-105 active:scale-95"
+        style={{ background: "linear-gradient(135deg, #133f28, #2e8b4f)", boxShadow: "0 10px 30px rgba(19,63,40,.35)" }}
       >
-        <MascotCharacter size={28} />
+        <MascotCharacter size={34} />
+        {open ? "Close" : "Ask Skink"}
       </button>
     </div>
   );

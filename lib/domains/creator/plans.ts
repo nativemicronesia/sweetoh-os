@@ -92,6 +92,7 @@ export function planFor(id: string | null | undefined): Plan {
 /** Credits charged for Studio AI actions (images are priced per action, not per token). */
 export const ACTION_CREDITS = {
   design: 5,
+  premiumDesign: 5,
   pattern: 5,
   edit: 5,
   cutout: 5,
@@ -102,6 +103,7 @@ export const ACTION_CREDITS = {
 
 export function actionCreditsForKey(key: string): number {
   const prefix = key.split(":")[0];
+  if (prefix.startsWith("premium-")) return ACTION_CREDITS.premiumDesign;
   if (prefix === "art") return ACTION_CREDITS.design;
   if (prefix === "pattern") return ACTION_CREDITS.pattern;
   if (prefix === "edit") return ACTION_CREDITS.edit;

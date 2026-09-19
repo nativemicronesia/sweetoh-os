@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { LayoutGrid } from "lucide-react";
 import { requireCreator } from "@/lib/domains/identity/service";
-import { getAssetSignedUrl } from "@/lib/domains/assets/service";
+import { getAssetById, getAssetSignedUrl } from "@/lib/domains/assets/service";
 import { listPartnerCatalog } from "@/lib/domains/catalog/partner-catalog";
 import { getSavedComposition, listPartnerLibraryDesigns } from "@/lib/domains/catalog/partner-design-library";
 import { getCreatorProfile, getCreditBalance } from "@/lib/domains/creator/credits";
@@ -17,10 +17,11 @@ type PageProps = { searchParams: Promise<{ design?: string; blank?: string; comp
 export default async function CreatorDesignPage({ searchParams }: PageProps) {
   const session = await requireCreator();
   const query = await searchParams;
-  const [blanks, designs, savedComposition, profile, { plan }, accepting] = await Promise.all([
+  const [blanks, designs, savedComposition, savedName, profile, { plan }, accepting] = await Promise.all([
     listPartnerCatalog(session).then((rows) => rows.filter((b) => Boolean(b.imageUrl))),
     listPartnerLibraryDesigns(session.ventureId),
     query.composition ? getSavedComposition({ ventureId: session.ventureId, assetId: query.composition }).catch(() => null) : Promise.resolve(null),
+    query.composition ? getAssetById({ ventureId: session.ventureId, assetId: query.composition }).then((a) => a.name).catch(() => null) : Promise.resolve(null),
     getCreatorProfile(session.appUser.id),
     getCreditBalance(session.appUser.id),
     isAcceptingRequests().catch(() => false),
@@ -60,6 +61,7 @@ export default async function CreatorDesignPage({ searchParams }: PageProps) {
       {query.error && <p className="cs-alert" role="alert" style={{ position: "fixed", top: 72, left: "50%", transform: "translateX(-50%)", zIndex: 60 }}>{query.error}</p>}
       <CreatorEditor
         publish={{ printifyShop: profile?.printifyShopId ? profile.printifyShopTitle ?? "your Printify shop" : null, acceptingRequests: accepting, canRequestPrint: plan.id !== "free", planName: plan.name }}
+        initialName={savedComposition ? savedName : null}
         initialStudio={savedComposition?.studio}
         surfaceImages={surfaceImages}
         blanks={blanks}

@@ -18,6 +18,7 @@ import type { ProductCategory } from "@/lib/domains/catalog/categories";
 import { areaSchema } from "@/lib/domains/catalog/studio-layout";
 import { colorHex, sortSizes, defaultUpcharges, type VariantColor } from "@/lib/domains/catalog/variants";
 import { assertBuilderRole, reservePartnerAi } from "@/lib/domains/intelligence/partner-builder";
+import { getCreditBalance } from "@/lib/domains/creator/credits";
 import { persistDraftProduct } from "@/lib/domains/intelligence/service";
 import type { BuilderRecord } from "@/lib/domains/intelligence/product-research-schema";
 import {
@@ -377,8 +378,10 @@ export async function generateDesign(
   const brief = input.brief.trim().slice(0, 2000);
   if (brief.length < 8) throw new ValidationError("Describe the design in a few more words.");
   const reference = input.referenceAssetId ? await normalize((await assetBytes(session, input.referenceAssetId)).bytes) : null;
-  const refund = await reservePartnerAi(session, `${input.seamless ? "pattern" : "art"}:${brief}:${input.referenceAssetId ?? ""}`);
-  const png = await aiGenerateDesign({ brief, seamless: input.seamless, reference }).catch(async (error) => { await refund(); throw error; });
+  // Pro creators get the premium image model (same raw cost, so same credits).
+  const premium = session.role === "creator" && (await getCreditBalance(session.appUser.id)).plan.id === "pro";
+  const refund = await reservePartnerAi(session, `${premium ? "premium-" : ""}${input.seamless ? "pattern" : "art"}:${brief}:${input.referenceAssetId ?? ""}`);
+  const png = await aiGenerateDesign({ brief, seamless: input.seamless, reference, premium }).catch(async (error) => { await refund(); throw error; });
   return saveDesign(session, brief.slice(0, 100), png, `${input.seamless ? "AI seamless pattern" : "AI design"}. Brief: ${brief}`);
 }
 

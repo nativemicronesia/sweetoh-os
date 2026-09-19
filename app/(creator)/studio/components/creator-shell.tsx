@@ -85,7 +85,7 @@ export function CreatorShell({
 
   // The design editor is full-screen, like Printify's.
   if (path.startsWith("/studio/design") && !path.startsWith("/studio/designs")) {
-    return <div className="cs sweetoh-studio">{children}</div>;
+    return <div className="cs sweetoh-studio pf-root">{children}</div>;
   }
 
   const pct = Math.max(3, Math.min(100, (balance / Math.max(1, monthlyCredits)) * 100));

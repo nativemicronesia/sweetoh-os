@@ -35,6 +35,7 @@ export function makePublishPanel(ctx: PublishContext) {
     const [busy, setBusy] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [done, setDone] = useState<string | null>(null);
+    const [saved, setSavedMsg] = useState<string | null>(null);
     const [title, setTitle] = useState(api.name);
     const [description, setDescription] = useState("");
     const [price, setPrice] = useState("29.99");
@@ -114,7 +115,7 @@ export function makePublishPanel(ctx: PublishContext) {
           a.click();
           setTimeout(() => URL.revokeObjectURL(a.href), 10_000);
         }
-        setDone(`${files.length} print ${files.length === 1 ? "file" : "files"} downloaded — transparent PNGs ready for Printify, Printful or any printer.`);
+        setSavedMsg(`${files.length} print ${files.length === 1 ? "file" : "files"} downloaded — transparent PNGs ready for Printify, Printful or any printer.`);
       });
 
     const total = Object.values(qty).reduce((a, b) => a + (b || 0), 0);
@@ -147,7 +148,7 @@ export function makePublishPanel(ctx: PublishContext) {
                   ["sweetoh", Printer, "Print with Sweet'Oh"],
                   ["files", Download, "Download files"],
                 ] as const).map(([id, Icon, label]) => (
-                  <button key={id} role="tab" aria-selected={tab === id} onClick={() => { setTab(id); setError(null); }} className="pe-btn pe-btn-ghost" style={{ flexDirection: "column", height: "auto", padding: "12px 8px", gap: 6, borderWidth: tab === id ? 2 : 1, borderColor: tab === id ? "#2e8b4f" : undefined }}>
+                  <button key={id} role="tab" aria-selected={tab === id} onClick={() => { setTab(id); setError(null); setSavedMsg(null); }} className="pe-btn pe-btn-ghost" style={{ flexDirection: "column", height: "auto", padding: "12px 8px", gap: 6, borderWidth: tab === id ? 2 : 1, borderColor: tab === id ? "#2e8b4f" : undefined }}>
                     <Icon size={20} />
                     <span style={{ fontSize: 13 }}>{label}</span>
                   </button>
@@ -232,6 +233,7 @@ export function makePublishPanel(ctx: PublishContext) {
                   <button className="pe-btn pe-btn-primary pe-block" disabled={Boolean(busy)} onClick={download}>
                     {busy ? <><Loader2 size={16} className="pe-spin" /> {busy}</> : <><Download size={16} /> Download print files</>}
                   </button>
+                  {saved && <p role="status" style={{ marginTop: 12, padding: "10px 12px", borderRadius: 10, background: "#e6f3e2", color: "#133f28", fontSize: 14 }}><CheckCircle2 size={15} style={{ verticalAlign: -3 }} /> {saved}</p>}
                 </div>
               )}
 

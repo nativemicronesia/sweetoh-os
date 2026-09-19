@@ -23,10 +23,28 @@
   font-size: 15px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  /* The shared editor, catalog and product pages read the partner-frame tokens. */
+  --pf-bg: #f6f7f9;
+  --pf-card: #fff;
+  --pf-border: #e4e7ec;
+  --pf-text: #101828;
+  --pf-muted: #667085;
+  --pf-primary: #1f7048;
+  --pf-primary-hover: #185c3b;
+  --pf-primary-soft: #e9f5ee;
+  --pf-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --primary: var(--pf-primary);
+  --border: var(--pf-border);
+  --input: var(--pf-border);
+  --muted-foreground: var(--pf-muted);
+  --foreground: var(--pf-text);
+  --font-partner: var(--font-body);
 }
+.cs .sweetoh-studio { --so-gold: var(--pf-primary); --so-cream: var(--pf-text); --so-cream-dim: var(--pf-muted); --so-border: var(--pf-border); --so-dark: #fff; --so-surface: var(--pf-primary-soft); font-family: var(--font-body); }
+.cs.sweetoh-studio.pf-root { font-family: var(--font-body); }
 .cs *:focus-visible { outline: 3px solid color-mix(in srgb, var(--cs-green) 55%, white); outline-offset: 2px; border-radius: 8px; }
 .cs h1, .cs h2, .cs h3, .cs .cs-display { font-family: var(--font-display); letter-spacing: -0.02em; color: var(--cs-ink); }
-.cs a { color: inherit; }
+:where(.cs) a { color: inherit; }
 
 /* ---------- Shell ---------- */
 .cs-shell { display: grid; grid-template-columns: 256px minmax(0, 1fr); min-height: 100dvh; }

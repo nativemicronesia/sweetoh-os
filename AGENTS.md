@@ -8,9 +8,13 @@ Printify-style partner back office. Next.js 16 App Router, Supabase Postgres (Dr
 It explains the intention (our own 2D + 3D mockup engine on top of the
 Printify-style editor), what already exists, the rules, and how to verify.
 
+**Create with Sweet'Oh** (creators, Skink AI, plans/credits): see
+[`docs/CREATE-WITH-SWEETOH.md`](docs/CREATE-WITH-SWEETOH.md).
+
 Quick rules:
-- Printify = catalog data only (`catalog.read`). Never orders or fulfillment.
-- `/partner` is for the Sweet'Oh partner only.
+- Sweet'Oh's own Printify token = catalog data only (`catalog.read`). Never orders or fulfillment.
+  Creators connect their OWN Printify token; Sweet'Oh only creates products in their shop with it.
+- `/partner` is for the Sweet'Oh partner only. Creators live in `/studio`, each in their own workspace (venture).
 - Migrations are hand-written SQL in `drizzle/` plus a journal entry, and
   must stay additive. The live DB is the only DB.
 - Verify with typecheck, `npx tsx --test scripts/*.test.ts`, a build, and a

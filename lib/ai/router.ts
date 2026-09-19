@@ -64,7 +64,7 @@ function client(baseURL: string | undefined, apiKey: string) {
   const id = `${baseURL ?? "openai"}:${apiKey.slice(-6)}`;
   let c = clients.get(id);
   if (!c) {
-    c = new OpenAI({ apiKey, baseURL, maxRetries: 1, timeout: 90_000 });
+    c = new OpenAI({ apiKey, baseURL, maxRetries: 2, timeout: 90_000 });
     clients.set(id, c);
   }
   return c;
@@ -99,9 +99,12 @@ export function resolveModel(job: AiJob, level: AiLevel): ResolvedModel {
 }
 
 /** Raw provider cost → credits (1 credit ≈ $0.01). */
-export function creditsForUsage(route: Route, usage: { prompt_tokens?: number; completion_tokens?: number } | undefined | null) {
+export function creditsForUsage(route: Route, usage: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number } | undefined | null) {
   if (!usage) return 0.05;
-  const dollars = ((usage.prompt_tokens ?? 0) * route.inPerM + (usage.completion_tokens ?? 0) * route.outPerM) / 1_000_000;
+  const input = usage.prompt_tokens ?? 0;
+  // Hidden "thinking" tokens are billed as output; some providers only count them in total_tokens.
+  const output = Math.max(usage.completion_tokens ?? 0, (usage.total_tokens ?? 0) - input);
+  const dollars = (input * route.inPerM + output * route.outPerM) / 1_000_000;
   return Math.max(0.01, Math.round(dollars * 100 * 1000) / 1000);
 }
 

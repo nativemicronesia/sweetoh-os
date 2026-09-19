@@ -143,18 +143,35 @@ class Meter {
   }
 }
 
+/** Provider-specific knobs: Gemini 3 thinks by default and can spend the whole budget before answering. */
+function jobParams(resolved: ResolvedModel) {
+  return resolved.route.provider === "gemini" && resolved.level !== "deep" ? { reasoning_effort: "low" as const } : {};
+}
+
 async function delegate(job: AiJob, level: AiLevel, system: string, prompt: string, meter: Meter) {
+  const call = async (resolved: ResolvedModel) => {
+    const res = await resolved.client.chat.completions.create({
+      model: resolved.model,
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: prompt },
+      ],
+      ...tokenLimit(resolved, level === "deep" ? 4000 : 1800),
+      ...jobParams(resolved),
+    });
+    meter.add(resolved, res.usage);
+    return res.choices[0]?.message?.content?.trim() || "";
+  };
   const resolved = resolveModel(job, level);
-  const res = await resolved.client.chat.completions.create({
-    model: resolved.model,
-    messages: [
-      { role: "system", content: system },
-      { role: "user", content: prompt },
-    ],
-    ...tokenLimit(resolved, level === "deep" ? 4000 : 1800),
-  });
-  meter.add(resolved, res.usage);
-  return res.choices[0]?.message?.content?.trim() || "No answer came back.";
+  try {
+    const answer = await call(resolved);
+    if (answer) return answer;
+  } catch (error) {
+    // e.g. an unfunded provider account or an outage: keep Skink answering on the chat model.
+    console.error("skink_delegate_fallback", { job, level, provider: resolved.route.provider, status: (error as { status?: number })?.status });
+    if (resolved.route.provider === "openai") throw error;
+  }
+  return (await call(resolveModel("chat", "light"))) || "No answer came back.";
 }
 
 async function runTool(

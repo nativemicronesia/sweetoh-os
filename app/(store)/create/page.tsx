@@ -74,7 +74,7 @@ export default async function CreateWithSweetOhPage() {
             <p className="cs-eyebrow">Create with Sweet&apos;Oh</p>
             <h1 className="cw-title">Start your print-on-demand brand — with an AI that teaches you.</h1>
             <p className="cw-lead">
-              Sweet&apos;Oh Studio gives you real products to design, pro design tools, and <strong>Skink</strong> — a creative director who teaches you the business, researches your niche and remembers your brand. When it&apos;s ready, send it to your own store.
+              Sweet&apos;Oh Studio gives you real products to design, pro design tools, and <strong>Skink</strong>{" "}— a creative director who teaches you the business, researches your niche and remembers your brand. When it&apos;s ready, send it to your own store.
             </p>
             <div className="cs-row" style={{ marginTop: 26 }}>
               <Link href="/studio/join" className="cs-btn cs-btn-primary cs-btn-lg">Start free <ArrowRight size={18} /></Link>

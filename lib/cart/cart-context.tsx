@@ -25,6 +25,8 @@ function loadItems(): CartLineItem[] {
   }
 }
 
+const EMPTY_CART: CartLineItem[] = [];
+
 function createCartStore() {
   let items = loadItems();
   const listeners = new Set<Listener>();
@@ -45,7 +47,8 @@ function createCartStore() {
       return items;
     },
     getServerSnapshot(): CartLineItem[] {
-      return [];
+      // Must be the same reference every call, or React loops re-rendering.
+      return EMPTY_CART;
     },
     addItem(item: Omit<CartLineItem, "quantity" | "lineId">, quantity = 1) {
       const lineId = cartLineId(item.productId, item.color, item.size);
