@@ -36,12 +36,41 @@ const placement = {
   scaleX: z.number().positive().max(100),
   scaleY: z.number().positive().max(100),
   angle: z.number().finite().min(-360).max(360),
+  opacity: z.number().min(0).max(1).optional(),
+  flipX: z.boolean().optional(),
+  flipY: z.boolean().optional(),
 };
+const hexColor = z.string().regex(/^#[0-9a-f]{6}$/i);
+export const SHAPE_KINDS = ["rect", "rounded", "circle", "triangle", "star", "heart", "line"] as const;
 export const layerSchema = z.discriminatedUnion("kind", [
   z.object({
     ...placement,
     kind: z.literal("image"),
     assetId: z.string().uuid(),
+    /** Crop window in the source image's pixels. */
+    crop: z
+      .object({ x: z.number().min(0), y: z.number().min(0), width: z.number().positive(), height: z.number().positive() })
+      .optional(),
+  }),
+  z.object({
+    ...placement,
+    kind: z.literal("shape"),
+    shape: z.enum(SHAPE_KINDS),
+    fill: hexColor,
+    width: z.number().positive().max(2000),
+    height: z.number().positive().max(2000),
+  }),
+  z.object({
+    ...placement,
+    kind: z.literal("pattern"),
+    assetId: z.string().uuid(),
+    /** Tile width as a fraction of the print area width. */
+    tile: z.number().min(0.03).max(1),
+    /** Space between motifs as a fraction of the tile. */
+    gap: z.number().min(0).max(0.9),
+    brick: z.boolean(),
+    width: z.number().positive().max(2000),
+    height: z.number().positive().max(2000),
   }),
   z.object({
     ...placement,

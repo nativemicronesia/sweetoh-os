@@ -183,6 +183,31 @@ function cleanBackdrop(d: Uint8ClampedArray, mask: Uint8Array, w: number, h: num
   }
 }
 
+/** Recolour an already cut-out product by shading, then sit it on the studio backdrop. */
+function tintCutout(d: Uint8ClampedArray, hex: string) {
+  const lums: number[] = [];
+  for (let p = 0; p < d.length; p += 16) if (d[p + 3] > 200) lums.push(0.299 * d[p] + 0.587 * d[p + 1] + 0.114 * d[p + 2]);
+  lums.sort((a, b) => a - b);
+  const ref = lums[Math.floor(lums.length * 0.9)] || 255;
+  const white = /^#f[a-f0-9]f[a-f0-9]f[a-f0-9]$/i.test(hex);
+  const [tr, tg, tb] = hexRgb(hex);
+  for (let p = 0; p < d.length; p += 4) {
+    const a = d[p + 3] / 255;
+    if (a > 0 && !white) {
+      const l = 0.299 * d[p] + 0.587 * d[p + 1] + 0.114 * d[p + 2];
+      const k = Math.min(1.15, l / ref);
+      const lift = (1 - k) * 18;
+      d[p] = Math.min(255, tr * k + (tr < 40 ? lift : 0));
+      d[p + 1] = Math.min(255, tg * k + (tg < 40 ? lift : 0));
+      d[p + 2] = Math.min(255, tb * k + (tb < 40 ? lift : 0));
+    }
+    d[p] = d[p] * a + BACKDROP[0] * (1 - a);
+    d[p + 1] = d[p + 1] * a + BACKDROP[1] * (1 - a);
+    d[p + 2] = d[p + 2] * a + BACKDROP[2] * (1 - a);
+    d[p + 3] = 255;
+  }
+}
+
 export async function tintGarment(
   src: string,
   hex: string,
@@ -199,6 +224,14 @@ export async function tintGarment(
   if (!ctx) return null;
   ctx.drawImage(img, 0, 0, w, h);
   const image = ctx.getImageData(0, 0, w, h);
+  // Cutouts (the partner's own products) already know their outline: use it.
+  let clear = 0;
+  for (let p = 3; p < image.data.length; p += 16) if (image.data[p] < 16) clear++;
+  if (clear / ((w * h) / 4) > 0.05) {
+    tintCutout(image.data, hex);
+    ctx.putImageData(image, 0, 0);
+    return { url: canvas.toDataURL("image/jpeg", 0.9), coverage: 1 - clear / ((w * h) / 4) };
+  }
   const found = garmentMask(
     image.data,
     w,

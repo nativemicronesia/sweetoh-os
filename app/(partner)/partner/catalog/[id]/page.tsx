@@ -43,7 +43,7 @@ export default async function CatalogProductPage({ params, searchParams }: { par
         <div className="catalog-provider"><MapPin size={20} /><div><strong>Sweet’Oh · Local production</strong><p>Printed and fulfilled by your shop.</p></div></div>
         <dl className="catalog-specs"><div><dt>Print areas</dt><dd>{item.printArea?.surfaces?.map(s => s.name).join(", ") || "Front"}</dd></div><div><dt>Artwork</dt><dd>Upload, artwork library, or text</dd></div><div><dt>Selling price</dt><dd>Set your price after designing</dd></div></dl>
         {item.imageUrl ? <Link className={buttonVariants({ size: "lg" })} href={`/partner/canvas?blank=${item.id}`}>Start designing <ArrowRight size={16} /></Link>
-          : <div className="space-y-3"><p className="text-sm text-muted-foreground">Add a photo of your local blank to prepare this product for designing.</p><Link className={buttonVariants({ size: "lg" })} href="/partner/catalog?add=1#new-blank">Add product photo</Link></div>}
+          : <div className="space-y-3"><p className="text-sm text-muted-foreground">Add a photo of your local blank to prepare this product for designing.</p><Link className={buttonVariants({ size: "lg" })} href="/partner/catalog/new">Add product photo</Link></div>}
       </div>
     </section>
   </div>;

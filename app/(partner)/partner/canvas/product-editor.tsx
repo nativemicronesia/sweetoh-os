@@ -18,6 +18,16 @@ import {
   AlignStartHorizontal,
   AlignStartVertical,
   ArrowLeft,
+  Blend,
+  Eraser,
+  FlipHorizontal2,
+  FlipVertical2,
+  FolderOpen,
+  Grid3x3,
+  Lightbulb,
+  Scissors,
+  Shapes,
+  WandSparkles,
   ArrowDown,
   ArrowUp,
   Bold,
@@ -57,6 +67,17 @@ import {
 import type { CatalogSource, VariantOptions } from "@/lib/domains/catalog/variants";
 import { analyzePhoto, printAreaInBox, tintGarment } from "@/lib/studio/tint";
 import { PRODUCT_FONTS, ensureFont, fontFamily } from "@/lib/studio/fonts";
+import { SHAPES, makeShape, type ShapeKind } from "@/lib/studio/shapes";
+import { makePatternRect } from "@/lib/studio/pattern";
+import { getMockupRenderer } from "@/lib/studio/mockup";
+import {
+  addInspirationAction,
+  editDesignAction,
+  generateDesignAction,
+  listInspirationAction,
+  removeBackgroundAction,
+} from "../actions/capabilities";
+import { CropDialog, type CropPixels } from "./crop-dialog";
 
 type Area = StudioSurface["area"];
 type Surface = StudioLayout["surfaces"][number];
@@ -76,6 +97,7 @@ export type CanvasBlankOption = {
   catalogSource?: CatalogSource | null;
 };
 export type CanvasDesignOption = { id: string; name: string; previewUrl: string | null };
+export type SavedDesignOption = { id: string; name: string; previewUrl: string | null };
 type Props = {
   blanks: CanvasBlankOption[];
   designs: CanvasDesignOption[];
@@ -84,12 +106,22 @@ type Props = {
   initialTransform?: LegacyTransform | null;
   initialStudio?: StudioLayout | null;
   surfaceImages?: Record<string, string>;
+  savedDesigns?: SavedDesignOption[];
 };
 type Selected =
   | null
   | {
-      kind: "image" | "text";
+      kind: "image" | "text" | "shape" | "pattern";
       name: string;
+      opacity: number;
+      flipX: boolean;
+      flipY: boolean;
+      assetId?: string;
+      fill?: string;
+      tile?: number;
+      gap?: number;
+      brick?: boolean;
+      cropped?: boolean;
       left: number;
       top: number;
       width: number;
@@ -102,7 +134,8 @@ type Selected =
       color?: string;
       bold?: boolean;
     };
-type Panel = "files" | "text" | "ai" | "layers" | null;
+type Panel = "files" | "text" | "shapes" | "ai" | "inspiration" | "layers" | null;
+type InspirationItem = { id: string; name: string; previewUrl: string };
 type Mockup = { color: string; hex: string; url: string };
 type PreviewData = { views: { name: string; url: string }[]; colors: Mockup[] };
 
@@ -134,6 +167,7 @@ export function ProductEditor({
   initialTransform,
   initialStudio,
   surfaceImages = {},
+  savedDesigns = [],
 }: Props) {
   const blank = blanks.find((b) => b.id === initialBlankId) ?? blanks[0];
   const colors = blank?.variantOptions?.colors ?? [];
@@ -192,6 +226,12 @@ export function ProductEditor({
   const [preview, setPreview] = useState<PreviewData | null>(null);
   const [previewPick, setPreviewPick] = useState<{ kind: "view" | "color"; index: number }>({ kind: "view", index: 0 });
   const [viewThumbs, setViewThumbs] = useState<Record<string, string>>({});
+  const [inspiration, setInspiration] = useState<InspirationItem[] | null>(null);
+  const [reference, setReference] = useState<InspirationItem | null>(null);
+  const [aiMode, setAiMode] = useState<"design" | "pattern">("design");
+  const [editPrompt, setEditPrompt] = useState("");
+  const [cropping, setCropping] = useState<{ src: string; initial?: CropPixels } | null>(null);
+  const inspirationInput = useRef<HTMLInputElement>(null);
   const [photoScores, setPhotoScores] = useState<Record<string, number>>({});
   const [viewPicker, setViewPicker] = useState<{ mode: "add" | "replace"; position: string } | null>(null);
 
@@ -224,6 +264,9 @@ export function ProductEditor({
           scaleX: o.scaleX,
           scaleY: o.scaleY,
           angle: o.angle,
+          opacity: o.opacity < 1 ? round(o.opacity, 3) : undefined,
+          flipX: o.flipX || undefined,
+          flipY: o.flipY || undefined,
           ...(o instanceof IText
             ? {
                 text: o.text,
@@ -232,6 +275,7 @@ export function ProductEditor({
                 bold: o.fontWeight === "bold" || o.fontWeight === 700,
               }
             : {}),
+          ...(base.kind === "shape" && typeof o.fill === "string" ? { fill: o.fill } : {}),
         } as StudioLayer;
       });
     setLayers([...s.layers]);
@@ -271,15 +315,25 @@ export function ProductEditor({
     const unit = ipp ?? 1 / (a.width * SIZE) * 100; // inches, or % of print width
     const br = o.getBoundingRect();
     const text = o instanceof IText;
+    const assetId = base.kind === "image" || base.kind === "pattern" ? base.assetId : undefined;
     setSelected({
-      kind: text ? "text" : "image",
-      name: text ? (o as IText).text.slice(0, 40) : (library.find((d) => base.kind === "image" && d.id === base.assetId)?.name ?? "Artwork"),
+      kind: base.kind,
+      name: text ? (o as IText).text.slice(0, 40) : (library.find((d) => d.id === assetId)?.name ?? (base.kind === "shape" ? "Shape" : "Artwork")),
+      opacity: o.opacity,
+      flipX: o.flipX,
+      flipY: o.flipY,
+      assetId,
+      fill: base.kind === "shape" && typeof o.fill === "string" ? o.fill : undefined,
+      tile: base.kind === "pattern" ? base.tile : undefined,
+      gap: base.kind === "pattern" ? base.gap : undefined,
+      brick: base.kind === "pattern" ? base.brick : undefined,
+      cropped: base.kind === "image" && Boolean(base.crop),
       left: round((br.left - a.x * SIZE) * unit),
       top: round((br.top - a.y * SIZE) * unit),
       width: round(o.getScaledWidth() * unit),
       height: round(o.getScaledHeight() * unit),
       angle: Math.round(o.angle),
-      dpi: !text && ipp ? Math.round(1 / (o.scaleX * ipp)) : null,
+      dpi: base.kind === "image" && ipp ? Math.round(1 / (o.scaleX * ipp)) : null,
       ...(text
         ? {
             text: (o as IText).text,
@@ -296,6 +350,12 @@ export function ProductEditor({
     let obj: FabricObject;
     if (layer.kind === "image") {
       obj = await FabricImage.fromURL(urls.current[layer.assetId], { crossOrigin: "anonymous" });
+      if (layer.crop) obj.set({ cropX: layer.crop.x, cropY: layer.crop.y, width: layer.crop.width, height: layer.crop.height });
+    } else if (layer.kind === "shape") {
+      obj = makeShape(layer.shape, layer.width, layer.height, layer.fill);
+    } else if (layer.kind === "pattern") {
+      obj = await makePatternRect(urls.current[layer.assetId], layer);
+      obj.set({ lockMovementX: true, lockMovementY: true, lockScalingX: true, lockScalingY: true, lockRotation: true, hasControls: false });
     } else {
       const bold = layer.bold ?? true;
       await ensureFont(layer.font, bold);
@@ -312,6 +372,9 @@ export function ProductEditor({
       scaleX: layer.scaleX,
       scaleY: layer.scaleY,
       angle: layer.angle,
+      opacity: layer.opacity ?? 1,
+      flipX: layer.flipX ?? false,
+      flipY: layer.flipY ?? false,
       cornerColor: "#ffffff",
       cornerStrokeColor: INK,
       cornerStyle: "circle",
@@ -776,6 +839,206 @@ export function ProductEditor({
     readSelection();
     editor.current!.requestRenderAll();
   }
+  /* ---------- Canva-style tools ---------- */
+
+  async function addShape(kind: ShapeKind) {
+    if (locked) return;
+    checkpoint();
+    const def = SHAPES.find((x) => x.kind === kind)!;
+    const a = surface().area;
+    const layer: StudioLayer = {
+      id: crypto.randomUUID(),
+      kind: "shape",
+      shape: kind,
+      fill: isWhite(colorRef.current) ? "#1f7048" : "#ffffff",
+      width: def.w,
+      height: def.h,
+      x: a.x * SIZE + (a.width * SIZE - def.w) / 2,
+      y: a.y * SIZE + (a.height * SIZE - def.h) / 3,
+      scaleX: 1,
+      scaleY: 1,
+      angle: 0,
+    };
+    const obj = await makeLayer(layer);
+    const maxW = a.width * SIZE * 0.8;
+    if (obj.getScaledWidth() > maxW) obj.scale(maxW / obj.width);
+    editor.current!.add(obj);
+    alignSelected("hcenter", obj);
+    bringGuideToTop();
+    editor.current!.setActiveObject(obj);
+    capture();
+    readSelection();
+    editor.current!.requestRenderAll();
+  }
+  function setFill(hex: string, record = true) {
+    changeSelected((o) => o.set({ fill: hex }), record);
+  }
+  function setOpacity(v: number) {
+    changeSelected((o) => o.set({ opacity: v }), false);
+  }
+  function flip(axis: "x" | "y") {
+    changeSelected((o) => o.set(axis === "x" ? { flipX: !o.flipX } : { flipY: !o.flipY }));
+  }
+  function openCrop() {
+    const o = editor.current?.getActiveObject();
+    const base = o && meta.current.get(o);
+    if (!(o instanceof FabricImage) || base?.kind !== "image") return;
+    setCropping({ src: urls.current[base.assetId], initial: base.crop });
+  }
+  function applyCrop(px: CropPixels | null) {
+    changeSelected((o) => {
+      const img = o as FabricImage;
+      const base = meta.current.get(o);
+      if (base?.kind !== "image") return;
+      const el = img.getElement() as HTMLImageElement;
+      const window = px ?? { x: 0, y: 0, width: el.naturalWidth, height: el.naturalHeight };
+      const shown = img.getScaledWidth();
+      img.set({ cropX: window.x, cropY: window.y, width: window.width, height: window.height });
+      img.scale(shown / window.width);
+      meta.current.set(o, { ...base, crop: px ?? undefined });
+    });
+    setCropping(null);
+  }
+  /** Swap the selected artwork for a new file, keeping its size and place. */
+  async function replaceArtwork(assetId: string, url: string, name: string) {
+    urls.current[assetId] = url;
+    setLibrary((items) => [{ id: assetId, name, previewUrl: url }, ...items]);
+    const o = editor.current?.getActiveObject();
+    const base = o && meta.current.get(o);
+    if (!(o instanceof FabricImage) || base?.kind !== "image") return;
+    checkpoint();
+    const shown = o.getScaledWidth();
+    await o.setSrc(url, { crossOrigin: "anonymous" });
+    o.set({ cropX: 0, cropY: 0 });
+    o.scale(shown / o.width);
+    meta.current.set(o, { ...base, assetId, crop: undefined });
+    o.setCoords();
+    capture();
+    readSelection();
+    editor.current!.requestRenderAll();
+  }
+  async function removeBg() {
+    if (!selected?.assetId) return;
+    setBusy("Removing background…");
+    setError("");
+    try {
+      const r = await removeBackgroundAction(selected.assetId);
+      if (!r.ok) throw new Error(r.error);
+      await replaceArtwork(r.assetId, r.previewUrl, r.name);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn’t remove the background.");
+    } finally {
+      setBusy(null);
+    }
+  }
+  async function aiEdit() {
+    if (!selected?.assetId || editPrompt.trim().length < 4) return;
+    setBusy("Editing with AI…");
+    setError("");
+    try {
+      const r = await editDesignAction(selected.assetId, editPrompt);
+      if (!r.ok) throw new Error(r.error);
+      await replaceArtwork(r.assetId, r.previewUrl, r.name);
+      setEditPrompt("");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn’t edit this design.");
+    } finally {
+      setBusy(null);
+    }
+  }
+  /** Fill the print area with a repeat of one motif (the selected artwork, or a file). */
+  async function makePattern(assetId?: string) {
+    const o = editor.current?.getActiveObject();
+    const base = o && meta.current.get(o);
+    const source = assetId ?? (base?.kind === "image" ? base.assetId : undefined);
+    if (!source || locked) return;
+    checkpoint();
+    const a = surface().area;
+    const layer: StudioLayer = {
+      id: crypto.randomUUID(),
+      kind: "pattern",
+      assetId: source,
+      tile: 0.22,
+      gap: 0.15,
+      brick: true,
+      width: a.width * SIZE,
+      height: a.height * SIZE,
+      x: a.x * SIZE,
+      y: a.y * SIZE,
+      scaleX: 1,
+      scaleY: 1,
+      angle: 0,
+    };
+    setBusy("Creating pattern…");
+    try {
+      const obj = await makeLayer(layer);
+      if (o && base?.kind === "image" && !assetId) editor.current!.remove(o);
+      editor.current!.add(obj);
+      editor.current!.sendObjectToBack(obj);
+      bringGuideToTop();
+      editor.current!.setActiveObject(obj);
+      capture();
+      readSelection();
+      editor.current!.requestRenderAll();
+    } finally {
+      setBusy(null);
+    }
+  }
+  /** Rebuild the selected pattern with new tile size / spacing / layout. */
+  async function updatePattern(patch: { tile?: number; gap?: number; brick?: boolean }) {
+    const o = editor.current?.getActiveObject();
+    const base = o && meta.current.get(o);
+    if (!o || base?.kind !== "pattern") return;
+    checkpoint();
+    const next = { ...base, ...patch };
+    const fresh = await makePatternRect(urls.current[base.assetId], next);
+    o.set({ fill: fresh.fill });
+    meta.current.set(o, next);
+    capture();
+    readSelection();
+    editor.current!.requestRenderAll();
+  }
+  async function loadInspiration() {
+    if (inspiration) return;
+    const r = await listInspirationAction();
+    setInspiration(r.ok ? r.items : []);
+  }
+  async function addInspirationPhoto(file: File | undefined) {
+    if (!file) return;
+    setBusy("Saving inspiration…");
+    try {
+      const form = new FormData();
+      form.set("photo", file);
+      const r = await addInspirationAction(form);
+      if (!r.ok) throw new Error(r.error);
+      setInspiration((items) => [r.item, ...(items ?? [])]);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn’t save this image.");
+    } finally {
+      setBusy(null);
+    }
+  }
+  async function createWithAi() {
+    setBusy(aiMode === "pattern" ? "Creating a seamless pattern…" : "Creating your design…");
+    setError("");
+    try {
+      const r = await generateDesignAction({ brief, seamless: aiMode === "pattern", referenceAssetId: reference?.id ?? null });
+      if (!r.ok) throw new Error(r.error);
+      urls.current[r.assetId] = r.previewUrl;
+      setLibrary((items) => [{ id: r.assetId, name: r.name, previewUrl: r.previewUrl }, ...items]);
+      setBusy(null);
+      if (aiMode === "pattern") {
+        editor.current?.discardActiveObject();
+        await makePattern(r.assetId);
+        const o = editor.current?.getActiveObject();
+        if (o) await updatePattern({ tile: 0.5, gap: 0, brick: false });
+      } else await addArtwork(r.assetId);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn’t create the design.");
+    } finally {
+      setBusy(null);
+    }
+  }
   function removeSelected() {
     const o = editor.current?.getActiveObject();
     if (!o || !meta.current.has(o)) return;
@@ -935,6 +1198,17 @@ export function ProductEditor({
 
   /* ---------- preview, print files, save ---------- */
 
+  /** One view's artwork alone, transparent, on the full editor canvas. */
+  async function designLayerPng(s: Surface) {
+    const canvas = new StaticCanvas(document.createElement("canvas"), { width: SIZE, height: SIZE });
+    try {
+      for (const layer of s.layers) canvas.add(await makeLayer(layer));
+      canvas.renderAll();
+      return canvas.toDataURL({ format: "png", multiplier: 1 });
+    } finally {
+      await canvas.dispose();
+    }
+  }
   async function buildPreview(): Promise<PreviewData> {
     capture();
     const views = [];
@@ -948,16 +1222,23 @@ export function ProductEditor({
         await canvas.dispose();
       }
     }
+    // Storefront colour mockups go through the mockup renderer (flat today).
     const front = doc.current.surfaces[0];
     const perColor: Mockup[] = [];
+    const design = await designLayerPng(front);
+    const photo = photoFor(front);
+    const renderer = getMockupRenderer();
     for (const c of colors) {
-      const canvas = new StaticCanvas(document.createElement("canvas"), { width: SIZE, height: SIZE });
-      try {
-        await paint(canvas, front, false, c.hex);
-        perColor.push({ color: c.name, hex: c.hex, url: canvas.toDataURL({ format: "jpeg", quality: 0.88, multiplier: 1 }) });
-      } finally {
-        await canvas.dispose();
-      }
+      if (!photo) break;
+      const base = (await recolored(photo, c.hex, front.area)) ?? photo;
+      const url = await renderer.render({
+        photo: base,
+        design,
+        area: front.area,
+        size: SIZE,
+        product: { blankId: blank.id, position: front.position, color: c.name },
+      });
+      perColor.push({ color: c.name, hex: c.hex, url });
     }
     return { views, colors: perColor };
   }
@@ -1070,11 +1351,20 @@ export function ProductEditor({
             [
               ["files", Upload, "Uploads"],
               ["text", Type, "Text"],
-              ["ai", Sparkles, "AI art"],
+              ["shapes", Shapes, "Shapes"],
+              ["ai", Sparkles, "Create"],
+              ["inspiration", Lightbulb, "Ideas"],
               ["layers", Layers, "Layers"],
             ] as const
           ).map(([key, Icon, label]) => (
-            <button key={key} aria-pressed={panel === key} onClick={() => setPanel(panel === key ? null : key)}>
+            <button
+              key={key}
+              aria-pressed={panel === key}
+              onClick={() => {
+                setPanel(panel === key ? null : key);
+                if (key === "inspiration") void loadInspiration();
+              }}
+            >
               <Icon size={20} />
               <span>{label}</span>
             </button>
@@ -1084,7 +1374,9 @@ export function ProductEditor({
         {panel && (
           <aside className="pe-panel">
             <div className="pe-panel-head">
-              <h2>{panel === "files" ? "Uploads" : panel === "text" ? "Text" : panel === "ai" ? "Create with AI" : "Layers"}</h2>
+              <h2>
+                {{ files: "Uploads", text: "Text", shapes: "Shapes", ai: "Create with AI", inspiration: "Inspiration", layers: "Layers" }[panel]}
+              </h2>
               <button className="pe-icon-btn" aria-label="Close panel" onClick={() => setPanel(null)}>
                 <X size={16} />
               </button>
@@ -1118,6 +1410,72 @@ export function ProductEditor({
                   ))}
                 </div>
                 {!visibleLibrary.length && <p className="pe-muted">{search ? "No files match." : "Your uploads appear here."}</p>}
+                {savedDesigns.length > 0 && (
+                  <>
+                    <p className="pe-label pe-mt">
+                      Saved designs <span>open to keep editing</span>
+                    </p>
+                    <div className="pe-files">
+                      {savedDesigns.map((d) => (
+                        <Link key={d.id} href={`/partner/canvas?composition=${d.id}`} title={`Open ${d.name}`} className="pe-saved">
+                          {d.previewUrl ? <img src={d.previewUrl} alt="" loading="lazy" /> : <FolderOpen size={20} />}
+                          <span>{d.name}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
+            {panel === "shapes" && (
+              <div className="pe-panel-body">
+                <div className="pe-shapes">
+                  {SHAPES.map((sh) => (
+                    <button key={sh.kind} disabled={locked} onClick={() => void addShape(sh.kind)} title={sh.label}>
+                      <svg viewBox="0 0 100 100" aria-hidden="true">
+                        {sh.kind === "rect" && <rect x="12" y="12" width="76" height="76" />}
+                        {sh.kind === "rounded" && <rect x="12" y="12" width="76" height="76" rx="16" />}
+                        {sh.kind === "circle" && <circle cx="50" cy="50" r="38" />}
+                        {sh.kind === "triangle" && <polygon points="50,12 90,86 10,86" />}
+                        {sh.kind === "star" && <polygon points="50,8 61,38 94,38 67,58 77,90 50,70 23,90 33,58 6,38 39,38" />}
+                        {sh.kind === "heart" && <path d="M50 88C20 66 6 50 6 32 6 18 16 10 28 10c9 0 17 5 22 13 5-8 13-13 22-13 12 0 22 8 22 22 0 18-14 34-44 56z" />}
+                        {sh.kind === "line" && <rect x="8" y="46" width="84" height="8" rx="4" />}
+                      </svg>
+                      <span>{sh.label}</span>
+                    </button>
+                  ))}
+                </div>
+                <p className="pe-muted pe-small">Select a shape to change its color, size and angle.</p>
+              </div>
+            )}
+
+            {panel === "inspiration" && (
+              <div className="pe-panel-body">
+                <p className="pe-muted">Save photos, screenshots and ideas here. They’re never printed; use one as a starting point for AI.</p>
+                <input ref={inspirationInput} type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" aria-label="Add inspiration image" onChange={(e) => { void addInspirationPhoto(e.target.files?.[0]); e.target.value = ""; }} />
+                <button className="pe-drop" disabled={locked} onClick={() => inspirationInput.current?.click()}>
+                  <Lightbulb size={22} />
+                  <strong>Add inspiration</strong>
+                  <span>Photos, screenshots, sketches</span>
+                </button>
+                {inspiration === null ? (
+                  <p className="pe-muted pe-small"><Loader2 size={13} className="pe-spin" /> Loading…</p>
+                ) : (
+                  <div className="pe-files">
+                    {inspiration.map((it) => (
+                      <button key={it.id} title={it.name} aria-pressed={reference?.id === it.id} onClick={() => { setReference(reference?.id === it.id ? null : it); }}>
+                        <img src={it.previewUrl} alt="" loading="lazy" />
+                        <span>{reference?.id === it.id ? "✓ Using for AI" : it.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {reference && (
+                  <button className="pe-btn pe-btn-primary pe-block" onClick={() => setPanel("ai")}>
+                    <Sparkles size={16} /> Create from this idea
+                  </button>
+                )}
               </div>
             )}
 
@@ -1145,12 +1503,44 @@ export function ProductEditor({
 
             {panel === "ai" && (
               <div className="pe-panel-body">
-                <p className="pe-muted">Describe the artwork. It’s added to your design and saved to your files.</p>
-                <textarea className="pe-textarea" rows={5} value={brief} onChange={(e) => setBrief(e.target.value)} placeholder="e.g. hibiscus flowers and ocean waves, bold outline, transparent background" />
-                <button className="pe-btn pe-btn-primary pe-block" disabled={locked || brief.trim().length < 8} onClick={() => void upload(undefined, true)}>
-                  <Sparkles size={16} /> Generate artwork
+                <div className="pe-seg" role="tablist" aria-label="What to create">
+                  <button role="tab" aria-selected={aiMode === "design"} onClick={() => setAiMode("design")}>
+                    <Sparkles size={14} /> Design
+                  </button>
+                  <button role="tab" aria-selected={aiMode === "pattern"} onClick={() => setAiMode("pattern")}>
+                    <Grid3x3 size={14} /> Pattern
+                  </button>
+                </div>
+                <p className="pe-muted">
+                  {aiMode === "design"
+                    ? "Describe the artwork. It’s added to your product and saved to your files."
+                    : "Describe a repeating pattern. It fills the print area as a seamless all-over print."}
+                </p>
+                {reference && (
+                  <div className="pe-ref">
+                    <img src={reference.previewUrl} alt="" />
+                    <span>Inspired by <b>{reference.name}</b></span>
+                    <button className="pe-icon-btn" aria-label="Stop using this idea" onClick={() => setReference(null)}>
+                      <X size={14} />
+                    </button>
+                  </div>
+                )}
+                <textarea
+                  className="pe-textarea"
+                  rows={5}
+                  value={brief}
+                  onChange={(e) => setBrief(e.target.value)}
+                  placeholder={aiMode === "design" ? "e.g. hibiscus flowers and ocean waves, bold outline" : "e.g. tiny palm trees and waves, navy on cream"}
+                />
+                <button className="pe-btn pe-btn-primary pe-block" disabled={locked || brief.trim().length < 8} onClick={() => void createWithAi()}>
+                  <Sparkles size={16} /> {aiMode === "design" ? "Create design" : "Create pattern"}
                 </button>
-                <p className="pe-muted pe-small">Uses AI only when you click Generate.</p>
+                {!reference && (
+                  <button className="pe-link-btn" onClick={() => { setPanel("inspiration"); void loadInspiration(); }}>
+                    <Lightbulb size={14} /> Start from an inspiration photo
+                  </button>
+                )}
+                <p className="pe-muted pe-small">Uses AI only when you click Create.</p>
               </div>
             )}
 
@@ -1161,8 +1551,22 @@ export function ProductEditor({
                     {[...layers].reverse().map((l) => (
                       <li key={l.id}>
                         <button onClick={() => selectLayer(l.id)}>
-                          {l.kind === "text" ? <Type size={16} /> : urls.current[l.assetId] ? <img src={urls.current[l.assetId]} alt="" /> : <ImageIcon size={16} />}
-                          <span>{l.kind === "text" ? l.text : (library.find((d) => d.id === l.assetId)?.name ?? "Artwork")}</span>
+                          {l.kind === "text" ? (
+                            <Type size={16} />
+                          ) : l.kind === "shape" ? (
+                            <Shapes size={16} />
+                          ) : urls.current[l.assetId] ? (
+                            <img src={urls.current[l.assetId]} alt="" />
+                          ) : (
+                            <ImageIcon size={16} />
+                          )}
+                          <span>
+                            {l.kind === "text"
+                              ? l.text
+                              : l.kind === "shape"
+                                ? `${l.shape[0].toUpperCase()}${l.shape.slice(1)}`
+                                : `${library.find((d) => d.id === l.assetId)?.name ?? "Artwork"}${l.kind === "pattern" ? " (pattern)" : ""}`}
+                          </span>
                         </button>
                       </li>
                     ))}
@@ -1259,7 +1663,7 @@ export function ProductEditor({
           {selected ? (
             <>
               <div className="pe-props-head">
-                <h2>{selected.kind === "text" ? "Text" : "Artwork"}</h2>
+                <h2>{{ text: "Text", image: "Artwork", shape: "Shape", pattern: "Pattern" }[selected.kind]}</h2>
                 <div>
                   <button className="pe-icon-btn" onClick={() => void duplicate()} aria-label="Duplicate" title="Duplicate">
                     <Copy size={16} />
@@ -1307,6 +1711,69 @@ export function ProductEditor({
                 </section>
               )}
 
+              {selected.kind === "image" && (
+                <section className="pe-section">
+                  <div className="pe-tools">
+                    <button onClick={openCrop} disabled={locked}>
+                      <Scissors size={16} /> Crop
+                    </button>
+                    <button onClick={() => void removeBg()} disabled={locked}>
+                      <Eraser size={16} /> Remove background
+                    </button>
+                    <button onClick={() => void makePattern()} disabled={locked}>
+                      <Grid3x3 size={16} /> Make a pattern
+                    </button>
+                  </div>
+                  <p className="pe-label">Edit with AI</p>
+                  <div className="pe-row">
+                    <input
+                      className="pe-search"
+                      value={editPrompt}
+                      onChange={(e) => setEditPrompt(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && void aiEdit()}
+                      placeholder="e.g. make it navy and gold"
+                      aria-label="Describe the change"
+                    />
+                    <button className="pe-toggle" aria-label="Apply AI edit" disabled={locked || editPrompt.trim().length < 4} onClick={() => void aiEdit()}>
+                      <WandSparkles size={15} />
+                    </button>
+                  </div>
+                </section>
+              )}
+
+              {selected.kind === "shape" && (
+                <section className="pe-section">
+                  <p className="pe-label">Color</p>
+                  <div className="pe-swatches">
+                    {TEXT_COLORS.map((c) => (
+                      <button key={c} aria-label={c} aria-pressed={selected.fill?.toLowerCase() === c} style={{ background: c }} onClick={() => setFill(c)} />
+                    ))}
+                    <label className="pe-color-input" title="Custom color">
+                      <input type="color" value={selected.fill ?? "#1f7048"} onChange={(e) => setFill(e.target.value, false)} />
+                    </label>
+                  </div>
+                </section>
+              )}
+
+              {selected.kind === "pattern" && (
+                <section className="pe-section">
+                  <label className="pe-slider">
+                    <span>Tile size <b>{Math.round((selected.tile ?? 0.2) * 100)}%</b></span>
+                    <input type="range" min={0.06} max={0.8} step={0.01} defaultValue={selected.tile} onChange={(e) => void updatePattern({ tile: Number(e.target.value) })} />
+                  </label>
+                  <label className="pe-slider">
+                    <span>Spacing <b>{Math.round((selected.gap ?? 0) * 100)}%</b></span>
+                    <input type="range" min={0} max={0.7} step={0.01} defaultValue={selected.gap} onChange={(e) => void updatePattern({ gap: Number(e.target.value) })} />
+                  </label>
+                  <div className="pe-seg">
+                    <button aria-selected={!selected.brick} onClick={() => void updatePattern({ brick: false })}>Grid</button>
+                    <button aria-selected={Boolean(selected.brick)} onClick={() => void updatePattern({ brick: true })}>Brick</button>
+                  </div>
+                  <p className="pe-muted pe-small">The pattern fills this view’s print area.</p>
+                </section>
+              )}
+
+              {selected.kind !== "pattern" && (
               <section className="pe-section">
                 <p className="pe-label">Position & size ({unit})</p>
                 <div className="pe-grid2">
@@ -1356,6 +1823,24 @@ export function ProductEditor({
                     <ArrowDown size={14} /> Backward
                   </button>
                 </div>
+                <div className="pe-row">
+                  <button className="pe-btn pe-btn-ghost pe-grow" aria-pressed={selected.flipX} onClick={() => flip("x")}>
+                    <FlipHorizontal2 size={14} /> Flip
+                  </button>
+                  <button className="pe-btn pe-btn-ghost pe-grow" aria-pressed={selected.flipY} onClick={() => flip("y")}>
+                    <FlipVertical2 size={14} /> Flip
+                  </button>
+                </div>
+              </section>
+              )}
+
+              <section className="pe-section">
+                <label className="pe-slider">
+                  <span>
+                    <Blend size={14} /> Opacity <b>{Math.round(selected.opacity * 100)}%</b>
+                  </span>
+                  <input type="range" min={0.1} max={1} step={0.01} value={selected.opacity} onChange={(e) => setOpacity(Number(e.target.value))} onPointerUp={() => { checkpoint(); }} />
+                </label>
               </section>
 
               {selected.dpi !== null && (
@@ -1499,6 +1984,20 @@ export function ProductEditor({
           </div>
         </div>
       )}
+
+      {cropping && (() => {
+        const o = editor.current?.getActiveObject();
+        const el = o instanceof FabricImage ? (o.getElement() as HTMLImageElement) : null;
+        return el ? (
+          <CropDialog
+            src={cropping.src}
+            natural={{ width: el.naturalWidth, height: el.naturalHeight }}
+            onApply={(px) => applyCrop(px)}
+            onReset={() => applyCrop(null)}
+            onClose={() => setCropping(null)}
+          />
+        ) : null;
+      })()}
 
       {viewPicker && (
         <div className="pe-modal" role="dialog" aria-modal="true" aria-label="Choose a photo">

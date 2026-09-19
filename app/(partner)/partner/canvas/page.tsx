@@ -27,6 +27,10 @@ export default async function PartnerCanvasPage({ searchParams }: PageProps) {
       : Promise.resolve(null),
   ]);
 
+  const savedDesigns = designs
+    .filter((item) => item.isComposition)
+    .slice(0, 24)
+    .map((item) => ({ id: item.id, name: item.name, previewUrl: item.previewUrl }));
   const designOptions = designs
     .filter((item) => !item.isComposition && (item.status === "approved" || item.status === "licensed" || item.status === "draft"))
     .map((item) => ({
@@ -58,6 +62,7 @@ export default async function PartnerCanvasPage({ searchParams }: PageProps) {
           surfaceImages={Object.fromEntries(Object.entries(surfaceImages).filter((entry): entry is [string,string]=>Boolean(entry[1])))}
           blanks={blanks}
           designs={designOptions}
+          savedDesigns={savedDesigns}
           initialDesignId={savedComposition?.designAssetId ?? query.design ?? null}
           initialBlankId={savedComposition?.blankProductId ?? query.blank ?? null}
           initialTransform={

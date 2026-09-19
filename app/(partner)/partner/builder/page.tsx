@@ -51,7 +51,7 @@ export default async function BuilderPage({
           <p>Choose a product. Add your design. Make it local.</p>
         </div>
         <a
-          href="/partner/catalog?add=1#new-blank"
+          href="/partner/catalog/new"
           className={buttonVariants({ variant: "outline", size: "lg" })}
         >
           ＋ Add your own product
@@ -69,10 +69,10 @@ export default async function BuilderPage({
         className="blank-photo-section"
       >
         <summary>
-          <strong>Add a product to your catalog</strong>
+          <strong>List a finished product</strong>
           <span>
-            Use a photo of a blank you print locally, or list a finished
-            product.
+            Already made it? Keep your real photos and list it as is. To design
+            on a product, use “Add your own product” instead.
           </span>
         </summary>
         <div className="mt-5">

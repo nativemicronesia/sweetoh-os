@@ -18,8 +18,9 @@ export type VariantOptions = z.infer<typeof variantOptionsSchema>;
 
 export type PrintAreaSpec = { position: string; width: number; height: number };
 export type CatalogSource = {
-  provider: "printify";
-  blueprintId: number;
+  /** "printify" = picked from the Printify catalog; "own" = made from the partner's photos. */
+  provider: "printify" | "own";
+  blueprintId?: number;
   brand: string;
   model: string;
   printAreas: PrintAreaSpec[];

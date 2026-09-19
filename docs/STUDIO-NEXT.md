@@ -1,7 +1,10 @@
 # Studio next: Sweet'Oh's own mockup engine (2D + 3D)
 
 Handoff for the next builder (Astra / Codex). Written 2026-09-19 after the
-Printify-style editor landed (`bd06757`).
+Printify-style editor landed (`bd06757`); updated the same day after the
+foundation pass (Add Your Own Product, Canva-level studio tools, capability
+layer, mockup renderer seam). **Your scope is the mockup engine (2D + 3D)
+and anything listed under "What's left for Astra".**
 
 ## The intention, in the owner's words
 
@@ -42,6 +45,10 @@ Sweet'Oh is a single-partner local POD shop in Lacey, WA. Only the partner logs 
 | Layout schema | `lib/domains/catalog/studio-layout.ts` | `studioLayoutSchema`: surfaces (id, name, position, assetId or `imageUrl` from images.printify.com, `area` as 0–1 fractions of a 720px square canvas) + layers (image / text with font key). **Extend with optional fields only**; saved designs must keep loading. |
 | Photo intelligence | `lib/studio/tint.ts` | Browser-side garment mask (flood fill + Sobel edges + chroma), recolor with shading, placeholder/backdrop cleanup on flat shots, `analyzePhoto` scoring, `printAreaInBox`. This is the current "2D mockup engine". |
 | Fonts | `lib/studio/fonts.ts` | Layouts store the font **key**, never the generated family name. |
+| Capability layer | `lib/capabilities/index.ts` + `app/(partner)/partner/actions/capabilities.ts` | The simple verbs the UI calls: **Turn Photo Into Blank**, **Remove Background**, **Edit Design**, **Generate Design / Pattern** (optionally from an inspiration photo), inspiration board. Local-first (free `sharp` cutout in `lib/studio/cutout.ts`), AI only when needed (`lib/integrations/ai/product-research.ts`: `understandProduct`, `aiCutout`, `editArtwork`, `generateDesign`). Every AI call goes through `reservePartnerAi` (daily allowance). Don't call AI from UI code; add verbs here. |
+| Add Your Own Product | `app/(partner)/partner/catalog/new/` | Photos (upload/camera, up to 4 sides) → AI screens for people/printed graphics → cutout → AI proposes name/type/colour/print areas → partner drags print areas, sets inches, colours, sizes → `createOwnBlank` saves a normal blank (`catalogSource.provider = "own"`) → opens the editor. |
+| Studio tools | `product-editor.tsx`, `lib/studio/shapes.ts`, `lib/studio/pattern.ts`, `crop-dialog.tsx` (react-easy-crop) | Uploads + saved designs (reopen), text + 10 fonts, shapes with fill, crop, flip, opacity, remove background, AI edit, pattern fill (grid/brick, tile/spacing, AI seamless patterns), inspiration board, layers, views, print areas, live colour mockups, preview. Layer kinds: image (crop/flip/opacity), text, shape, pattern. |
+| **Mockup renderer seam** | `lib/studio/mockup/index.ts` | `MockupRenderer { id, render({ photo, design, area, size, product }) }` + `registerMockupRenderer` / `getMockupRenderer`. Preview and the saved per-colour storefront mockups already render through `getMockupRenderer()` (only `flat` exists). **This is where your 2D/3D engine plugs in.** |
 | Save → product | `app/(partner)/partner/actions/library.ts` (`saveCanvasCompositionAction`) | Uploads the composite, per-view images and per-color mockups (`product_media.color`), then creates the draft. |
 | Storefront | `app/(store)/components/product-buy.tsx` | Color swatches switch color-tagged mockups; size picker; price with upcharges. |
 | Checkout / orders | `lib/integrations/stripe/checkout.ts`, `lib/domains/commerce/service.ts` | Variant per line in Stripe line-item metadata, shipping address (US + GU; FSM/Palau/RMI/CNMI enter as US + state). Orders store color, size and shipping. |
@@ -50,6 +57,27 @@ DB: migrations are **hand-written** SQL in `drizzle/` plus a
 `meta/_journal.json` entry (drizzle snapshots stop at 0006; don't run
 `drizzle-kit generate`). The latest is `0020_pod_variants_shipping`. The live
 Supabase DB is the only DB, so keep changes additive and nullable.
+
+## What's left for Astra
+
+1. **The mockup engine (main task).** Implement renderers behind
+   `lib/studio/mockup` and make one the default:
+   - **2D realistic:** displacement/shading maps and perspective (4-corner)
+     print areas per template. The input already gives you the recoloured
+     blank photo, the view's design as a transparent full-canvas PNG, and the
+     print area.
+   - **3D:** GLB models per blank type (mug/tumbler first, then tee/hoodie),
+     design as texture/decal, fixed-camera renders for the storefront plus an
+     optional interactive viewer on the product page.
+   - A template/model registry keyed by blank (`catalogSource`
+     brand/model/position, or `provider: "own"` + product type).
+   - A comparison page to pick defaults with the owner (see below).
+2. **Lifestyle mockups:** the same design on several photos per product
+   (needs per-photo print-area mapping, which is part of the template format).
+3. **Storefront viewing:** swap the product-page gallery to show renderer
+   outputs (and 3D when available) per colour.
+4. Nice-to-have if time allows: text on a curve/arc, gradient fills, SVG
+   upload as vector. Don't rebuild what's listed in "What exists".
 
 ## Where the current mockups fall short (your starting problems)
 
@@ -126,7 +154,7 @@ cost per new product, and licensing.
 ## How to verify (proven in this repo)
 
 - `./node_modules/.bin/tsc --noEmit`, `npx tsx --test scripts/*.test.ts`
-  (22 passing), `npm run build`, then `npx next start -p 3002`.
+  (27 passing), `npm run build`, then `npx next start -p 3002`.
 - Browser checks with Playwright: log in through `/partner/login` using
   `FOUNDATION_PARTNER_EMAIL` / `FOUNDATION_PARTNER_PASSWORD` from
   `.env.local` and save the storage state. Sessions rotate, so log in fresh
