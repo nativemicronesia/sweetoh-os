@@ -1,79 +1,151 @@
 import Link from "next/link";
-import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
-import { resolvePartnerWorkspacePack } from "@/lib/domains/workspace/packs";
+import {
+  Activity,
+  ChevronRight,
+  ClipboardCheck,
+  CreditCard,
+  ExternalLink,
+  ScanLine,
+  Sparkles,
+  Store,
+  User,
+} from "lucide-react";
+import {
+  getDefaultVenture,
+  requirePartnerWorkspace,
+} from "@/lib/domains/identity/service";
+
+const TOOLS = [
+  {
+    href: "/partner/create",
+    label: "Create with AI",
+    note: "Describe a product or snap a photo and let Sweet’Oh draft it.",
+    icon: Sparkles,
+  },
+  {
+    href: "/partner/review",
+    label: "Listing reviews",
+    note: "Approve or send back products waiting for review.",
+    icon: ClipboardCheck,
+  },
+  {
+    href: "/partner/visual-intake",
+    label: "Photo intake",
+    note: "Turn photos of products you’ve made into listings.",
+    icon: ScanLine,
+  },
+  {
+    href: "/partner/activity",
+    label: "Activity",
+    note: "Everything that’s happened in your workspace.",
+    icon: Activity,
+  },
+];
 
 /**
- * Minimal v1 — read-only profile and workspace info from the session already
- * loaded by `requirePartnerWorkspace()`. Deliberately no write surface: account,
- * billing, and email settings belong to the auth/Stripe/Resend work that is
- * being done separately.
+ * Store and account overview. Read-only by design: account, billing and
+ * email settings belong to the auth/Stripe/Resend work done separately.
  */
 export default async function PartnerSettingsPage() {
-  const session = await requirePartnerWorkspace();
-  const pack = resolvePartnerWorkspacePack({
-    role: session.role,
-    ventureSlug: session.ventureSlug,
-  });
-
-  const rows: { label: string; value: string }[] = [
-    { label: "Name", value: session.appUser.name ?? "—" },
-    { label: "Email", value: session.appUser.email },
-    { label: "Role", value: session.role },
-    { label: "Workspace", value: pack.label },
-    { label: "Venture", value: session.ventureSlug },
-  ];
+  const [session, venture] = await Promise.all([
+    requirePartnerWorkspace(),
+    getDefaultVenture().catch(() => null),
+  ]);
+  const stripeKey = process.env.STRIPE_SECRET_KEY ?? "";
+  const payments = stripeKey.startsWith("sk_live")
+    ? { label: "Live", tone: "ok" }
+    : stripeKey
+      ? { label: "Test mode", tone: "warn" }
+      : { label: "Not connected", tone: "warn" };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold" style={{ color: "var(--so-cream)" }}>
-          Settings
-        </h1>
-        <p className="mt-1 text-sm" style={{ color: "var(--so-cream-dim)" }}>
-          Who you are signed in as, and which workspace this desk is pointed at.
-        </p>
-      </div>
+    <div className="settings">
+      <header className="studio-page-heading">
+        <div>
+          <h1>Settings</h1>
+          <p>Your store, your account, and extra tools.</p>
+        </div>
+      </header>
 
-      <section
-        className="rounded-xl border"
-        style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}
-      >
-        <dl className="divide-y" style={{ borderColor: "var(--so-border)" }}>
-          {rows.map((row) => (
-            <div
-              key={row.label}
-              className="flex flex-wrap items-center justify-between gap-3 px-5 py-3"
-            >
-              <dt className="text-sm" style={{ color: "var(--so-cream-dim)" }}>
-                {row.label}
-              </dt>
-              <dd className="text-sm" style={{ color: "var(--so-cream)" }}>
-                {row.value}
-              </dd>
-            </div>
-          ))}
+      <section className="settings-card">
+        <h2>
+          <Store size={18} /> Store
+        </h2>
+        <dl>
+          <div>
+            <dt>Store name</dt>
+            <dd>{venture?.name ?? "Sweet’Oh"}</dd>
+          </div>
+          <div>
+            <dt>Storefront</dt>
+            <dd>
+              <Link href="/" target="_blank" className="settings-link">
+                View your store <ExternalLink size={14} />
+              </Link>
+            </dd>
+          </div>
+          <div>
+            <dt>Production</dt>
+            <dd>Printed and fulfilled locally by your shop</dd>
+          </div>
         </dl>
       </section>
 
-      <section
-        className="rounded-xl border px-5 py-4"
-        style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}
-      >
-        <p className="text-sm font-medium" style={{ color: "var(--so-cream)" }}>
-          Design uploads
-        </p>
-        <p className="mt-1 text-sm" style={{ color: "var(--so-cream-dim)" }}>
-          Raw design files live in the{" "}
-          <Link href="/partner/library" className="underline">
-            Design library
-          </Link>
-          .
-        </p>
+      <section className="settings-card">
+        <h2>
+          <CreditCard size={18} /> Payments
+        </h2>
+        <dl>
+          <div>
+            <dt>Checkout</dt>
+            <dd>
+              <span className="settings-pill" data-tone={payments.tone}>
+                {payments.label}
+              </span>
+            </dd>
+          </div>
+        </dl>
       </section>
 
-      <p className="text-xs" style={{ color: "var(--so-cream-dim)" }}>
-        Account, billing, and email settings are handled outside this desk for now.
-      </p>
+      <section className="settings-card">
+        <h2>
+          <User size={18} /> Account
+        </h2>
+        <dl>
+          <div>
+            <dt>Name</dt>
+            <dd>{session.appUser.name ?? "—"}</dd>
+          </div>
+          <div>
+            <dt>Email</dt>
+            <dd>{session.appUser.email}</dd>
+          </div>
+          <div>
+            <dt>Role</dt>
+            <dd className="capitalize">{session.role}</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section className="settings-card">
+        <h2>More tools</h2>
+        <ul className="settings-tools">
+          {TOOLS.map(({ href, label, note, icon: Icon }) => (
+            <li key={href}>
+              <Link href={href}>
+                <span className="settings-tool-icon">
+                  <Icon size={18} />
+                </span>
+                <span>
+                  <strong>{label}</strong>
+                  <small>{note}</small>
+                </span>
+                <ChevronRight size={18} />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
     </div>
   );
 }

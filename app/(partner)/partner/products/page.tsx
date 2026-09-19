@@ -1,189 +1,88 @@
-import Link from "next/link";
-import { DraftStatusBadge } from "@/app/(owner)/owner/components/draft-status-badge";
 import { FlashBanner } from "@/app/(owner)/owner/components/flash-banner";
-import { listProducts } from "@/lib/domains/catalog/service";
+import Link from "next/link";
 import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
 import { listActorProductDrafts } from "@/lib/domains/intelligence/service";
-import { formatPrice } from "@/lib/shared/format";
-import { unpublishPartnerProductAction } from "../actions/drafts";
-
-type PartnerProductsPageProps = {
-  searchParams: Promise<{ error?: string; success?: string }>;
-};
-
+import { builderRecord } from "@/lib/domains/intelligence/product-research-schema";
+import {
+  getPrimaryProductImageUrl,
+  listActiveProducts,
+} from "@/lib/domains/catalog/service";
+import { getAssetSignedUrl } from "@/lib/domains/assets/service";
+import { WorkspaceGallery } from "../components/workspace-gallery";
 export default async function PartnerProductsPage({
   searchParams,
-}: PartnerProductsPageProps) {
+}: {
+  searchParams: Promise<{ success?: string; error?: string }>;
+}) {
   const session = await requirePartnerWorkspace();
-  const query = await searchParams;
-
-  const [products, myDrafts] = await Promise.all([
-    listProducts(session.ventureId),
+  const [rows, published, query] = await Promise.all([
     listActorProductDrafts({
       ventureId: session.ventureId,
       actorUserId: session.appUser.id,
     }),
+    listActiveProducts(session.ventureId),
+    searchParams,
   ]);
-
-  const live = products.filter((item) => item.active);
-  const openDrafts = myDrafts.filter(({ product }) => !product.active);
-
+  const cards = await Promise.all(
+    rows
+      .filter(({ product }) => product.draftStatus !== "archived")
+      .map(async ({ product, session: draft }) => {
+        const record = builderRecord(draft.rawResponse);
+        const assetId = record?.mockupAssetId || product.sourceAssetId;
+        const image = assetId
+          ? await getAssetSignedUrl({ ventureId: session.ventureId, assetId })
+          : await getPrimaryProductImageUrl(product.id);
+        return {
+          id: product.id,
+          name: product.name,
+          priceCents: product.priceCents,
+          image,
+          kind:
+            record?.purpose === "blank"
+              ? "blank"
+              : product.active
+                ? "live"
+                : "draft",
+          href: record
+            ? `/partner/builder/${product.id}`
+            : `/partner/review/${product.id}`,
+          action:
+            record?.purpose === "blank" && record.confirmed
+              ? `/partner/canvas?blank=${product.id}`
+              : null,
+        };
+      }),
+  );
+  const ownedIds = new Set(cards.map((c) => c.id));
+  cards.push(
+    ...(await Promise.all(
+      published
+        .filter((p) => !ownedIds.has(p.id))
+        .map(async (p) => ({
+          id: p.id,
+          name: p.name,
+          priceCents: p.priceCents,
+          image: await getPrimaryProductImageUrl(p.id),
+          kind: "live",
+          href: `/partner/review/${p.id}`,
+          action: null,
+        })),
+    )),
+  );
   return (
-    <div className="space-y-6">
-      <FlashBanner message={query.error} variant="error" />
+    <div className="space-y-8">
       <FlashBanner message={query.success} variant="success" />
-
-      <div className="flex flex-wrap items-end justify-between gap-3">
+      <FlashBanner message={query.error} variant="error" />
+      <header className="studio-page-heading">
         <div>
-          <h1 className="text-xl font-semibold" style={{ color: "var(--so-cream)" }}>
-            Products
-          </h1>
-          <p className="mt-1 text-sm" style={{ color: "var(--so-cream-dim)" }}>
-            Published catalog.{" "}
-            <Link
-              href="/partner/library"
-              className="underline"
-              style={{ color: "var(--so-gold)" }}
-            >
-              Design library
-            </Link>{" "}
-            ·{" "}
-            <Link
-              href="/partner/canvas"
-              className="underline"
-              style={{ color: "var(--so-gold)" }}
-            >
-              Canvas
-            </Link>
-            . Facebook stays your customer channel until you share them there.
-          </p>
+          <h1>My products</h1>
+          <p>Everything you’ve made — drafts, published products and saved blanks.</p>
         </div>
-        <Link
-          href="/partner/create"
-          className="rounded-full px-4 py-2 text-sm font-medium"
-          style={{ background: "var(--so-gold)", color: "var(--so-ink)" }}
-        >
-          New piece
+        <Link className="studio-primary" href="/partner/catalog">
+          ＋ Create product
         </Link>
-      </div>
-
-      <section className="space-y-3">
-        <h2
-          className="text-xs font-medium uppercase tracking-widest"
-          style={{ color: "var(--so-cream-dim)" }}
-        >
-          Live ({live.length})
-        </h2>
-        <div
-          className="rounded-xl border"
-          style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}
-        >
-          {live.length === 0 ? (
-            <p className="px-6 py-6 text-sm" style={{ color: "var(--so-cream-dim)" }}>
-              Nothing live yet. Publish a draft to add it here.
-            </p>
-          ) : (
-            <ul>
-              {live.map((product) => (
-                <li
-                  key={product.id}
-                  className="flex flex-wrap items-center justify-between gap-3 border-b px-6 py-4 last:border-b-0"
-                  style={{ borderColor: "var(--so-border)" }}
-                >
-                  <div>
-                    <p className="font-medium" style={{ color: "var(--so-cream)" }}>
-                      {product.name}
-                    </p>
-                    <p className="mt-1 text-sm" style={{ color: "var(--so-cream-dim)" }}>
-                      {formatPrice(product.priceCents)} ·{" "}
-                      <Link
-                        href={`/products/${product.slug}`}
-                        className="underline"
-                        target="_blank"
-                      >
-                        View
-                      </Link>
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <DraftStatusBadge
-                      draftStatus={product.draftStatus}
-                      active={product.active}
-                    />
-                    <form action={unpublishPartnerProductAction.bind(null, product.id)}>
-                      <button
-                        type="submit"
-                        className="rounded-lg border px-3 py-1.5 text-sm"
-                        style={{
-                          borderColor: "var(--so-border)",
-                          color: "var(--so-cream-dim)",
-                        }}
-                      >
-                        Unpublish
-                      </button>
-                    </form>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </section>
-
-      <section className="space-y-3">
-        <h2
-          className="text-xs font-medium uppercase tracking-widest"
-          style={{ color: "var(--so-cream-dim)" }}
-        >
-          Your open drafts ({openDrafts.length})
-        </h2>
-        <div
-          className="rounded-xl border"
-          style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}
-        >
-          {openDrafts.length === 0 ? (
-            <p className="px-6 py-6 text-sm" style={{ color: "var(--so-cream-dim)" }}>
-              No open drafts.{" "}
-              <Link href="/partner/create" className="underline">
-                Make something
-              </Link>
-              .
-            </p>
-          ) : (
-            <ul>
-              {openDrafts.map(({ product }) => (
-                <li
-                  key={product.id}
-                  className="flex flex-wrap items-center justify-between gap-3 border-b px-6 py-4 last:border-b-0"
-                  style={{ borderColor: "var(--so-border)" }}
-                >
-                  <div>
-                    <p className="font-medium" style={{ color: "var(--so-cream)" }}>
-                      {product.name}
-                    </p>
-                    <p className="mt-1 text-sm" style={{ color: "var(--so-cream-dim)" }}>
-                      {formatPrice(product.priceCents)}
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <DraftStatusBadge
-                      draftStatus={product.draftStatus}
-                      active={product.active}
-                    />
-                    <Link
-                      href={`/partner/review/${product.id}`}
-                      className="rounded-lg border px-3 py-1.5 text-sm"
-                      style={{ borderColor: "var(--so-border)", color: "var(--so-cream)" }}
-                    >
-                      Open
-                    </Link>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </section>
+      </header>
+      <WorkspaceGallery cards={cards} />
     </div>
   );
 }

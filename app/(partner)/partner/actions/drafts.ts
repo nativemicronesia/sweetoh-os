@@ -41,7 +41,7 @@ function reviewPath(query?: Record<string, string>): string {
 function productsPath(query?: Record<string, string>): string {
   const params = new URLSearchParams(query);
   const suffix = params.toString();
-  return suffix ? `/partner?${suffix}` : "/partner";
+  return suffix ? `/partner/products?${suffix}` : "/partner/products";
 }
 
 function revalidateListingSurfaces(productId: string): void {

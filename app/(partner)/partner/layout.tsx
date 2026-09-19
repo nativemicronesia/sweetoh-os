@@ -1,40 +1,44 @@
-import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
+import { Inter } from "next/font/google";
+import {
+  getDefaultVenture,
+  requirePartnerWorkspace,
+} from "@/lib/domains/identity/service";
 import { resolvePartnerWorkspacePack } from "@/lib/domains/workspace/packs";
 import { signOutAction } from "./actions/auth";
-import { PartnerSidebar } from "./components/partner-sidebar";
-import { StudioShell } from "./components/studio-shell";
+import { PartnerFrame } from "./components/partner-frame";
 import "./studio.css";
 
+const inter = Inter({ subsets: ["latin"], variable: "--font-partner" });
+
 /**
- * Command center shell: sidebar on the left, the persistent Studio chat bar
- * docked at the top of the main column, and the workspace below it. Both the
- * sidebar and the chat live here rather than in a page, so the conversation
- * survives navigating between Overview, Create, Review, and Orders.
+ * Back office shell: top bar, sidebar and assistant live here rather than in
+ * a page, so the assistant conversation survives navigating between pages.
  */
 export default async function PartnerLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await requirePartnerWorkspace();
+  const [session, venture] = await Promise.all([
+    requirePartnerWorkspace(),
+    getDefaultVenture().catch(() => null),
+  ]);
   const pack = resolvePartnerWorkspacePack({
     role: session.role,
     ventureSlug: session.ventureSlug,
   });
 
   return (
-    <div
-      className="sweetoh-studio flex h-dvh flex-col overflow-hidden md:flex-row"
-      style={{ background: "var(--so-black)" }}
-    >
-      <PartnerSidebar
+    <div className={`${inter.variable} h-dvh`}>
+      <PartnerFrame
         packId={pack.id}
         displayName={session.appUser.name ?? session.appUser.email}
-        roleLabel={session.role === "owner" ? "Owner · Studio" : pack.roleLabel}
+        roleLabel={session.role === "owner" ? "Owner" : pack.roleLabel}
+        storeName={venture?.name ?? "Sweet'Oh"}
         signOut={signOutAction}
-      />
-
-      <StudioShell>{children}</StudioShell>
+      >
+        {children}
+      </PartnerFrame>
     </div>
   );
 }

@@ -144,7 +144,7 @@ export default async function PartnerReviewDetailPage({
 
       <div>
         <Link
-          href="/partner"
+          href="/partner/products"
           className="text-sm underline"
           style={{ color: "var(--so-cream-dim)" }}
         >
@@ -488,7 +488,7 @@ export default async function PartnerReviewDetailPage({
           ) : (
             <p className="mt-4 text-sm" style={{ color: "var(--so-gold)" }}>
               Live — manage from{" "}
-              <Link href="/partner" className="underline">
+              <Link href="/partner/products" className="underline">
                 Products
               </Link>
               .

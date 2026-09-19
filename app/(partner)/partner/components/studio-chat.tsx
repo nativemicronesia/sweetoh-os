@@ -43,12 +43,12 @@ function nextId(): string {
   return `entry-${entrySeq}`;
 }
 
-export function StudioChat() {
+export function StudioChat({ panel = false }: { panel?: boolean } = {}) {
   const router = useRouter();
   const [log, setLog] = useState<LogEntry[]>([]);
   const [input, setInput] = useState("");
   const [pending, setPending] = useState(false);
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(panel);
   const logRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -186,7 +186,7 @@ export function StudioChat() {
 
   return (
     <div
-      className="border-b"
+      className={panel ? "studio-chat studio-chat-panel" : "studio-chat border-b"}
       style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}
     >
       {open ? (

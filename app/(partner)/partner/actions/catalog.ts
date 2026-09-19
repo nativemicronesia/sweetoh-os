@@ -59,6 +59,7 @@ export async function startCatalogDesign(form: FormData) {
     await confirmBuilderProduct(session, product.id);
     revalidatePath("/partner/catalog");
     revalidatePath("/partner");
+    revalidatePath("/partner/products");
     redirect(`/partner/canvas?blank=${product.id}`);
   } catch (error) {
     unstable_rethrow(error);

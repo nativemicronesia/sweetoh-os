@@ -127,3 +127,16 @@ export async function downloadCatalogImage(url: string) {
       response.headers.get("content-type")?.split(";")[0] || "image/jpeg",
   };
 }
+const BESTSELLERS = [
+  /^Unisex Heavy Cotton Tee$/i,
+  /^Unisex Heavy Blend™ Hooded Sweatshirt$/i,
+  /^Ceramic Mug, \(11oz, 15oz\)/i,
+  /^Cotton Canvas Tote Bag$/i,
+];
+/** A few well-known blanks for quick-start tiles; empty if the catalog is down. */
+export async function listBestsellerBlueprints(): Promise<Blueprint[]> {
+  const rows = await listPrintifyBlueprints().catch(() => []);
+  return BESTSELLERS.map((re) => rows.find((b) => re.test(b.title))).filter(
+    (b): b is Blueprint => b !== undefined,
+  );
+}
