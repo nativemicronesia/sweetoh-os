@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { askSkink } from "@/app/(creator)/studio/actions/skink";
 import { RichText } from "@/app/(creator)/studio/components/rich-text";
 import { MascotCharacter } from "./mascot-character";
 
@@ -12,32 +11,77 @@ const STARTERS = ["How does print-on-demand work?", "Can I sell my own designs?"
 
 export function MascotPanel({ onClose }: { onClose: () => void }) {
   const [turns, setTurns] = useState<Turn[]>([]);
-  const [threadId, setThreadId] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const [error, setError] = useState<{ text: string; code?: string } | null>(null);
-  const [pending, startTransition] = useTransition();
+  const [streamed, setStreamed] = useState("");
+  const [pending, setPending] = useState(false);
   const logRef = useRef<HTMLDivElement>(null);
+  const abort = useRef<AbortController | null>(null);
 
   useEffect(() => {
     logRef.current?.scrollTo({ top: logRef.current.scrollHeight, behavior: "smooth" });
-  }, [turns, pending]);
+  }, [turns, streamed, pending]);
+  useEffect(() => () => abort.current?.abort(), []);
 
-  function send(text?: string) {
+  async function send(text?: string) {
     const message = (text ?? input).trim();
     if (!message || pending) return;
     setError(null);
     setInput("");
+    setStreamed("");
     const history = turns;
     setTurns((prev) => [...prev, { role: "user", content: message }]);
-    startTransition(async () => {
-      const result = await askSkink({ message, history, threadId });
-      if (!result.ok) {
-        setError({ text: result.error, code: result.code });
+    setPending(true);
+    const controller = new AbortController();
+    abort.current = controller;
+    let answer = "";
+    try {
+      const res = await fetch("/api/skink/visitor", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message, history: history.slice(-10) }),
+        signal: controller.signal,
+      });
+      if (res.status === 409) {
+        // Signed in as a creator: their real Skink lives in the Studio.
+        setError({ text: "You're signed in — open your Studio to chat with Skink there.", code: "creator" });
         return;
       }
-      if (result.threadId) setThreadId(result.threadId);
-      setTurns((prev) => [...prev, { role: "assistant", content: result.reply }]);
-    });
+      if (!res.ok || !res.body) {
+        const body = await res.json().catch(() => ({}));
+        setError({ text: body.error ?? "Skink couldn't answer just now.", code: body.code });
+        return;
+      }
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const chunks = buffer.split("\n\n");
+        buffer = chunks.pop() ?? "";
+        for (const chunk of chunks) {
+          const event = /^event: (.+)$/m.exec(chunk)?.[1];
+          const payload = /^data: (.+)$/m.exec(chunk)?.[1];
+          if (!event || !payload) continue;
+          const data = JSON.parse(payload);
+          if (event === "delta") {
+            answer += data.delta;
+            setStreamed(answer);
+          } else if (event === "error") {
+            setError({ text: data.error });
+          }
+        }
+      }
+    } catch (e) {
+      if ((e as Error).name !== "AbortError") setError({ text: "Connection dropped. Try again." });
+    } finally {
+      abort.current = null;
+      setPending(false);
+      if (answer.trim()) setTurns((prev) => [...prev, { role: "assistant", content: answer }]);
+      setStreamed("");
+    }
   }
 
   return (
@@ -67,7 +111,7 @@ export function MascotPanel({ onClose }: { onClose: () => void }) {
         {turns.length === 0 && (
           <div className="flex flex-wrap gap-2">
             {STARTERS.map((s) => (
-              <button key={s} type="button" onClick={() => send(s)} className="rounded-full border bg-white px-3 py-1.5 text-xs hover:border-[#2e8b4f]" style={{ borderColor: "#e9e2d3" }}>
+              <button key={s} type="button" onClick={() => void send(s)} className="rounded-full border bg-white px-3 py-1.5 text-xs hover:border-[#2e8b4f]" style={{ borderColor: "#e9e2d3" }}>
                 {s}
               </button>
             ))}
@@ -82,11 +126,16 @@ export function MascotPanel({ onClose }: { onClose: () => void }) {
             {turn.role === "user" ? turn.content : <RichText text={turn.content} />}
           </div>
         ))}
-        {pending && <div className="max-w-[88%] rounded-2xl rounded-tl-md border bg-white px-3 py-2 text-sm text-neutral-500" style={{ borderColor: "#e9e2d3" }}>Skink is thinking…</div>}
+        {(streamed || pending) && (
+          <div className="max-w-[88%] rounded-2xl rounded-tl-md border bg-white px-3 py-2 text-sm" style={{ borderColor: "#e9e2d3" }}>
+            {streamed ? <RichText text={streamed} /> : <span className="text-neutral-500">Skink is thinking…</span>}
+          </div>
+        )}
         {error && (
           <p className="rounded-xl px-3 py-2 text-xs" style={{ background: "#ffe6de", color: "#8c2f14" }}>
             {error.text}{" "}
             {error.code === "limit" && <Link href="/studio/join" className="font-semibold underline">Create a free account</Link>}
+            {error.code === "creator" && <Link href="/studio/skink" className="font-semibold underline">Open my Studio</Link>}
           </p>
         )}
       </div>
@@ -96,7 +145,7 @@ export function MascotPanel({ onClose }: { onClose: () => void }) {
         style={{ borderColor: "#e9e2d3" }}
         onSubmit={(e) => {
           e.preventDefault();
-          send();
+          void send();
         }}
       >
         <input

@@ -6,6 +6,7 @@ import { listMemories } from "@/lib/domains/skink/memory";
 import { listMessages, listThreads } from "@/lib/domains/skink/threads";
 import type { SkinkEvent } from "@/lib/domains/skink/agent";
 import { SkinkChat, type ChatTurn } from "../components/skink-chat";
+import { ThreadPicker } from "./thread-picker";
 
 export const metadata = { title: "Ask Skink" };
 
@@ -28,8 +29,14 @@ export default async function SkinkPage({ searchParams }: { searchParams: Promis
   const first = session.appUser.name?.split(" ")[0] ?? "there";
 
   return (
-    <div className="cs-skink-page">
-      <div className="cs-card cs-threads-wrap" style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <>
+      <div className="cs-skink-mobilebar">
+        <Link href="/studio/skink" className="cs-btn cs-btn-ghost cs-btn-sm"><Plus size={15} /> New chat</Link>
+        {threads.length > 0 && <ThreadPicker threads={threads.map((t) => ({ id: t.id, title: t.title }))} active={active?.id ?? null} />}
+        <Link href="/studio/memory" className="cs-link" style={{ whiteSpace: "nowrap" }}>Skink knows {memories.length}</Link>
+      </div>
+      <div className="cs-skink-page">
+      <div className="cs-card cs-threads-wrap">
         <div style={{ padding: 12, borderBottom: "1px solid var(--cs-line)" }}>
           <Link href="/studio/skink" className="cs-btn cs-btn-ghost" style={{ width: "100%" }}>
             <Plus size={16} /> New chat
@@ -67,6 +74,7 @@ export default async function SkinkPage({ searchParams }: { searchParams: Promis
           ]}
         />
       </div>
-    </div>
+      </div>
+    </>
   );
 }

@@ -19,7 +19,7 @@ export function Mascot() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        aria-label={open ? "Close Sweet'Oh AI" : "Ask Sweet'Oh AI"}
+        aria-label={open ? "Close Skink" : "Ask Skink"}
         className="flex items-center gap-2 rounded-full py-1.5 pl-1.5 pr-4 text-sm font-semibold text-white shadow-lg transition-transform hover:scale-105 active:scale-95"
         style={{ background: "linear-gradient(135deg, #133f28, #2e8b4f)", boxShadow: "0 10px 30px rgba(19,63,40,.35)" }}
       >

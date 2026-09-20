@@ -41,7 +41,29 @@
   --font-partner: var(--font-body);
 }
 .cs .sweetoh-studio { --so-gold: var(--pf-primary); --so-cream: var(--pf-text); --so-cream-dim: var(--pf-muted); --so-border: var(--pf-border); --so-dark: #fff; --so-surface: var(--pf-primary-soft); font-family: var(--font-body); }
-.cs.sweetoh-studio.pf-root { font-family: var(--font-body); }
+/* The shared editor, wearing Sweet'Oh's clothes (outranks the partner token block). */
+.cs.sweetoh-studio.pf-root,
+.cs .sweetoh-studio {
+  --pf-bg: #faf7f0;
+  --pf-card: #ffffff;
+  --pf-border: var(--cs-line);
+  --pf-text: var(--cs-ink);
+  --pf-muted: var(--cs-muted);
+  --pf-primary: var(--cs-green-deep);
+  --pf-primary-hover: #0e3321;
+  --pf-primary-soft: var(--cs-green-soft);
+  --pf-shadow: var(--cs-shadow);
+  --so-gold: var(--cs-green-deep);
+  font-family: var(--font-body);
+}
+.cs .pe-top { background: #fffdf8; }
+.cs .pe-title input { font-family: var(--font-display); font-size: 17px; }
+.cs .pe-btn { border-radius: 11px; font-weight: 600; }
+.cs .pe-btn-primary { box-shadow: 0 6px 16px rgba(19, 63, 40, 0.22); }
+.cs .pe-icon-btn { border-radius: 11px; }
+.cs .pe-panel, .cs .pe-props, .cs .pe-modal-card { border-radius: 16px; }
+.cs .pe-rail button[aria-pressed="true"] { background: var(--cs-green-soft); color: var(--cs-green-deep); }
+.cs .pe-stage { background-color: #f4efe3 !important; }
 .cs *:focus-visible { outline: 3px solid color-mix(in srgb, var(--cs-green) 55%, white); outline-offset: 2px; border-radius: 8px; }
 .cs h1, .cs h2, .cs h3, .cs .cs-display { font-family: var(--font-display); letter-spacing: -0.02em; color: var(--cs-ink); }
 :where(.cs) a { color: inherit; }
@@ -204,11 +226,25 @@
 @keyframes cs-bounce { 0%, 60%, 100% { transform: translateY(0); opacity: .35; } 30% { transform: translateY(-5px); opacity: 1; } }
 
 .cs-skink-page { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 18px; height: calc(100dvh - 64px - 56px); min-height: 520px; }
+.cs-threads-wrap { display: flex; flex-direction: column; overflow: hidden; }
+.cs-skink-mobilebar { display: none; }
 .cs-threads { overflow-y: auto; padding: 10px; }
 .cs-threads a { display: block; padding: 9px 11px; border-radius: 10px; text-decoration: none; font-size: 14px; color: var(--cs-ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cs-threads a:hover { background: var(--cs-soft); }
 .cs-threads a[aria-current="page"] { background: var(--cs-green-soft); color: var(--cs-green-deep); font-weight: 600; }
-@media (max-width: 900px) { .cs-skink-page { grid-template-columns: 1fr; height: calc(100dvh - 64px - 130px); } .cs-threads-wrap { display: none; } }
+@media (max-width: 900px) {
+  .cs-skink-page { grid-template-columns: 1fr; height: calc(100dvh - 64px - 152px); min-height: 0; }
+  .cs-threads-wrap { display: none; }
+  .cs-skink-mobilebar { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .cs-skink-mobilebar .cs-select { flex: 1; min-width: 0; font-size: 14px; padding: 8px 10px; }
+  .cs-chat-form { padding: 10px 10px calc(10px + env(safe-area-inset-bottom)); gap: 6px; }
+  .cs-chat-form textarea { font-size: 16px; /* iOS refuses to zoom at 16px+ */ }
+  .cs-chat-log { padding: 14px 12px; gap: 12px; }
+  .cs-bubble { max-width: 90%; }
+  .cs-levels button { padding: 6px 8px; }
+  .cs-hint { display: none; }
+  .cs-chat-form textarea { min-height: 44px; }
+}
 
 /* ---------- Plans ---------- */
 .cs-plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; align-items: stretch; }
@@ -250,3 +286,23 @@
 .cs-auth-grid { position: absolute; inset: -20px -20px auto auto; display: grid; grid-template-columns: repeat(3, 150px); gap: 14px; transform: rotate(-8deg); opacity: .9; }
 .cs-auth-grid img { width: 150px; height: 150px; object-fit: cover; border-radius: 18px; background: white; box-shadow: 0 16px 40px rgba(0,0,0,.25); }
 @media (max-width: 860px) { .cs-auth { grid-template-columns: 1fr; } .cs-auth-art { display: none; } }
+
+/* ---------- Skeletons ---------- */
+.cs-skeleton { border-radius: var(--cs-radius); background: linear-gradient(100deg, var(--cs-soft) 30%, #fffdf8 50%, var(--cs-soft) 70%); background-size: 220% 100%; animation: cs-shimmer 1.4s ease-in-out infinite; }
+@keyframes cs-shimmer { 0% { background-position: 140% 0; } 100% { background-position: -40% 0; } }
+@media (prefers-reduced-motion: reduce) { .cs-skeleton { animation: none; } }
+
+/* ---------- The shared editor on a phone ---------- */
+@media (max-width: 860px) {
+  .cs .pe-top { padding: 8px 10px; gap: 8px; align-items: center; }
+  .cs .pe-title { order: 0; flex: 1; min-width: 0; }
+  .cs .pe-title input { width: 100%; max-width: 100%; font-size: 15px; text-overflow: ellipsis; }
+  .cs .pe-title span { display: none; }
+  /* One tidy scrollable row of actions instead of a wrapped block. */
+  .cs .pe-top-actions { order: 1; width: 100%; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; gap: 6px; justify-content: flex-start; padding-bottom: 2px; }
+  .cs .pe-top-actions::-webkit-scrollbar { display: none; }
+  .cs .pe-top-actions > * { flex: 0 0 auto; }
+  .cs .pe-top-actions .pe-btn-primary { order: -1; }
+  .cs .pe-rail { gap: 2px; }
+  .cs .pe-panel { border-radius: 18px 18px 0 0; }
+}

@@ -17,8 +17,9 @@ export default async function CreatorCatalogPage() {
       .catch(() => ({ rows: [], error: "The catalog is taking a break. Your saved products are below — try again in a minute." })),
   ]);
   const blanks = [
-    ...mine.map((b) => ({ ...b, brand: "Your product" })),
-    ...remote.rows.map((p) => ({
+    ...mine.filter((b) => Boolean(b.imageUrl)).map((b) => ({ ...b, brand: "Your product" })),
+    // A product with no photo can't be designed on, so it never reaches the grid.
+    ...remote.rows.filter((p) => Boolean(p.images[0])).map((p) => ({
       id: `printify-${p.id}`,
       name: p.title,
       category: catalogCategory(p.title),

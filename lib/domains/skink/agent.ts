@@ -406,6 +406,37 @@ export async function runCreatorTurn(input: {
   return { reply: "I did a lot of digging there — ask me to summarize what I found?", credits: meter.credits, events, models: [...meter.models] };
 }
 
+/** Visitors, streamed — the storefront's first impression. */
+export async function streamVisitorTurn(
+  input: { history: SkinkTurn[]; message: string },
+  onDelta: (delta: string) => void,
+  signal?: AbortSignal,
+): Promise<string> {
+  const resolved = resolveModel("chat", "light");
+  const stream = await resolved.client.chat.completions.create(
+    {
+      model: resolved.model,
+      messages: [
+        { role: "system", content: VISITOR_PERSONA },
+        ...input.history.slice(-10).map((t) => ({ role: t.role, content: t.content.slice(0, 2000) }) as ChatMessage),
+        { role: "user", content: input.message },
+      ],
+      ...tokenLimit(resolved, 500),
+      stream: true,
+    },
+    { signal },
+  );
+  let text = "";
+  for await (const chunk of stream) {
+    const delta = chunk.choices?.[0]?.delta?.content;
+    if (delta) {
+      text += delta;
+      onDelta(delta);
+    }
+  }
+  return text;
+}
+
 /** Visitors: cheapest model, no tools, no memory. */
 export async function runVisitorTurn(input: { history: SkinkTurn[]; message: string }): Promise<string> {
   const resolved = resolveModel("chat", "light");

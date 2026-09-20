@@ -36,11 +36,15 @@ export function getDb(): Db {
       throw new Error("DATABASE_URL is not set");
     }
 
+    // A handful of connections per instance: one made "parallel" queries queue
+    // behind each other (and time out under load). The transaction pooler is
+    // built for this, and each serverless instance keeps its own small pool.
     const sql = postgres(resolveAppDatabaseUrl(connectionString), {
       prepare: false,
-      max: 1,
+      max: Number(process.env.DATABASE_POOL_MAX ?? 5),
       idle_timeout: 20,
-      connect_timeout: 10,
+      connect_timeout: 15,
+      max_lifetime: 60 * 30,
     });
 
     globalForDb.sql = sql;

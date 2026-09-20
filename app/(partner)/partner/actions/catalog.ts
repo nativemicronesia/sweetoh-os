@@ -23,6 +23,7 @@ import {
 } from "@/lib/domains/catalog/service";
 import { defaultPrintAreaFor, defaultUpcharges, sortSizes } from "@/lib/domains/catalog/variants";
 import { areaSchema } from "@/lib/domains/catalog/studio-layout";
+import { ValidationError } from "@/lib/shared/errors";
 import { getProductById } from "@/lib/domains/catalog/service";
 
 export async function startCatalogDesign(form: FormData) {
@@ -131,8 +132,13 @@ export async function startCatalogDesign(form: FormData) {
     redirect(`${paths.canvas}?blank=${product.id}`);
   } catch (error) {
     unstable_rethrow(error);
-    redirect(
-      `${paths.catalog}/printify-${id}?error=${encodeURIComponent("Couldn’t prepare this product. Try again or choose another product image.")}`,
-    );
+    // Say which step failed, so "try again" isn't the only thing on offer.
+    const message = error instanceof ValidationError
+      ? error.message
+      : /fetch failed|timeout|ECONN|ETIMEDOUT/i.test(String(error))
+        ? "Printify didn’t answer just now. Wait a moment and try again — nothing was lost."
+        : "Couldn’t prepare this product. Try another product photo, or pick a different product.";
+    console.error("catalog_prepare_failed", { blueprintId: id, error: error instanceof Error ? error.message : String(error) });
+    redirect(`${paths.catalog}/printify-${id}?error=${encodeURIComponent(message)}`);
   }
 }

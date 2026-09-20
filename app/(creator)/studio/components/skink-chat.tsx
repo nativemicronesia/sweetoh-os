@@ -71,6 +71,15 @@ export function SkinkChat({
 
   useEffect(() => () => abort.current?.abort(), []);
 
+  // Esc stops a running answer, like every other AI app.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && abort.current) abort.current.abort();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   const send = useCallback(
     async (text?: string) => {
       const message = (text ?? input).trim();
@@ -257,13 +266,14 @@ export function SkinkChat({
             ref={boxRef}
             value={input}
             rows={1}
-            placeholder="Ask Skink anything — niches, designs, pricing, Printify…"
+            placeholder="Ask Skink anything…"
             aria-label="Message Skink"
             onChange={(e) => {
               setInput(e.target.value);
               e.target.style.height = "auto";
               e.target.style.height = `${Math.min(180, e.target.scrollHeight)}px`;
             }}
+            disabled={false}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
@@ -289,7 +299,7 @@ export function SkinkChat({
                 );
               })}
             </div>
-            <span className="cs-muted" style={{ fontSize: 12 }}>
+            <span className="cs-muted cs-hint" style={{ fontSize: 12 }}>
               Enter to send · Shift+Enter for a new line
             </span>
           </div>
