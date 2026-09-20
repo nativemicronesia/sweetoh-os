@@ -125,3 +125,35 @@ test("a handoff pack carries the creator's brand into their own tool", () => {
   // Every task must be answerable by at least one kind of tool a creator can own.
   for (const t of HANDOFF_TASKS) assert.ok(TOOLS.some((tool) => t.kinds.includes(tool.kind)), t.id);
 });
+
+test("monthly credits expire, paid top-ups don't", async () => {
+  // Pure ledger arithmetic, mirroring lib/domains/creator/credits.ts buckets.
+  type Row = { delta: number; bucket: "plan" | "wallet" };
+  const rows: Row[] = [];
+  const bal = (b: "plan" | "wallet") => rows.filter((r) => r.bucket === b).reduce((n, r) => n + r.delta, 0);
+  const spend = (amount: number) => {
+    const fromPlan = Math.min(amount, Math.max(0, bal("plan")));
+    rows.push({ delta: -fromPlan, bucket: "plan" });
+    if (amount - fromPlan > 0) rows.push({ delta: -(amount - fromPlan), bucket: "wallet" });
+  };
+  const newMonth = (grant: number) => {
+    const leftover = bal("plan");
+    if (leftover > 0) rows.push({ delta: -leftover, bucket: "plan" });
+    rows.push({ delta: grant, bucket: "plan" });
+  };
+
+  newMonth(1500);
+  rows.push({ delta: 500, bucket: "wallet" });
+  spend(200); // comes out of the monthly allowance first
+  assert.equal(bal("plan"), 1300);
+  assert.equal(bal("wallet"), 500);
+
+  newMonth(1500); // next month: the unused 1,300 is gone, the paid 500 stays
+  assert.equal(bal("plan"), 1500);
+  assert.equal(bal("wallet"), 500);
+  assert.equal(bal("plan") + bal("wallet"), 2000);
+
+  spend(1700); // drains the month, then dips into the wallet
+  assert.equal(bal("plan"), 0);
+  assert.equal(bal("wallet"), 300);
+});

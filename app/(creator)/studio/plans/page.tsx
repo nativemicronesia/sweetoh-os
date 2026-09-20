@@ -9,7 +9,7 @@ export const metadata = { title: "Plans & credits" };
 
 export default async function PlansPage({ searchParams }: { searchParams: Promise<{ success?: string; topup?: string; error?: string; canceled?: string }> }) {
   const session = await requireCreator();
-  const [query, { balance, plan, status }, profile, activity] = await Promise.all([
+  const [query, { balance, plan, status, monthly, wallet }, profile, activity] = await Promise.all([
     searchParams,
     getCreditBalance(session.appUser.id),
     getCreatorProfile(session.appUser.id),
@@ -51,7 +51,11 @@ export default async function PlansPage({ searchParams }: { searchParams: Promis
         <div className="cs-card cs-pad">
           <div className="cs-muted" style={{ fontSize: 13 }}>Credits left</div>
           <div className="cs-display" style={{ fontSize: 28, margin: "4px 0" }}><Coins size={22} color="var(--cs-gold)" style={{ verticalAlign: -2 }} /> {formatCredits(balance)}</div>
-          <div className="cs-muted" style={{ fontSize: 14 }}>+{(trialing && plan.trialCredits ? plan.trialCredits : plan.monthlyCredits).toLocaleString()} every month{trialing ? " during your free trial" : ""}</div>
+          <div className="cs-muted" style={{ fontSize: 14 }}>
+            {formatCredits(monthly)} of this month&apos;s {(trialing && plan.trialCredits ? plan.trialCredits : plan.monthlyCredits).toLocaleString()}
+            {wallet > 0 ? ` · ${formatCredits(wallet)} top-up credits (these never expire)` : ""}
+          </div>
+          <div className="cs-muted" style={{ fontSize: 13, marginTop: 6 }}>Monthly credits refresh on the 1st — whatever&apos;s left doesn&apos;t carry over.</div>
           {paid && (
             <form action={topUpAction} style={{ marginTop: 14 }}>
               <SubmitButton className="cs-btn cs-btn-ghost cs-btn-sm">Top up {TOPUP.credits} for {formatUsd(TOPUP.cents)}</SubmitButton>
