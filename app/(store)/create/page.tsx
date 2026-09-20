@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { listBestsellerBlueprints, listPrintifyBlueprints } from "@/lib/integrations/printify/catalog";
 import { PLANS, formatUsd } from "@/lib/domains/creator/plans";
+import { creatorSignupsOpen } from "@/lib/domains/creator/access";
 import { MascotCharacter } from "../components/mascot-character";
 import "@/app/(creator)/studio/creator.css";
 import "./create.css";
@@ -59,6 +60,8 @@ const FAQ = [
 
 export default async function CreateWithSweetOhPage() {
   const [picks, all] = await Promise.all([listBestsellerBlueprints().catch(() => []), listPrintifyBlueprints().catch(() => [])]);
+  const open = creatorSignupsOpen();
+  const joinLabel = open ? "Start free" : "Join the waitlist";
   const gallery = picks.filter((b: (typeof picks)[number]) => b.images[0]).slice(0, 6);
   const count = all.length ? `${Math.floor(all.length / 100) * 100}+` : "Hundreds of";
 
@@ -74,10 +77,12 @@ export default async function CreateWithSweetOhPage() {
               Meet <strong>Skink</strong> — the Sweet&apos;Oh AI agent for print-on-demand. He teaches you the business, researches your niche, designs with you in the Studio, and helps you set up your own store. He works with what you already pay for, too.
             </p>
             <div className="cs-row" style={{ marginTop: 26 }}>
-              <Link href="/studio/join" className="cs-btn cs-btn-primary cs-btn-lg">Start free <ArrowRight size={18} /></Link>
+              <Link href="/studio/join" className="cs-btn cs-btn-primary cs-btn-lg">{joinLabel} <ArrowRight size={18} /></Link>
               <Link href="#how" className="cs-btn cs-btn-ghost cs-btn-lg">See how it works</Link>
             </div>
-            <p className="cs-muted" style={{ fontSize: 13, marginTop: 14 }}>Free forever plan · no card needed · built by islanders, open to everyone</p>
+            <p className="cs-muted" style={{ fontSize: 13, marginTop: 14 }}>
+              {open ? "Free forever plan · no card needed · built by islanders, open to everyone" : "Opening soon · built by islanders, open to everyone"}
+            </p>
           </div>
           <div className="cw-collage" aria-hidden>
             {gallery.map((b: (typeof gallery)[number], i: number) => (
@@ -230,12 +235,12 @@ export default async function CreateWithSweetOhPage() {
           <h2 className="cw-h2">Start free. Grow when you&apos;re ready.</h2>
           <div className="cs-founding" style={{ margin: "18px 0 22px" }}>
             <div>
-              <strong>Creator is free for 3 months</strong>
+              <strong>{open ? "Creator is free for 3 months" : "Creator will be free for 3 months"}</strong>
               <p className="cs-muted" style={{ margin: "4px 0 0", fontSize: 14 }}>
                 Card up front, nothing charged until month four, cancel any time.
               </p>
             </div>
-            <Link href="/studio/join?next=/studio/plans" className="cs-btn cs-btn-coral">Start 3 months free</Link>
+            <Link href="/studio/join?next=/studio/plans" className="cs-btn cs-btn-coral">{open ? "Start 3 months free" : "Join the waitlist"}</Link>
           </div>
           <div className="cs-plans">
             {(["free", "creator", "pro"] as const).map((id) => {
@@ -250,7 +255,7 @@ export default async function CreateWithSweetOhPage() {
                   <ul>{p.features.map((f) => <li key={f}><Check size={16} /> {f}</li>)}</ul>
                   <div className="cs-plan-actions">
                     <Link href={id === "free" ? "/studio/join" : "/studio/join?next=/studio/plans"} className={`cs-btn ${id === "creator" ? "cs-btn-primary" : "cs-btn-ghost"}`}>
-                      {id === "free" ? "Start free" : id === "creator" ? "Start 3 months free" : `Choose ${p.name}`}
+                      {!open ? "Join the waitlist" : id === "free" ? "Start free" : id === "creator" ? "Start 3 months free" : `Choose ${p.name}`}
                     </Link>
                   </div>
                 </article>
@@ -282,7 +287,7 @@ export default async function CreateWithSweetOhPage() {
             <MascotCharacter size={80} />
             <h2 className="cw-h2" style={{ color: "white", margin: "14px auto 10px", maxWidth: "18ch" }}>Your brand starts with one design.</h2>
             <p style={{ margin: "0 auto 24px", maxWidth: "46ch" }}>Make it today. Skink will show you the way.</p>
-            <Link href="/studio/join" className="cs-btn cs-btn-lime cs-btn-lg">Create my free studio <ArrowRight size={18} /></Link>
+            <Link href="/studio/join" className="cs-btn cs-btn-lime cs-btn-lg">{open ? "Create my free studio" : "Join the waitlist"} <ArrowRight size={18} /></Link>
           </div>
         </div>
       </section>

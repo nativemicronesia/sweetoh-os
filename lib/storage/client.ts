@@ -38,20 +38,37 @@ export async function downloadFromBucket(input: {
   return Buffer.from(await data.arrayBuffer());
 }
 
+/**
+ * Signed links are re-requested for every thumbnail on every page view, which
+ * put a Supabase round trip in front of each image. They're valid for an hour,
+ * so hold them in memory for most of that and hand back the same link.
+ */
+const signedUrlCache = new Map<string, { url: string; expiresAt: number }>();
+
 export async function createSignedUrl(input: {
   bucket: string;
   objectKey: string;
   expiresInSeconds?: number;
 }) {
+  const ttl = input.expiresInSeconds ?? 3600;
+  const key = `${input.bucket}/${input.objectKey}/${ttl}`;
+  const hit = signedUrlCache.get(key);
+  if (hit && hit.expiresAt > Date.now()) return hit.url;
+
   const admin = createAdminClient();
   const { data, error } = await admin.storage
     .from(input.bucket)
-    .createSignedUrl(input.objectKey, input.expiresInSeconds ?? 3600);
+    .createSignedUrl(input.objectKey, ttl);
 
   if (error) {
     throw error;
   }
 
+  // Keep a safety margin so a cached link never expires in someone's browser.
+  signedUrlCache.set(key, { url: data.signedUrl, expiresAt: Date.now() + Math.max(30, ttl - 300) * 1000 });
+  if (signedUrlCache.size > 2000) {
+    for (const [k, v] of signedUrlCache) if (v.expiresAt <= Date.now()) signedUrlCache.delete(k);
+  }
   return data.signedUrl;
 }
 

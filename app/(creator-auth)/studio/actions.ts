@@ -4,7 +4,9 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/auth/supabase/server";
 import { createAdminClient } from "@/lib/auth/supabase/admin";
-import { createCreatorAccount, getSessionUser } from "@/lib/domains/identity/service";
+import { createCreatorAccount, getDefaultVenture, getSessionUser } from "@/lib/domains/identity/service";
+import { subscribeEmail } from "@/lib/domains/marketing/service";
+import { creatorSignupsOpen } from "@/lib/domains/creator/access";
 
 export type AuthState = { error?: string; email?: string; name?: string } | undefined;
 
@@ -24,7 +26,20 @@ function safeNext(raw: FormDataEntryValue | null) {
  * creator lands straight in the Studio (email verification can be switched on
  * once transactional email is wired).
  */
+export async function joinWaitlistAction(form: FormData): Promise<{ error?: string }> {
+  const email = z.string().trim().toLowerCase().email().safeParse(form.get("email"));
+  if (!email.success) return { error: "Enter a valid email address." };
+  try {
+    const venture = await getDefaultVenture();
+    await subscribeEmail({ ventureId: venture.id, email: email.data, source: "creator-waitlist" });
+    return {};
+  } catch {
+    return { error: "Couldn't save that — try again in a moment." };
+  }
+}
+
 export async function joinAction(_prev: AuthState, form: FormData): Promise<AuthState> {
+  if (!creatorSignupsOpen()) return { error: "Creator sign-ups aren't open yet." };
   const parsed = joinSchema.safeParse({ name: form.get("name"), email: form.get("email"), password: form.get("password") });
   const echo = { email: String(form.get("email") ?? ""), name: String(form.get("name") ?? "") };
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Check your details.", ...echo };
