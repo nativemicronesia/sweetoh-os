@@ -1,8 +1,7 @@
 import { Check, Coins, Sparkles } from "lucide-react";
 import { requireCreator } from "@/lib/domains/identity/service";
 import { getCreatorProfile, getCreditBalance, recentCreditActivity } from "@/lib/domains/creator/credits";
-import { ACTION_CREDITS, FOUNDING_SPOTS, PLANS, TOPUP, formatCredits, formatUsd } from "@/lib/domains/creator/plans";
-import { foundingSpotsLeft } from "@/lib/integrations/stripe/billing";
+import { ACTION_CREDITS, PLANS, TOPUP, formatCredits, formatUsd } from "@/lib/domains/creator/plans";
 import { billingPortalAction, startSubscriptionAction, topUpAction } from "../actions/billing";
 import { SubmitButton } from "../components/submit-button";
 
@@ -10,15 +9,14 @@ export const metadata = { title: "Plans & credits" };
 
 export default async function PlansPage({ searchParams }: { searchParams: Promise<{ success?: string; topup?: string; error?: string; canceled?: string }> }) {
   const session = await requireCreator();
-  const [query, { balance, plan }, profile, activity, spots] = await Promise.all([
+  const [query, { balance, plan, status }, profile, activity] = await Promise.all([
     searchParams,
     getCreditBalance(session.appUser.id),
     getCreatorProfile(session.appUser.id),
     recentCreditActivity(session.appUser.id, 15),
-    foundingSpotsLeft().catch(() => 0),
   ]);
   const paid = plan.id !== "free";
-  const taken = FOUNDING_SPOTS - spots;
+  const trialing = status === "trialing";
 
   return (
     <div className="cs-stack" style={{ gap: 26 }}>
@@ -37,7 +35,11 @@ export default async function PlansPage({ searchParams }: { searchParams: Promis
           <div className="cs-muted" style={{ fontSize: 13 }}>Your plan</div>
           <div className="cs-display" style={{ fontSize: 28, margin: "4px 0" }}>{plan.name}{profile?.founding ? " · Founding" : ""}</div>
           <div className="cs-muted" style={{ fontSize: 14 }}>
-            {paid && profile?.currentPeriodEnd ? `Renews ${profile.currentPeriodEnd.toLocaleDateString()}` : paid ? "Active" : "Free forever"}
+            {trialing && profile?.currentPeriodEnd
+              ? `Free until ${profile.currentPeriodEnd.toLocaleDateString()}`
+              : paid && profile?.currentPeriodEnd
+                ? `Renews ${profile.currentPeriodEnd.toLocaleDateString()}`
+                : paid ? "Active" : "Free forever"}
             {profile?.planStatus === "past_due" && " · payment needs attention"}
           </div>
           {profile?.stripeCustomerId && (
@@ -49,7 +51,7 @@ export default async function PlansPage({ searchParams }: { searchParams: Promis
         <div className="cs-card cs-pad">
           <div className="cs-muted" style={{ fontSize: 13 }}>Credits left</div>
           <div className="cs-display" style={{ fontSize: 28, margin: "4px 0" }}><Coins size={22} color="var(--cs-gold)" style={{ verticalAlign: -2 }} /> {formatCredits(balance)}</div>
-          <div className="cs-muted" style={{ fontSize: 14 }}>+{plan.monthlyCredits.toLocaleString()} every month</div>
+          <div className="cs-muted" style={{ fontSize: 14 }}>+{(trialing && plan.trialCredits ? plan.trialCredits : plan.monthlyCredits).toLocaleString()} every month{trialing ? " during your free trial" : ""}</div>
           {paid && (
             <form action={topUpAction} style={{ marginTop: 14 }}>
               <SubmitButton className="cs-btn cs-btn-ghost cs-btn-sm">Top up {TOPUP.credits} for {formatUsd(TOPUP.cents)}</SubmitButton>
@@ -67,12 +69,13 @@ export default async function PlansPage({ searchParams }: { searchParams: Promis
         </div>
       </section>
 
-      {spots > 0 && plan.id === "free" && (
+      {plan.id === "free" && (
         <div className="cs-founding">
           <div>
-            <strong>Founding creators — {spots} of {FOUNDING_SPOTS} spots left</strong>
-            <p className="cs-muted" style={{ margin: "4px 0 10px", fontSize: 14 }}>Go yearly now and keep the founding price for as long as you stay.</p>
-            <div className="cs-bar"><span style={{ width: `${Math.max(4, (taken / FOUNDING_SPOTS) * 100)}%` }} /></div>
+            <strong>Try Creator free for 3 months</strong>
+            <p className="cs-muted" style={{ margin: "4px 0 0", fontSize: 14 }}>
+              Skink helps you set up your store, find your niche, design products and write your listings. Card up front, nothing charged until month four, cancel any time.
+            </p>
           </div>
           <Sparkles size={34} color="var(--cs-coral)" />
         </div>
@@ -94,7 +97,7 @@ export default async function PlansPage({ searchParams }: { searchParams: Promis
               <div className="cs-plan-price">{p.monthlyCents ? formatUsd(p.monthlyCents) : "$0"}<small> /month</small></div>
               {p.monthlyCents > 0 && (
                 <div className="cs-muted" style={{ fontSize: 13 }}>
-                  or {spots > 0 ? <><s>{formatUsd(p.yearlyCents)}</s> <strong style={{ color: "var(--cs-coral)" }}>{formatUsd(p.foundingYearlyCents)}/year founding</strong></> : `${formatUsd(p.yearlyCents)}/year`}
+                  {p.trialDays ? `Free for ${Math.round(p.trialDays / 30)} months, then ${formatUsd(p.monthlyCents)}/month` : `or ${formatUsd(p.yearlyCents)}/year — 6 months free`}
                 </div>
               )}
               <ul>
@@ -109,23 +112,18 @@ export default async function PlansPage({ searchParams }: { searchParams: Promis
                   <span className="cs-badge cs-badge-green" style={{ justifyContent: "center", padding: 10 }}>Your plan</span>
                 ) : (
                   <>
-                    {spots > 0 && (
-                      <form action={startSubscriptionAction}>
-                        <input type="hidden" name="plan" value={id} />
-                        <input type="hidden" name="interval" value="year" />
-                        <SubmitButton className={`cs-btn ${featured ? "cs-btn-primary" : "cs-btn-lime"}`} style={{ width: "100%" }}>Founding yearly · {formatUsd(p.foundingYearlyCents)}</SubmitButton>
-                      </form>
-                    )}
                     <form action={startSubscriptionAction}>
                       <input type="hidden" name="plan" value={id} />
                       <input type="hidden" name="interval" value="month" />
-                      <SubmitButton className={`cs-btn ${spots > 0 ? "cs-btn-ghost" : featured ? "cs-btn-primary" : "cs-btn-lime"}`} style={{ width: "100%" }}>Monthly · {formatUsd(p.monthlyCents)}</SubmitButton>
+                      <SubmitButton className={`cs-btn ${featured ? "cs-btn-primary" : "cs-btn-lime"}`} style={{ width: "100%" }}>
+                        {p.trialDays ? "Start 3 months free" : `Monthly · ${formatUsd(p.monthlyCents)}`}
+                      </SubmitButton>
                     </form>
-                    {spots === 0 && (
+                    {p.yearlyCents > 0 && (
                       <form action={startSubscriptionAction}>
                         <input type="hidden" name="plan" value={id} />
                         <input type="hidden" name="interval" value="year" />
-                        <SubmitButton className="cs-btn cs-btn-ghost" style={{ width: "100%" }}>Yearly · {formatUsd(p.yearlyCents)}</SubmitButton>
+                        <SubmitButton className="cs-btn cs-btn-ghost" style={{ width: "100%" }}>Yearly · {formatUsd(p.yearlyCents)} (6 months free)</SubmitButton>
                       </form>
                     )}
                   </>

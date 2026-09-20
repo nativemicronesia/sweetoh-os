@@ -3,7 +3,7 @@ import { eq, sql } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import { creatorProfile } from "@/lib/db/schema";
 import { getPublicEnv } from "@/lib/config/env";
-import { FOUNDING_SPOTS, PLANS, TOPUP, type PlanId } from "@/lib/domains/creator/plans";
+import { PLANS, TOPUP, type PlanId } from "@/lib/domains/creator/plans";
 import { addCredits } from "@/lib/domains/creator/credits";
 import { markPrintRequestPaid } from "@/lib/domains/creator/print-requests-billing";
 import { ValidationError } from "@/lib/shared/errors";
@@ -15,14 +15,6 @@ import { getStripeClient } from "./client";
  * live keys switches real billing on with no code change.
  */
 export type CheckoutKind = "creator_subscription" | "credit_topup" | "print_request";
-
-export async function foundingSpotsLeft(): Promise<number> {
-  const [row] = await getDb()
-    .select({ n: sql<number>`count(*)::int` })
-    .from(creatorProfile)
-    .where(eq(creatorProfile.founding, true));
-  return Math.max(0, FOUNDING_SPOTS - (row?.n ?? 0));
-}
 
 function site(path: string) {
   return new URL(path, getPublicEnv().siteUrl).toString();
@@ -36,9 +28,11 @@ export async function createSubscriptionCheckout(input: {
   interval: "month" | "year";
 }) {
   const plan = PLANS[input.plan];
-  const founding = input.interval === "year" && (await foundingSpotsLeft()) > 0;
-  const amount = input.interval === "month" ? plan.monthlyCents : founding ? plan.foundingYearlyCents : plan.yearlyCents;
-  const metadata = { kind: "creator_subscription", userId: input.userId, plan: plan.id, interval: input.interval, founding: String(founding) };
+  const yearly = input.interval === "year" && plan.yearlyCents > 0;
+  const amount = yearly ? plan.yearlyCents : plan.monthlyCents;
+  // Card up front; the first charge lands after the free months.
+  const trialDays = input.interval === "month" ? plan.trialDays : undefined;
+  const metadata = { kind: "creator_subscription", userId: input.userId, plan: plan.id, interval: yearly ? "year" : "month" };
   const session = await getStripeClient().checkout.sessions.create({
     mode: "subscription",
     ...(input.customerId ? { customer: input.customerId } : { customer_email: input.email }),
@@ -49,16 +43,16 @@ export async function createSubscriptionCheckout(input: {
         price_data: {
           currency: "usd",
           unit_amount: amount,
-          recurring: { interval: input.interval },
+          recurring: { interval: yearly ? "year" : "month" },
           product_data: {
-            name: `Sweet'Oh ${plan.name}${founding ? " — Founding Creator" : ""}`,
+            name: `Sweet'Oh ${plan.name}${yearly ? " — yearly" : ""}`,
             description: `${plan.monthlyCredits.toLocaleString()} Sweet'Oh AI credits every month. ${plan.tagline}.`,
           },
         },
       },
     ],
     metadata,
-    subscription_data: { metadata },
+    subscription_data: { metadata, ...(trialDays ? { trial_period_days: trialDays } : {}) },
     allow_promotion_codes: true,
     success_url: site(`/studio/plans?success=${plan.id}`),
     cancel_url: site("/studio/plans?canceled=1"),
@@ -138,17 +132,18 @@ export async function handleCreatorBillingEvent(event: Stripe.Event): Promise<bo
     if (kind === "creator_subscription") {
       const plan = s.metadata?.plan === "pro" ? "pro" : "creator";
       let end: Date | null = null;
+      let status = "active";
       if (typeof s.subscription === "string") {
         const sub = await getStripeClient().subscriptions.retrieve(s.subscription).catch(() => null);
         end = sub ? periodEnd(sub) : null;
+        if (sub?.status === "trialing") status = "trialing";
       }
       await db
         .update(creatorProfile)
         .set({
           plan,
-          planStatus: "active",
+          planStatus: status,
           billingInterval: s.metadata?.interval === "year" ? "year" : "month",
-          founding: s.metadata?.founding === "true" ? true : undefined,
           stripeCustomerId: typeof s.customer === "string" ? s.customer : null,
           stripeSubscriptionId: typeof s.subscription === "string" ? s.subscription : null,
           currentPeriodEnd: end,
@@ -175,7 +170,12 @@ export async function handleCreatorBillingEvent(event: Stripe.Event): Promise<bo
     const sub = event.data.object as Stripe.Subscription;
     const userId = sub.metadata?.userId;
     if (sub.metadata?.kind !== "creator_subscription" || !userId) return false;
-    const status = event.type === "customer.subscription.deleted" ? "canceled" : sub.status === "active" || sub.status === "trialing" ? "active" : sub.status === "past_due" ? "past_due" : "canceled";
+    const status =
+      event.type === "customer.subscription.deleted" ? "canceled"
+      : sub.status === "trialing" ? "trialing"
+      : sub.status === "active" ? "active"
+      : sub.status === "past_due" ? "past_due"
+      : "canceled";
     await db
       .update(creatorProfile)
       .set({ planStatus: status, currentPeriodEnd: periodEnd(sub), updatedAt: new Date() })

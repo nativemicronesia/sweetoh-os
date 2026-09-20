@@ -41,6 +41,8 @@ export const creatorProfile = pgTable("creator_profile", {
   printifyTokenEnc: text("printify_token_enc"),
   printifyShopId: text("printify_shop_id"),
   printifyShopTitle: text("printify_shop_title"),
+  /** Subscriptions/tools the creator already pays for, so Skink hands work to them. */
+  tools: jsonb("tools").$type<string[]>(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

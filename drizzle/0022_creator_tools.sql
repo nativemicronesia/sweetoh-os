@@ -1,0 +1,1 @@
+ALTER TABLE "creator_profile" ADD COLUMN IF NOT EXISTS "tools" jsonb;

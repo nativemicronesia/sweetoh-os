@@ -28,6 +28,7 @@ export default async function StudioHome({ searchParams }: { searchParams: Promi
     { done: memories.some((m) => m.kind === "brand" || m.kind === "goal"), title: "Tell Skink your idea", text: "Your brand, audience, vibe", href: "/studio/skink" },
     { done: blanks.length > 0, title: "Pick a product", text: "Tees, hoodies, mugs & more", href: "/studio/catalog" },
     { done: saved.length > 0, title: "Design & save it", text: "AI, text, patterns, layers", href: saved.length ? "/studio/designs" : "/studio/catalog" },
+    { done: (profile?.tools ?? []).length > 0, title: "Add your tools", text: "Use your ChatGPT, Canva, Printify", href: "/studio/tools" },
     { done: Boolean(profile?.printifyShopId), title: "Connect Printify", text: "Your own store, your money", href: "/studio/settings" },
   ];
   const doneCount = steps.filter((s) => s.done).length;
@@ -132,10 +133,10 @@ export default async function StudioHome({ searchParams }: { searchParams: Promi
           {plan.id === "free" && (
             <div className="cs-founding">
               <div>
-                <strong>Become a founding creator</strong>
-                <p className="cs-muted" style={{ margin: "4px 0 0", fontSize: 14 }}>Smart Skink, unlimited designs and 20× the credits.</p>
+                <strong>Try Creator free for 3 months</strong>
+                <p className="cs-muted" style={{ margin: "4px 0 0", fontSize: 14 }}>Skink helps you set up your store, find your niche and run the business. Nothing charged until month four.</p>
               </div>
-              <Link href="/studio/plans" className="cs-btn cs-btn-primary">See plans</Link>
+              <Link href="/studio/plans" className="cs-btn cs-btn-primary">Start free</Link>
             </div>
           )}
         </div>

@@ -3,10 +3,11 @@ import assert from "node:assert/strict";
 import { hasPermission, PERMISSIONS } from "../lib/domains/identity/permissions";
 import { studioBase } from "../lib/domains/identity/service";
 import { actionCreditsForKey, planFor, PLANS } from "../lib/domains/creator/plans";
-import { activePlan } from "../lib/domains/creator/credits";
+import { activePlan, monthlyAllowance } from "../lib/domains/creator/credits";
 import { creditsForUsage, resolveModel, litellmAliases } from "../lib/ai/router";
 import { decryptToken, encryptToken } from "../lib/integrations/printify/creator-shop";
 import { memoryPromptBlock } from "../lib/domains/skink/memory";
+import { buildHandoffPack, HANDOFF_TASKS, TOOLS, taskById, toolById } from "../lib/domains/skink/handoff";
 
 function withEnv(vars: Record<string, string | undefined>, fn: () => void) {
   const saved = Object.fromEntries(Object.keys(vars).map((k) => [k, process.env[k]]));
@@ -33,10 +34,20 @@ test("plans: free is light-only, paid tiers unlock smart and deep", () => {
   assert.deepEqual(PLANS.free.levels, ["light"]);
   assert.ok(PLANS.creator.levels.includes("smart") && !PLANS.creator.levels.includes("deep"));
   assert.ok(PLANS.pro.levels.includes("deep"));
-  assert.equal(PLANS.creator.monthlyCents, 2400);
-  assert.equal(PLANS.pro.monthlyCents, 7900);
-  assert.ok(PLANS.creator.foundingYearlyCents < PLANS.creator.yearlyCents);
+  assert.equal(PLANS.creator.monthlyCents, 4900);
+  assert.equal(PLANS.pro.monthlyCents, 11100);
+  // Creator: 3 months free, card up front. Pro yearly: 6 months free.
+  assert.equal(PLANS.creator.trialDays, 90);
+  assert.equal(PLANS.creator.trialCredits, 1000);
+  assert.equal(PLANS.pro.yearlyCents, PLANS.pro.monthlyCents * 6);
   assert.equal(planFor("nonsense").id, "free");
+});
+
+test("a trial is live, and a lapsed subscription falls back to Free", () => {
+  assert.equal(activePlan({ plan: "creator", planStatus: "trialing" }).id, "creator");
+  assert.equal(monthlyAllowance(PLANS.creator, "trialing"), 1000);
+  assert.equal(monthlyAllowance(PLANS.creator, "active"), 1500);
+  assert.equal(monthlyAllowance(PLANS.pro, "trialing"), 3500);
 });
 
 test("a lapsed subscription falls back to Free", () => {
@@ -96,4 +107,21 @@ test("memory reaches Skink as a compact private block, not chat history", () => 
   ]);
   assert.match(block, /\[brand\].*Brand name: Isla Bloom/);
   assert.match(memoryPromptBlock([]), /don't know anything/);
+});
+
+test("a handoff pack carries the creator's brand into their own tool", () => {
+  const now = new Date();
+  const memories = [
+    { id: "m1", userId: "u", kind: "brand", title: "Brand name", body: "Isla Bloom", source: "skink", pinned: false, archivedAt: null, createdAt: now, updatedAt: now },
+    { id: "m2", userId: "u", kind: "goal", title: "Goal", body: "Sell to Chuukese families in the diaspora", source: "skink", pinned: false, archivedAt: null, createdAt: now, updatedAt: now },
+  ];
+  const tool = toolById("chatgpt")!;
+  const task = taskById("niche")!;
+  const pack = buildHandoffPack({ tool, task, brief: "island florals", memories, name: "Maria" });
+  assert.match(pack, /Isla Bloom/);
+  assert.match(pack, /Chuukese families/);
+  assert.match(pack, /NICHE: island florals/);
+  assert.match(pack, /Maria/);
+  // Every task must be answerable by at least one kind of tool a creator can own.
+  for (const t of HANDOFF_TASKS) assert.ok(TOOLS.some((tool) => t.kinds.includes(tool.kind)), t.id);
 });

@@ -8,7 +8,7 @@ import { z } from "zod";
 import { getDb } from "@/lib/db/client";
 import { skinkVisitorUsage } from "@/lib/db/schema";
 import { getSessionUser, requireCreator } from "@/lib/domains/identity/service";
-import { getCreditBalance, spendCredits } from "@/lib/domains/creator/credits";
+import { getCreatorProfile, getCreditBalance, spendCredits } from "@/lib/domains/creator/credits";
 import type { AiLevel } from "@/lib/domains/creator/plans";
 import { runCreatorTurn, runVisitorTurn, type SkinkEvent } from "@/lib/domains/skink/agent";
 import { appendMessages, createThread, deleteThread, listMessages } from "@/lib/domains/skink/threads";
@@ -36,7 +36,7 @@ export async function sendSkinkMessage(input: { threadId?: string | null; messag
   if (!message.success) return { ok: false, error: "Type a message first." };
   if (!isAiConfigured()) return { ok: false, error: "Sweet'Oh AI isn't switched on yet.", code: "config" };
 
-  const { balance, plan } = await getCreditBalance(session.appUser.id);
+  const [{ balance, plan }, profile] = await Promise.all([getCreditBalance(session.appUser.id), getCreatorProfile(session.appUser.id)]);
   const level: AiLevel = input.level && plan.levels.includes(input.level) ? input.level : plan.levels.includes("smart") ? "smart" : "light";
   if (balance < 0.2) return { ok: false, error: "You're out of credits for this month. Upgrade or top up to keep chatting with Skink.", code: "credits" };
 
@@ -45,7 +45,7 @@ export async function sendSkinkMessage(input: { threadId?: string | null; messag
     const history = input.threadId
       ? (await listMessages(session.appUser.id, thread.id)).map((m) => ({ role: m.role as "user" | "assistant", content: m.content }))
       : [];
-    const result = await runCreatorTurn({ session, plan, level, history, message: message.data, balance });
+    const result = await runCreatorTurn({ session, plan, level, history, message: message.data, balance, tools: profile?.tools });
     await spendCredits({
       userId: session.appUser.id,
       amount: result.credits,

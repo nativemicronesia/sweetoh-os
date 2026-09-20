@@ -16,6 +16,7 @@ import {
   Settings,
   Sparkles,
   Store,
+  Wrench,
 } from "lucide-react";
 import { MascotCharacter } from "@/app/(store)/components/mascot-character";
 import { formatCredits } from "@/lib/domains/creator/plans";
@@ -30,6 +31,7 @@ const NAV: Nav[] = [
   { href: "/studio/requests", label: "Print with Sweet'Oh", icon: Printer, match: (p) => p.startsWith("/studio/requests") },
 ];
 const NAV_2: Nav[] = [
+  { href: "/studio/tools", label: "My tools", icon: Wrench, match: (p) => p.startsWith("/studio/tools") },
   { href: "/studio/memory", label: "What Skink knows", icon: Brain, match: (p) => p.startsWith("/studio/memory") },
   { href: "/studio/plans", label: "Plans & credits", icon: Sparkles, match: (p) => p.startsWith("/studio/plans") },
   { href: "/studio/settings", label: "Printify & account", icon: Settings, match: (p) => p.startsWith("/studio/settings") },
@@ -41,6 +43,7 @@ const TITLES: [RegExp, string][] = [
   [/^\/studio\/catalog/, "Catalog"],
   [/^\/studio\/designs/, "My designs"],
   [/^\/studio\/requests/, "Print with Sweet'Oh"],
+  [/^\/studio\/tools/, "My tools"],
   [/^\/studio\/memory/, "What Skink knows"],
   [/^\/studio\/plans/, "Plans & credits"],
   [/^\/studio\/settings/, "Printify & account"],
@@ -143,6 +146,7 @@ export function CreatorShell({
                       <strong style={{ display: "block", fontSize: 14 }}>{name}</strong>
                       <span className="cs-muted" style={{ fontSize: 12 }}>{email}</span>
                     </div>
+                    <Link href="/studio/tools"><Wrench size={16} /> My tools</Link>
                     <Link href="/studio/memory"><Brain size={16} /> What Skink knows</Link>
                     <Link href="/studio/requests"><Printer size={16} /> Print requests</Link>
                     <Link href="/studio/settings"><Settings size={16} /> Printify & account</Link>

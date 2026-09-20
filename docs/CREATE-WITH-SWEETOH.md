@@ -11,9 +11,9 @@ Creators aren't locked in. They send products to **their own** Printify store (a
 
 | Area | Path | Notes |
 |---|---|---|
-| Landing | `app/(store)/create` | Markets the Studio + Skink, plans, founding counter |
+| Landing | `app/(store)/create` | Markets Skink, the Studio and the plans |
 | Sign up / in | `app/(creator-auth)/studio/{join,login}` | Account is confirmed immediately (switch on email verification once Resend is wired) |
-| Creator Studio | `app/(creator)/studio/*` | Home, Ask Skink, Catalog, Design, My designs, Print requests, Memory, Plans, Printify & account |
+| Creator Studio | `app/(creator)/studio/*` | Home, Ask Skink, Catalog, Design, My designs, Print requests, My tools, Memory, Plans, Printify & account |
 | Editor | `app/(partner)/partner/canvas/product-editor.tsx` | Shared with the partner; `mode="creator"` swaps pricing for **Sell it** |
 | Partner view | `/partner/creator-requests` | Separate from shop orders, with an on/off capacity switch |
 
@@ -39,14 +39,23 @@ Each creator gets their **own `venture` row** (their private workspace) plus a `
 
 **Memory** (`lib/domains/skink/memory.ts`) is durable private intelligence (brand, goal, decision, correction, and so on), separate from saved conversations (`skink_thread` / `skink_message`). Skink saves with its `remember` tool. Creators edit it at `/studio/memory`.
 
+## What creators are paying for
+
+Sweet'Oh AI is the intelligence layer; **Skink** is the agent creators talk to. Subscribers pay for Skink's help running a print-on-demand business: learning it, setting up **their own** store (Printify, Etsy, Shopify…), finding a niche, designing products, pricing, listings and what to make next. Printing with Sweet'Oh is optional and capped by the partner's capacity.
+
+Sweet'Oh does not try to replace ChatGPT, Claude, Gemini, Canva or Printify. Skink uses them — see **My tools** below.
+
+## My tools (use what the creator already pays for)
+
+`lib/domains/skink/handoff.ts`, `/studio/tools`. A creator says which subscriptions they already have; Skink prepares the exact prompt plus their brand context for that tool (`buildHandoffPack`), they run it there, and paste the result back, which is filed into memory. It costs **no credits**, and Skink can offer it mid-conversation with the `prepare_handoff` tool.
+
 ## Plans and credits
 
 `lib/domains/creator/plans.ts`. 1 credit ≈ $0.01 of raw provider cost.
 
 - **Free:** Light model, 50 credits a month, 10 saved designs, Printify send.
-- **Creator:** $24 a month. Smart models, 1,000 credits, unlimited designs, print requests.
-- **Pro:** $79 a month. Deep models, 3,500 credits.
-- **Founding yearly** (first 100 creators): Creator $199, Pro $699.
+- **Creator: $49/month, first 3 months free, card up front** (Stripe `trial_period_days: 90`). Light + Smart routing (Luna, Sonnet, Flash). 1,500 credits a month, 1,000 during the trial.
+- **Pro: $111/month, or $666/year (6 months free).** Higher model tiers. 3,500 credits a month.
 - **Top-up:** 500 credits for $10.
 
 Chat is metered from real token usage. Studio AI actions are priced per action and refunded if the AI call fails.

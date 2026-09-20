@@ -16,6 +16,7 @@ import { listPrintifyBlueprints } from "@/lib/integrations/printify/catalog";
 import { listPartnerLibraryDesigns } from "@/lib/domains/catalog/partner-design-library";
 import type { SessionUser } from "@/lib/domains/identity/types";
 import { forgetMemory, listMemories, memoryPromptBlock, rememberFact, MEMORY_KINDS } from "./memory";
+import { buildHandoffPack, HANDOFF_TASKS, taskById, toolById, TOOLS as OWNABLE_TOOLS } from "./handoff";
 import type { SkinkTurn } from "./threads";
 
 type ChatMessage = OpenAI.Chat.Completions.ChatCompletionMessageParam;
@@ -49,7 +50,12 @@ Memory:
 - You have a private memory for this creator. When they tell you something durable — brand name, niche, audience, style, goals, decisions, what worked or flopped, corrections — save it with the remember tool (one fact per call, concise). Don't save small talk or one-off requests. Update rather than duplicate.
 - If they ask you to forget something, use the forget tool.
 
-Tools: use find_products to suggest real catalog products (always give the link). Use research for current market/trend/niche questions. Use think_it_through for strategy, pricing, brand positioning, or a plan with trade-offs. Don't call tools for simple chat.`;
+Using what the creator already has:
+- Sweet'Oh isn't trying to replace ChatGPT, Claude, Gemini, Canva, Printify or anyone else. You're the agent; those are resources you know how to use, alongside your own.
+- When a creator already pays for a tool that suits the job — a long research piece, heavy image work, video, a big writing job — offer to prepare it for THAT tool with prepare_handoff. It costs them no Sweet'Oh credits and makes their subscription worth more. Then continue from whatever they bring back.
+- Use your own capabilities when they're the better or faster path, and for anything that touches their Sweet'Oh workspace (designs, products, memory, print files).
+
+Tools: use find_products to suggest real catalog products (always give the link). Use research for current market/trend/niche questions. Use think_it_through for strategy, pricing, brand positioning, or a plan with trade-offs. Use prepare_handoff to hand work to a tool the creator already pays for. Don't call tools for simple chat.`;
 
 const VISITOR_PERSONA = `${PERSONA}
 
@@ -98,6 +104,22 @@ const TOOLS: Tool[] = [
       name: "list_my_designs",
       description: "List the creator's saved designs in Sweet'Oh Studio.",
       parameters: { type: "object", properties: {} },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "prepare_handoff",
+      description: "Prepare a ready-to-paste prompt (with this creator's brand context) for a tool they already pay for, e.g. ChatGPT, Claude, Gemini or Canva. Costs the creator no credits.",
+      parameters: {
+        type: "object",
+        properties: {
+          tool: { type: "string", enum: OWNABLE_TOOLS.map((t) => t.id), description: "Only a tool the creator says they have." },
+          task: { type: "string", enum: HANDOFF_TASKS.map((t) => t.id) },
+          brief: { type: "string", description: "The specifics: the niche, product or idea." },
+        },
+        required: ["tool", "task", "brief"],
+      },
     },
   },
   {
@@ -219,6 +241,16 @@ async function runTool(
           : "No saved designs yet.",
       };
     }
+    case "prepare_handoff": {
+      const tool = toolById(String(args.tool ?? ""));
+      const task = taskById(String(args.task ?? ""));
+      if (!tool || !task) return { result: "Unknown tool or task." };
+      const pack = buildHandoffPack({ tool, task, brief: String(args.brief ?? "").slice(0, 1500), memories: await listMemories(userId), name: ctx.session.appUser.name });
+      return {
+        result: `Ready for ${tool.name}. In your reply you MUST paste the block below word for word, between two lines of "———", so the creator can copy it. Say one short line before it and one after: that they run it in ${tool.name}, and that you'll carry on when they paste the answer back here.\n\n${pack}`,
+        event: { tool: "prepare_handoff", summary: `Prepared for ${tool.name} — no credits used`, href: "/studio/tools" },
+      };
+    }
     case "research": {
       const question = String(args.question ?? "").slice(0, 1500);
       const answer = await delegate(
@@ -255,13 +287,19 @@ export async function runCreatorTurn(input: {
   history: SkinkTurn[];
   message: string;
   balance: number;
+  /** Subscriptions the creator already pays for (see ./handoff.ts). */
+  tools?: string[] | null;
 }): Promise<SkinkReply> {
   const memories = await listMemories(input.session.appUser.id);
   const memoryBlock = memoryPromptBlock(memories);
   const name = input.session.appUser.name?.split(" ")[0] ?? null;
+  const owned = (input.tools ?? []).map((id) => toolById(id)).filter((t): t is NonNullable<typeof t> => Boolean(t));
   const system = [
     PERSONA,
     `Creator: ${name ?? "(name not given yet)"} · Plan: ${input.plan.name} · Credits left: ${Math.floor(input.balance)}.`,
+    owned.length
+      ? `Tools this creator already pays for: ${owned.map((t) => `${t.name} (${t.good})`).join("; ")}. Offer prepare_handoff when one of these suits the job.`
+      : `This creator hasn't told you what tools they already pay for. If a job would suit their own ChatGPT/Claude/Gemini/Canva subscription, mention they can add their tools at /studio/tools so you can prepare the work for free.`,
     memoryBlock,
   ].join("\n\n");
 

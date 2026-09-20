@@ -13,17 +13,18 @@ export type Plan = {
   name: string;
   tagline: string;
   monthlyCents: number;
-  /** Regular yearly price. */
+  /** Yearly price where offered (0 = monthly only). */
   yearlyCents: number;
-  /** Launch-only yearly price for the first FOUNDING_SPOTS creators. */
-  foundingYearlyCents: number;
   monthlyCredits: number;
+  /** Credits per month during the free trial, when a plan has one. */
+  trialCredits?: number;
+  /** Free months before the first charge (card taken up front). */
+  trialDays?: number;
   levels: AiLevel[];
   savedDesigns: number | null;
   features: string[];
 };
 
-export const FOUNDING_SPOTS = 100;
 export const TOPUP = { credits: 500, cents: 1000 } as const;
 
 export const PLANS: Record<PlanId, Plan> = {
@@ -33,53 +34,54 @@ export const PLANS: Record<PlanId, Plan> = {
     tagline: "Try Sweet'Oh",
     monthlyCents: 0,
     yearlyCents: 0,
-    foundingYearlyCents: 0,
     monthlyCredits: 50,
     levels: ["light"],
     savedDesigns: 10,
     features: [
-      "Skink teaches you print-on-demand",
-      "Design Studio + Printify catalog",
+      "Meet Skink and see how Sweet'Oh AI works",
+      "Creator Studio: design on real products",
       "Save up to 10 designs",
-      "Send products to your Printify store",
-      "50 credits a month (about 10 AI designs)",
+      "Send products to your own Printify store",
+      "50 credits a month",
     ],
   },
   creator: {
     id: "creator",
     name: "Creator",
-    tagline: "Everything you need to run a POD brand",
-    monthlyCents: 2400,
-    yearlyCents: 24000,
-    foundingYearlyCents: 19900,
-    monthlyCredits: 1000,
+    tagline: "Sweet'Oh AI for your whole POD business",
+    monthlyCents: 4900,
+    yearlyCents: 0,
+    monthlyCredits: 1500,
+    trialCredits: 1000,
+    trialDays: 90,
     levels: ["light", "smart"],
     savedDesigns: null,
     features: [
-      "Skink on smart models: strategy, pricing, research",
-      "Skink remembers your brand, goals and decisions",
+      "Skink helps you set up and run your POD business",
+      "Store setup help: Printify, Etsy, Shopify and more",
+      "Niche research, pricing, listings and product plans",
+      "Remembers your brand, goals and decisions",
       "Unlimited saved designs",
-      "Send products to your Printify store",
+      "Use your own ChatGPT / Claude / Gemini / Canva — no credits spent",
       "Request prints from the Sweet'Oh shop",
-      "1,000 credits a month (about 200 AI designs)",
+      "1,500 credits a month",
     ],
   },
   pro: {
     id: "pro",
     name: "Pro",
-    tagline: "The most capable Skink",
-    monthlyCents: 7900,
-    yearlyCents: 79000,
-    foundingYearlyCents: 69900,
+    tagline: "The most capable Sweet'Oh AI",
+    monthlyCents: 11100,
+    yearlyCents: 66600,
     monthlyCredits: 3500,
     levels: ["light", "smart", "deep"],
     savedDesigns: null,
     features: [
       "Everything in Creator",
-      "Top models from Anthropic, OpenAI and Google",
+      "Higher model tiers across OpenAI, Anthropic and Google",
       "Deep research: niches, competitors, product lines",
       "Premium image quality",
-      "Choose Quick, Smart or Deep per message",
+      "Choose Quick, Smart or Deep per task",
       "3,500 credits a month",
     ],
   },

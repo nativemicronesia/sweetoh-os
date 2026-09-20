@@ -17,8 +17,7 @@ import {
   Wand2,
 } from "lucide-react";
 import { listBestsellerBlueprints, listPrintifyBlueprints } from "@/lib/integrations/printify/catalog";
-import { FOUNDING_SPOTS, PLANS, formatUsd } from "@/lib/domains/creator/plans";
-import { foundingSpotsLeft } from "@/lib/integrations/stripe/billing";
+import { PLANS, formatUsd } from "@/lib/domains/creator/plans";
 import { MascotCharacter } from "../components/mascot-character";
 import "@/app/(creator)/studio/creator.css";
 import "./create.css";
@@ -52,17 +51,15 @@ const FAQ = [
   ["Who owns my designs and my store?", "You do. Sweet'Oh sends products into your own Printify account. Your customers, sales and payouts are yours."],
   ["Where can I sell?", "Anywhere Printify connects: Etsy, Shopify, TikTok Shop, eBay, Wix, Squarespace and more. Sweet'Oh-hosted stores are coming next."],
   ["What are credits?", "Credits are Skink's AI capacity. Chatting uses almost none; AI images, deep research and the most capable models use more. Designing by hand, saving and exporting never cost credits."],
-  ["Which AI does Skink use?", "The best model for each job — OpenAI for conversation, Anthropic's Claude for strategy, Google's Gemini for research. You never have to pick; Pro lets you choose how deeply Skink thinks."],
+  ["Which AI does Skink use?", "The best one for each job — OpenAI, Anthropic and Google — and your own subscriptions when those suit the work better. You never have to pick a model; Pro lets you choose how deeply Skink thinks."],
+  ["I already pay for ChatGPT, Canva and Printify. Is this a replacement?", "No. Skink uses them. Tell him what you have and he'll prepare the exact prompt and your brand context for your tool, then carry on from the result — without spending your Sweet'Oh credits."],
+  ["What does the free trial cost?", "Nothing for 3 months. We take a card up front so nothing breaks when the trial ends, and you can cancel any time before the first charge."],
   ["Can Sweet'Oh print my order instead?", "On Creator and Pro, yes — send a request from the Studio and the Sweet'Oh shop in Lacey, WA will quote it when it has capacity. Great for events, family reunions, churches and schools."],
 ];
 
 export default async function CreateWithSweetOhPage() {
-  const [picks, all, spots] = await Promise.all([
-    listBestsellerBlueprints().catch(() => []),
-    listPrintifyBlueprints().catch(() => []),
-    foundingSpotsLeft().catch(() => 0),
-  ]);
-  const gallery = picks.filter((b) => b.images[0]).slice(0, 6);
+  const [picks, all] = await Promise.all([listBestsellerBlueprints().catch(() => []), listPrintifyBlueprints().catch(() => [])]);
+  const gallery = picks.filter((b: (typeof picks)[number]) => b.images[0]).slice(0, 6);
   const count = all.length ? `${Math.floor(all.length / 100) * 100}+` : "Hundreds of";
 
   return (
@@ -74,7 +71,7 @@ export default async function CreateWithSweetOhPage() {
             <p className="cs-eyebrow">Create with Sweet&apos;Oh</p>
             <h1 className="cw-title">Start your print-on-demand brand — with an AI that teaches you.</h1>
             <p className="cw-lead">
-              Sweet&apos;Oh Studio gives you real products to design, pro design tools, and <strong>Skink</strong>{" "}— a creative director who teaches you the business, researches your niche and remembers your brand. When it&apos;s ready, send it to your own store.
+              Meet <strong>Skink</strong> — the Sweet&apos;Oh AI agent for print-on-demand. He teaches you the business, researches your niche, designs with you in the Studio, and helps you set up your own store. He works with what you already pay for, too.
             </p>
             <div className="cs-row" style={{ marginTop: 26 }}>
               <Link href="/studio/join" className="cs-btn cs-btn-primary cs-btn-lg">Start free <ArrowRight size={18} /></Link>
@@ -83,7 +80,7 @@ export default async function CreateWithSweetOhPage() {
             <p className="cs-muted" style={{ fontSize: 13, marginTop: 14 }}>Free forever plan · no card needed · built by islanders, open to everyone</p>
           </div>
           <div className="cw-collage" aria-hidden>
-            {gallery.map((b, i) => (
+            {gallery.map((b: (typeof gallery)[number], i: number) => (
               <div key={b.id} className={`cw-tile cw-tile-${i}`}><img src={b.images[0]} alt="" /></div>
             ))}
             <div className="cw-chat">
@@ -172,6 +169,29 @@ export default async function CreateWithSweetOhPage() {
         </div>
       </section>
 
+      {/* Use what you already pay for */}
+      <section className="cw-section cw-soft">
+        <div className="cw-wrap">
+          <p className="cs-eyebrow">Works with what you have</p>
+          <h2 className="cw-h2">Already paying for ChatGPT, Canva or Printify? Good.</h2>
+          <p className="cw-lead">
+            Sweet&apos;Oh isn&apos;t here to replace your tools. Tell Skink what you already have and he&apos;ll use it: he writes the exact prompt, adds everything he knows about your brand, and hands it to your own ChatGPT, Claude, Gemini or Canva. You run it there, bring the answer back, and he keeps going — no Sweet&apos;Oh credits spent.
+          </p>
+          <div className="cw-two">
+            <div className="cs-card cs-pad">
+              <Sparkles size={26} color="var(--cs-green)" />
+              <h3 className="cw-h3">Your subscriptions do more</h3>
+              <p>Niche research, listings, design briefs, launch posts — prepared for your tool, in your brand&apos;s voice.</p>
+            </div>
+            <div className="cs-card cs-pad">
+              <Layers size={26} color="var(--cs-green)" />
+              <h3 className="cw-h3">Your credits last longer</h3>
+              <p>Sweet&apos;Oh credits go to what only Sweet&apos;Oh can do: your designs, your products and your print files.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Your store */}
       <section className="cw-section cw-soft">
         <div className="cw-wrap">
@@ -208,18 +228,15 @@ export default async function CreateWithSweetOhPage() {
         <div className="cw-wrap">
           <p className="cs-eyebrow">Plans</p>
           <h2 className="cw-h2">Start free. Grow when you&apos;re ready.</h2>
-          {spots > 0 && (
-            <div className="cs-founding" style={{ margin: "18px 0 22px" }}>
-              <div>
-                <strong>Founding creators: {spots} of {FOUNDING_SPOTS} spots left</strong>
-                <p className="cs-muted" style={{ margin: "4px 0 10px", fontSize: 14 }}>
-                  Join yearly at launch pricing — Creator {formatUsd(PLANS.creator.foundingYearlyCents)}/yr, Pro {formatUsd(PLANS.pro.foundingYearlyCents)}/yr — and keep it as long as you stay.
-                </p>
-                <div className="cs-bar"><span style={{ width: `${Math.max(4, ((FOUNDING_SPOTS - spots) / FOUNDING_SPOTS) * 100)}%` }} /></div>
-              </div>
-              <Link href="/studio/join?next=/studio/plans" className="cs-btn cs-btn-coral">Claim a founding spot</Link>
+          <div className="cs-founding" style={{ margin: "18px 0 22px" }}>
+            <div>
+              <strong>Creator is free for 3 months</strong>
+              <p className="cs-muted" style={{ margin: "4px 0 0", fontSize: 14 }}>
+                Card up front, nothing charged until month four, cancel any time.
+              </p>
             </div>
-          )}
+            <Link href="/studio/join?next=/studio/plans" className="cs-btn cs-btn-coral">Start 3 months free</Link>
+          </div>
           <div className="cs-plans">
             {(["free", "creator", "pro"] as const).map((id) => {
               const p = PLANS[id];
@@ -229,11 +246,11 @@ export default async function CreateWithSweetOhPage() {
                   <h3 className="cs-h2">{p.name}</h3>
                   <p className="cs-muted" style={{ margin: "4px 0 0", fontSize: 14 }}>{p.tagline}</p>
                   <div className="cs-plan-price">{p.monthlyCents ? formatUsd(p.monthlyCents) : "$0"}<small> /month</small></div>
-                  {p.monthlyCents > 0 && spots > 0 && <div style={{ fontSize: 13, color: "var(--cs-coral)", fontWeight: 600 }}>or {formatUsd(p.foundingYearlyCents)}/year as a founding creator</div>}
+                  {p.trialDays ? <div style={{ fontSize: 13, color: "var(--cs-coral)", fontWeight: 600 }}>free for 3 months, then {formatUsd(p.monthlyCents)}</div> : p.yearlyCents > 0 ? <div style={{ fontSize: 13, color: "var(--cs-coral)", fontWeight: 600 }}>or {formatUsd(p.yearlyCents)}/year — 6 months free</div> : null}
                   <ul>{p.features.map((f) => <li key={f}><Check size={16} /> {f}</li>)}</ul>
                   <div className="cs-plan-actions">
                     <Link href={id === "free" ? "/studio/join" : "/studio/join?next=/studio/plans"} className={`cs-btn ${id === "creator" ? "cs-btn-primary" : "cs-btn-ghost"}`}>
-                      {id === "free" ? "Start free" : `Choose ${p.name}`}
+                      {id === "free" ? "Start free" : id === "creator" ? "Start 3 months free" : `Choose ${p.name}`}
                     </Link>
                   </div>
                 </article>

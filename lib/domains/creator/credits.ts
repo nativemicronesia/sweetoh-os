@@ -22,18 +22,26 @@ export async function getCreatorProfile(userId: string) {
 /** Plan in force right now (a lapsed subscription falls back to Free). */
 export function activePlan(profile: { plan: string; planStatus: string } | null): Plan {
   if (!profile) return planFor("free");
-  if (profile.plan !== "free" && profile.planStatus !== "active" && profile.planStatus !== "past_due") return planFor("free");
+  const live = ["active", "trialing", "past_due"].includes(profile.planStatus);
+  if (profile.plan !== "free" && !live) return planFor("free");
   return planFor(profile.plan);
+}
+
+/** Credits granted this month: a plan on its free trial gets the trial allowance. */
+export function monthlyAllowance(plan: Plan, planStatus: string | undefined): number {
+  return planStatus === "trialing" && plan.trialCredits ? plan.trialCredits : plan.monthlyCredits;
 }
 
 function periodKey(now = new Date()) {
   return `grant:${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
 }
 
-async function ensureMonthlyGrant(tx: Tx, userId: string, plan: Plan) {
+async function ensureMonthlyGrant(tx: Tx, userId: string, plan: Plan, planStatus?: string) {
+  const amount = monthlyAllowance(plan, planStatus);
+  const trial = planStatus === "trialing" && plan.trialCredits ? "trial" : plan.id;
   await tx
     .insert(creditLedger)
-    .values({ userId, delta: String(plan.monthlyCredits), kind: "grant", reason: `${plan.name} monthly credits`, dedupeKey: `${periodKey()}:${plan.id}` })
+    .values({ userId, delta: String(amount), kind: "grant", reason: `${plan.name} monthly credits`, dedupeKey: `${periodKey()}:${trial}` })
     .onConflictDoNothing();
 }
 
@@ -46,12 +54,12 @@ async function balanceOf(tx: Tx | ReturnType<typeof getDb>, userId: string): Pro
 }
 
 /** Current balance, granting this month's plan credits on first touch. */
-export async function getCreditBalance(userId: string): Promise<{ balance: number; plan: Plan }> {
+export async function getCreditBalance(userId: string): Promise<{ balance: number; plan: Plan; status: string }> {
   const profile = await getCreatorProfile(userId);
   const plan = activePlan(profile);
   return getDb().transaction(async (tx) => {
-    await ensureMonthlyGrant(tx, userId, plan);
-    return { balance: await balanceOf(tx, userId), plan };
+    await ensureMonthlyGrant(tx, userId, plan, profile?.planStatus);
+    return { balance: await balanceOf(tx, userId), plan, status: profile?.planStatus ?? "none" };
   });
 }
 
@@ -72,7 +80,7 @@ export async function spendCredits(input: {
   const plan = activePlan(profile);
   return getDb().transaction(async (tx) => {
     await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${"credits:" + input.userId}))`);
-    await ensureMonthlyGrant(tx, input.userId, plan);
+    await ensureMonthlyGrant(tx, input.userId, plan, profile?.planStatus);
     const balance = await balanceOf(tx, input.userId);
     if (!input.allowOverdraft && balance < amount) throw new OutOfCreditsError(amount, balance);
     const [row] = await tx
