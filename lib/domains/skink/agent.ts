@@ -15,7 +15,7 @@ import type { AiLevel, Plan } from "@/lib/domains/creator/plans";
 import { listPrintifyBlueprints } from "@/lib/integrations/printify/catalog";
 import { listPartnerLibraryDesigns } from "@/lib/domains/catalog/partner-design-library";
 import type { SessionUser } from "@/lib/domains/identity/types";
-import { forgetMemory, listMemories, memoryPromptBlock, rememberFact, MEMORY_KINDS } from "./memory";
+import { forgetMemory, listMemories, memoryPromptBlock, rememberFact, MEMORY_KINDS, type Memory } from "./memory";
 import { buildHandoffPack, HANDOFF_TASKS, taskById, toolById, TOOLS as OWNABLE_TOOLS } from "./handoff";
 import type { SkinkTurn } from "./threads";
 
@@ -24,6 +24,24 @@ type Tool = OpenAI.Chat.Completions.ChatCompletionTool;
 
 export type SkinkEvent = { tool: string; summary: string; href?: string };
 export type SkinkReply = { reply: string; credits: number; events: SkinkEvent[]; models: string[] };
+/** Live progress while a turn runs, so the chat can type as Skink thinks. */
+export type SkinkStream = {
+  onDelta?: (text: string) => void;
+  onEvent?: (event: SkinkEvent) => void;
+  /** "Researching…", "Thinking it through…" — what he's doing right now. */
+  onStatus?: (status: string | null) => void;
+  signal?: AbortSignal;
+};
+
+const TOOL_STATUS: Record<string, string> = {
+  remember: "Saving that to your brand…",
+  forget: "Forgetting that…",
+  find_products: "Looking through the catalog…",
+  list_my_designs: "Checking your designs…",
+  research: "Researching…",
+  think_it_through: "Thinking it through…",
+  prepare_handoff: "Preparing it for your own tool…",
+};
 
 const PERSONA = `You are Skink — Sweet'Oh AI. You're a green tree skink (Lamprolepis smaragdina), the guide of Sweet'Oh, a Micronesian-owned print-on-demand company. Sweet'Oh helps islanders — and anyone — start and grow their own POD brand with an easier experience than doing it alone.
 
@@ -154,6 +172,54 @@ function chatParams(resolved: ResolvedModel, withTools: boolean) {
 /** OpenAI wants max_completion_tokens; the Anthropic/Gemini compatibility layers take max_tokens. */
 function tokenLimit(resolved: ResolvedModel, n: number) {
   return resolved.route.provider === "openai" && !process.env.AI_BASE_URL ? { max_completion_tokens: n } : { max_tokens: n };
+}
+
+type FunctionCall = OpenAI.Chat.Completions.ChatCompletionMessageFunctionToolCall;
+type StreamedTurn = { content: string; toolCalls: FunctionCall[]; usage: OpenAI.CompletionUsage | undefined };
+
+/** One model round, streamed. Text deltas go out live; tool calls accumulate. */
+async function streamRound(
+  resolved: ResolvedModel,
+  messages: ChatMessage[],
+  tools: Tool[] | undefined,
+  live: SkinkStream | undefined,
+): Promise<StreamedTurn> {
+  const stream = await resolved.client.chat.completions.create(
+    {
+      model: resolved.model,
+      messages,
+      ...(tools ? { tools } : {}),
+      ...tokenLimit(resolved, 1200),
+      ...chatParams(resolved, Boolean(tools)),
+      stream: true,
+      // Usage arrives in a final chunk when the provider supports it.
+      ...(resolved.route.provider === "openai" && !process.env.AI_BASE_URL ? { stream_options: { include_usage: true } } : {}),
+    },
+    { signal: live?.signal },
+  );
+  let content = "";
+  let usage: OpenAI.CompletionUsage | undefined;
+  const partial = new Map<number, { id: string; name: string; args: string }>();
+  for await (const chunk of stream) {
+    if (chunk.usage) usage = chunk.usage;
+    const delta = chunk.choices?.[0]?.delta;
+    if (!delta) continue;
+    if (delta.content) {
+      content += delta.content;
+      live?.onDelta?.(delta.content);
+    }
+    for (const call of delta.tool_calls ?? []) {
+      const slot = partial.get(call.index) ?? { id: "", name: "", args: "" };
+      if (call.id) slot.id = call.id;
+      if (call.function?.name) slot.name = call.function.name;
+      if (call.function?.arguments) slot.args += call.function.arguments;
+      partial.set(call.index, slot);
+    }
+  }
+  const toolCalls = [...partial.values()]
+    .filter((c) => c.name)
+    .map((c) => ({ id: c.id || `call_${c.name}`, type: "function" as const, function: { name: c.name, arguments: c.args || "{}" } }));
+  return { content, toolCalls, usage };
 }
 
 class Meter {
@@ -289,8 +355,10 @@ export async function runCreatorTurn(input: {
   balance: number;
   /** Subscriptions the creator already pays for (see ./handoff.ts). */
   tools?: string[] | null;
-}): Promise<SkinkReply> {
-  const memories = await listMemories(input.session.appUser.id);
+  /** Prefetched alongside the other setup queries, to get the model started sooner. */
+  memories?: Memory[];
+}, live?: SkinkStream): Promise<SkinkReply> {
+  const memories = input.memories ?? (await listMemories(input.session.appUser.id));
   const memoryBlock = memoryPromptBlock(memories);
   const name = input.session.appUser.name?.split(" ")[0] ?? null;
   const owned = (input.tools ?? []).map((id) => toolById(id)).filter((t): t is NonNullable<typeof t> => Boolean(t));
@@ -313,28 +381,27 @@ export async function runCreatorTurn(input: {
   ];
 
   for (let round = 0; round < 5; round++) {
-    const res = await resolved.client.chat.completions.create({
-      model: resolved.model,
-      messages,
-      tools: TOOLS,
-      ...tokenLimit(resolved, 1200),
-      ...chatParams(resolved, true),
-    });
-    meter.add(resolved, res.usage);
-    const msg = res.choices[0]?.message;
-    if (!msg) break;
-    const calls = msg.tool_calls?.filter((c) => c.type === "function") ?? [];
-    if (!calls.length) {
-      return { reply: msg.content?.trim() || "Hmm, I lost my words there — try again?", credits: meter.credits, events, models: [...meter.models] };
+    live?.onStatus?.(round === 0 ? "Thinking…" : null);
+    const turn = await streamRound(resolved, messages, TOOLS, live);
+    meter.add(resolved, turn.usage);
+    if (!turn.toolCalls.length) {
+      live?.onStatus?.(null);
+      const reply = turn.content.trim() || "Hmm, I lost my words there — try again?";
+      return { reply, credits: meter.credits, events, models: [...meter.models] };
     }
-    messages.push({ role: "assistant", content: msg.content ?? null, tool_calls: calls });
-    for (const call of calls) {
+    messages.push({ role: "assistant", content: turn.content || null, tool_calls: turn.toolCalls });
+    for (const call of turn.toolCalls) {
+      live?.onStatus?.(TOOL_STATUS[call.function.name] ?? "Working on it…");
       const out = await runTool(call.function.name, call.function.arguments, { session: input.session, level: input.level, meter, memoryBlock }).catch(
         (error: unknown) => ({ result: `Tool failed: ${error instanceof Error ? error.message : "unknown error"}`, event: undefined }),
       );
-      if (out.event) events.push(out.event);
+      if (out.event) {
+        events.push(out.event);
+        live?.onEvent?.(out.event);
+      }
       messages.push({ role: "tool", tool_call_id: call.id, content: out.result.slice(0, 6000) });
     }
+    live?.onStatus?.(null);
   }
   return { reply: "I did a lot of digging there — ask me to summarize what I found?", credits: meter.credits, events, models: [...meter.models] };
 }

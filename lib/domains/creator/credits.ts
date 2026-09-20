@@ -92,9 +92,38 @@ async function balanceOf(tx: Tx | ReturnType<typeof getDb>, userId: string): Pro
   return Number(row?.total ?? 0);
 }
 
+/**
+ * Hot path: one query for both buckets plus "has this month's grant landed?".
+ * Only when the grant is missing do we open the transaction that writes it.
+ */
+export async function creditSnapshot(userId: string, known?: Awaited<ReturnType<typeof getCreatorProfile>>) {
+  const profile = known ?? (await getCreatorProfile(userId));
+  const plan = activePlan(profile);
+  const trial = profile?.planStatus === "trialing" && plan.trialCredits ? "trial" : plan.id;
+  const key = `${periodKey()}:${trial}`;
+  const [row] = await getDb()
+    .select({
+      monthly: sql<string>`coalesce(sum(${creditLedger.delta}) filter (where ${BUCKET} = 'plan'), 0)`,
+      wallet: sql<string>`coalesce(sum(${creditLedger.delta}) filter (where ${BUCKET} = 'wallet'), 0)`,
+      granted: sql<boolean>`bool_or(${creditLedger.dedupeKey} = ${key})`,
+    })
+    .from(creditLedger)
+    .where(eq(creditLedger.userId, userId));
+  if (row?.granted) {
+    const monthly = Number(row.monthly ?? 0);
+    const wallet = Number(row.wallet ?? 0);
+    return { balance: monthly + wallet, monthly, wallet, plan, status: profile?.planStatus ?? "none" };
+  }
+  return getCreditBalance(userId, profile);
+}
+
 /** Current balance, granting this month's plan credits on first touch. */
-export async function getCreditBalance(userId: string): Promise<{ balance: number; plan: Plan; status: string; monthly: number; wallet: number }> {
-  const profile = await getCreatorProfile(userId);
+export async function getCreditBalance(
+  userId: string,
+  /** Pass an already-loaded profile to save a round trip. */
+  known?: Awaited<ReturnType<typeof getCreatorProfile>>,
+): Promise<{ balance: number; plan: Plan; status: string; monthly: number; wallet: number }> {
+  const profile = known ?? (await getCreatorProfile(userId));
   const plan = activePlan(profile);
   return getDb().transaction(async (tx) => {
     await ensureMonthlyGrant(tx, userId, plan, profile?.planStatus);

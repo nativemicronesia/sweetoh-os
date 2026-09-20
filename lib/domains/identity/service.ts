@@ -72,6 +72,24 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   return findSessionUser(user.id);
 }
 
+/**
+ * Same session, without the round trip to Supabase's auth server: the access
+ * token is verified locally (signature + expiry) and the app user is read
+ * straight from our own database. Falls back to the full check if anything
+ * about the token is unclear.
+ */
+export async function getSessionUserFast(): Promise<SessionUser | null> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.auth.getClaims();
+    const sub = data?.claims?.sub;
+    if (error || !sub) return getSessionUser();
+    return findSessionUser(sub);
+  } catch {
+    return getSessionUser();
+  }
+}
+
 export async function requireAuth(): Promise<SessionUser> {
   const session = await getSessionUser();
 

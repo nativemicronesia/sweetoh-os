@@ -179,6 +179,15 @@
 .cs-msg-user .cs-bubble a { color: var(--cs-lime); }
 .cs-events { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .cs-event { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; padding: 3px 9px; border-radius: 99px; background: var(--cs-green-soft); color: var(--cs-green-deep); text-decoration: none; }
+.cs-copy { display: inline-flex; align-items: center; gap: 5px; margin-top: 6px; padding: 4px 9px; border-radius: 99px; border: 1px solid var(--cs-line); background: white; color: var(--cs-muted); font: inherit; font-size: 12px; cursor: pointer; opacity: 0; transition: opacity .15s, color .15s; }
+.cs-msg-skink:hover .cs-copy, .cs-copy:focus-visible { opacity: 1; }
+.cs-copy:hover { color: var(--cs-green-deep); border-color: var(--cs-green); }
+@media (hover: none) { .cs-copy { opacity: 1; } }
+.cs-caret { display: inline-block; width: 2px; height: 1em; margin-left: 2px; vertical-align: -2px; background: var(--cs-green); animation: cs-blink 1s steps(2) infinite; }
+@keyframes cs-blink { 50% { opacity: 0; } }
+.cs-status { margin: 6px 0 0; font-size: 12px; color: var(--cs-muted); display: inline-flex; align-items: center; gap: 6px; }
+.cs-status::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--cs-green); animation: cs-pulse 1.4s ease-in-out infinite; }
+@keyframes cs-pulse { 0%, 100% { opacity: .3; transform: scale(.8); } 50% { opacity: 1; transform: scale(1.1); } }
 .cs-chat-form { display: flex; gap: 8px; align-items: flex-end; padding: 12px; border-top: 1px solid var(--cs-line); background: #fffdf8; }
 .cs-chat-form textarea { flex: 1; resize: none; min-height: 46px; max-height: 180px; border: 1px solid var(--cs-line); border-radius: 14px; padding: 12px 14px; font: inherit; background: white; }
 .cs-chat-form textarea:focus { outline: none; border-color: var(--cs-green); box-shadow: 0 0 0 4px color-mix(in srgb, var(--cs-green) 14%, transparent); }

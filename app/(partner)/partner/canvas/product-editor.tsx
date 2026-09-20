@@ -11,6 +11,7 @@ import {
   Rect,
   Path,
 } from "fabric";
+import { initAligningGuidelines } from "fabric/extensions";
 import {
   AlignCenterHorizontal,
   AlignCenterVertical,
@@ -66,6 +67,7 @@ import {
 import {
   defaultArea,
   regionsFor,
+  studioLayoutSchema,
   type StudioLayout,
   type StudioLayer,
   type StudioSurface,
@@ -202,6 +204,10 @@ export function ProductEditor({
 }: Props) {
   const base = mode === "creator" ? { catalog: "/studio/catalog", canvas: "/studio/design" } : { catalog: "/partner/catalog", canvas: "/partner/canvas" };
   const [publishOpen, setPublishOpen] = useState(false);
+  /** Local autosave, so a closed tab or a crash never costs someone their work. */
+  const draftKey = `sweetoh:draft:${initialBlankId ?? blanks[0]?.id ?? "new"}:${initialStudio ? "open" : "fresh"}`;
+  const draftTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [recovered, setRecovered] = useState<{ at: number; layers: number } | null>(null);
   const blank = blanks.find((b) => b.id === initialBlankId) ?? blanks[0];
   const colors = blank?.variantOptions?.colors ?? [];
   const sizes = blank?.variantOptions?.sizes ?? [];
@@ -339,6 +345,28 @@ export function ProductEditor({
     history.current = [...history.current.slice(-39), structuredClone(doc.current)];
     setUndoCount(history.current.length);
     dirty.current = true;
+    saveDraft();
+  }
+
+  /** Debounced local snapshot of the whole document. */
+  function saveDraft() {
+    if (draftTimer.current) clearTimeout(draftTimer.current);
+    draftTimer.current = setTimeout(() => {
+      try {
+        const doc_ = doc.current;
+        if (!doc_.surfaces.some((s) => s.layers.length)) return;
+        localStorage.setItem(draftKey, JSON.stringify({ at: Date.now(), name, studio: doc_ }));
+      } catch {
+        // Private mode or a full disk: autosave is a safety net, never a blocker.
+      }
+    }, 1200);
+  }
+  function clearDraft() {
+    try {
+      localStorage.removeItem(draftKey);
+    } catch {
+      /* ignore */
+    }
   }
   function checkOutside() {
     const canvas = editor.current;
@@ -680,11 +708,23 @@ export function ProductEditor({
       }
     };
     window.addEventListener("beforeunload", leave);
+    try {
+      const raw = localStorage.getItem(draftKey);
+      const draft = raw ? (JSON.parse(raw) as { at: number; studio: StudioLayout }) : null;
+      const layers = draft?.studio?.surfaces?.reduce((n, s) => n + (s.layers?.length ?? 0), 0) ?? 0;
+      // Only offer it when this editor opened without that work already in it.
+      if (draft && layers > 0 && !doc.current.surfaces.some((s) => s.layers.length)) setRecovered({ at: draft.at, layers });
+    } catch {
+      /* ignore */
+    }
+    // Canva-style snapping: Fabric's own aligning-guidelines extension.
+    const stopGuidelines = initAligningGuidelines(canvas, { color: INK, width: 1, margin: 4 });
     return () => {
       disposed = true;
       if (editor.current === canvas) editor.current = null;
       window.removeEventListener("beforeunload", leave);
       if (mockTimer.current) clearTimeout(mockTimer.current);
+      stopGuidelines();
       void canvas.dispose();
     };
     // The editor owns its document; uploads update its library without remounting.
@@ -1411,6 +1451,7 @@ export function ProductEditor({
       dirty.current = false;
       const result = await saveCanvasCompositionAction(form);
       if (result?.error) throw new Error(result.error);
+      clearDraft();
     } catch (e) {
       dirty.current = true;
       setError(e instanceof Error ? e.message : "Couldn’t save. Your design is still here.");
@@ -2120,6 +2161,39 @@ export function ProductEditor({
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {recovered && (
+        <div className="pe-recover" role="status">
+          <span>
+            Unsaved work from {new Date(recovered.at).toLocaleString()} — {recovered.layers} {recovered.layers === 1 ? "layer" : "layers"}.
+          </span>
+          <button
+            className="pe-btn pe-btn-primary"
+            onClick={async () => {
+              try {
+                const raw = localStorage.getItem(draftKey);
+                const draft = raw ? (JSON.parse(raw) as { name?: string; studio: StudioLayout }) : null;
+                if (!draft) return;
+                doc.current = studioLayoutSchema.parse(draft.studio);
+                if (draft.name) setName(draft.name);
+                history.current = []; setUndoCount(0); future.current = []; setRedoCount(0);
+                setSurfaces([...doc.current.surfaces]);
+                await loadSurface(doc.current.surfaces[0].id);
+                dirty.current = true;
+              } catch {
+                setError("That saved copy couldn't be opened.");
+              } finally {
+                setRecovered(null);
+              }
+            }}
+          >
+            Restore it
+          </button>
+          <button className="pe-btn pe-btn-ghost" onClick={() => { clearDraft(); setRecovered(null); }}>
+            Discard
+          </button>
         </div>
       )}
 
