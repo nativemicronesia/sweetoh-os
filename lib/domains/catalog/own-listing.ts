@@ -4,6 +4,7 @@ import { getDb } from "@/lib/db/client";
 import { product } from "@/lib/db/schema";
 import type { SessionUser } from "@/lib/domains/identity/types";
 import { ValidationError } from "@/lib/shared/errors";
+import { approveAsset, createAssetWithUpload } from "@/lib/domains/assets/service";
 import { addProductMediaUpload, createProduct, publishProduct } from "./service";
 import type { ProductCategory } from "./categories";
 
@@ -83,8 +84,24 @@ export async function listOwnProduct(
 
   const photos = await Promise.all(input.photos.map(async (p) => ({ ...(await normalizePhoto(p.file)), filename: p.filename })));
 
+  // Publishing a Sweet'Oh product needs an approved source asset behind it,
+  // so her main photo becomes that asset.
+  const source = await createAssetWithUpload({
+    ventureId: session.ventureId,
+    ventureSlug: session.ventureSlug,
+    uploadedById: session.appUser.id,
+    name: `${name} — product photo`,
+    assetType: "product_asset",
+    file: photos[0].bytes,
+    filename: "product.jpg",
+    mimeType: photos[0].mimeType,
+    notes: "Photographed by the shop",
+  });
+  await approveAsset({ ventureId: session.ventureId, assetId: source.id, approvedById: session.appUser.id });
+
   const created = await createProduct({
     ventureId: session.ventureId,
+    sourceAssetId: source.id,
     slug: await uniqueSlug(session.ventureId, name),
     name,
     description: input.description?.trim() || null,

@@ -38,7 +38,14 @@ export async function listOwnProductAction(form: FormData): Promise<ListingResul
     revalidatePath("/collections");
     return { ok: true, productId: created.id, published: form.get("publish") === "true" };
   } catch (error) {
-    return { ok: false, error: getActionErrorMessage(error) };
+    const raw = getActionErrorMessage(error);
+    // Internal publishing rules shouldn't reach her in engineering language.
+    const friendly = /fulfillment path/i.test(raw)
+      ? "Couldn't publish that one. Save it as a draft and tell Dave — the photo is safe."
+      : /media item/i.test(raw)
+        ? "Add at least one photo before publishing."
+        : raw;
+    return { ok: false, error: friendly };
   }
 }
 

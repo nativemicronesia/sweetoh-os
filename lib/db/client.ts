@@ -41,7 +41,7 @@ export function getDb(): Db {
     // built for this, and each serverless instance keeps its own small pool.
     const sql = postgres(resolveAppDatabaseUrl(connectionString), {
       prepare: false,
-      max: Number(process.env.DATABASE_POOL_MAX ?? 5),
+      max: Number(process.env.DATABASE_POOL_MAX ?? 3),
       idle_timeout: 20,
       connect_timeout: 15,
       max_lifetime: 60 * 30,
