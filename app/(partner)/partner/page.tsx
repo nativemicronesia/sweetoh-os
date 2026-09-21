@@ -21,6 +21,7 @@ import { listBestsellerBlueprints } from "@/lib/integrations/printify/catalog";
 import { formatPrice } from "@/lib/shared/format";
 import { OperationsOverview } from "./components/operations-overview";
 import { countOpenShopRequests } from "@/lib/domains/creator/print-requests";
+import { sizedPhoto } from "@/lib/studio/photo";
 
 const JOB_LABEL: Record<string, string> = {
   new: "New",
@@ -244,7 +245,7 @@ export default async function PartnerHomePage() {
               {picks.map((b) => (
                 <Link key={b.id} href={`/partner/catalog/printify-${b.id}`}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={b.images[0]} alt="" loading="lazy" />
+                  <img src={sizedPhoto(b.images[0], 800)} alt="" loading="lazy" />
                   <span>{b.title}</span>
                 </Link>
               ))}

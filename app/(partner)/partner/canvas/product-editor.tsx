@@ -74,6 +74,7 @@ import {
 } from "@/lib/domains/catalog/studio-layout";
 import type { CatalogSource, VariantOptions } from "@/lib/domains/catalog/variants";
 import { analyzePhoto, printAreaInBox, tintGarment } from "@/lib/studio/tint";
+import { sizedPhoto } from "@/lib/studio/photo";
 import { PRODUCT_FONTS, ensureFont, fontFamily } from "@/lib/studio/fonts";
 import { SHAPES, makeShape, type ShapeKind } from "@/lib/studio/shapes";
 import { makePatternRect } from "@/lib/studio/pattern";
@@ -252,7 +253,16 @@ export function ProductEditor({
   const [colorName, setColorName] = useState<string | null>(colors[0]?.name ?? null);
   const [panel, setPanel] = useState<Panel>(null);
   const [zoom, setZoom] = useState(1);
-  const [ready, setReady] = useState(false);
+  const [ready, setReadyState] = useState(false);
+  // Artwork uploaded while a view is still loading waits for it instead of being dropped.
+  const readyRef = useRef(false);
+  const readyWaiters = useRef<(() => void)[]>([]);
+  const setReady = (value: boolean) => {
+    readyRef.current = value;
+    setReadyState(value);
+    if (value) for (const resolve of readyWaiters.current.splice(0)) resolve();
+  };
+  const whenReady = () => (readyRef.current ? Promise.resolve() : new Promise<void>((resolve) => readyWaiters.current.push(resolve)));
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [name, setName] = useState(initialName || blank?.name || "My product");
@@ -472,7 +482,7 @@ export function ProductEditor({
   }
 
   function photoFor(s: Surface) {
-    return (s.assetId ? urls.current[s.assetId] : null) ?? s.imageUrl ?? blank?.imageUrl ?? null;
+    return sizedPhoto((s.assetId ? urls.current[s.assetId] : null) ?? s.imageUrl ?? blank?.imageUrl ?? null);
   }
   /** The view photo cleaned and recolored to a garment color; null keeps the original. */
   function recolored(src: string, hex: string | null, area: Area) {
@@ -783,8 +793,8 @@ export function ProductEditor({
   /* ---------- adding & editing ---------- */
 
   async function addArtwork(id: string) {
+    await whenReady();
     if (!canDesign()) return;
-    if (locked) return;
     setBusy("Adding artwork…");
     setError("");
     checkpoint();
@@ -1245,7 +1255,7 @@ export function ProductEditor({
     try {
       const info = await analyzePhoto(src);
       if (info.box) {
-        const img = await FabricImage.fromURL(src, { crossOrigin: "anonymous" });
+        const img = await FabricImage.fromURL(sizedPhoto(src), { crossOrigin: "anonymous" });
         const r = Math.min(SIZE / img.width, SIZE / img.height);
         const [ox, oy, dw, dh] = [(SIZE - img.width * r) / 2, (SIZE - img.height * r) / 2, img.width * r, img.height * r];
         const a = printAreaInBox(info.box, (ratio * dw) / dh);
@@ -1754,7 +1764,7 @@ export function ProductEditor({
               capture(); editor.current?.discardActiveObject(); surface().area = r.bounds; setActiveRegionId(r.id); setSurfaces([...doc.current.surfaces]); readSelection();
             }}>{currentRegions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}</select></label> : <button className="pe-btn pe-btn-primary" onClick={() => setSetupOpen(true)}>Add a print area</button>}
           </div>
-          <div className="pe-stage" ref={stage} onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = "copy"; }} onDrop={e => { e.preventDefault(); if (!locked) void upload(e.dataTransfer.files[0]); }}>
+          <div className="pe-stage" ref={stage} onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = "copy"; }} onDrop={e => { e.preventDefault(); if (!busy) void upload(e.dataTransfer.files[0]); }}>
             <div className="pe-canvas" ref={host} />
             {ready && !layers.length && <div className="pe-start"><button onClick={() => setPanel("files")}><Upload size={15}/> Add artwork</button><button onClick={() => setPanel("text")}><Type size={15}/> Add text</button><span>or drop an image here</span></div>}
             {!ready && !error && (
@@ -2256,7 +2266,7 @@ export function ProductEditor({
                 .sort((a, b) => (photoScores[b] ?? -9) - (photoScores[a] ?? -9))
                 .map((src, i) => (
                   <button key={src} disabled={Boolean(busy)} onClick={() => void useViewPhoto({ imageUrl: src })}>
-                    <img src={src} alt="" />
+                    <img src={sizedPhoto(src, 400)} alt="" />
                     {i < 2 && (photoScores[src] ?? -1) > 0.3 && <span className="pe-photo-best">Recommended</span>}
                   </button>
                 ))}

@@ -8,6 +8,8 @@
  * Returns null when the region is implausible (too small, or it leaked into
  * the backdrop); callers should then show the original photo.
  */
+import { sizedPhoto } from "./photo";
+
 export type TintResult = { url: string; coverage: number };
 
 const MAX_SIDE = 1200;
@@ -18,7 +20,7 @@ function loadImage(src: string): Promise<HTMLImageElement> {
     img.crossOrigin = "anonymous";
     img.onload = () => resolve(img);
     img.onerror = () => reject(new Error("Image failed to load"));
-    img.src = src;
+    img.src = sizedPhoto(src);
   });
 }
 

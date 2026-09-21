@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { isLightColor, type VariantColor } from "@/lib/domains/catalog/variants";
 import { SubmitButton } from "../components/submit-button";
 import { startCatalogDesign } from "../actions/catalog";
+import { sizedPhoto } from "@/lib/studio/photo";
 
 type Options = {
   colors: VariantColor[];
@@ -91,7 +92,7 @@ export function CatalogProduct({
     <section className="catalog-detail">
       <div>
         <div className="catalog-detail-image">
-          <img key={product.images[index]} src={product.images[index]} alt={product.name} />
+          <img key={product.images[index]} src={sizedPhoto(product.images[index])} alt={product.name} />
           {area && (
             <span
               className="detail-print-area"
@@ -118,7 +119,7 @@ export function CatalogProduct({
                 setIndex(i);
               }}
             >
-              <img src={src} alt="" loading="lazy" />
+              <img src={sizedPhoto(src, 400)} alt="" loading="lazy" />
               {best === i && (
                 <span className="thumb-best" title="Best photo for designing">
                   <Sparkles size={11} />

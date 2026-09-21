@@ -12,6 +12,7 @@ import { categoryLabel } from "@/lib/domains/catalog/categories";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CreationSteps } from "../../components/creation-steps";
+import { sizedPhoto } from "@/lib/studio/photo";
 
 export default async function CatalogProductPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ error?: string }> }) {
   const session = await requirePartnerWorkspace();
@@ -35,7 +36,7 @@ export default async function CatalogProductPage({ params, searchParams }: { par
     <CreationSteps current={1} />
     <Link href="/partner/catalog" className="inline-flex items-center gap-2 text-sm"><ArrowLeft size={16} /> All products</Link>
     <section className="catalog-detail">
-      <div className="catalog-detail-image">{item.imageUrl ? <img src={item.imageUrl} alt={item.name} /> : <div className="catalog-no-image"><Package size={56} /><p>Product photo needed</p></div>}</div>
+      <div className="catalog-detail-image">{item.imageUrl ? <img src={sizedPhoto(item.imageUrl)} alt={item.name} /> : <div className="catalog-no-image"><Package size={56} /><p>Product photo needed</p></div>}</div>
       <div className="space-y-6 py-4">
         <Badge variant="secondary">{categoryLabel(item.category)}</Badge>
         <h1 className="text-3xl font-semibold tracking-tight">{item.name}</h1>

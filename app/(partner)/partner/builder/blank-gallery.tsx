@@ -10,6 +10,7 @@ import {
   categoryLabel,
   type ProductCategory,
 } from "@/lib/domains/catalog/categories";
+import { sizedPhoto } from "@/lib/studio/photo";
 export function BlankGallery({
   blanks,
   hrefBase = "/partner/catalog",
@@ -113,7 +114,7 @@ export function BlankGallery({
             >
               <div className="studio-product-image">
                 {b.imageUrl ? (
-                  <img src={b.imageUrl} alt={b.name} loading="lazy" />
+                  <img src={sizedPhoto(b.imageUrl, 800)} alt={b.name} loading="lazy" />
                 ) : (
                   <div className="catalog-no-image">
                     <Package size={44} strokeWidth={1} />
