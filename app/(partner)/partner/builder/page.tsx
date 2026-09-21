@@ -50,12 +50,14 @@ export default async function BuilderPage({
           <h1>Catalog</h1>
           <p>Choose a product. Add your design. Make it local.</p>
         </div>
-        <a
-          href="/partner/catalog/new"
-          className={buttonVariants({ variant: "outline", size: "lg" })}
-        >
-          ＋ Add your own product
-        </a>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <a href="/partner/list" className={buttonVariants({ size: "lg" })}>
+            ＋ Add a product I already make
+          </a>
+          <a href="/partner/catalog/new" className={buttonVariants({ variant: "outline", size: "lg" })}>
+            Set up my own blank
+          </a>
+        </div>
       </header>
       {remote.error && (
         <p role="alert" className="print-error">
@@ -63,16 +65,11 @@ export default async function BuilderPage({
         </p>
       )}
       <BlankGallery blanks={blanks} />
-      <details
-        open={query.add === "1"}
-        id="new-blank"
-        className="blank-photo-section"
-      >
+      <details open={query.add === "1"} id="new-blank" className="blank-photo-section">
         <summary>
-          <strong>List a finished product</strong>
+          <strong>List a finished product the long way</strong>
           <span>
-            Already made it? Keep your real photos and list it as is. To design
-            on a product, use “Add your own product” instead.
+            The quick way is “Add a product I already make” above — photos, price, publish. This older form adds supplier research.
           </span>
         </summary>
         <div className="mt-5">

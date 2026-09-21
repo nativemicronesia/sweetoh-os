@@ -21,6 +21,9 @@ export const IMAGE_UPLOAD_MIME_TYPES = [
   "image/png",
   "image/webp",
   "image/gif",
+  // Straight off an iPhone. Converted to JPEG/PNG on the way in.
+  "image/heic",
+  "image/heif",
 ] as const;
 
 export function validateImageUpload(input: {
@@ -29,7 +32,7 @@ export function validateImageUpload(input: {
 }) {
   if (!IMAGE_UPLOAD_MIME_TYPES.includes(input.mimeType as (typeof IMAGE_UPLOAD_MIME_TYPES)[number])) {
     throw new ValidationError(
-      "Upload a JPEG, PNG, WebP, or GIF image (max 10 MB).",
+      "Upload a photo (JPEG, PNG, WebP, GIF or an iPhone HEIC), 10 MB or smaller.",
     );
   }
 

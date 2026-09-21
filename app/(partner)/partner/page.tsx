@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   ArrowRight,
+  Camera,
   BookOpen,
   Check,
   Package,
@@ -110,9 +111,14 @@ export default async function PartnerHomePage() {
           <h1>{firstName ? `Welcome back, ${firstName}` : "Welcome back"}</h1>
           <p>Here’s what’s happening in your shop today.</p>
         </div>
-        <Link href="/partner/catalog" className="pf-btn pf-btn-primary pf-btn-lg">
-          Create product <ArrowRight size={16} />
-        </Link>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <Link href="/partner/list" className="pf-btn pf-btn-primary pf-btn-lg">
+            <Camera size={16} /> Add a product I already make
+          </Link>
+          <Link href="/partner/catalog" className="pf-btn pf-btn-lg" style={{ background: "#fff", border: "1px solid var(--so-border)" }}>
+            Design a new one <ArrowRight size={16} />
+          </Link>
+        </div>
       </header>
 
       {creatorOpen > 0 && (

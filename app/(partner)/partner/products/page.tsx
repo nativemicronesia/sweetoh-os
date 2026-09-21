@@ -78,9 +78,14 @@ export default async function PartnerProductsPage({
           <h1>My products</h1>
           <p>Everything you’ve made — drafts, published products and saved blanks.</p>
         </div>
-        <Link className="studio-primary" href="/partner/catalog">
-          ＋ Create product
-        </Link>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <Link className="studio-primary" href="/partner/list">
+            ＋ Add a product I already make
+          </Link>
+          <Link className="pe-btn pe-btn-ghost" href="/partner/catalog">
+            Design a new one
+          </Link>
+        </div>
       </header>
       <WorkspaceGallery cards={cards} />
     </div>
