@@ -5,7 +5,7 @@ import { assertBuilderRole } from "@/lib/domains/intelligence/partner-builder";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { redirect } from "next/navigation";
-import { approveAsset, getAssetById, validateImageUpload } from "@/lib/domains/assets/service";
+import { approveAsset, archiveAsset, getAssetById, validateImageUpload } from "@/lib/domains/assets/service";
 import { persistDraftProduct } from "@/lib/domains/intelligence/service";
 import { getProductById, addProductMediaUpload, setProductVariantSetup } from "@/lib/domains/catalog/service";
 import { ValidationError } from "@/lib/shared/errors";
@@ -16,6 +16,7 @@ import { requirePartnerWorkspace, requireStudioWorkspace, studioBase } from "@/l
 import { getCreditBalance } from "@/lib/domains/creator/credits";
 import { listPartnerLibraryDesigns } from "@/lib/domains/catalog/partner-design-library";
 import { getActionErrorMessage } from "@/lib/shared/action-errors";
+import { plainCatalogDescription } from "@/lib/integrations/printify/catalog";
 
 function isNextRedirect(error: unknown): boolean {
   return (
@@ -111,6 +112,21 @@ export async function approveLibraryDesignAction(formData: FormData): Promise<vo
   }
 }
 
+/** Hide a file from My files. Products already using it keep their images. */
+export async function removeLibraryDesignAction(formData: FormData): Promise<void> {
+  try {
+    const session = await requirePartnerWorkspace();
+    const assetId = String(formData.get("assetId") ?? "").trim();
+    if (!assetId) redirectLibrary("Missing file.", "error");
+    await archiveAsset({ ventureId: session.ventureId, assetId, actorUserId: session.appUser.id, reason: "Removed from My files" });
+    revalidatePath("/partner/library");
+    redirectLibrary("File removed.", "success");
+  } catch (error) {
+    if (isNextRedirect(error)) throw error;
+    redirectLibrary(getActionErrorMessage(error), "error");
+  }
+}
+
 export async function saveCanvasCompositionAction(formData: FormData): Promise<{ error: string } | void> {
   try {
     const session = await requireStudioWorkspace();
@@ -199,7 +215,7 @@ export async function saveCanvasCompositionAction(formData: FormData): Promise<{
       const saved = await persistDraftProduct({ ventureId: session.ventureId, actorUserId: session.appUser.id,
         mode: "visual_intake", prompt: "Partner canvas composition — no AI call", rawResponse: { kind: "canvas_composition", blankProductId, designAssetId },
         sourceAssetId: composition.id, primaryAssetId: composition.id,
-        output: { title: name, description: blank.description || "", shortDescription: blank.shortDescription || "",
+        output: { title: name, description: plainCatalogDescription(blank.description || ""), shortDescription: blank.shortDescription || "",
           seoTitle: name.slice(0, 60), seoDescription: blank.seoDescription || "", category: blank.category,
           suggestedTags: blank.suggestedTags || [], suggestedCollections: [], suggestedPriceCents: 0,
           internalNotes: `Created on ${blank.name}. Review print area and product options before production.` },

@@ -20,6 +20,7 @@ import {
   rejectProductListing,
   submitProductDraftForReview,
   unpublishProduct,
+  deleteProduct,
   updateProduct,
   getProductById,
 } from "./service";
@@ -110,6 +111,12 @@ export async function unpublishPartnerProduct(
     productId,
     actorUserId: session.appUser.id,
   });
+}
+
+/** Delete a product for good — partner/owner only, and only while it has no orders. */
+export async function deletePartnerProduct(session: SessionUser, productId: string) {
+  if (!canModerateListings(session)) throw new ValidationError("Only the shop partner or owner can delete products.");
+  return deleteProduct({ ventureId: session.ventureId, productId, actorUserId: session.appUser.id });
 }
 
 /** Send one of your own drafts into the Sweet'Oh review queue. */

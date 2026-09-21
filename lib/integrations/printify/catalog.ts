@@ -88,6 +88,9 @@ export function plainCatalogDescription(html: string) {
     .replace(/&nbsp;/g, " ")
     .replace(/&amp;/g, "&")
     .replace(/&quot;/g, '"')
+    // Printify marks bullets with ".:" — show them as real bullets.
+    .replace(/^[ \t]*\.:[ \t]*/gm, "• ")
+    .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
 export async function downloadCatalogImage(url: string) {

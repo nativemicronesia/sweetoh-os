@@ -13,6 +13,7 @@ import { refundCredits, spendCredits } from "@/lib/domains/creator/credits";
 import { actionCreditsForKey } from "@/lib/domains/creator/plans";
 import { getActorProductDraft, listActorProductDrafts, persistDraftProduct } from "./service";
 import { builderRecord, type BuilderRecord, type ProductResearch } from "./product-research-schema";
+import { plainCatalogDescription } from "@/lib/integrations/printify/catalog";
 
 export function assertBuilderRole(session: SessionUser) {
   // Creators manage blanks inside their own private workspace (session.ventureId).
@@ -81,7 +82,7 @@ export async function preparePartnerProduct(session: SessionUser, input: {
   const saved = await persistDraftProduct({ ventureId: session.ventureId, actorUserId: session.appUser.id,
     mode: "visual_intake", prompt: input.useAi ? "Partner product research" : "Partner manual product entry (no AI)",
     rawResponse: record, sourceAssetId: source.id, primaryAssetId: source.id,
-    output: { title: name, description: research?.description || input.notes, shortDescription: research?.description.slice(0, 160) || "",
+    output: { title: name, description: research?.description || plainCatalogDescription(input.notes ?? ""), shortDescription: research?.description.slice(0, 160) || "",
       seoTitle: name.slice(0, 60), seoDescription: research?.description.slice(0, 160) || "", category: research?.category || "custom",
       suggestedTags: [], suggestedCollections: [], suggestedPriceCents: 0,
       internalNotes: research ? [research.evidence, ...research.unknowns].join("\n") : input.notes },

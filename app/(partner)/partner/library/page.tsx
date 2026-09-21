@@ -8,6 +8,7 @@ import { canModerateListings } from "@/lib/domains/catalog/partner-listings";
 import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
 import {
   approveLibraryDesignAction,
+  removeLibraryDesignAction,
   uploadLibraryDesignAction,
 } from "../actions/library";
 
@@ -159,6 +160,12 @@ export default async function PartnerLibraryPage({ searchParams }: PageProps) {
                         </button>
                       </form>
                     ) : null}
+                    <form action={removeLibraryDesignAction}>
+                      <input type="hidden" name="assetId" value={design.id} />
+                      <button type="submit" className={buttonVariants({ size: "sm", variant: "outline" })}>
+                        Remove
+                      </button>
+                    </form>
                   </div>
                 </div>
               </li>

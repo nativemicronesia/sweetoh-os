@@ -1516,3 +1516,33 @@ export async function getProductColorImageUrls(
       .map((m) => [m.color!, productMediaPublicUrl(m.objectKey!)]),
   );
 }
+
+/** Permanently remove a product. Products that already have orders are kept (unpublish those instead). */
+export async function deleteProduct(input: {
+  ventureId: string;
+  productId: string;
+  actorUserId: string;
+}) {
+  const db = getDb();
+  const existing = await getProductById(input);
+  const [{ value: orders }] = await db
+    .select({ value: count() })
+    .from(orderLineItem)
+    .where(eq(orderLineItem.productId, input.productId));
+  if (orders > 0)
+    throw new ValidationError(
+      `"${existing.name}" has orders, so it can't be deleted. Unpublish it instead — it leaves the shop and the orders stay intact.`,
+    );
+  await db
+    .delete(product)
+    .where(and(eq(product.id, input.productId), eq(product.ventureId, input.ventureId)));
+  await recordAuditEvent({
+    ventureId: input.ventureId,
+    actorUserId: input.actorUserId,
+    action: "product.deleted",
+    entityType: "product",
+    entityId: input.productId,
+    metadata: { name: existing.name },
+  });
+  return existing;
+}

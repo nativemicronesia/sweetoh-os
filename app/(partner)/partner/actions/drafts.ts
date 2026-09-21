@@ -13,6 +13,7 @@ import {
   rejectPartnerPendingListing,
   submitPartnerDraft,
   unpublishPartnerProduct,
+  deletePartnerProduct,
   updatePartnerDraftFields,
 } from "@/lib/domains/catalog/partner-listings";
 import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
@@ -94,6 +95,18 @@ export async function unpublishPartnerProductAction(
   } catch (error) {
     unstable_rethrow(error);
     redirect(productsPath({ error: getActionErrorMessage(error) }));
+  }
+}
+
+export async function deletePartnerProductAction(productId: string): Promise<void> {
+  try {
+    const session = await requirePartnerWorkspace();
+    const row = await deletePartnerProduct(session, productId);
+    revalidateListingSurfaces(productId);
+    redirect(productsPath({ success: `"${row.name}" deleted.` }));
+  } catch (error) {
+    unstable_rethrow(error);
+    redirect(reviewDetailPath(productId, { error: getActionErrorMessage(error) }));
   }
 }
 

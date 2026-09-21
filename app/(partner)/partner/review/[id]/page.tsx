@@ -1,4 +1,5 @@
 import { SubmitButton } from "../../components/submit-button";
+import { DeleteProductButton } from "../../components/delete-product-button";
 import { VariantPricing } from "../../components/variant-pricing";
 import Link from "next/link";
 import { CreationSteps } from "../../components/creation-steps";
@@ -27,6 +28,7 @@ import {
   submitPartnerDraftForReviewAction,
   updatePartnerDraftAction,
   unpublishPartnerProductAction,
+  deletePartnerProductAction,
 } from "../../actions/drafts";
 
 /**
@@ -121,6 +123,11 @@ export default async function PartnerReviewDetailPage({
     await unpublishPartnerProductAction(id);
   }
 
+  async function deleteNow() {
+    "use server";
+    await deletePartnerProductAction(id);
+  }
+
   async function submitForReview() {
     "use server";
     await submitPartnerDraftForReviewAction(id);
@@ -138,19 +145,13 @@ export default async function PartnerReviewDetailPage({
 
   return (
     <div className="studio-review space-y-6"><CreationSteps current={product.active ? 5 : 4} />
-      {(aiSession?.session.rawResponse as {kind?:string})?.kind === "canvas_composition" && product.sourceAssetId && <Link className="so-link" href={`/partner/canvas?composition=${product.sourceAssetId}`}>← Open saved design</Link>}
       <FlashBanner message={query.error} variant="error" />
       <FlashBanner message={query.success} variant="success" />
       {builderRecord(aiSession?.session.rawResponse) && <Link href={`/partner/builder/${id}`} className="so-link">Review product research & source details →</Link>}
 
-      <div>
-        <Link
-          href="/partner/products"
-          className="text-sm underline"
-          style={{ color: "var(--so-cream-dim)" }}
-        >
-          ← My products
-        </Link>
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+        <Link href="/partner/products" className="so-link">← My products</Link>
+        {(aiSession?.session.rawResponse as {kind?:string})?.kind === "canvas_composition" && product.sourceAssetId && <Link className="so-link" href={`/partner/canvas?composition=${product.sourceAssetId}`}>Edit design</Link>}
       </div>
 
       {/* Photo beside the AI-written copy — the whole point of this screen. */}
@@ -275,6 +276,7 @@ export default async function PartnerReviewDetailPage({
               </Link>
             ) : null}
             {product.active && canModerate && <form action={unpublishNow}><SubmitButton pendingLabel="Unpublishing…">Unpublish</SubmitButton></form>}
+            {canModerate && <DeleteProductButton action={deleteNow} />}
           </div>
         </div>
       </section>
