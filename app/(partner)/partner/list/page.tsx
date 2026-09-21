@@ -14,9 +14,9 @@ export default async function ListProductPage() {
       <Link href="/partner/products" className="inline-flex items-center gap-2 text-sm"><ArrowLeft size={16} /> My products</Link>
       <header className="studio-page-heading">
         <div>
-          <p className="studio-kicker">Straight from your phone</p>
+          <p className="studio-kicker">Already selling it? Put it in the shop</p>
           <h1>Add a product you already make</h1>
-          <p>Photograph it, name it, set your price, publish. Skink can turn it into a design blank afterwards.</p>
+          <p>Drag in your photos (or take them on your phone), name it, set your price, publish. Skink can turn it into a design blank afterwards, so you can design on that same product.</p>
         </div>
       </header>
       <ListProductForm categories={PRODUCT_CATEGORY_META.map((c) => ({ value: c.value, label: c.label }))} maxPhotos={LISTING_MAX_PHOTOS} />

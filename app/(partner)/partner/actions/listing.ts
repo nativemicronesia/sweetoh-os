@@ -9,6 +9,7 @@ import { listOwnProduct, LISTING_MAX_PHOTOS } from "@/lib/domains/catalog/own-li
 import { getActionErrorMessage } from "@/lib/shared/action-errors";
 import { getPrimaryProductImageBuffer, getProductById } from "@/lib/domains/catalog/service";
 import { createOwnBlank, turnPhotoIntoBlank } from "@/lib/capabilities";
+import { listBuilderBlanks } from "@/lib/domains/intelligence/partner-builder";
 
 export type ListingResult = { ok: true; productId: string; published: boolean } | { ok: false; error: string };
 
@@ -53,11 +54,15 @@ export async function listOwnProductAction(form: FormData): Promise<ListingResul
  * Skink turns a product she's listed into a blank she can design on: its photo
  * is cleaned up and its printable areas proposed, then it appears in the Studio.
  */
-export async function makeBlankFromProductAction(productId: string): Promise<{ ok: true; blankId: string } | { ok: false; error: string }> {
+export async function makeBlankFromProductAction(productId: string): Promise<{ ok: true; blankId: string; reused?: boolean } | { ok: false; error: string }> {
   const session = await requirePartnerWorkspace();
   try {
     const id = z.string().uuid().parse(productId);
     const source = await getProductById({ ventureId: session.ventureId, productId: id });
+    // She may tap this twice, or come back later — reuse the blank she already has.
+    const existing = (await listBuilderBlanks(session)).find((b) => b.name === source.name);
+    if (existing) return { ok: true, blankId: existing.id, reused: true };
+
     const photo = await getPrimaryProductImageBuffer(id);
     if (!photo) return { ok: false, error: "This product needs a photo first." };
 

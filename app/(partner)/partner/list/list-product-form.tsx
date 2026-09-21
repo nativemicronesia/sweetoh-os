@@ -11,14 +11,14 @@ type Photo = { file: File; url: string };
 
 /**
  * One screen: photos, name, her price, publish. Everything else is optional.
- * Built for a phone, because that's where the photos are.
+ * Works the same on her laptop (drag photos in) and on a phone (camera roll).
  */
 export function ListProductForm({ categories, maxPhotos }: { categories: Category[]; maxPhotos: number }) {
   const router = useRouter();
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<{ productId: string; published: boolean; name: string } | null>(null);
-  const [blank, setBlank] = useState<{ id: string } | null>(null);
+  const [blank, setBlank] = useState<{ id: string; reused: boolean } | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const formRef = useRef<HTMLFormElement>(null);
@@ -82,11 +82,11 @@ export function ListProductForm({ categories, maxPhotos }: { categories: Categor
                 const r = await makeBlankFromProductAction(done.productId);
                 setBusy(null);
                 if (!r.ok) setError(r.error);
-                else setBlank({ id: r.blankId });
+                else setBlank({ id: r.blankId, reused: Boolean(r.reused) });
               })
             }
           >
-            {blank ? <Check size={16} /> : <Sparkles size={16} />} {blank ? "Blank ready" : "Make a design blank"}
+            {blank ? <Check size={16} /> : <Sparkles size={16} />} {blank ? (blank.reused ? "You already have one" : "Blank ready") : "Make a design blank"}
           </button>
           {blank && (
             <Link className="pe-btn pe-btn-ghost" href={`/partner/canvas?blank=${blank.id}`}>
@@ -110,7 +110,7 @@ export function ListProductForm({ categories, maxPhotos }: { categories: Categor
         {busy && <p className="text-sm" style={{ marginTop: 12, color: "var(--pf-muted)" }}><Loader2 size={14} className="pe-spin" /> {busy}</p>}
         {error && <p role="alert" className="print-error" style={{ marginTop: 12 }}>{error}</p>}
         <p className="text-sm" style={{ color: "var(--pf-muted)", marginTop: 14 }}>
-          A design blank takes your photo, cleans it up and marks where you print — then it lives in your Catalog for every future design.
+          A design blank takes your photo, cleans it up and marks where you print. It lives under <strong>Saved blanks</strong> in My products and in your Catalog, ready for every future design.
         </p>
       </div>
     );
@@ -119,11 +119,17 @@ export function ListProductForm({ categories, maxPhotos }: { categories: Categor
   return (
     <form ref={formRef} className="space-y-5" onSubmit={(e) => { e.preventDefault(); submit(true); }}>
       {/* Photos */}
-      <div>
+      <div
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={(e) => {
+          e.preventDefault();
+          addFiles(e.dataTransfer.files);
+        }}
+      >
         <label className="studio-photo-drop" style={{ minHeight: photos.length ? 140 : 220 }}>
           <span className="studio-upload-symbol" aria-hidden>＋</span>
-          <strong>{photos.length ? "Add more photos" : "Take or choose photos"}</strong>
-          <span>{photos.length ? `${photos.length} of ${maxPhotos}` : "Up to " + maxPhotos + " · straight from your phone is fine"}</span>
+          <strong>{photos.length ? "Add more photos" : "Drag photos here, or click to choose"}</strong>
+          <span>{photos.length ? `${photos.length} of ${maxPhotos} · the first one is your shop image` : `Up to ${maxPhotos} · straight off your camera or phone is fine`}</span>
           <input type="file" accept="image/*" multiple aria-label="Product photos" onChange={(e) => { addFiles(e.target.files); e.target.value = ""; }} />
         </label>
         {photos.length > 0 && (
