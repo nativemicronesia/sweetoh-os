@@ -90,7 +90,7 @@
 .cw-locked { opacity: 0.4; filter: saturate(0.6); user-select: none; }
 .cw-lock {
   position: sticky;
-  top: 5rem;
+  top: 6.9rem;
   z-index: 30;
   display: flex;
   justify-content: center;

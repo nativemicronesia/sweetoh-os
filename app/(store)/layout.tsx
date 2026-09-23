@@ -34,34 +34,42 @@ export default function StoreLayout({
       >
         <StoreHeader creatorSideOpen={creatorSideOpen()} />
 
-        <main className="flex-1 pt-[4.25rem]">{children}</main>
+        <main className="flex-1 pt-[6.1rem]">{children}</main>
 
-        <footer
-          className="mt-auto border-t"
-          style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}
-        >
-          <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-5 py-12 sm:px-8 lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-sm space-y-3">
-              <p className="so-display text-2xl text-[color:var(--so-cream)]">Sweet&apos;Oh</p>
-              <p className="text-sm leading-relaxed so-muted">
+        <footer className="mt-24 overflow-hidden" style={{ background: "var(--so-ink)", color: "#efe6d4" }}>
+          <div className="mx-auto grid w-full max-w-6xl gap-10 px-5 pt-16 sm:px-8 md:grid-cols-[1.4fr_1fr_1fr]">
+            <div className="max-w-sm space-y-4">
+              <p className="text-sm leading-relaxed" style={{ color: "#bfb29b" }}>
                 Micronesian-owned, made to order in Lacey, Washington. Shop our pieces or
                 request something made just for you.
               </p>
-              <p className="text-xs so-muted">sweetohcreations.shop</p>
+              <p className="text-sm" style={{ color: "var(--so-frangipani)" }}>
+                Hafa adai · Kaselehlie · Ran allim · Iakwe · Alii
+              </p>
             </div>
-            <nav className="flex flex-wrap gap-x-5 gap-y-2 text-sm so-muted">
-              {FOOTER_LINKS.map((item) => (
-                <Link key={item.href} href={item.href} className="so-link">
-                  {item.label}
-                </Link>
+            <nav aria-label="Shop" className="flex flex-col gap-2 text-sm">
+              <p className="so-eyebrow mb-1" style={{ color: "var(--so-frangipani)" }}>Shop</p>
+              {FOOTER_LINKS.slice(0, 2).map((item) => (
+                <Link key={item.href} href={item.href} className="hover:underline">{item.label}</Link>
+              ))}
+              <Link href="/create" className="hover:underline">Create (opening soon)</Link>
+            </nav>
+            <nav aria-label="Help" className="flex flex-col gap-2 text-sm">
+              <p className="so-eyebrow mb-1" style={{ color: "var(--so-frangipani)" }}>Help</p>
+              {FOOTER_LINKS.slice(2).map((item) => (
+                <Link key={item.href} href={item.href} className="hover:underline">{item.label}</Link>
               ))}
             </nav>
           </div>
-          <div
-            className="border-t px-5 py-4 text-center text-xs so-muted sm:px-8"
-            style={{ borderColor: "var(--so-border)" }}
+          <p
+            aria-hidden
+            className="so-display mt-14 select-none whitespace-nowrap px-3 text-center leading-[0.8]"
+            style={{ fontSize: "clamp(2.6rem, 11.2vw, 11rem)", color: "#f6efe0" }}
           >
-            © {new Date().getFullYear()} Sweet&apos;Oh Creations
+            Sweet&apos;Oh <em className="font-normal" style={{ color: "var(--so-coral)" }}>Creations</em>
+          </p>
+          <div className="border-t px-5 py-5 text-center text-xs sm:px-8" style={{ borderColor: "rgba(239,230,212,.14)", color: "#9d917c" }}>
+            {`© ${new Date().getFullYear()} Sweet'Oh Creations · sweetohcreations.shop`}
           </div>
         </footer>
       </div>

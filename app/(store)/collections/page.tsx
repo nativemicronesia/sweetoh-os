@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getStorefrontNavCollections } from "@/lib/domains/catalog/service";
 import { getDefaultVenture } from "@/lib/domains/identity/service";
+import { CategoryTiles } from "../components/category-browse";
 
 export default async function CollectionsIndexPage() {
   const venture = await getDefaultVenture();
@@ -11,7 +12,7 @@ export default async function CollectionsIndexPage() {
       <div>
         <p className="so-eyebrow">Shop</p>
         <h1 className="so-display mt-3 text-3xl text-[color:var(--so-cream)] sm:text-5xl">
-          Categories
+          Find your <em className="font-normal" style={{ color: "var(--so-hibiscus)" }}>piece</em>.
         </h1>
         <p className="mt-3 max-w-xl text-sm so-muted">
           Browse everything Sweet&apos;Oh prints — or{" "}
@@ -20,29 +21,7 @@ export default async function CollectionsIndexPage() {
         </p>
       </div>
 
-      <div
-        className="grid gap-px sm:grid-cols-2 lg:grid-cols-3"
-        style={{ background: "var(--so-border)" }}
-      >
-        {categories.map((item) => (
-          <Link
-            key={item.slug}
-            href={`/collections/${item.slug}`}
-            className="group block px-6 py-8 transition-colors"
-            style={{ background: "var(--so-dark)" }}
-          >
-            <div className="flex items-baseline justify-between gap-2">
-              <h2 className="so-display text-xl text-[color:var(--so-cream)] group-hover:text-[color:var(--so-gold)]">
-                {item.name}
-              </h2>
-              <span className="text-xs tabular-nums so-muted">
-                {item.activeCount}
-              </span>
-            </div>
-            <p className="mt-3 text-sm so-muted">{item.blurb}</p>
-          </Link>
-        ))}
-      </div>
+      <CategoryTiles categories={categories} />
     </div>
   );
 }

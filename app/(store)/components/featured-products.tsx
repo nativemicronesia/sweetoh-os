@@ -49,16 +49,16 @@ export async function FeaturedProducts({
   const resolved = items ?? (await getFeaturedProductsForHome(ventureId));
 
   if (resolved.length === 0) {
-    return null;
+    return <FirstDrop />;
   }
 
   return (
     <section className="mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 sm:py-24">
       <div className="flex items-end justify-between gap-4">
         <div>
-          <p className="so-eyebrow">Featured</p>
-          <h2 className="so-display mt-3 text-3xl text-[color:var(--so-cream)] sm:text-4xl">
-            Now printing
+          <p className="so-eyebrow">Fresh off the press</p>
+          <h2 className="so-display mt-3 text-4xl text-[color:var(--so-cream)] sm:text-5xl">
+            Now <em className="font-normal" style={{ color: "var(--so-hibiscus)" }}>printing</em>
           </h2>
         </div>
         <Link href="/products" className="so-link shrink-0 text-sm so-muted">
@@ -76,6 +76,40 @@ export async function FeaturedProducts({
             imageUrl={imageUrl}
             variantOptions={product.variantOptions}
           />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+const DROP_TILES = [
+  { label: "Island tees", bg: "var(--so-lagoon)", fg: "#fbf6ea", ink: "rgba(255,255,255,.14)" },
+  { label: "Tumblers", bg: "var(--so-coral)", fg: "#fff8f1", ink: "rgba(255,255,255,.16)" },
+  { label: "For the little ones", bg: "var(--so-frangipani)", fg: "var(--so-ink)", ink: "rgba(36,29,20,.1)" },
+  { label: "Gifts", bg: "var(--so-hibiscus)", fg: "#fff5f7", ink: "rgba(255,255,255,.14)" },
+] as const;
+
+/** Before the shop's first products are published: an honest "on the press" shelf. */
+function FirstDrop() {
+  return (
+    <section className="mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 sm:py-24">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="so-eyebrow">The first drop</p>
+          <h2 className="so-display mt-3 text-4xl text-[color:var(--so-cream)] sm:text-5xl">
+            On the <em className="font-normal" style={{ color: "var(--so-hibiscus)" }}>press</em> now.
+          </h2>
+          <p className="mt-4 max-w-md so-muted">Our first pieces are being photographed and listed. Want something now? We&apos;ll make it for you.</p>
+        </div>
+        <Link href="/custom" className="so-btn-primary">Request a custom order</Link>
+      </div>
+      <div className="mt-10 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {DROP_TILES.map((t, i) => (
+          <div key={t.label} className="relative flex aspect-[4/5] items-end overflow-hidden rounded-[1.4rem] p-5" style={{ background: t.bg, color: t.fg }}>
+            <span className="so-pattern-layer" style={{ ["--pattern-ink" as string]: t.ink }} />
+            <span className="so-tag absolute left-4 top-4" style={{ background: "rgba(255,255,255,.24)", color: t.fg, transform: `rotate(${i % 2 ? 3 : -3}deg)` }}>Coming soon</span>
+            <span className="so-display relative text-2xl sm:text-3xl">{t.label}</span>
+          </div>
         ))}
       </div>
     </section>

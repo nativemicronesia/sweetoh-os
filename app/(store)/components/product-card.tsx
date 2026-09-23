@@ -25,9 +25,12 @@ export function ProductCard({
     <article className="group flex flex-col">
       <Link
         href={`/products/${slug}`}
-        className="relative aspect-[4/5] overflow-hidden"
-        style={{ background: "var(--so-surface)" }}
+        className="relative aspect-[4/5] overflow-hidden rounded-[1.25rem]"
+        style={{ background: "var(--so-dark)" }}
       >
+        <span className="so-tag absolute left-3 top-3 z-10 -rotate-2" style={{ background: "var(--so-frangipani)", color: "var(--so-ink)" }}>
+          Made to order
+        </span>
         {imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -36,8 +39,9 @@ export function ProductCard({
             className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-xs so-muted">
-            Image coming
+          <div className="relative flex h-full w-full items-end p-4" style={{ background: "var(--so-sand)" }}>
+            <span className="so-pattern-layer" style={{ ["--pattern-ink" as string]: "rgba(36,29,20,.07)" }} />
+            <span className="so-display relative text-xl text-[color:var(--so-cream)]">{name}</span>
           </div>
         )}
       </Link>
@@ -45,11 +49,11 @@ export function ProductCard({
         <div className="space-y-1">
           <Link
             href={`/products/${slug}`}
-            className="so-link block text-sm font-medium text-[color:var(--so-cream)]"
+            className="so-display block text-lg leading-snug text-[color:var(--so-cream)] hover:text-[color:var(--so-hibiscus)]"
           >
             {name}
           </Link>
-          <p className="text-sm so-muted">{formatPrice(priceCents)}</p>
+          <p className="text-sm font-semibold text-[color:var(--so-cream)]">{formatPrice(priceCents)}</p>
           {options?.colors.length ? (
             <div className="flex flex-wrap items-center gap-1 pt-1" aria-label={`${options.colors.length} colors`}>
               {options.colors.slice(0, 8).map((c) => (

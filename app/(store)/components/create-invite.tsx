@@ -10,7 +10,7 @@ import { creatorSideOpen } from "@/lib/domains/creator/access";
 export function CreateInvite() {
   const creators = creatorSideOpen();
   return (
-    <section className="mx-auto max-w-6xl px-5 py-16 sm:px-8">
+    <section className="mx-auto max-w-6xl px-5 pt-16 sm:px-8">
       <div className="grid gap-5 md:grid-cols-2">
         <div className="rounded-3xl bg-[var(--so-dark)] px-6 py-12 sm:px-10">
           <p className="so-eyebrow">Shop with Sweet&apos;Oh</p>

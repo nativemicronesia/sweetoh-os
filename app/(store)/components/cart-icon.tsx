@@ -9,7 +9,7 @@ export function CartIcon() {
   return (
     <Link
       href="/cart"
-      className="so-link relative text-sm text-[color:var(--so-mist)]"
+      className="so-link relative text-[13px] sm:text-sm text-[color:var(--so-mist)]"
     >
       Cart
       {itemCount > 0 ? (
