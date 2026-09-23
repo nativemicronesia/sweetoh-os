@@ -79,7 +79,7 @@ export const PLANS: Record<PlanId, Plan> = {
     savedDesigns: null,
     features: [
       "Everything in Creator",
-      "Higher model tiers across OpenAI, Anthropic and Google",
+      "OpenAI's most capable model for deep work",
       "Deep research: niches, competitors, product lines",
       "Premium image quality",
       "Choose Quick, Smart or Deep per task",

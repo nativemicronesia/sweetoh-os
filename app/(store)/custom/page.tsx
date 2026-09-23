@@ -48,7 +48,7 @@ export default async function CustomPage({ searchParams }: { searchParams: Promi
         <>
           {query.sent && (
             <p className="mt-8 rounded-xl border p-4 text-[color:var(--so-cream)]" style={{ borderColor: "var(--so-gold)" }}>
-              Sent! The shop will email you at <strong>{shopper.email}</strong>. You can send another anytime.
+              Sent! The shop will email you at <strong>{shopper.email}</strong>. Ask Skink (bottom corner) for an update anytime — once you've confirmed your email.
             </p>
           )}
           {query.welcome && !query.sent && (

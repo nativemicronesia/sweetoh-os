@@ -23,7 +23,7 @@ const EVENT_ICON: Record<string, React.ComponentType<{ size?: number }>> = {
 const LEVELS: { id: AiLevel; label: string; hint: string }[] = [
   { id: "light", label: "Quick", hint: "Fast answers, fewest credits" },
   { id: "smart", label: "Smart", hint: "Strategy and research on stronger models" },
-  { id: "deep", label: "Deep", hint: "Top models from Anthropic, OpenAI and Google (Pro)" },
+  { id: "deep", label: "Deep", hint: "OpenAI's most capable model (Pro)" },
 ];
 
 export function SkinkChat({

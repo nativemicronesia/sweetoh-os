@@ -2,6 +2,7 @@ import { and, desc, eq, inArray, or, sql } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import { fulfillmentJob, order, orderLineItem, product } from "@/lib/db/schema";
 import type { ShopCustomer } from "@/lib/domains/customers/account";
+import { listCustomerRequests } from "@/lib/domains/customers/custom-requests";
 import { formatPrice } from "@/lib/shared/format";
 import { getSweetohSupportEmail } from "@/lib/config/env";
 import { SHOP_FAQ, type FaqTopic } from "./shop-faq";
@@ -15,7 +16,7 @@ import { SHOP_FAQ, type FaqTopic } from "./shop-faq";
 export type HelpLink = { label: string; href: string };
 export type HelpAnswer = { text: string; links: HelpLink[]; chips: string[] };
 
-export const STARTER_CHIPS = ["Track my order", "Shipping", "Returns", "Custom order", "What do you sell?"];
+export const STARTER_CHIPS = ["Track my order", "My custom requests", "Shipping", "Returns", "Custom order", "What do you sell?"];
 
 const has = (text: string, words: string[]) => words.some((w) => new RegExp(`\\b${w}`, "i").test(text));
 
@@ -38,9 +39,12 @@ export async function answerShopQuestion(input: {
   if (has(text, ["place an order", "how (do|to|can) (i )?(place an )?order", "how (do|to|can) (i )?buy", "how does (it|ordering) work"])) {
     return fromFaq("howToOrder");
   }
-  // Their own orders first — the most valuable thing Skink knows.
+  // Their own orders and requests first — the most valuable thing Skink knows.
+  if (has(text, ["my (custom )?requests?", "request status", "status of my", "heard back", "any update", "my info", "my account"])) {
+    return myInfoAnswer(input.ventureId, input.customer, "requests");
+  }
   if (has(text, ORDER_WORDS) && !has(text, ["custom order"])) {
-    return ordersAnswer(input.ventureId, input.customer);
+    return myInfoAnswer(input.ventureId, input.customer, "orders");
   }
   if (has(text, ["custom", "personali[sz]", "my own design", "logo", "bulk", "team", "event", "reunion", "wedding", "birthday", "request", "made for"])) {
     return fromFaq("custom");
@@ -124,10 +128,10 @@ const JOB_LABEL: Record<string, string> = {
   cancelled: "Cancelled",
 };
 
-async function ordersAnswer(ventureId: string, shopper: ShopCustomer | null): Promise<HelpAnswer> {
+async function myInfoAnswer(ventureId: string, shopper: ShopCustomer | null, focus: "orders" | "requests"): Promise<HelpAnswer> {
   if (!shopper) {
     return {
-      text: "I can check your orders once you're signed in with the email you ordered with. You can also find everything in your order confirmation email.",
+      text: "I can pull up your orders and custom requests once you're signed in with the email you ordered with. Your order confirmation email has everything in the meantime.",
       links: [
         { label: "Sign in", href: "/account?mode=login&next=/" },
         { label: "Create an account", href: "/account?next=/" },
@@ -137,37 +141,63 @@ async function ordersAnswer(ventureId: string, shopper: ShopCustomer | null): Pr
   }
   if (!shopper.emailVerifiedAt) {
     return {
-      text: `To keep order details private, I can only show them once you confirm your email. I sent a confirmation link to ${shopper.email} when you signed up — tap it, then ask me again. Your order confirmation email has everything in the meantime.`,
+      text: `To keep your details private, I can only show your orders and requests once you confirm your email. I sent a confirmation link to ${shopper.email} when you signed up — tap it, then ask me again. Your order confirmation email has everything in the meantime.`,
       links: [{ label: "Send the link again", href: "/account/verify/resend" }],
       chips: ["Shipping", "Custom order"],
     };
   }
-  const orders = await getDb()
-    .select()
-    .from(order)
-    .where(
-      and(
-        eq(order.ventureId, ventureId),
-        or(eq(order.customerId, shopper.id), sql`lower(${order.customerEmail}) = ${shopper.email.toLowerCase()}`),
-        inArray(order.status, ["paid", "refunded"]),
-      ),
-    )
-    .orderBy(desc(order.createdAt))
-    .limit(5);
-  if (!orders.length) {
-    return {
-      text: `I don't see any orders for ${shopper.email} yet. If you ordered with a different email, check that email's confirmation — or ask the shop and they'll look it up.`,
-      links: [{ label: "Shop", href: "/collections" }],
-      chips: ["Contact the shop", "Shipping"],
-    };
+  const [orders, requests] = await Promise.all([
+    getDb()
+      .select()
+      .from(order)
+      .where(
+        and(
+          eq(order.ventureId, ventureId),
+          or(eq(order.customerId, shopper.id), sql`lower(${order.customerEmail}) = ${shopper.email.toLowerCase()}`),
+          inArray(order.status, ["paid", "refunded"]),
+        ),
+      )
+      .orderBy(desc(order.createdAt))
+      .limit(5),
+    listCustomerRequests(shopper).then((rows) => rows.slice(0, 5)),
+  ]);
+  const first = shopper.name?.split(" ")[0] ?? "friend";
+  const links: HelpLink[] = [];
+  const sections: string[] = [];
+
+  const requestLines = requests.map((r) => {
+    const date = r.createdAt.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    return `• ${date} — ${r.productType}${r.quantity > 1 ? ` × ${r.quantity}` : ""}: ${REQUEST_STATUS_FOR_CUSTOMER[r.status] ?? r.status}`;
+  });
+  const orderLines = orders.length ? await describeOrders(orders, links) : [];
+
+  if (focus === "requests") {
+    sections.push(requestLines.length ? `Your custom requests, ${first}:\n${requestLines.join("\n")}` : "You haven't sent a custom request yet.");
+    if (orderLines.length) sections.push(`And your latest orders:\n${orderLines.join("\n")}`);
+  } else {
+    sections.push(orderLines.length ? `Here are your latest orders, ${first}:\n${orderLines.join("\n")}` : `I don't see any orders for ${shopper.email} yet. If you ordered with a different email, check that email's confirmation.`);
+    if (requestLines.length) sections.push(`Your custom requests:\n${requestLines.join("\n")}`);
   }
+  if (!requests.length && focus === "requests") links.push({ label: "Send a custom request", href: "/custom" });
+  if (requests.length) links.push({ label: "See my requests", href: "/custom" });
+  return { text: sections.join("\n\n"), links, chips: ["Shipping", "Returns", "Contact the shop"] };
+}
+
+const REQUEST_STATUS_FOR_CUSTOMER: Record<string, string> = {
+  new: "Sent — the shop will email you",
+  contacted: "The shop has emailed you",
+  quoted: "Quote sent — check your email",
+  done: "Done",
+  declined: "Closed",
+};
+
+async function describeOrders(orders: (typeof order.$inferSelect)[], links: HelpLink[]) {
   const ids = orders.map((o) => o.id);
   const [items, jobs] = await Promise.all([
     getDb().select().from(orderLineItem).where(inArray(orderLineItem.orderId, ids)),
     getDb().select().from(fulfillmentJob).where(inArray(fulfillmentJob.orderId, ids)),
   ]);
-  const links: HelpLink[] = [];
-  const lines = orders.map((o) => {
+  return orders.map((o) => {
     const mine = items.filter((i) => i.orderId === o.id);
     const oJobs = jobs.filter((j) => j.orderId === o.id);
     const what = mine.map((i) => `${i.quantity > 1 ? `${i.quantity}× ` : ""}${i.productName}`).join(", ") || "Your order";
@@ -184,9 +214,4 @@ async function ordersAnswer(ventureId: string, shopper: ShopCustomer | null): Pr
     }
     return `• ${date} — ${what} (${formatPrice(o.totalCents)}): ${status}`;
   });
-  return {
-    text: `Here are your latest orders, ${shopper.name?.split(" ")[0] ?? "friend"}:\n${lines.join("\n")}`,
-    links,
-    chips: ["Shipping", "Returns", "Contact the shop"],
-  };
 }

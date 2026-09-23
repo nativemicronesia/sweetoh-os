@@ -1,6 +1,7 @@
 import { getDefaultVenture } from "@/lib/domains/identity/service";
 import { CategoryBrowse } from "./components/category-browse";
 import { CreateInvite } from "./components/create-invite";
+import { CustomOrdersBand } from "./components/custom-orders-band";
 import {
   FeaturedProducts,
   getFeaturedProductsForHome,
@@ -22,6 +23,7 @@ export default async function HomePage() {
       <HowItWorks />
       <CategoryBrowse ventureId={venture.id} />
       <FeaturedProducts ventureId={venture.id} items={featured} />
+      <CustomOrdersBand />
       <CreateInvite />
     </div>
   );

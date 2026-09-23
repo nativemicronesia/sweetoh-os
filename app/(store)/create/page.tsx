@@ -18,9 +18,9 @@ import {
 } from "lucide-react";
 import { listBestsellerBlueprints, listPrintifyBlueprints } from "@/lib/integrations/printify/catalog";
 import { PLANS, formatUsd } from "@/lib/domains/creator/plans";
-import { redirect } from "next/navigation";
 import { creatorSideOpen, creatorSignupsOpen } from "@/lib/domains/creator/access";
 import { MascotCharacter } from "../components/mascot-character";
+import { CreateLock } from "./create-lock";
 import "@/app/(creator)/studio/creator.css";
 import "./create.css";
 
@@ -53,15 +53,15 @@ const FAQ = [
   ["Who owns my designs and my store?", "You do. Sweet'Oh sends products into your own Printify account. Your customers, sales and payouts are yours."],
   ["Where can I sell?", "Anywhere Printify connects: Etsy, Shopify, TikTok Shop, eBay, Wix, Squarespace and more. Sweet'Oh-hosted stores are coming next."],
   ["What are credits?", "Credits are Skink's AI capacity. Chatting uses almost none; AI images, deep research and the most capable models use more. Designing by hand, saving and exporting never cost credits."],
-  ["Which AI does Skink use?", "The best one for each job — OpenAI, Anthropic and Google — and your own subscriptions when those suit the work better. You never have to pick a model; Pro lets you choose how deeply Skink thinks."],
+  ["Which AI does Skink use?", "Skink runs on OpenAI's latest models, matched to each job — plus your own subscriptions when those suit the work better. You never have to pick a model; Pro lets you choose how deeply Skink thinks."],
   ["I already pay for ChatGPT, Canva and Printify. Is this a replacement?", "No. Skink uses them. Tell him what you have and he'll prepare the exact prompt and your brand context for your tool, then carry on from the result — without spending your Sweet'Oh credits."],
   ["What does the free trial cost?", "Nothing for 3 months. We take a card up front so nothing breaks when the trial ends, and you can cancel any time before the first charge."],
   ["Can Sweet'Oh print my order instead?", "On Creator and Pro, yes — send a request from the Studio and the Sweet'Oh shop in Lacey, WA will quote it when it has capacity. Great for events, family reunions, churches and schools."],
 ];
 
 export default async function CreateWithSweetOhPage() {
-  // Launch: the shop only. Custom orders go through /custom until the creator side opens.
-  if (!creatorSideOpen()) redirect("/custom");
+  // Until the creator side opens, the page is a read-only preview under a padlock.
+  const locked = !creatorSideOpen();
   const [picks, all] = await Promise.all([listBestsellerBlueprints().catch(() => []), listPrintifyBlueprints().catch(() => [])]);
   const open = creatorSignupsOpen();
   const joinLabel = open ? "Start free" : "Join the waitlist";
@@ -69,7 +69,9 @@ export default async function CreateWithSweetOhPage() {
   const count = all.length ? `${Math.floor(all.length / 100) * 100}+` : "Hundreds of";
 
   return (
-    <div className="cs cw">
+    <div className="cw-locked-wrap">
+    {locked && <CreateLock />}
+    <div className={locked ? "cs cw cw-locked" : "cs cw"} inert={locked || undefined}>
       {/* Hero */}
       <section className="cw-hero">
         <div className="cw-wrap cw-hero-grid">
@@ -103,7 +105,7 @@ export default async function CreateWithSweetOhPage() {
       <section className="cw-strip">
         <div className="cw-wrap cw-strip-grid">
           <div><strong>{count}</strong><span>products to design</span></div>
-          <div><strong>3</strong><span>top AI labs behind Skink</span></div>
+          <div><strong>24/7</strong><span>Skink, your POD guide</span></div>
           <div><strong>Your</strong><span>store, customers &amp; money</span></div>
           <div><strong>300 DPI</strong><span>print-ready files</span></div>
         </div>
@@ -172,7 +174,7 @@ export default async function CreateWithSweetOhPage() {
             <p className="cw-lead">
               Skink is Sweet&apos;Oh&apos;s green tree skink — and the AI agent inside your Studio. It teaches you print-on-demand from zero, finds what&apos;s selling, helps you price for profit and writes your listings. It keeps a private memory of your brand, so every conversation picks up where you left off. You can see and edit everything it remembers.
             </p>
-            <p className="cs-muted" style={{ fontSize: 14 }}>Powered by OpenAI, Anthropic and Google — Skink picks the right model for each job.</p>
+            <p className="cs-muted" style={{ fontSize: 14 }}>Powered by OpenAI — Skink picks the right model for each job.</p>
           </div>
         </div>
       </section>
@@ -294,6 +296,7 @@ export default async function CreateWithSweetOhPage() {
           </div>
         </div>
       </section>
+    </div>
     </div>
   );
 }

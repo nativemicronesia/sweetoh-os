@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Lock } from "lucide-react";
 import { CartIcon } from "./cart-icon";
 
 export function StoreHeader({ creatorSideOpen = false }: { creatorSideOpen?: boolean }) {
@@ -42,14 +43,10 @@ export function StoreHeader({ creatorSideOpen = false }: { creatorSideOpen?: boo
           <Link href="/collections" className="so-link text-sm text-[color:var(--so-mist)]">
             Shop
           </Link>
-          <Link href="/custom" className="so-link text-sm text-[color:var(--so-mist)]">
-            Custom orders
+          <Link href="/create" className="so-link inline-flex items-center gap-1 text-sm text-[color:var(--so-mist)]">
+            Create
+            {!creatorSideOpen && <Lock size={12} aria-label="(opening soon)" />}
           </Link>
-          {creatorSideOpen && (
-            <Link href="/create" className="so-link hidden text-sm text-[color:var(--so-mist)] sm:inline">
-              Create
-            </Link>
-          )}
           <CartIcon />
         </nav>
       </div>
