@@ -84,9 +84,9 @@ test("jobs route to the right provider, and fall back to OpenAI without keys", (
     assert.equal(resolveModel("research", "deep").model, "gpt-5.6-luna");
   });
   withEnv({ AI_BASE_URL: "http://localhost:4000/v1", LITELLM_API_KEY: "sk-proxy" }, () => {
-    assert.equal(resolveModel("research", "smart").model, "sweetoh-research-smart");
+    assert.equal(resolveModel("research", "smart").model, "dekaz-research-smart");
   });
-  assert.ok(litellmAliases().some((a) => a.alias === "sweetoh-reason-smart" && a.model === "anthropic/claude-sonnet-5"));
+  assert.ok(litellmAliases().some((a) => a.alias === "dekaz-reason-smart" && a.model === "anthropic/claude-sonnet-5"));
 });
 
 test("creator Printify tokens are encrypted at rest and tamper-evident", () => {

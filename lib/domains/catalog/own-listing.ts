@@ -6,14 +6,19 @@ import type { SessionUser } from "@/lib/domains/identity/types";
 import { ValidationError } from "@/lib/shared/errors";
 import { approveAsset, createAssetWithUpload } from "@/lib/domains/assets/service";
 import { addProductMediaUpload, createProduct, publishProduct } from "./service";
-import type { ProductCategory } from "./categories";
+import { createHash } from "node:crypto";
+import { PRODUCT_CATEGORIES, type ProductCategory } from "./categories";
+import { analyzeProductImageWithOpenAi } from "@/lib/integrations/ai/intake-openai";
+import { aiProductShot } from "@/lib/integrations/ai/product-research";
+import { reservePartnerAi } from "@/lib/domains/intelligence/partner-builder";
 
 /**
  * "Add a product I already make."
  *
  * The partner photographs something she already sells, names it, sets her own
- * price, and it becomes a real listing. No AI is required anywhere in this
- * path — Skink is there if she wants a hand with the words, nothing more.
+ * price, and it becomes a real listing. prepareListingFromPhoto (below) lets
+ * Skink draft the words and a clean shop photo first; nothing in listOwnProduct
+ * itself needs AI.
  */
 export const LISTING_MAX_PHOTOS = 6;
 
@@ -129,4 +134,68 @@ export async function listOwnProduct(
   }
 
   return created;
+}
+
+export type ListingSuggestion = {
+  name: string;
+  description: string;
+  category: ProductCategory;
+  priceCents: number | null;
+};
+
+/**
+ * One photo of something she already sells → a listing ready to check:
+ * Skink writes the words (Dekaz chat job) while the image model makes a clean
+ * shop photo that keeps her design exactly. Either half can fail on its own;
+ * she still gets whatever came back, and her own photos always work.
+ */
+export async function prepareListingFromPhoto(
+  session: SessionUser,
+  input: { photo: Buffer },
+): Promise<{ suggestion: ListingSuggestion | null; productShot: Buffer | null; notes: string[] }> {
+  if (session.role !== "partner" && session.role !== "owner") {
+    throw new ValidationError("Only the shop partner can list products here.");
+  }
+  const { bytes } = await normalizePhoto(input.photo);
+  const small = await sharp(bytes).resize(1024, 1024, { fit: "inside" }).jpeg({ quality: 85 }).toBuffer();
+  const notes: string[] = [];
+
+  const words = analyzeProductImageWithOpenAi({
+    imageBase64: small.toString("base64"),
+    mimeType: "image/jpeg",
+    inputMode: "image_and_prompt",
+    operatorNotes:
+      "This is a FINISHED product the shop already makes and sells, going straight into the online shop. Write the title and description for shoppers: warm, specific, about the design and the product. Keep any uncertainty or things to verify (brand, model, fabric blend) out of the title and description — put those only in internalNotes.",
+  })
+    .then(({ output }) => ({
+      name: output.title.slice(0, 180),
+      description: output.description.slice(0, 2000),
+      category: (PRODUCT_CATEGORIES as readonly string[]).includes(output.category) ? (output.category as ProductCategory) : "custom",
+      priceCents: Number.isFinite(output.suggestedPriceCents) && output.suggestedPriceCents >= 50 ? Math.round(output.suggestedPriceCents) : null,
+    }))
+    .catch((error: unknown) => {
+      console.error("listing_words_failed", error instanceof Error ? error.message : error);
+      notes.push("Skink couldn't write the listing this time — fill in the name and price yourself.");
+      return null;
+    });
+
+  const shot = (async () => {
+    const fingerprint = createHash("sha256").update(small).digest("hex").slice(0, 24);
+    const refund = await reservePartnerAi(session, `shot:${fingerprint}`);
+    try {
+      const png = await sharp(bytes).resize(1536, 1536, { fit: "inside" }).png().toBuffer();
+      const jpeg = await aiProductShot(png);
+      return await sharp(jpeg).jpeg({ quality: 88 }).toBuffer();
+    } catch (error) {
+      await refund();
+      throw error;
+    }
+  })().catch((error: unknown) => {
+    console.error("listing_shot_failed", error instanceof Error ? error.message : error);
+    notes.push(error instanceof ValidationError ? error.message : "The clean shop photo couldn't be made — your own photo will be used.");
+    return null;
+  });
+
+  const [suggestion, productShot] = await Promise.all([words, shot]);
+  return { suggestion, productShot, notes };
 }

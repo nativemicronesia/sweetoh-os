@@ -37,8 +37,8 @@ export async function reservePartnerAi(session: SessionUser, key: string): Promi
       eq(auditEvent.ventureId, session.ventureId), eq(auditEvent.actorUserId, session.appUser.id),
       eq(auditEvent.action, "partner_ai.reserved"), gte(auditEvent.createdAt, new Date(Date.now() - 86400000)),
     ));
-    const configured = Number(process.env.PARTNER_AI_DAILY_LIMIT ?? 40);
-    const limit = Number.isFinite(configured) && configured > 0 ? Math.floor(configured) : 40;
+    const configured = Number(process.env.PARTNER_AI_DAILY_LIMIT ?? 150);
+    const limit = Number.isFinite(configured) && configured > 0 ? Math.floor(configured) : 150;
     if (recent.length >= limit) throw new ValidationError("Today's AI allowance has been reached. Your saved blanks, artwork, and manual editing are still available.");
     if (recent.some(r => r.createdAt.getTime() > Date.now() - 180000 && (r.metadata as { key?: string })?.key === key)) {
       throw new ValidationError("That request is already being prepared. Check your saved drafts before trying again in a few minutes.");

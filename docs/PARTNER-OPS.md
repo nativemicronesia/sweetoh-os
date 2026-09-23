@@ -50,16 +50,19 @@ Retired paths redirect, they do not 404: `/partner/studio*` → Overview/Create/
 
 | Layer | Role |
 |-------|------|
-| Studio chat (`lib/domains/studio-chat/`) | Persistent chat bar — same actions as the buttons, via tool calling |
+| Sweet'Oh AI (`lib/domains/studio-chat/`) | Skink in her back office — same actions as the buttons, plus memory, research and reasoning |
 | Her agent (avatar) | Reserved — socials later |
-| Dekaz | NMH only — not wired to this desk |
+| Dekaz router (`lib/ai/router.ts`) | How every AI call is made — shared with nmh-os |
 
-### Studio chat
+### Sweet'Oh AI (partner)
 
-Sweet'Oh's own chat, standalone. Structured like nmh-os's Dekaz
-(`provider.ts` env-driven base-URL swap, `conversation.ts` bounded tool loop)
-so pointing it at a shared Dekaz endpoint later is config, not a rewrite —
-set `AI_BASE_URL` (and optionally `STUDIO_CHAT_MODEL` / `LITELLM_API_KEY`).
+Skink, for the partner (creators get their own Skink in /studio when that
+opens). Every model call goes through the Dekaz router, `lib/ai/router.ts` —
+kept identical to nmh-os's — which asks for a job at a level (chat, reason via `think_it_through`,
+research via `research`). Every job runs on OpenAI. Her memories live in
+`creator_memory` under her user id (private to her). Not metered — it's her
+shop. Set `AI_BASE_URL` (+ `LITELLM_API_KEY`) to send everything through
+LiteLLM as `dekaz-<job>-<level>`.
 Routes: `POST /api/studio-chat` (JSON), `POST /api/studio-chat/stream` (SSE).
 
 Tools wrap existing operations only. Write tools call the same role-checked

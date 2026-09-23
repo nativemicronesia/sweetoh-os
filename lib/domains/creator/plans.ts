@@ -6,7 +6,8 @@
  * models and image generation spend more; casual chat barely registers.
  */
 export type PlanId = "free" | "creator" | "pro";
-export type AiLevel = "light" | "smart" | "deep";
+export type { AiLevel } from "@/lib/ai/router";
+import type { AiLevel } from "@/lib/ai/router";
 
 export type Plan = {
   id: PlanId;

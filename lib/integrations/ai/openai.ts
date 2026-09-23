@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { z } from "zod";
 import { getServerEnv, isOpenAiConfigured } from "@/lib/config/env";
+import { resolveModel } from "@/lib/ai/router";
 import { ValidationError } from "@/lib/shared/errors";
 import type { ProductDraftGenerator } from "./types";
 
@@ -68,11 +69,12 @@ Given a short operator description, produce a JSON object with exactly these fie
 Respond with JSON only, no other text.`;
 
 export const generateProductDraft: ProductDraftGenerator = async (input) => {
-  const openai = getOpenAiClient();
-  const { openaiModel } = getServerEnv();
+  getOpenAiClient(); // throws a readable error when AI isn't configured
+  // Dekaz chat job (lib/ai/router.ts).
+  const resolved = resolveModel("chat", "smart");
 
-  const completion = await openai.chat.completions.create({
-    model: openaiModel,
+  const completion = await resolved.client.chat.completions.create({
+    model: resolved.model,
     response_format: { type: "json_object" },
     messages: [
       { role: "system", content: SYSTEM_PROMPT },
@@ -123,11 +125,10 @@ export async function answerCustomerQuestion(input: {
   if (!isOpenAiConfigured()) return null;
 
   try {
-    const openai = getOpenAiClient();
-    const { openaiModel } = getServerEnv();
+    const resolved = resolveModel("chat", "light");
 
-    const completion = await openai.chat.completions.create({
-      model: openaiModel,
+    const completion = await resolved.client.chat.completions.create({
+      model: resolved.model,
       messages: [
         { role: "system", content: MASCOT_SYSTEM_PROMPT },
         ...input.history.map((turn) => ({ role: turn.role, content: turn.content })),

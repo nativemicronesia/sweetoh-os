@@ -1,6 +1,6 @@
-import OpenAI from "openai";
 import { z } from "zod";
-import { getServerEnv, isOpenAiConfigured } from "@/lib/config/env";
+import { isOpenAiConfigured } from "@/lib/config/env";
+import { resolveModel } from "@/lib/ai/router";
 import { ValidationError } from "@/lib/shared/errors";
 import type { VisualIntakeAnalyzer } from "./intake-types";
 
@@ -70,20 +70,12 @@ const visualIntakeSchema = z.object({
   ),
 });
 
-let client: OpenAI | null = null;
-
-function getOpenAiClient(): OpenAI {
+function requireAi() {
   if (!isOpenAiConfigured()) {
     throw new ValidationError(
       "OpenAI is not configured. Add OPENAI_API_KEY to .env.local.",
     );
   }
-
-  if (!client) {
-    client = new OpenAI({ apiKey: getServerEnv().openaiApiKey! });
-  }
-
-  return client;
 }
 
 const SYSTEM_PROMPT = `You are the visual intake assistant for Sweet'Oh Creations, an independent Micronesian-owned print shop in Lacey, Washington serving all ages.
@@ -106,8 +98,9 @@ Be specific, not generic, about what the item actually is:
 Respond with JSON only. This creates a DRAFT for human review — be practical, not promotional.`;
 
 export const analyzeProductImageWithOpenAi: VisualIntakeAnalyzer = async (input) => {
-  const openai = getOpenAiClient();
-  const { openaiModel } = getServerEnv();
+  requireAi();
+  // Dekaz chat job (lib/ai/router.ts) — the chat models read photos too.
+  const resolved = resolveModel("chat", "smart");
   const dataUrl = `data:${input.mimeType};base64,${input.imageBase64}`;
 
   const userText =
@@ -117,8 +110,8 @@ export const analyzeProductImageWithOpenAi: VisualIntakeAnalyzer = async (input)
         ? `${input.operatorNotes.trim()}\n\nAnalyze the photo and return a complete catalog draft JSON.`
         : "Analyze this product photo and return a complete catalog draft JSON.";
 
-  const completion = await openai.chat.completions.create({
-    model: openaiModel,
+  const completion = await resolved.client.chat.completions.create({
+    model: resolved.model,
     response_format: { type: "json_object" },
     messages: [
       { role: "system", content: SYSTEM_PROMPT },

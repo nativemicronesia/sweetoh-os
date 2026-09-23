@@ -5,7 +5,8 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
 import { PRODUCT_CATEGORIES, type ProductCategory } from "@/lib/domains/catalog/categories";
-import { listOwnProduct, LISTING_MAX_PHOTOS } from "@/lib/domains/catalog/own-listing";
+import { listOwnProduct, LISTING_MAX_PHOTOS, normalizePhoto, prepareListingFromPhoto, type ListingSuggestion } from "@/lib/domains/catalog/own-listing";
+import type { SessionUser } from "@/lib/domains/identity/types";
 import { getActionErrorMessage } from "@/lib/shared/action-errors";
 import { getPrimaryProductImageBuffer, getProductById } from "@/lib/domains/catalog/service";
 import { createOwnBlank, turnPhotoIntoBlank } from "@/lib/capabilities";
@@ -50,43 +51,86 @@ export async function listOwnProductAction(form: FormData): Promise<ListingResul
   }
 }
 
+export type PreparedListing =
+  | { ok: true; suggestion: ListingSuggestion | null; productShot: string | null; notes: string[] }
+  | { ok: false; error: string };
+
+/** Her main photo → Skink's draft listing + a clean shop photo (as a data URL she can accept or drop). */
+export async function prepareListingAction(form: FormData): Promise<PreparedListing> {
+  const session = await requirePartnerWorkspace();
+  try {
+    const photo = form.get("photo");
+    if (!(photo instanceof File) || !photo.size) return { ok: false, error: "Add a photo first." };
+    const result = await prepareListingFromPhoto(session, { photo: Buffer.from(await photo.arrayBuffer()) });
+    return {
+      ok: true,
+      suggestion: result.suggestion,
+      productShot: result.productShot ? `data:image/jpeg;base64,${result.productShot.toString("base64")}` : null,
+      notes: result.notes,
+    };
+  } catch (error) {
+    return { ok: false, error: getActionErrorMessage(error) };
+  }
+}
+
+type BlankResult = { ok: true; blankId: string; reused?: boolean } | { ok: false; error: string };
+
+/** Photo → cleaned-up blank (her printed design removed) with proposed print areas. */
+async function blankFromPhoto(session: SessionUser, name: string, photo: Buffer): Promise<BlankResult> {
+  // She may tap this twice, or come back later — reuse the blank she already has.
+  const existing = (await listBuilderBlanks(session)).find((b) => b.name === name);
+  if (existing) return { ok: true, blankId: existing.id, reused: true };
+
+  const { bytes, mimeType } = await normalizePhoto(photo);
+  const proposal = await turnPhotoIntoBlank(session, {
+    photos: [{ file: bytes, mimeType, label: "Front" }],
+  });
+  const blankId = await createOwnBlank(session, {
+    name,
+    productType: proposal.productType,
+    colors: [proposal.color],
+    sizes: proposal.sizes,
+    views: proposal.views.map((v) => ({
+      label: v.label,
+      position: v.position,
+      // Prefer the cleaned-up cutout; fall back to her original photo.
+      assetId: v.cutoutAssetId ?? v.originalAssetId,
+      originalAssetId: v.originalAssetId,
+      area: v.area,
+      printWidthIn: v.printWidthIn,
+      printHeightIn: v.printHeightIn,
+    })),
+  });
+  revalidatePath("/partner/catalog");
+  revalidatePath("/partner/products");
+  return { ok: true, blankId };
+}
+
+/** Right after publishing: her ORIGINAL photo (not the AI shop shot) becomes the design blank. */
+export async function makeBlankFromPhotoAction(form: FormData): Promise<BlankResult> {
+  const session = await requirePartnerWorkspace();
+  try {
+    const photo = form.get("photo");
+    if (!(photo instanceof File) || !photo.size) return { ok: false, error: "This product needs a photo first." };
+    const name = z.string().trim().min(2).max(180).parse(form.get("name"));
+    return await blankFromPhoto(session, name, Buffer.from(await photo.arrayBuffer()));
+  } catch (error) {
+    return { ok: false, error: getActionErrorMessage(error) };
+  }
+}
+
 /**
  * Skink turns a product she's listed into a blank she can design on: its photo
  * is cleaned up and its printable areas proposed, then it appears in the Studio.
  */
-export async function makeBlankFromProductAction(productId: string): Promise<{ ok: true; blankId: string; reused?: boolean } | { ok: false; error: string }> {
+export async function makeBlankFromProductAction(productId: string): Promise<BlankResult> {
   const session = await requirePartnerWorkspace();
   try {
     const id = z.string().uuid().parse(productId);
     const source = await getProductById({ ventureId: session.ventureId, productId: id });
-    // She may tap this twice, or come back later — reuse the blank she already has.
-    const existing = (await listBuilderBlanks(session)).find((b) => b.name === source.name);
-    if (existing) return { ok: true, blankId: existing.id, reused: true };
-
     const photo = await getPrimaryProductImageBuffer(id);
     if (!photo) return { ok: false, error: "This product needs a photo first." };
-
-    const proposal = await turnPhotoIntoBlank(session, {
-      photos: [{ file: photo, mimeType: "image/jpeg", label: "Front" }],
-    });
-    const blankId = await createOwnBlank(session, {
-      name: source.name,
-      productType: proposal.productType,
-      colors: [proposal.color],
-      sizes: proposal.sizes,
-      views: proposal.views.map((v) => ({
-        label: v.label,
-        position: v.position,
-        // Prefer the cleaned-up cutout; fall back to her original photo.
-        assetId: v.cutoutAssetId ?? v.originalAssetId,
-        originalAssetId: v.originalAssetId,
-        area: v.area,
-        printWidthIn: v.printWidthIn,
-        printHeightIn: v.printHeightIn,
-      })),
-    });
-    revalidatePath("/partner/catalog");
-    return { ok: true, blankId };
+    return await blankFromPhoto(session, source.name, photo);
   } catch (error) {
     return { ok: false, error: getActionErrorMessage(error) };
   }

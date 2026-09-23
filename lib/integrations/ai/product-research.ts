@@ -158,6 +158,27 @@ export async function aiCutout(image: Buffer, subject: "product" | "artwork") {
   return Buffer.from(data, "base64");
 }
 
+/**
+ * Her phone photo of a finished product → a clean shop photo. Unlike
+ * aiCutout("product"), the printed design stays exactly as it is.
+ */
+export async function aiProductShot(image: Buffer) {
+  const result = await client().images.edit({
+    model: imageModel(),
+    image: await toFile(image, "product.png", { type: "image/png" }),
+    prompt:
+      "Turn this phone photo into a clean e-commerce product photo of the SAME finished product. Keep the product and everything printed, engraved or embroidered on it exactly as it is: same shape, color, material, artwork, lettering and proportions. Do not redraw, restyle, add or remove any design. Remove the background, hands, people, hangers, tags and clutter. Place the product centered and fully visible on a plain soft light-grey studio background with a gentle natural shadow, evenly lit, square framing.",
+    background: "opaque",
+    ...fidelity(),
+    output_format: "jpeg",
+    size: "1024x1024",
+    n: 1,
+  });
+  const data = result.data?.[0]?.b64_json;
+  if (!data) throw new ValidationError("The clean product photo couldn't be made. Your own photo will be used.");
+  return Buffer.from(data, "base64");
+}
+
 /** Edit an existing design by instruction ("make it navy", "add palm trees"). */
 export async function editArtwork(image: Buffer, instruction: string) {
   const result = await client().images.edit({

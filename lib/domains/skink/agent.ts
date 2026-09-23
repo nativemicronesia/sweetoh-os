@@ -1,16 +1,15 @@
 /**
  * Skink — Sweet'Oh AI, the creator's print-on-demand teacher and agent.
  *
- * The conversation runs on the CHAT job (OpenAI). When a question needs real
- * judgement Skink calls `think_it_through` (REASON job → Anthropic); when it
- * needs fresh market knowledge it calls `research` (RESEARCH job → Gemini).
- * That is the Dekaz split, done as tools so one conversation can use all three.
+ * The conversation runs on the CHAT job. When a question needs real judgement
+ * Skink calls `think_it_through` (REASON job); for market questions it calls
+ * `research` (RESEARCH job). All three jobs run on OpenAI (lib/ai/router.ts).
  *
  * Every provider call is metered into credits (1 credit ≈ $0.01 raw cost).
  */
 import type OpenAI from "openai";
 import { z } from "zod";
-import { resolveModel, creditsForUsage, type AiJob, type ResolvedModel } from "@/lib/ai/router";
+import { resolveModel, creditsForUsage, jobParams, tokenLimit, toolParams, type AiJob, type ResolvedModel } from "@/lib/ai/router";
 import type { AiLevel, Plan } from "@/lib/domains/creator/plans";
 import { listPrintifyBlueprints } from "@/lib/integrations/printify/catalog";
 import { listPartnerLibraryDesigns } from "@/lib/domains/catalog/partner-design-library";
@@ -162,18 +161,6 @@ const TOOLS: Tool[] = [
   },
 ];
 
-function chatParams(resolved: ResolvedModel, withTools: boolean) {
-  // gpt-5.6 models only accept function tools on chat completions with reasoning off.
-  return withTools && resolved.route.provider === "openai" && resolved.route.model.startsWith("gpt-5")
-    ? { reasoning_effort: "none" as const }
-    : {};
-}
-
-/** OpenAI wants max_completion_tokens; the Anthropic/Gemini compatibility layers take max_tokens. */
-function tokenLimit(resolved: ResolvedModel, n: number) {
-  return resolved.route.provider === "openai" && !process.env.AI_BASE_URL ? { max_completion_tokens: n } : { max_tokens: n };
-}
-
 type FunctionCall = OpenAI.Chat.Completions.ChatCompletionMessageFunctionToolCall;
 type StreamedTurn = { content: string; toolCalls: FunctionCall[]; usage: OpenAI.CompletionUsage | undefined };
 
@@ -190,7 +177,7 @@ async function streamRound(
       messages,
       ...(tools ? { tools } : {}),
       ...tokenLimit(resolved, 1200),
-      ...chatParams(resolved, Boolean(tools)),
+      ...toolParams(resolved, Boolean(tools)),
       stream: true,
       // Usage arrives in a final chunk when the provider supports it.
       ...(resolved.route.provider === "openai" && !process.env.AI_BASE_URL ? { stream_options: { include_usage: true } } : {}),
@@ -229,11 +216,6 @@ class Meter {
     this.credits += creditsForUsage(resolved.route, usage);
     this.models.add(resolved.model);
   }
-}
-
-/** Provider-specific knobs: Gemini 3 thinks by default and can spend the whole budget before answering. */
-function jobParams(resolved: ResolvedModel) {
-  return resolved.route.provider === "gemini" && resolved.level !== "deep" ? { reasoning_effort: "low" as const } : {};
 }
 
 async function delegate(job: AiJob, level: AiLevel, system: string, prompt: string, meter: Meter) {

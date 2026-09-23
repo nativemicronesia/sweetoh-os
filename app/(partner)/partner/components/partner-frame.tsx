@@ -161,7 +161,7 @@ export function PartnerFrame({
             onClick={() => setAssistantOpen(!assistantOpen)}
           >
             <Sparkles size={15} />
-            <span className="pf-hide-sm">Ask Sweet&apos;Oh</span>
+            <span className="pf-hide-sm">Sweet&apos;Oh AI</span>
           </button>
           <details className="pf-account">
             <summary aria-label="Account menu" className="pf-avatar">
@@ -209,14 +209,14 @@ export function PartnerFrame({
           <div className="pf-content-inner">{children}</div>
         </main>
 
-        <aside className="pf-assistant" hidden={!assistantOpen} aria-label="Sweet'Oh assistant">
+        <aside className="pf-assistant" hidden={!assistantOpen} aria-label="Sweet'Oh AI">
           <div className="pf-assistant-head">
             <strong>
-              <Sparkles size={16} /> Sweet&apos;Oh assistant
+              <Sparkles size={16} /> Sweet&apos;Oh AI
             </strong>
             <button
               className="pf-icon-btn"
-              aria-label="Close assistant"
+              aria-label="Close Sweet'Oh AI"
               onClick={() => setAssistantOpen(false)}
             >
               <X size={18} />

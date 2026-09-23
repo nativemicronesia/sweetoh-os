@@ -1,22 +1,18 @@
 /**
- * Studio chat conversation loop — system prompt + agentic tool-calling.
+ * Sweet'Oh AI for the partner — Skink in her back office.
  *
- * Mirrors the loop shape of nmh-os's `lib/domains/dekaz/conversation.ts`
- * (bounded tool rounds, tools closed over the authenticated session, optional
- * `onTextDelta` for live-typing UIs) but is built on the OpenAI `tool_calls`
- * format, since Sweet'Oh already ships the OpenAI SDK. No new dependency, and
- * no call to nmh-os — this is Sweet'Oh's own chat.
+ * The conversation runs on the Dekaz CHAT job (lib/ai/router.ts → OpenAI).
+ * Her shop tools (./tools.ts) drive the same workspace her buttons do; Skink's
+ * own tools (./skink-tools.ts) add private memory, research and careful
+ * reasoning — all Dekaz jobs, all on OpenAI.
  */
 
 import type OpenAI from "openai";
 import type { SessionUser } from "@/lib/domains/identity/types";
-import {
-  getStudioChatClient,
-  isStudioChatConfigured,
-  logStudioChatFailure,
-  studioChatModel,
-} from "./provider";
+import { isAiConfigured, resolveModel, tokenLimit, toolParams, type ResolvedModel } from "@/lib/ai/router";
+import { listMemories, type Memory } from "@/lib/domains/skink/memory";
 import { buildStudioChatTools, type StudioToolResult } from "./tools";
+import { buildSkinkPartnerTools } from "./skink-tools";
 
 export type StudioChatTurn = { role: "user" | "assistant"; content: string };
 
@@ -35,31 +31,44 @@ export type StudioChatResult = {
 };
 
 const MAX_TOOL_ROUNDS = 5;
-const MAX_TOKENS = 1024;
+const MAX_TOKENS = 1200;
 const MAX_HISTORY_TURNS = 20;
 
-function buildSystemPrompt(session: SessionUser): string {
-  const name = session.appUser.name ?? session.appUser.email;
-  const isCreator = session.role === "creator";
+function memoryBlock(memories: Memory[]): string {
+  if (!memories.length) {
+    return "You don't have anything saved about the shop yet. As she tells you durable things — best sellers, pricing rules, suppliers, customers, goals, decisions — save them with the remember tool.";
+  }
+  const lines = memories
+    .slice(0, 60)
+    .map((m) => `- [${m.kind}] (id ${m.id}) ${m.title}${m.body ? `: ${m.body.replace(/\s+/g, " ").slice(0, 400)}` : ""}`);
+  return `What you remember about the shop and about her (private — use it naturally, don't recite it):\n${lines.join("\n")}`;
+}
+
+function buildSystemPrompt(session: SessionUser, memories: string): string {
+  const name = session.appUser.name?.split(" ")[0] ?? session.appUser.email;
 
   return [
-    "You are the Sweet'Oh Studio assistant — the chat bar docked above the partner workspace of Sweet'Oh Creations, an independent Micronesian-owned print shop in Lacey, Washington serving all ages. Your shop avatar is a green tree skink (Lamprolepis smaragdina).",
-    `You are talking to ${name} (role: ${session.role}).`,
+    "You are Skink — Sweet'Oh AI. You're a green tree skink (Lamprolepis smaragdina), the guide of Sweet'Oh Creations, an independent Micronesian-owned print shop in Lacey, Washington serving all ages.",
+    `You are working with ${name}, the Sweet'Oh partner who runs the shop. You live in her back office: a sharp, warm right hand for running and growing the shop.`,
     "",
-    "You are a second way to drive the same workspace her buttons drive. When she asks for something you have a tool for, call the tool — do not describe what she should click instead.",
+    "What you do for her:",
+    "- Drive the workspace: when she asks for something you have a tool for, call the tool — do not describe what she should click instead.",
+    "- Help her grow: product ideas, pricing, what sells, customers, marketing, planning. Use research for current market questions and think_it_through for pricing, strategy and decisions with trade-offs.",
+    "- Remember: when she tells you something durable about the shop or how she likes to work, save it with remember (one fact per call, concise). Don't save small talk. If she asks you to forget something, use forget.",
     "",
     "Ground rules:",
-    "- Never invent listings, orders, ids, counts, prices, or statuses. If you do not have it from a tool result, say so and offer to look.",
-    "- Confirm real, destructive-feeling actions (publishing, rejecting, marking shipped) in one short sentence before doing them only if she was ambiguous about which item she meant. If she was specific, just do it and report the result.",
-    isCreator
-      ? "- She is a creator: she can draft and submit, but only the Sweet'Oh partner can publish, approve, or reject. If she asks you to publish something, say plainly that publishing is the partner's call and offer to submit it for review instead."
-      : "- She is the Sweet'Oh partner/owner: she can publish, approve, and reject listings, and update order status.",
-    "- Photos cannot be attached through chat. For a photo-based draft, point her at the Create screen's photo upload.",
+    "- Never invent listings, orders, ids, counts, prices, fees or statuses. If you do not have it from a tool result, say so and offer to look.",
+    "- Confirm destructive-feeling actions (publishing, rejecting, marking shipped) in one short sentence only if she was ambiguous about which item she meant. If she was specific, just do it and report the result.",
+    "- She is the partner/owner: she can publish, approve, and reject listings, and update order status.",
+    "- Photos cannot be attached through chat. For a photo-based listing, point her at List a product (/partner/list).",
+    "- Never suggest designs that copy logos, trademarks, sports teams, characters or someone else's art.",
     "",
-    "The workspace includes Overview (/partner), Product Builder (/partner/builder), Design studio (/partner/canvas), Artwork library (/partner/library), Review (/partner/review), Orders (/partner/orders), and Products (/partner/products).",
-    "Blanks are private reusable tools, never shop listings. Product Builder researches photos and records source links; do not claim an exact brand/model or print dimensions without evidence. The partner confirms the details. Customer Studio is deferred; do not send customers there.",
+    "The workspace: Home (/partner), List a product (/partner/list), Catalog (/partner/catalog), Design studio (/partner/canvas), My products (/partner/products), Orders (/partner/orders), Creator requests (/partner/creator-requests), My files (/partner/library), Settings (/partner/settings). Link with these paths.",
+    "Blanks are private reusable tools, never shop listings. Don't claim an exact brand/model or print dimensions without evidence; she confirms the details.",
     "",
-    "Style: warm, short, plain English. No markdown headers, no bullet walls. A sentence or two, then the facts that matter.",
+    "Style: warm, short, plain English. Island-proud, never corny. No markdown headers, no bullet walls. A sentence or two, then the facts that matter.",
+    "",
+    memories,
   ].join("\n");
 }
 
@@ -75,7 +84,7 @@ export async function runStudioChatTurn(opts: {
   onTextDelta?: (delta: string) => void;
   onToolEvent?: (event: StudioChatToolEvent) => void;
 }): Promise<StudioChatResult | null> {
-  if (!isStudioChatConfigured()) {
+  if (!isAiConfigured()) {
     return null;
   }
 
@@ -83,9 +92,9 @@ export async function runStudioChatTurn(opts: {
   const history = opts.history.slice(-MAX_HISTORY_TURNS);
 
   try {
-    const client = getStudioChatClient();
-    const model = studioChatModel();
-    const tools = buildStudioChatTools(session);
+    const memories = await listMemories(session.appUser.id).catch(() => [] as Memory[]);
+    const block = memoryBlock(memories);
+    const tools = [...buildStudioChatTools(session), ...buildSkinkPartnerTools(session, block)];
     const toolsByName = new Map(tools.map((tool) => [tool.name, tool]));
 
     const toolDefs: OpenAI.Chat.Completions.ChatCompletionTool[] = tools.map(
@@ -100,7 +109,7 @@ export async function runStudioChatTurn(opts: {
     );
 
     const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
-      { role: "system", content: buildSystemPrompt(session) },
+      { role: "system", content: buildSystemPrompt(session, block) },
       ...history.map(
         (turn) =>
           ({
@@ -113,12 +122,16 @@ export async function runStudioChatTurn(opts: {
 
     const toolEvents: StudioChatToolEvent[] = [];
 
+    // Dekaz chat job. If OpenAI itself fails there's nothing lower to fall to.
+    const resolved: ResolvedModel = resolveModel("chat", "smart");
+
     for (let round = 0; round <= MAX_TOOL_ROUNDS; round++) {
-      const completion = await client.chat.completions.create({
-        model,
-        max_tokens: MAX_TOKENS,
+      const completion = await resolved.client.chat.completions.create({
+        model: resolved.model,
         messages,
         tools: toolDefs,
+        ...tokenLimit(resolved, MAX_TOKENS),
+        ...toolParams(resolved, true),
       });
 
       const choice = completion.choices[0];
@@ -132,11 +145,7 @@ export async function runStudioChatTurn(opts: {
 
       if (finished) {
         const text = (message?.content ?? "").trim();
-        // No true token streaming here: reassembling OpenAI tool-call argument
-        // deltas alongside text deltas is materially more complex than the
-        // Anthropic path nmh-os streams, and the SSE route already sends
-        // whatever arrives as one chunk — so this degrades to a fast,
-        // single-chunk reply rather than a broken one.
+        // Sent as one chunk; the SSE route and chat bar handle that fine.
         if (text && onTextDelta) {
           onTextDelta(text);
         }
@@ -198,7 +207,7 @@ export async function runStudioChatTurn(opts: {
 
     return null;
   } catch (error) {
-    logStudioChatFailure("runStudioChatTurn", error);
+    console.error("[sweetoh-ai] runStudioChatTurn failed:", error instanceof Error ? error.message : error);
     return null;
   }
 }

@@ -35,7 +35,7 @@ Each creator gets their **own `venture` row** (their private workspace) plus a `
 - Conversation runs on **chat**. Skink calls `think_it_through` (→ reason) and `research` (→ research) as tools.
 - All providers are called through the OpenAI SDK, using the Anthropic and Gemini OpenAI-compatible endpoints.
 - A missing `ANTHROPIC_API_KEY` or `GEMINI_API_KEY` falls back to Luna, so nothing breaks before the keys are set.
-- **LiteLLM:** set `AI_BASE_URL` (plus `LITELLM_API_KEY`) and every call goes to the proxy as `sweetoh-<job>-<level>`. `litellmAliases()` prints the alias → model table for the LiteLLM config.
+- **LiteLLM:** set `AI_BASE_URL` (plus `LITELLM_API_KEY`) and every call goes to the proxy as `dekaz-<job>-<level>` (shared with nmh-os — see `~/litellm_config.yaml`). `litellmAliases()` prints the alias → model table for the LiteLLM config.
 
 **Memory** (`lib/domains/skink/memory.ts`) is durable private intelligence (brand, goal, decision, correction, and so on), separate from saved conversations (`skink_thread` / `skink_message`). Skink saves with its `remember` tool. Creators edit it at `/studio/memory`.
 

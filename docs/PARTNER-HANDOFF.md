@@ -31,7 +31,7 @@ assignment with the partner or owner role; ordinary customer signup does not gra
 - Existing Studio chat and older creator tools have separate behavior; the builder
   allowance is not a global OpenAI spending cap.
 - Optional settings: `PRODUCT_RESEARCH_MODEL` (default `gpt-4.1`),
-  `PRODUCT_IMAGE_MODEL` (default `gpt-image-1`), `PARTNER_AI_DAILY_LIMIT` (default `40`).
+  `PRODUCT_IMAGE_MODEL` (default `gpt-image-1`), `PARTNER_AI_DAILY_LIMIT` (default `150`).
   Existing `OPENAI_API_KEY` is used. These model capabilities must be available to the account.
 
 ## Customer launch boundary

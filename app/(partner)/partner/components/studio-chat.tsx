@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { MascotCharacter } from "@/app/(store)/components/mascot-character";
 
 /**
- * Persistent Studio chat bar — docked above the workspace in the partner
+ * Sweet'Oh AI (Skink) for the partner — persistent chat bar — docked above the workspace in the partner
  * layout, so its conversation survives navigating between Overview, Create,
  * Review, and Orders.
  *
@@ -26,6 +26,8 @@ type LogEntry =
   | { kind: "error"; id: string; content: string };
 
 const WRITE_TOOLS = new Set([
+  "remember",
+  "forget",
   "create_draft_from_text",
   "publish_draft",
   "reject_draft",
@@ -35,6 +37,8 @@ const WRITE_TOOLS = new Set([
 const SUGGESTIONS = [
   "What's waiting on me?",
   "Show me today's orders",
+  "What should I price a hoodie at?",
+  "What's selling in island designs right now?",
 ];
 
 let entrySeq = 0;
@@ -197,7 +201,7 @@ export function StudioChat({ panel = false }: { panel?: boolean } = {}) {
         >
           {log.length === 0 ? (
             <p className="text-xs" style={{ color: "var(--so-cream-dim)" }}>
-              Ask for anything you can click — drafts, approvals, order status.
+              Your shop, your memory, your research — ask for anything you can click, or anything you want to figure out.
             </p>
           ) : null}
 
