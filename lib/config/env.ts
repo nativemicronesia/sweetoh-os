@@ -12,6 +12,8 @@ const serverEnvSchema = publicEnvSchema.extend({
   STRIPE_SECRET_KEY: z.string().min(1).optional(),
   STRIPE_WEBHOOK_SECRET: z.string().min(1).optional(),
   RESEND_API_KEY: z.string().min(1).optional(),
+  /** Same key under the name it was saved as in Vercel production. */
+  SWEETOH_RESEND_API: z.string().min(1).optional(),
   /** Island Sprouts store — order confirmation and general storefront email */
   ISLAND_SPROUTS_FROM_EMAIL: z.string().email().optional(),
   /** Island Sprouts — customer support / reply-to (displayed on Contact, order emails) */
@@ -123,7 +125,7 @@ export function getServerEnv(): ServerEnv {
     databaseUrl: parsed.data.DATABASE_URL,
     stripeSecretKey: parsed.data.STRIPE_SECRET_KEY,
     stripeWebhookSecret: parsed.data.STRIPE_WEBHOOK_SECRET,
-    resendApiKey: parsed.data.RESEND_API_KEY,
+    resendApiKey: parsed.data.RESEND_API_KEY ?? parsed.data.SWEETOH_RESEND_API,
     islandSproutsFromEmail: resendFrom.islandSproutsFromEmail,
     islandSproutsSupportEmail: parsed.data.ISLAND_SPROUTS_SUPPORT_EMAIL,
     sweetohFromEmail: resendFrom.sweetohFromEmail,

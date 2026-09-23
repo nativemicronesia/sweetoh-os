@@ -8,6 +8,7 @@ import { createSignedUrl, uploadToBucket } from "@/lib/storage/client";
 import { customerUploadObjectKey, STORAGE_BUCKETS } from "@/lib/storage/paths";
 import { sendCustomRequestReceivedEmail, sendPartnerNewCustomRequestEmail } from "@/lib/integrations/email/resend";
 import { ValidationError } from "@/lib/shared/errors";
+import { getServerEnv } from "@/lib/config/env";
 import type { ShopCustomer } from "./account";
 
 export const CUSTOM_PRODUCT_TYPES = ["T-shirt", "Hoodie / sweatshirt", "Tumbler / cup", "Tote bag", "Hat", "Kids / baby", "Something else"] as const;
@@ -72,13 +73,19 @@ export async function createCustomRequest(
   // Emails are best-effort (and skipped until Resend is configured); the inbox is the source of truth.
   const title = `${input.productType}${input.quantity > 1 ? ` × ${input.quantity}` : ""}`;
   await sendCustomRequestReceivedEmail({ to: shopper.email, customerName: shopper.name, title, projectId: id }).catch(() => undefined);
-  const partners = await getDb()
-    .select({ email: appUser.email })
-    .from(appUser)
-    .where(and(eq(appUser.ventureId, shopper.ventureId), eq(appUser.role, "partner")));
-  for (const partner of partners) {
+  // Her real Sweet'Oh inbox when set; otherwise the partner accounts' login emails.
+  const inbox = getServerEnv().sweetohSupportEmail;
+  const recipients = inbox
+    ? [inbox]
+    : (
+        await getDb()
+          .select({ email: appUser.email })
+          .from(appUser)
+          .where(and(eq(appUser.ventureId, shopper.ventureId), eq(appUser.role, "partner")))
+      ).map((p) => p.email);
+  for (const to of recipients) {
     await sendPartnerNewCustomRequestEmail({
-      to: partner.email,
+      to,
       customerName: shopper.name ?? shopper.email,
       customerEmail: shopper.email,
       title,
