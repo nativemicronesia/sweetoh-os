@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CartIcon } from "./cart-icon";
 
-export function StoreHeader() {
+export function StoreHeader({ creatorSideOpen = false }: { creatorSideOpen?: boolean }) {
   const pathname = usePathname();
   const isHome = pathname === "/";
   const [scrolled, setScrolled] = useState(false);
@@ -42,9 +42,14 @@ export function StoreHeader() {
           <Link href="/collections" className="so-link text-sm text-[color:var(--so-mist)]">
             Shop
           </Link>
-          <Link href="/create" className="so-link text-sm text-[color:var(--so-mist)]">
-            Create
+          <Link href="/custom" className="so-link text-sm text-[color:var(--so-mist)]">
+            Custom orders
           </Link>
+          {creatorSideOpen && (
+            <Link href="/create" className="so-link hidden text-sm text-[color:var(--so-mist)] sm:inline">
+              Create
+            </Link>
+          )}
           <CartIcon />
         </nav>
       </div>

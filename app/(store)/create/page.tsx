@@ -18,7 +18,8 @@ import {
 } from "lucide-react";
 import { listBestsellerBlueprints, listPrintifyBlueprints } from "@/lib/integrations/printify/catalog";
 import { PLANS, formatUsd } from "@/lib/domains/creator/plans";
-import { creatorSignupsOpen } from "@/lib/domains/creator/access";
+import { redirect } from "next/navigation";
+import { creatorSideOpen, creatorSignupsOpen } from "@/lib/domains/creator/access";
 import { MascotCharacter } from "../components/mascot-character";
 import "@/app/(creator)/studio/creator.css";
 import "./create.css";
@@ -59,6 +60,8 @@ const FAQ = [
 ];
 
 export default async function CreateWithSweetOhPage() {
+  // Launch: the shop only. Custom orders go through /custom until the creator side opens.
+  if (!creatorSideOpen()) redirect("/custom");
   const [picks, all] = await Promise.all([listBestsellerBlueprints().catch(() => []), listPrintifyBlueprints().catch(() => [])]);
   const open = creatorSignupsOpen();
   const joinLabel = open ? "Start free" : "Join the waitlist";

@@ -1,16 +1,11 @@
 "use server";
 
-import { createHash } from "node:crypto";
-import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { sql } from "drizzle-orm";
 import { z } from "zod";
-import { getDb } from "@/lib/db/client";
-import { skinkVisitorUsage } from "@/lib/db/schema";
 import { getSessionUser, requireCreator } from "@/lib/domains/identity/service";
 import { getCreatorProfile, getCreditBalance, spendCredits } from "@/lib/domains/creator/credits";
 import type { AiLevel } from "@/lib/domains/creator/plans";
-import { runCreatorTurn, runVisitorTurn, type SkinkEvent } from "@/lib/domains/skink/agent";
+import { runCreatorTurn, type SkinkEvent } from "@/lib/domains/skink/agent";
 import { appendMessages, createThread, deleteThread, listMessages } from "@/lib/domains/skink/threads";
 import { forgetMemory, rememberFact, updateMemory, MEMORY_KINDS } from "@/lib/domains/skink/memory";
 import { isAiConfigured } from "@/lib/ai/router";
@@ -18,8 +13,6 @@ import { isAiConfigured } from "@/lib/ai/router";
 export type SkinkResult =
   | { ok: true; reply: string; threadId: string; balance: number; credits: number; events: SkinkEvent[] }
   | { ok: false; error: string; code?: "credits" | "config" | "limit" | "auth" };
-
-const VISITOR_DAILY_LIMIT = 12;
 
 function friendly(error: unknown) {
   const status = (error as { status?: number })?.status;
@@ -64,33 +57,12 @@ export async function sendSkinkMessage(input: { threadId?: string | null; messag
   }
 }
 
-/** Anyone on the storefront. Signed-in creators get their real Skink. */
+/** Creators only — kept for the Studio UI; the shop never calls an AI model for visitors. */
 export async function askSkink(input: { message: string; history?: { role: "user" | "assistant"; content: string }[]; threadId?: string | null }): Promise<SkinkResult> {
   const session = await getSessionUser();
   if (session?.role === "creator") return sendSkinkMessage({ threadId: input.threadId, message: input.message });
-  const message = z.string().trim().min(1).max(1500).safeParse(input.message);
-  if (!message.success) return { ok: false, error: "Ask me something!" };
-  if (!isAiConfigured()) return { ok: false, error: "Sweet'Oh AI isn't switched on yet.", code: "config" };
-
-  const h = await headers();
-  const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || "unknown";
-  const key = createHash("sha256").update(`skink:${ip}`).digest("hex").slice(0, 32);
-  const day = new Date().toISOString().slice(0, 10);
-  const [usage] = await getDb()
-    .insert(skinkVisitorUsage)
-    .values({ key, day, count: 1 })
-    .onConflictDoUpdate({ target: [skinkVisitorUsage.key, skinkVisitorUsage.day], set: { count: sql`${skinkVisitorUsage.count} + 1` } })
-    .returning({ count: skinkVisitorUsage.count });
-  if ((usage?.count ?? 0) > VISITOR_DAILY_LIMIT) {
-    return { ok: false, code: "limit", error: "That's today's free chats. Create a free account at /studio/join and I'll remember your brand and help you design." };
-  }
-  try {
-    const history = (input.history ?? []).filter((t) => t.role === "user" || t.role === "assistant").slice(-10);
-    const reply = await runVisitorTurn({ history, message: message.data });
-    return { ok: true, reply, threadId: "", balance: 0, credits: 0, events: [] };
-  } catch (error) {
-    return { ok: false, error: friendly(error) };
-  }
+  // Shoppers and visitors never reach an AI model — the shop's Skink is /api/skink/help (no cost).
+  return { ok: false, error: "Skink's AI is for Sweet'Oh creators. Ask the shop helper in the corner instead." };
 }
 
 export async function loadThreadAction(threadId: string) {

@@ -2,85 +2,56 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { RichText } from "@/app/(creator)/studio/components/rich-text";
 import { MascotCharacter } from "./mascot-character";
 
-type Turn = { role: "user" | "assistant"; content: string };
+type HelpLink = { label: string; href: string };
+type Turn =
+  | { role: "user"; content: string }
+  | { role: "assistant"; content: string; links: HelpLink[] };
 
-const STARTERS = ["How does print-on-demand work?", "Can I sell my own designs?", "What's your shipping like?"];
+const STARTERS = ["Track my order", "Shipping", "Returns", "Custom order", "What do you sell?"];
 
+/**
+ * Skink, the shop helper. Answers come from /api/skink/help — the shop's own
+ * FAQ, products and (for signed-in customers) their orders. No AI model, so
+ * it's instant and free to run.
+ */
 export function MascotPanel({ onClose }: { onClose: () => void }) {
   const [turns, setTurns] = useState<Turn[]>([]);
+  const [chips, setChips] = useState<string[]>(STARTERS);
   const [input, setInput] = useState("");
-  const [error, setError] = useState<{ text: string; code?: string } | null>(null);
-  const [streamed, setStreamed] = useState("");
   const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const logRef = useRef<HTMLDivElement>(null);
-  const abort = useRef<AbortController | null>(null);
 
   useEffect(() => {
     logRef.current?.scrollTo({ top: logRef.current.scrollHeight, behavior: "smooth" });
-  }, [turns, streamed, pending]);
-  useEffect(() => () => abort.current?.abort(), []);
+  }, [turns, pending]);
 
   async function send(text?: string) {
     const message = (text ?? input).trim();
     if (!message || pending) return;
     setError(null);
     setInput("");
-    setStreamed("");
-    const history = turns;
     setTurns((prev) => [...prev, { role: "user", content: message }]);
     setPending(true);
-    const controller = new AbortController();
-    abort.current = controller;
-    let answer = "";
     try {
-      const res = await fetch("/api/skink/visitor", {
+      const res = await fetch("/api/skink/help", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, history: history.slice(-10) }),
-        signal: controller.signal,
+        body: JSON.stringify({ message }),
       });
-      if (res.status === 409) {
-        // Signed in as a creator: their real Skink lives in the Studio.
-        setError({ text: "You're signed in — open your Studio to chat with Skink there.", code: "creator" });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.text) {
+        setError(data?.error ?? "Skink couldn't answer just now.");
         return;
       }
-      if (!res.ok || !res.body) {
-        const body = await res.json().catch(() => ({}));
-        setError({ text: body.error ?? "Skink couldn't answer just now.", code: body.code });
-        return;
-      }
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      for (;;) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const chunks = buffer.split("\n\n");
-        buffer = chunks.pop() ?? "";
-        for (const chunk of chunks) {
-          const event = /^event: (.+)$/m.exec(chunk)?.[1];
-          const payload = /^data: (.+)$/m.exec(chunk)?.[1];
-          if (!event || !payload) continue;
-          const data = JSON.parse(payload);
-          if (event === "delta") {
-            answer += data.delta;
-            setStreamed(answer);
-          } else if (event === "error") {
-            setError({ text: data.error });
-          }
-        }
-      }
-    } catch (e) {
-      if ((e as Error).name !== "AbortError") setError({ text: "Connection dropped. Try again." });
+      setTurns((prev) => [...prev, { role: "assistant", content: data.text, links: data.links ?? [] }]);
+      setChips(data.chips?.length ? data.chips : STARTERS);
+    } catch {
+      setError("Connection dropped. Try again.");
     } finally {
-      abort.current = null;
       setPending(false);
-      if (answer.trim()) setTurns((prev) => [...prev, { role: "assistant", content: answer }]);
-      setStreamed("");
     }
   }
 
@@ -89,14 +60,14 @@ export function MascotPanel({ onClose }: { onClose: () => void }) {
       className="flex h-[32rem] w-[22rem] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border bg-white shadow-2xl"
       style={{ borderColor: "#e9e2d3", color: "#17201b" }}
       role="dialog"
-      aria-label="Skink — Sweet'Oh AI"
+      aria-label="Skink — shop helper"
     >
       <div className="flex items-center justify-between gap-2 px-4 py-3" style={{ background: "linear-gradient(135deg, #133f28, #2e8b4f)", color: "white" }}>
         <div className="flex items-center gap-2">
           <MascotCharacter size={32} />
           <div>
             <div className="text-sm font-semibold leading-tight">Skink</div>
-            <div className="text-[11px] leading-tight" style={{ color: "#cfe6c9" }}>Sweet&apos;Oh AI</div>
+            <div className="text-[11px] leading-tight" style={{ color: "#cfe6c9" }}>Sweet&apos;Oh shop helper</div>
           </div>
         </div>
         <button type="button" onClick={onClose} aria-label="Close" className="rounded-full px-2 text-xl leading-none opacity-80 hover:opacity-100">
@@ -106,36 +77,57 @@ export function MascotPanel({ onClose }: { onClose: () => void }) {
 
       <div ref={logRef} className="flex-1 space-y-3 overflow-y-auto p-3" style={{ background: "#fbf8f1" }} aria-live="polite">
         <div className="max-w-[88%] rounded-2xl rounded-tl-md border bg-white px-3 py-2 text-sm" style={{ borderColor: "#e9e2d3" }}>
-          Hafa adai, kaselehlie, ran allim! I&apos;m Skink. Ask me about our products — or about starting your own print-on-demand brand.
+          Hafa adai, kaselehlie, ran allim! I&apos;m Skink. I can help you find something, explain shipping and returns, check on your order, or get a custom request to the shop.
         </div>
-        {turns.length === 0 && (
+        {turns.map((turn, index) =>
+          turn.role === "user" ? (
+            <div key={index} className="ml-auto max-w-[88%] rounded-2xl rounded-br-md px-3 py-2 text-sm text-white" style={{ background: "#133f28" }}>
+              {turn.content}
+            </div>
+          ) : (
+            <div key={index} className="max-w-[92%] space-y-2">
+              <div className="whitespace-pre-line rounded-2xl rounded-tl-md border bg-white px-3 py-2 text-sm" style={{ borderColor: "#e9e2d3" }}>
+                {turn.content}
+              </div>
+              {turn.links.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {turn.links.map((link) => {
+                    const external = /^https?:/.test(link.href);
+                    return (
+                      <Link
+                        key={link.href + link.label}
+                        href={link.href}
+                        {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                        onClick={external ? undefined : onClose}
+                        className="rounded-full px-3 py-1.5 text-xs font-semibold text-white"
+                        style={{ background: "#2e8b4f" }}
+                      >
+                        {link.label} →
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ),
+        )}
+        {pending && (
+          <div className="max-w-[88%] rounded-2xl rounded-tl-md border bg-white px-3 py-2 text-sm text-neutral-500" style={{ borderColor: "#e9e2d3" }}>
+            …
+          </div>
+        )}
+        {!pending && (
           <div className="flex flex-wrap gap-2">
-            {STARTERS.map((s) => (
+            {chips.map((s) => (
               <button key={s} type="button" onClick={() => void send(s)} className="rounded-full border bg-white px-3 py-1.5 text-xs hover:border-[#2e8b4f]" style={{ borderColor: "#e9e2d3" }}>
                 {s}
               </button>
             ))}
           </div>
         )}
-        {turns.map((turn, index) => (
-          <div
-            key={index}
-            className={`max-w-[88%] rounded-2xl px-3 py-2 text-sm ${turn.role === "user" ? "ml-auto rounded-br-md text-white" : "rounded-tl-md border bg-white"}`}
-            style={turn.role === "user" ? { background: "#133f28" } : { borderColor: "#e9e2d3" }}
-          >
-            {turn.role === "user" ? turn.content : <RichText text={turn.content} />}
-          </div>
-        ))}
-        {(streamed || pending) && (
-          <div className="max-w-[88%] rounded-2xl rounded-tl-md border bg-white px-3 py-2 text-sm" style={{ borderColor: "#e9e2d3" }}>
-            {streamed ? <RichText text={streamed} /> : <span className="text-neutral-500">Skink is thinking…</span>}
-          </div>
-        )}
         {error && (
           <p className="rounded-xl px-3 py-2 text-xs" style={{ background: "#ffe6de", color: "#8c2f14" }}>
-            {error.text}{" "}
-            {error.code === "limit" && <Link href="/studio/join" className="font-semibold underline">Create a free account</Link>}
-            {error.code === "creator" && <Link href="/studio/skink" className="font-semibold underline">Open my Studio</Link>}
+            {error}
           </p>
         )}
       </div>
@@ -151,6 +143,7 @@ export function MascotPanel({ onClose }: { onClose: () => void }) {
         <input
           value={input}
           onChange={(event) => setInput(event.target.value)}
+          maxLength={500}
           placeholder="Ask Skink…"
           aria-label="Message Skink"
           className="flex-1 rounded-xl border bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-[#2e8b4f]"

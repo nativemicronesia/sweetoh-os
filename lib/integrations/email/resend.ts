@@ -17,6 +17,7 @@
 import { Resend } from "resend";
 import {
   getIslandSproutsSupportEmail,
+  getPublicEnv,
   getServerEnv,
   getSweetohSupportEmail,
   isIslandSproutsEmailConfigured,
@@ -232,6 +233,59 @@ export async function sendCustomRequestReceivedEmail(input: {
     text,
     failureLogKey: "custom_request_received_email_failed",
     context: { projectId: input.projectId },
+  });
+}
+
+/** Shop account email confirmation — unlocks order lookup with Skink. */
+export async function sendCustomerVerifyEmail(input: { to: string; customerName?: string | null; url: string }) {
+  const greeting = input.customerName ? `Hi ${input.customerName.split(" ")[0]},` : "Hi,";
+  const text = [
+    greeting,
+    "",
+    "Confirm your email so Skink can show you your Sweet'Oh orders:",
+    input.url,
+    "",
+    "The link works for 3 days. If you didn't create a Sweet'Oh account, ignore this email.",
+    "",
+    "— Sweet'Oh",
+  ].join("\n");
+  await sendSweetohWorkflowEmail({
+    to: input.to,
+    subject: "Confirm your Sweet'Oh account",
+    text,
+    failureLogKey: "customer_verify_email_failed",
+    context: {},
+  });
+}
+
+/** Tells the partner a signed-up shopper sent a custom request (see lib/domains/customers). */
+export async function sendPartnerNewCustomRequestEmail(input: {
+  to: string;
+  customerName: string;
+  customerEmail: string;
+  title: string;
+  description: string;
+  requestId: string;
+}) {
+  const { siteUrl } = getPublicEnv();
+  const text = [
+    `New custom request from ${input.customerName} (${input.customerEmail}):`,
+    "",
+    input.title,
+    "",
+    input.description.slice(0, 1500),
+    "",
+    `Open it in your inbox: ${siteUrl.replace(/\/$/, "")}/partner/custom-requests#${input.requestId}`,
+    "",
+    "Reply to the customer from your own email — their address is above.",
+  ].join("\n");
+
+  await sendSweetohWorkflowEmail({
+    to: input.to,
+    subject: `New custom request: ${input.title}`,
+    text,
+    failureLogKey: "partner_custom_request_email_failed",
+    context: { requestId: input.requestId },
   });
 }
 

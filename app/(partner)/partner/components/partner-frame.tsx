@@ -13,6 +13,7 @@ import {
   Menu,
   Package,
   Settings,
+  MessageSquareText,
   ShoppingBag,
   Sparkles,
   X,
@@ -52,11 +53,12 @@ const PARTNER_NAV: NavItem[] = [
     match: (p) => /^\/partner\/(orders|queue|jobs)/.test(p),
   },
   {
-    href: "/partner/creator-requests",
-    label: "Creator requests",
-    icon: Sparkles,
-    match: (p) => p.startsWith("/partner/creator-requests"),
+    href: "/partner/custom-requests",
+    label: "Custom requests",
+    icon: MessageSquareText,
+    match: (p) => p.startsWith("/partner/custom-requests"),
   },
+  // Creator requests (/partner/creator-requests) returns to the nav when the creator side opens.
   {
     href: "/partner/library",
     label: "My files",

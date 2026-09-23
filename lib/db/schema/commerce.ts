@@ -1,4 +1,5 @@
 import {
+  date,
   integer,
   jsonb,
   pgTable,
@@ -20,6 +21,12 @@ export const customer = pgTable(
       .references(() => venture.id, { onDelete: "restrict" }),
     email: text("email").notNull(),
     name: text("name"),
+    /** Set when the shopper signs up (Supabase auth user) — see lib/domains/customers. */
+    authUserId: uuid("auth_user_id").unique("customer_auth_user_unique"),
+    phone: text("phone"),
+    signedUpAt: timestamp("signed_up_at", { withTimezone: true }),
+    /** Set by the emailed confirmation link; Skink only shows orders once it's set. */
+    emailVerifiedAt: timestamp("email_verified_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -89,4 +96,28 @@ export const orderLineItem = pgTable("order_line_item", {
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
+});
+
+/** A signed-up customer asking the shop for something custom; the partner follows up by email. */
+export const customRequest = pgTable("custom_request", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  ventureId: uuid("venture_id")
+    .notNull()
+    .references(() => venture.id, { onDelete: "restrict" }),
+  customerId: uuid("customer_id")
+    .notNull()
+    .references(() => customer.id, { onDelete: "cascade" }),
+  productType: text("product_type").notNull(),
+  description: text("description").notNull(),
+  quantity: integer("quantity").notNull().default(1),
+  neededBy: date("needed_by"),
+  budget: text("budget"),
+  phone: text("phone"),
+  /** Object keys in the private customer-uploads bucket. */
+  photoKeys: jsonb("photo_keys").$type<string[]>().notNull().default([]),
+  /** new | contacted | quoted | done | declined */
+  status: text("status").notNull().default("new"),
+  partnerNotes: text("partner_notes"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

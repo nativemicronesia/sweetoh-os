@@ -309,3 +309,35 @@ body {
 .pdp-size[aria-pressed=true]{border-color:var(--so-cream);box-shadow:inset 0 0 0 1px var(--so-cream)}
 .pdp-thumb{overflow:hidden;background:var(--so-surface);outline-offset:2px}
 .pdp-thumb[aria-pressed=true]{outline:2px solid var(--so-cream)}
+
+/* Store forms (account, custom requests) */
+.so-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--so-cream);
+}
+.so-input {
+  margin-top: 0.4rem;
+  width: 100%;
+  border-radius: 0.6rem;
+  border: 1px solid var(--so-border);
+  background: var(--so-surface);
+  padding: 0.7rem 0.85rem;
+  font-size: 0.95rem;
+  color: var(--so-cream);
+}
+.so-input::placeholder {
+  color: var(--so-cream-dim);
+}
+.so-input:focus {
+  outline: none;
+  border-color: var(--so-gold);
+}
+.so-alert {
+  border-radius: 0.6rem;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.875rem;
+  background: color-mix(in srgb, #e0664a 18%, transparent);
+  color: var(--so-cream);
+}

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CartProvider } from "@/lib/cart/cart-context";
 import { Mascot } from "./components/mascot";
 import { StoreHeader } from "./components/store-header";
+import { creatorSideOpen } from "@/lib/domains/creator/access";
 
 // Product/venture data should stay fresh, but force-dynamic reran every
 // page from scratch on every click (a real Supabase round-trip per nav,
@@ -13,6 +14,7 @@ export const revalidate = 30;
 
 const FOOTER_LINKS = [
   { href: "/collections", label: "Shop" },
+  { href: "/custom", label: "Custom orders" },
   { href: "/shipping", label: "Shipping" },
   { href: "/returns", label: "Returns" },
   { href: "/privacy", label: "Privacy" },
@@ -30,7 +32,7 @@ export default function StoreLayout({
         className="flex min-h-screen flex-col"
         style={{ background: "var(--so-black)", color: "var(--so-cream)" }}
       >
-        <StoreHeader />
+        <StoreHeader creatorSideOpen={creatorSideOpen()} />
 
         <main className="flex-1 pt-[4.25rem]">{children}</main>
 
@@ -42,8 +44,8 @@ export default function StoreLayout({
             <div className="max-w-sm space-y-3">
               <p className="so-display text-2xl text-[color:var(--so-cream)]">Sweet&apos;Oh</p>
               <p className="text-sm leading-relaxed so-muted">
-                Micronesian print-on-demand. Shop a design or create your own — then wait for
-                the package.
+                Micronesian-owned, made to order in Lacey, Washington. Shop our pieces or
+                request something made just for you.
               </p>
               <p className="text-xs so-muted">sweetohcreations.shop</p>
             </div>

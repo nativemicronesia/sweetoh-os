@@ -72,21 +72,18 @@ test("chat credits follow real token cost (1 credit ≈ 1¢)", () => {
   assert.equal(creditsForUsage(luna, { prompt_tokens: 1, completion_tokens: 1 }), 0.01);
 });
 
-test("jobs route to the right provider, and fall back to OpenAI without keys", () => {
+test("every Dekaz job runs on OpenAI, even with other keys present", () => {
   withEnv({ AI_BASE_URL: undefined, OPENAI_API_KEY: "sk-test-openai", ANTHROPIC_API_KEY: "sk-ant-test", GEMINI_API_KEY: "g-test" }, () => {
     assert.equal(resolveModel("chat", "light").model, "gpt-5.6-luna");
-    assert.equal(resolveModel("reason", "smart").model, "claude-sonnet-5");
-    assert.equal(resolveModel("reason", "deep").model, "claude-opus-5");
-    assert.equal(resolveModel("research", "smart").model, "gemini-3.7-flash");
-  });
-  withEnv({ AI_BASE_URL: undefined, OPENAI_API_KEY: "sk-test-openai", ANTHROPIC_API_KEY: undefined, GEMINI_API_KEY: undefined, GOOGLE_GENERATIVE_AI_API_KEY: undefined }, () => {
     assert.equal(resolveModel("reason", "smart").model, "gpt-5.6-luna");
-    assert.equal(resolveModel("research", "deep").model, "gpt-5.6-luna");
+    assert.equal(resolveModel("reason", "deep").model, "gpt-5.6-sol");
+    assert.equal(resolveModel("research", "smart").model, "gpt-5.6-luna");
+    assert.equal(resolveModel("research", "deep").route.provider, "openai");
   });
   withEnv({ AI_BASE_URL: "http://localhost:4000/v1", LITELLM_API_KEY: "sk-proxy" }, () => {
     assert.equal(resolveModel("research", "smart").model, "dekaz-research-smart");
   });
-  assert.ok(litellmAliases().some((a) => a.alias === "dekaz-reason-smart" && a.model === "anthropic/claude-sonnet-5"));
+  assert.ok(litellmAliases().every((a) => a.model.startsWith("openai/")));
 });
 
 test("creator Printify tokens are encrypted at rest and tamper-evident", () => {

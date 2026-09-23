@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { countNewRequests } from "@/lib/domains/customers/custom-requests";
 import {
   ArrowRight,
   Camera,
@@ -35,7 +36,7 @@ export default async function PartnerHomePage() {
   const session = await requirePartnerWorkspace();
   if (session.role === "creator") return <OperationsOverview />;
 
-  const [drafts, published, jobs, customRequests, picks, creatorOpen] =
+  const [drafts, published, jobs, customRequests, picks, creatorOpen, newCustom] =
     await Promise.all([
       listActorProductDrafts({
         ventureId: session.ventureId,
@@ -46,6 +47,7 @@ export default async function PartnerHomePage() {
       listCustomerCustomizationRequests(session.ventureId),
       listBestsellerBlueprints(),
       countOpenShopRequests(session.ventureId).catch(() => 0),
+      countNewRequests(session).catch(() => 0),
     ]);
 
   const open = drafts.filter(({ product }) => product.draftStatus !== "archived");
@@ -121,6 +123,16 @@ export default async function PartnerHomePage() {
           </Link>
         </div>
       </header>
+
+      {newCustom > 0 && (
+        <Link href="/partner/custom-requests" className="home-card" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, textDecoration: "none" }}>
+          <span>
+            <strong>{newCustom} new custom {newCustom === 1 ? "request" : "requests"} from customers</strong>
+            <span style={{ display: "block", fontSize: 13, color: "var(--so-cream-dim)" }}>Reply by email, then mark them contacted.</span>
+          </span>
+          <ArrowRight size={18} />
+        </Link>
+      )}
 
       {creatorOpen > 0 && (
         <Link href="/partner/creator-requests" className="home-card" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, textDecoration: "none" }}>
