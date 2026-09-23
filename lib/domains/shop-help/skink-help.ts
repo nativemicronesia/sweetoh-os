@@ -61,7 +61,7 @@ export async function answerShopQuestion(input: {
   if (has(text, ["who are you", "about", "micronesian", "owned", "your story", "what is sweet"])) return fromFaq("about");
   if (has(text, ["care", "wash", "dry", "dishwasher", "microwave"])) return fromFaq("care");
   if (has(text, ["thank", "thanks", "mahalo", "kalahngan", "si yu'os", "kinisou", "kommol"])) return fromFaq("thanks");
-  if (has(text, ["^hi", "^hello", "^hey", "hafa", "kaselehlie", "ran allim", "iakwe", "alii"])) return fromFaq("greeting");
+  if (has(text, ["^hi", "^hello", "^hey", "h[aå]fa", "alii", "kamorale", "iakwe", "ekamawir", "mauri", "kaselehlie", "ran allim", "tirow"])) return fromFaq("greeting");
 
   const products = await findProducts(input.ventureId, text);
   if (products) return products;

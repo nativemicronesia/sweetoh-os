@@ -77,7 +77,7 @@ export function MascotPanel({ onClose }: { onClose: () => void }) {
 
       <div ref={logRef} className="flex-1 space-y-3 overflow-y-auto p-3" style={{ background: "#fbf8f1" }} aria-live="polite">
         <div className="max-w-[88%] rounded-2xl rounded-tl-md border bg-white px-3 py-2 text-sm" style={{ borderColor: "#e9e2d3" }}>
-          Hafa adai, kaselehlie, ran allim! I&apos;m Skink. I can help you find something, explain shipping and returns, check on your orders and custom requests, or get a request to the shop.
+          Håfa adai, Alii, Kamorale, Iakwe, Ekamawir omo, Mauri! I&apos;m Skink. I can help you find something, explain shipping and returns, check on your orders and custom requests, or get a request to the shop.
         </div>
         {turns.map((turn, index) =>
           turn.role === "user" ? (

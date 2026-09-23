@@ -9,7 +9,7 @@ export function BrandStory() {
         <span className="so-pattern-layer" style={{ ["--pattern-ink" as string]: "rgba(255,255,255,.08)" }} />
         <div className="relative grid items-center gap-10 md:grid-cols-[1.4fr_1fr]">
           <div>
-            <p className="so-eyebrow" style={{ color: "var(--so-frangipani)" }}>Our story</p>
+            <p className="so-eyebrow" style={{ color: "var(--so-sun)" }}>Our story</p>
             <h2 className="so-display mt-4 text-4xl sm:text-5xl" style={{ color: "white" }}>
               Island roots.
               <br />
@@ -20,7 +20,7 @@ export function BrandStory() {
               gifts for every kind of person — and every piece is printed to order, so nothing sits on a shelf.
             </p>
             <div className="mt-9 flex flex-wrap gap-3">
-              <Link href="/collections" className="inline-flex items-center justify-center px-7 py-3.5 text-sm font-semibold" style={{ background: "var(--so-frangipani)", color: "var(--so-ink)" }}>
+              <Link href="/collections" className="inline-flex items-center justify-center px-7 py-3.5 text-sm font-semibold" style={{ background: "var(--so-sun)", color: "var(--so-ink)" }}>
                 Shop the collection
               </Link>
               <Link href="/custom" className="inline-flex items-center justify-center border px-7 py-3.5 text-sm font-medium" style={{ borderColor: "rgba(246,241,228,.45)", color: "#f6f1e4" }}>

@@ -5,16 +5,14 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Lock } from "lucide-react";
 import { CartIcon } from "./cart-icon";
+import { ISLAND_GREETINGS } from "@/lib/shared/island-greetings";
 
 const ANNOUNCEMENTS = [
   "Made to order in Lacey, Washington",
   "Micronesian-owned",
+  ...ISLAND_GREETINGS.slice(0, 3).map((g) => `${g.greeting} — ${g.place}`),
   "Custom orders open — names, logos, family reunions",
-  "Hafa adai",
-  "Kaselehlie",
-  "Ran allim",
-  "Iakwe",
-  "Alii",
+  ...ISLAND_GREETINGS.slice(3).map((g) => `${g.greeting} — ${g.place}`),
   "Something for every age",
 ];
 
@@ -23,7 +21,7 @@ function AnnouncementBar() {
   const items = ANNOUNCEMENTS.map((text) => (
     <span key={text} className="flex items-center gap-10 whitespace-nowrap">
       {text}
-      <span aria-hidden style={{ color: "var(--so-frangipani)" }}>✿</span>
+      <span aria-hidden style={{ color: "var(--so-sun)" }}>✦</span>
     </span>
   ));
   return (
@@ -64,7 +62,7 @@ export function StoreHeader({ creatorSideOpen = false }: { creatorSideOpen?: boo
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-4 sm:px-8">
         <Link href="/" className="so-display flex items-baseline gap-1 text-[1.05rem] tracking-tight text-[color:var(--so-cream)] sm:gap-1.5 sm:text-2xl" aria-label="Sweet'Oh Creations — home">
           Sweet&apos;Oh
-          <span className="font-normal italic" style={{ color: "var(--so-hibiscus)" }}>Creations</span>
+          <span className="font-normal italic" style={{ color: "var(--so-lagoon)" }}>Creations</span>
         </Link>
         <nav className="flex items-center gap-3.5 text-[13px] sm:gap-8 sm:text-sm">
           <Link href="/collections" className="so-link text-[13px] sm:text-sm text-[color:var(--so-mist)]">

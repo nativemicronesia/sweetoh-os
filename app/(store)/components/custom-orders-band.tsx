@@ -10,7 +10,7 @@ export function CustomOrdersBand() {
         <span className="so-pattern-layer" style={{ ["--pattern-ink" as string]: "rgba(36,29,20,.06)" }} />
         <div className="relative">
           <p className="so-eyebrow">Custom orders</p>
-          <h2 className="so-display mt-4 text-4xl sm:text-5xl">Something made <em className="font-normal" style={{ color: "var(--so-hibiscus)" }}>just for you</em>.</h2>
+          <h2 className="so-display mt-4 text-4xl sm:text-5xl">Something made <em className="font-normal" style={{ color: "var(--so-lagoon)" }}>just for you</em>.</h2>
           <p className="mt-5 max-w-md so-muted">
             Your design, names, a logo, or shirts for the whole family reunion. Send the shop a request with a photo or two — they&apos;ll email you back. Nothing is made or charged until you agree.
           </p>

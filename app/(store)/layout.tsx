@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CartProvider } from "@/lib/cart/cart-context";
 import { Mascot } from "./components/mascot";
 import { StoreHeader } from "./components/store-header";
+import { GREETING_LINE } from "@/lib/shared/island-greetings";
 import { creatorSideOpen } from "@/lib/domains/creator/access";
 
 // Product/venture data should stay fresh, but force-dynamic reran every
@@ -43,19 +44,19 @@ export default function StoreLayout({
                 Micronesian-owned, made to order in Lacey, Washington. Shop our pieces or
                 request something made just for you.
               </p>
-              <p className="text-sm" style={{ color: "var(--so-frangipani)" }}>
-                Hafa adai · Kaselehlie · Ran allim · Iakwe · Alii
+              <p className="text-sm" style={{ color: "var(--so-sun)" }}>
+                {GREETING_LINE}
               </p>
             </div>
             <nav aria-label="Shop" className="flex flex-col gap-2 text-sm">
-              <p className="so-eyebrow mb-1" style={{ color: "var(--so-frangipani)" }}>Shop</p>
+              <p className="so-eyebrow mb-1" style={{ color: "var(--so-sun)" }}>Shop</p>
               {FOOTER_LINKS.slice(0, 2).map((item) => (
                 <Link key={item.href} href={item.href} className="hover:underline">{item.label}</Link>
               ))}
               <Link href="/create" className="hover:underline">Create (opening soon)</Link>
             </nav>
             <nav aria-label="Help" className="flex flex-col gap-2 text-sm">
-              <p className="so-eyebrow mb-1" style={{ color: "var(--so-frangipani)" }}>Help</p>
+              <p className="so-eyebrow mb-1" style={{ color: "var(--so-sun)" }}>Help</p>
               {FOOTER_LINKS.slice(2).map((item) => (
                 <Link key={item.href} href={item.href} className="hover:underline">{item.label}</Link>
               ))}

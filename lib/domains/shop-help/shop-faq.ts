@@ -25,7 +25,7 @@ export type FaqTopic =
 
 export const SHOP_FAQ: Record<FaqTopic, Entry> = {
   greeting: {
-    answer: "Hafa adai, kaselehlie, ran allim! I'm Skink, the shop's helper. I can help you find something, explain shipping and returns, check on your order, or get a custom request to the shop.",
+    answer: "Håfa adai, Alii, Kamorale, Iakwe, Ekamawir omo, Mauri! I'm Skink, the shop's helper. I can help you find something, explain shipping and returns, check on your order, or get a custom request to the shop.",
     chips: ["Track my order", "Shipping", "Custom order", "What do you sell?"],
   },
   shipping: {
@@ -88,7 +88,7 @@ export const SHOP_FAQ: Record<FaqTopic, Entry> = {
     chips: ["Shipping", "Custom order"],
   },
   thanks: {
-    answer: "Anytime! Kinisou chapur, si Yu'os ma'åse', kalahngan. 🌺",
+    answer: "Anytime — thank you for shopping with us! 🌊",
     chips: ["What do you sell?", "Track my order"],
   },
   fallback: {

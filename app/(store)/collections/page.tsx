@@ -12,7 +12,7 @@ export default async function CollectionsIndexPage() {
       <div>
         <p className="so-eyebrow">Shop</p>
         <h1 className="so-display mt-3 text-3xl text-[color:var(--so-cream)] sm:text-5xl">
-          Find your <em className="font-normal" style={{ color: "var(--so-hibiscus)" }}>piece</em>.
+          Find your <em className="font-normal" style={{ color: "var(--so-lagoon)" }}>piece</em>.
         </h1>
         <p className="mt-3 max-w-xl text-sm so-muted">
           Browse everything Sweet&apos;Oh prints — or{" "}

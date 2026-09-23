@@ -5,11 +5,11 @@ import { getStorefrontNavCollections } from "@/lib/domains/catalog/service";
 /** Each aisle gets its own island color — fixed by slug so the shop always looks the same. */
 export const CATEGORY_STYLE: Record<string, { bg: string; fg: string; ink: string }> = {
   apparel: { bg: "var(--so-lagoon)", fg: "#fbf6ea", ink: "rgba(255,255,255,.14)" },
-  kids: { bg: "var(--so-frangipani)", fg: "var(--so-ink)", ink: "rgba(36,29,20,.10)" },
+  kids: { bg: "var(--so-sun)", fg: "var(--so-ink)", ink: "rgba(36,29,20,.10)" },
   home: { bg: "var(--so-sand)", fg: "var(--so-ink)", ink: "rgba(36,29,20,.08)" },
   drinkware: { bg: "var(--so-coral)", fg: "#fff8f1", ink: "rgba(255,255,255,.16)" },
   accessories: { bg: "var(--so-palm)", fg: "#f3f0e2", ink: "rgba(255,255,255,.12)" },
-  custom: { bg: "var(--so-hibiscus)", fg: "#fff5f7", ink: "rgba(255,255,255,.14)" },
+  custom: { bg: "var(--so-reef)", fg: "#eef4f7", ink: "rgba(255,255,255,.14)" },
 };
 const DEFAULT_STYLE = { bg: "var(--so-dark)", fg: "var(--so-cream)", ink: "rgba(36,29,20,.08)" };
 
@@ -52,7 +52,7 @@ export async function CategoryBrowse({ ventureId }: { ventureId: string }) {
         <div>
           <p className="so-eyebrow">Shop by aisle</p>
           <h2 className="so-display mt-3 text-4xl text-[color:var(--so-cream)] sm:text-5xl">
-            Find your <em className="font-normal" style={{ color: "var(--so-hibiscus)" }}>piece</em>.
+            Find your <em className="font-normal" style={{ color: "var(--so-lagoon)" }}>piece</em>.
           </h2>
         </div>
         <Link href="/collections" className="so-link shrink-0 text-sm so-muted">All categories</Link>

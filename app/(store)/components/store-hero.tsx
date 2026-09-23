@@ -10,7 +10,7 @@ type StoreHeroProps = {
 const FALLBACK_TILES = [
   { label: "Tees", href: "/collections/apparel", bg: "var(--so-lagoon)", ink: "rgba(255,255,255,.16)" },
   { label: "Tumblers", href: "/collections/drinkware", bg: "var(--so-coral)", ink: "rgba(255,255,255,.18)" },
-  { label: "Little ones", href: "/collections/kids", bg: "var(--so-frangipani)", ink: "rgba(36,29,20,.12)" },
+  { label: "Little ones", href: "/collections/kids", bg: "var(--so-sun)", ink: "rgba(36,29,20,.12)" },
 ] as const;
 
 const TILE_LAYOUT = [
@@ -33,7 +33,7 @@ export function StoreHero({ tiles }: StoreHeroProps) {
               <span className="so-scribble">
                 future
                 <svg viewBox="0 0 300 24" preserveAspectRatio="none" aria-hidden>
-                  <path d="M4 16 C 60 4, 120 22, 180 10 S 270 8, 296 14" fill="none" stroke="var(--so-hibiscus)" strokeWidth="7" strokeLinecap="round" />
+                  <path d="M4 16 C 60 4, 120 22, 180 10 S 270 8, 296 14" fill="none" stroke="var(--so-coral)" strokeWidth="7" strokeLinecap="round" />
                 </svg>
               </span>
               .
@@ -49,7 +49,7 @@ export function StoreHero({ tiles }: StoreHeroProps) {
             <ul className="so-animate-in-delay-2 mt-10 flex flex-wrap gap-x-6 gap-y-2 text-sm so-muted">
               {["Made to order", "Micronesian-owned", "For every age"].map((t) => (
                 <li key={t} className="flex items-center gap-2">
-                  <span aria-hidden style={{ color: "var(--so-hibiscus)" }}>✿</span>
+                  <span aria-hidden style={{ color: "var(--so-coral)" }}>✦</span>
                   {t}
                 </li>
               ))}
@@ -90,12 +90,12 @@ export function StoreHero({ tiles }: StoreHeroProps) {
   );
 }
 
-/** Round sticker with spinning text around a flower. */
+/** Round sticker with spinning text around an outrigger canoe. */
 export function MadeToOrderSticker({ className = "", id = "so-sticker" }: { className?: string; id?: string }) {
   return (
     <div className={className} aria-hidden>
       <svg viewBox="0 0 120 120" className="h-full w-full drop-shadow-[0_8px_18px_rgba(36,29,20,.22)]">
-        <circle cx="60" cy="60" r="58" fill="var(--so-frangipani)" />
+        <circle cx="60" cy="60" r="58" fill="var(--so-sun)" />
         <defs>
           <path id={`${id}-circle`} d="M60,60 m-44,0 a44,44 0 1,1 88,0 a44,44 0 1,1 -88,0" />
         </defs>
@@ -104,11 +104,12 @@ export function MadeToOrderSticker({ className = "", id = "so-sticker" }: { clas
             <textPath href={`#${id}-circle`}>MADE TO ORDER · MICRONESIAN-OWNED · </textPath>
           </text>
         </g>
-        <g transform="translate(60 60) scale(0.85)" fill="var(--so-hibiscus)">
-          {[0, 72, 144, 216, 288].map((r) => (
-            <ellipse key={r} rx="6" ry="12" transform={`rotate(${r}) translate(0 -11)`} />
-          ))}
-          <circle r="4.5" fill="var(--so-frangipani)" />
+        {/* Outrigger sailing canoe on a wave */}
+        <g transform="translate(60 62)" fill="none" stroke="var(--so-reef)" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M-20 6 H20 L15 12 H-15 Z" fill="var(--so-reef)" />
+          <path d="M-2 5 V-19 L14 3 Z" fill="var(--so-coral)" stroke="var(--so-coral)" />
+          <path d="M-14 6 V0 M10 6 V0 M-17 0 H13" />
+          <path d="M-24 17 c4 -3 8 -3 12 0 s8 3 12 0 s8 -3 12 0 s8 3 12 0" stroke="var(--so-lagoon)" />
         </g>
       </svg>
     </div>

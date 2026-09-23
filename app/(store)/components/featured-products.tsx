@@ -58,7 +58,7 @@ export async function FeaturedProducts({
         <div>
           <p className="so-eyebrow">Fresh off the press</p>
           <h2 className="so-display mt-3 text-4xl text-[color:var(--so-cream)] sm:text-5xl">
-            Now <em className="font-normal" style={{ color: "var(--so-hibiscus)" }}>printing</em>
+            Now <em className="font-normal" style={{ color: "var(--so-lagoon)" }}>printing</em>
           </h2>
         </div>
         <Link href="/products" className="so-link shrink-0 text-sm so-muted">
@@ -85,8 +85,8 @@ export async function FeaturedProducts({
 const DROP_TILES = [
   { label: "Island tees", bg: "var(--so-lagoon)", fg: "#fbf6ea", ink: "rgba(255,255,255,.14)" },
   { label: "Tumblers", bg: "var(--so-coral)", fg: "#fff8f1", ink: "rgba(255,255,255,.16)" },
-  { label: "For the little ones", bg: "var(--so-frangipani)", fg: "var(--so-ink)", ink: "rgba(36,29,20,.1)" },
-  { label: "Gifts", bg: "var(--so-hibiscus)", fg: "#fff5f7", ink: "rgba(255,255,255,.14)" },
+  { label: "For the little ones", bg: "var(--so-sun)", fg: "var(--so-ink)", ink: "rgba(36,29,20,.1)" },
+  { label: "Gifts", bg: "var(--so-reef)", fg: "#eef4f7", ink: "rgba(255,255,255,.14)" },
 ] as const;
 
 /** Before the shop's first products are published: an honest "on the press" shelf. */
@@ -97,7 +97,7 @@ function FirstDrop() {
         <div>
           <p className="so-eyebrow">The first drop</p>
           <h2 className="so-display mt-3 text-4xl text-[color:var(--so-cream)] sm:text-5xl">
-            On the <em className="font-normal" style={{ color: "var(--so-hibiscus)" }}>press</em> now.
+            On the <em className="font-normal" style={{ color: "var(--so-lagoon)" }}>press</em> now.
           </h2>
           <p className="mt-4 max-w-md so-muted">Our first pieces are being photographed and listed. Want something now? We&apos;ll make it for you.</p>
         </div>

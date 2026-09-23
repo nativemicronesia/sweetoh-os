@@ -28,7 +28,7 @@ export function ProductCard({
         className="relative aspect-[4/5] overflow-hidden rounded-[1.25rem]"
         style={{ background: "var(--so-dark)" }}
       >
-        <span className="so-tag absolute left-3 top-3 z-10 -rotate-2" style={{ background: "var(--so-frangipani)", color: "var(--so-ink)" }}>
+        <span className="so-tag absolute left-3 top-3 z-10 -rotate-2" style={{ background: "var(--so-sun)", color: "var(--so-ink)" }}>
           Made to order
         </span>
         {imageUrl ? (
@@ -49,7 +49,7 @@ export function ProductCard({
         <div className="space-y-1">
           <Link
             href={`/products/${slug}`}
-            className="so-display block text-lg leading-snug text-[color:var(--so-cream)] hover:text-[color:var(--so-hibiscus)]"
+            className="so-display block text-lg leading-snug text-[color:var(--so-cream)] hover:text-[color:var(--so-lagoon)]"
           >
             {name}
           </Link>

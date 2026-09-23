@@ -31,11 +31,11 @@
   --so-violet: #7c5cc4;
   --so-violet-dim: #e6ddf7;
   /* Island palette for the storefront's color blocks (category tiles,
-     stickers, marquees): lagoon, reef coral, hibiscus, frangipani, palm. */
+     stickers, marquees): lagoon, deep reef, coral, sun, palm, sand. */
   --so-lagoon: #1f6f6b;
   --so-coral: #e0694a;
-  --so-hibiscus: #c2345b;
-  --so-frangipani: #f4c64e;
+  --so-reef: #1f4e6e;
+  --so-sun: #f4c64e;
   --so-palm: #2f6b3c;
   --so-sand: #efe3c8;
   --so-ease: cubic-bezier(0.22, 1, 0.36, 1);
@@ -271,7 +271,7 @@ body {
   outline-offset: -10px;
 }
 
-/* Original repeating motif (soft waves + a five-petal flower), drawn as a mask
+/* Original repeating motif (rolling waves + wayfinding stars), drawn as a mask
    so each block recolors it with --pattern-ink. Deliberately not a
    traditional or sacred design. */
 .so-pattern-layer {
@@ -285,7 +285,7 @@ body {
   mask-size: 120px 120px;
 }
 :root {
-  --so-pattern-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M0 96c10-8 20-8 30 0s20 8 30 0 20-8 30 0 20 8 30 0'/%3E%3Cpath d='M0 108c10-8 20-8 30 0s20 8 30 0 20-8 30 0 20 8 30 0'/%3E%3C/g%3E%3Cg transform='translate(60 42)' fill='black'%3E%3Ccircle r='4'/%3E%3Cellipse rx='7' ry='14' transform='translate(0 -14)'/%3E%3Cellipse rx='7' ry='14' transform='rotate(72) translate(0 -14)'/%3E%3Cellipse rx='7' ry='14' transform='rotate(144) translate(0 -14)'/%3E%3Cellipse rx='7' ry='14' transform='rotate(216) translate(0 -14)'/%3E%3Cellipse rx='7' ry='14' transform='rotate(288) translate(0 -14)'/%3E%3C/g%3E%3C/svg%3E");
+  --so-pattern-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M0 82c10-7 20-7 30 0s20 7 30 0 20-7 30 0 20 7 30 0'/%3E%3Cpath d='M0 96c10-7 20-7 30 0s20 7 30 0 20-7 30 0 20 7 30 0'/%3E%3Cpath d='M0 110c10-7 20-7 30 0s20 7 30 0 20-7 30 0 20 7 30 0'/%3E%3C/g%3E%3Cg fill='black'%3E%3Cpath transform='translate(62 36)' d='M0 -9 L2 -2 L9 0 L2 2 L0 9 L-2 2 L-9 0 L-2 -2 Z'/%3E%3Cpath transform='translate(22 18) scale(.5)' d='M0 -9 L2 -2 L9 0 L2 2 L0 9 L-2 2 L-9 0 L-2 -2 Z'/%3E%3Cpath transform='translate(100 56) scale(.45)' d='M0 -9 L2 -2 L9 0 L2 2 L0 9 L-2 2 L-9 0 L-2 -2 Z'/%3E%3Cpath transform='translate(92 14) scale(.3)' d='M0 -9 L2 -2 L9 0 L2 2 L0 9 L-2 2 L-9 0 L-2 -2 Z'/%3E%3C/g%3E%3C/svg%3E");
 }
 
 /* Little rotated tag, like a price sticker slapped on a product. */
