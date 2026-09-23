@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Outfit, Syne } from "next/font/google";
+import { Fraunces, Outfit } from "next/font/google";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -8,10 +8,12 @@ const outfit = Outfit({
   display: "swap",
 });
 
-const syne = Syne({
+/** Headings: a soft, warm serif — boutique gift shop, handmade, island-proud. */
+const fraunces = Fraunces({
   subsets: ["latin"],
-  variable: "--font-syne",
+  variable: "--font-fraunces",
   display: "swap",
+  axes: ["SOFT", "opsz"],
 });
 
 export const metadata: Metadata = {
@@ -32,12 +34,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${outfit.variable} ${syne.variable}`}>
+    <html lang="en" className={`${outfit.variable} ${fraunces.variable}`}>
       <body
         style={
           {
             "--font-body": "var(--font-outfit), system-ui, sans-serif",
-            "--font-display": "var(--font-syne), system-ui, sans-serif",
+            "--font-display": "var(--font-fraunces), Georgia, serif",
           } as React.CSSProperties
         }
       >

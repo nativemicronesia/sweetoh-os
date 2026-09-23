@@ -31,7 +31,7 @@
   --so-violet: #7c5cc4;
   --so-violet-dim: #e6ddf7;
   --so-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --font-display: "Syne", system-ui, sans-serif;
+  --font-display: "Fraunces", Georgia, serif;
   --font-body: "Outfit", system-ui, sans-serif;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -97,9 +97,10 @@ body {
 /* Storefront type */
 .so-display {
   font-family: var(--font-display);
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 0.95;
+  font-weight: 600;
+  font-variation-settings: "SOFT" 100;
+  letter-spacing: -0.015em;
+  line-height: 1.02;
 }
 
 .so-eyebrow {
