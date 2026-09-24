@@ -69,7 +69,10 @@ export default async function PartnerLoginPage({
             </label>
             <button type="submit">Sign in</button>
           </form>
-          <Link href="/" className="login-back">
+          <Link href="/partner/forgot" className="login-back">
+            Forgot your password?
+          </Link>
+          <Link href="/" className="login-back" style={{ display: "block", marginTop: 10 }}>
             ← Back to the storefront
           </Link>
         </div>

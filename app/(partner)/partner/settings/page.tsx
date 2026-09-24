@@ -5,11 +5,13 @@ import {
   ClipboardCheck,
   CreditCard,
   ExternalLink,
+  KeyRound,
   ScanLine,
   Sparkles,
   Store,
   User,
 } from "lucide-react";
+import { ChangePasswordForm } from "./password-form";
 import {
   getDefaultVenture,
   requirePartnerWorkspace,
@@ -125,6 +127,14 @@ export default async function PartnerSettingsPage() {
             <dd className="capitalize">{session.role}</dd>
           </div>
         </dl>
+      </section>
+
+      <section className="settings-card">
+        <h2>
+          <KeyRound size={18} /> Password
+        </h2>
+        <p className="pw-help">You sign in with {session.appUser.email}. Forgot it? Use “Forgot your password?” on the sign-in page.</p>
+        <ChangePasswordForm />
       </section>
 
       <section className="settings-card">

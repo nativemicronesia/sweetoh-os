@@ -27,3 +27,7 @@
 .login-collage img:nth-child(even){transform:translateY(24px) rotate(2.5deg)}
 @media(max-width:1100px){.login-sticker{display:none}}
 @media(max-width:900px){.login{grid-template-columns:1fr}.login-brand{display:none}.login-form-side{padding:20px}.login h1{font-size:32px}}
+.login-single{grid-template-columns:1fr}
+.login-note{margin-top:24px;padding:14px 16px;border-radius:14px;background:#e2efeb;color:#1f4f4c;line-height:1.55}
+.login-form button:disabled{opacity:.6;transform:none}
+.login-error a{color:inherit;font-weight:600;text-decoration:underline}

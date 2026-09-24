@@ -258,6 +258,28 @@ export async function sendCustomerVerifyEmail(input: { to: string; customerName?
   });
 }
 
+/** Back-office password reset link for the partner (see lib/domains/identity/password.ts). */
+export async function sendPartnerPasswordResetEmail(input: { to: string; name?: string | null; url: string }) {
+  const greeting = input.name ? `Hi ${input.name.split(" ")[0]},` : "Hi,";
+  const text = [
+    greeting,
+    "",
+    "Someone asked to reset the password for your Sweet'Oh back office. To choose a new one, open:",
+    input.url,
+    "",
+    "The link works once and expires in an hour. If you didn't ask for this, ignore this email — your password stays the same.",
+    "",
+    "— Sweet'Oh",
+  ].join("\n");
+  await sendSweetohWorkflowEmail({
+    to: input.to,
+    subject: "Reset your Sweet'Oh back office password",
+    text,
+    failureLogKey: "partner_password_reset_email_failed",
+    context: {},
+  });
+}
+
 /** Tells the partner a signed-up shopper sent a custom request (see lib/domains/customers). */
 export async function sendPartnerNewCustomRequestEmail(input: {
   to: string;

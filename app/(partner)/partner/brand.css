@@ -450,3 +450,14 @@
   .pf-root .pf-sidebar { top: 85px; }
   .pf-root .pf-scrim { inset: 85px 0 0; }
 }
+
+/* Settings → Password */
+.pw-help { font-size: 13px; color: var(--pf-muted); margin-bottom: 4px; }
+.pw-form { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding: 8px 0 14px; }
+.pw-form label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600; }
+.pw-form input { height: 42px; padding: 0 14px; border: 1px solid var(--pf-border); border-radius: 12px; background: #fff; font: inherit; font-size: 14px; color: var(--pf-text); }
+.pw-form input:focus { outline: none; border-color: var(--so-lagoon); box-shadow: 0 0 0 3px var(--pf-primary-soft); }
+.pw-foot { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 13px; }
+.pw-foot [data-tone="error"] { color: #b42318; font-weight: 550; }
+.pw-foot [data-tone="ok"] { color: var(--so-lagoon); font-weight: 600; }
+@media (max-width: 760px) { .pw-form { grid-template-columns: 1fr; } }
