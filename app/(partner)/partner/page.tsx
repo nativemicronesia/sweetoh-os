@@ -117,8 +117,6 @@ export default async function PartnerHomePage() {
   const onPress = jobs.filter(({ job }) => ["new", "in_production"].includes(job.status)).length;
   const greeting = ISLAND_GREETINGS[Math.floor(Date.now() / 86_400_000) % ISLAND_GREETINGS.length];
   const shelf = featured.filter((f) => f.imageUrl).slice(0, 3);
-  const hour = Number(new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles", hour: "numeric", hour12: false }));
-  const partOfDay = hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening";
 
   const today = [
     unreadMail > 0 && <><b>{unreadMail} new {unreadMail === 1 ? "message" : "messages"}</b> waiting</>,
@@ -132,7 +130,7 @@ export default async function PartnerHomePage() {
         <span className="so-pattern-layer" />
         <div>
           <p className="ho-eyebrow">
-            {greeting.place} says {greeting.greeting} · Good {partOfDay}
+            {greeting.place} says {greeting.greeting} · Greetings
           </p>
           <h1 className="so-display">
             {greeting.greeting}
