@@ -108,7 +108,7 @@ export default async function InboxPage({
           <p className="studio-kicker">Your shop&apos;s mail</p>
           <h1 className="so-display">Inbox</h1>
           <p className="ib-sub">
-            Everything sent to <b>{address}</b>, sorted for you.
+            Everything sent to <b>@{address.split("@")[1]}</b> (like {address}), sorted for you.
             {env.sweetohPartnerInbox && <> A copy also lands in {env.sweetohPartnerInbox}.</>}
           </p>
         </div>
