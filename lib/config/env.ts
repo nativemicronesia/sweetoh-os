@@ -24,6 +24,10 @@ const serverEnvSchema = publicEnvSchema.extend({
   SWEETOH_FROM_EMAIL: z.string().email().optional(),
   /** Sweet'Oh — customer support / reply-to (create flow, Sweet'Oh emails) */
   SWEETOH_SUPPORT_EMAIL: z.string().email().optional(),
+  /** The partner's real mailbox (Gmail): shop inbox forwards and new-request alerts go here. */
+  SWEETOH_PARTNER_INBOX: z.string().email().optional(),
+  /** Signing secret of the Resend webhook that delivers received email (whsec_…). */
+  RESEND_WEBHOOK_SECRET: z.string().min(1).optional(),
   /** @deprecated Use SWEETOH_FROM_EMAIL */
   RESEND_SWEETOH_FROM_EMAIL: z.string().email().optional(),
   OPENAI_API_KEY: z.string().min(1).optional(),
@@ -58,6 +62,8 @@ export type ServerEnv = PublicEnv & {
   islandSproutsSupportEmail?: string;
   sweetohFromEmail?: string;
   sweetohSupportEmail?: string;
+  sweetohPartnerInbox?: string;
+  resendWebhookSecret?: string;
   openaiApiKey?: string;
   openaiModel: string;
   ventureSlug: string;
@@ -130,6 +136,8 @@ export function getServerEnv(): ServerEnv {
     islandSproutsSupportEmail: parsed.data.ISLAND_SPROUTS_SUPPORT_EMAIL,
     sweetohFromEmail: resendFrom.sweetohFromEmail,
     sweetohSupportEmail: parsed.data.SWEETOH_SUPPORT_EMAIL,
+    sweetohPartnerInbox: parsed.data.SWEETOH_PARTNER_INBOX,
+    resendWebhookSecret: parsed.data.RESEND_WEBHOOK_SECRET,
     openaiApiKey: parsed.data.OPENAI_API_KEY,
     openaiModel: parsed.data.OPENAI_MODEL,
     ventureSlug: parsed.data.SWEETOH_VENTURE_SLUG,

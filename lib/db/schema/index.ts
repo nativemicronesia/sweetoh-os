@@ -13,3 +13,4 @@ export * from "./pie-templates";
 export * from "./pil";
 export * from "./listing-outbox";
 export * from "./creator";
+export * from "./inbox";

@@ -74,7 +74,8 @@ export async function createCustomRequest(
   const title = `${input.productType}${input.quantity > 1 ? ` × ${input.quantity}` : ""}`;
   await sendCustomRequestReceivedEmail({ to: shopper.email, customerName: shopper.name, title, projectId: id }).catch(() => undefined);
   // Her real Sweet'Oh inbox when set; otherwise the partner accounts' login emails.
-  const inbox = getServerEnv().sweetohSupportEmail;
+  const env = getServerEnv();
+  const inbox = env.sweetohPartnerInbox ?? env.sweetohSupportEmail;
   const recipients = inbox
     ? [inbox]
     : (

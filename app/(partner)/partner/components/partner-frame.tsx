@@ -8,6 +8,7 @@ import {
   ExternalLink,
   House,
   ImageIcon,
+  Inbox,
   LayoutGrid,
   LogOut,
   Menu,
@@ -30,10 +31,21 @@ type NavItem = {
   label: string;
   icon: React.ComponentType<{ size?: number; strokeWidth?: number }>;
   match: (path: string) => boolean;
+  /** Which live count (if any) shows as a badge. */
+  badge?: "inbox" | "requests";
 };
+
+export type PulseItem = { text: string; href?: string };
 
 const PARTNER_NAV: NavItem[] = [
   { href: "/partner", label: "Home", icon: House, match: (p) => p === "/partner" },
+  {
+    href: "/partner/inbox",
+    label: "Inbox",
+    icon: Inbox,
+    match: (p) => p.startsWith("/partner/inbox"),
+    badge: "inbox",
+  },
   {
     href: "/partner/catalog",
     label: "Catalog",
@@ -57,6 +69,7 @@ const PARTNER_NAV: NavItem[] = [
     label: "Custom requests",
     icon: MessageSquareText,
     match: (p) => p.startsWith("/partner/custom-requests"),
+    badge: "requests",
   },
   // Creator requests (/partner/creator-requests) returns to the nav when the creator side opens.
   {
@@ -83,6 +96,23 @@ function creatorNav(): NavItem[] {
   }));
 }
 
+/** Thin lagoon ticker of live shop facts — the back-office twin of the shop's announcement bar. */
+function PulseBar({ items }: { items: PulseItem[] }) {
+  if (!items.length) return null;
+  const row = items.map((item, i) => (
+    <span key={`${item.text}-${i}`}>
+      {item.href ? <Link href={item.href} tabIndex={-1}>{item.text}</Link> : item.text}
+      <i aria-hidden>✦</i>
+    </span>
+  ));
+  return (
+    <div className="pf-pulse so-marquee" aria-label={items.map((i) => i.text).join(". ")}>
+      <div className="so-marquee-track" aria-hidden>{row}</div>
+      <div className="so-marquee-track" aria-hidden>{row}</div>
+    </div>
+  );
+}
+
 function initials(name: string) {
   const parts = name.split(/[\s@.]+/).filter(Boolean);
   return ((parts[0]?.[0] ?? "S") + (parts[1]?.[0] ?? "")).toUpperCase();
@@ -98,6 +128,10 @@ export function PartnerFrame({
   displayName,
   roleLabel,
   storeName,
+  inboxUnread = 0,
+  newRequests = 0,
+  pulse = [],
+  greeting,
   signOut,
   children,
 }: {
@@ -105,6 +139,10 @@ export function PartnerFrame({
   displayName: string;
   roleLabel: string;
   storeName: string;
+  inboxUnread?: number;
+  newRequests?: number;
+  pulse?: PulseItem[];
+  greeting?: string;
   signOut: () => Promise<void>;
   children: React.ReactNode;
 }) {
@@ -122,6 +160,7 @@ export function PartnerFrame({
   const link = (item: NavItem) => {
     const Icon = item.icon;
     const active = item.match(path);
+    const count = item.badge === "inbox" ? inboxUnread : item.badge === "requests" ? newRequests : 0;
     return (
       <Link
         key={item.href}
@@ -131,12 +170,18 @@ export function PartnerFrame({
       >
         <Icon size={20} strokeWidth={active ? 2.2 : 1.8} />
         <span>{item.label}</span>
+        {count > 0 && (
+          <span className="pf-nav-badge" aria-label={`${count} new`}>
+            {count > 99 ? "99+" : count}
+          </span>
+        )}
       </Link>
     );
   };
 
   return (
     <div className="sweetoh-studio pf-root">
+      <PulseBar items={pulse} />
       <header className="pf-topbar">
         <button
           className="pf-icon-btn pf-menu-btn"
@@ -146,17 +191,15 @@ export function PartnerFrame({
         >
           {menuOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
-        <Link href="/partner" className="pf-logo">
-          Sweet&apos;Oh
+        <Link href="/partner" className="pf-logo" aria-label="Sweet'Oh Creations back office — home">
+          Sweet&apos;Oh <em>Creations</em>
+          <span className="pf-logo-tag pf-hide-sm">Back office</span>
         </Link>
-        <span className="pf-store">
+        <Link href="/" target="_blank" className="pf-store" title="Your shop is live — open it">
           <span className="pf-store-dot" aria-hidden="true" />
-          {storeName}
-        </span>
+          {storeName} is live
+        </Link>
         <div className="pf-topbar-actions">
-          <Link href="/" target="_blank" className="pf-btn pf-btn-ghost pf-hide-sm">
-            View store <ExternalLink size={14} />
-          </Link>
           <button
             className="pf-btn pf-btn-soft"
             aria-expanded={assistantOpen}
@@ -194,8 +237,10 @@ export function PartnerFrame({
           <div className="pf-sidebar-bottom">
             {packId !== "sweetoh_creator" && link(SETTINGS_NAV)}
             <div className="pf-local-card">
-              <strong>Local production</strong>
-              <span>Every order is printed and fulfilled by your shop.</span>
+              <span className="so-pattern-layer" style={{ ["--pattern-ink" as string]: "rgba(255,255,255,.08)" }} />
+              <strong>Made in Lacey, WA</strong>
+              <span>Every order is printed and packed by your own hands. Guam &amp; the FSM are next.</span>
+              {greeting && <span className="pf-patch-greeting">{greeting} ✦</span>}
             </div>
           </div>
         </aside>

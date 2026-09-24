@@ -1,12 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/domains/identity/service";
-import { Inter } from "next/font/google";
 import { signInAction } from "@/app/(partner)/partner/actions/auth";
 import { listBestsellerBlueprints } from "@/lib/integrations/printify/catalog";
+import { MadeToOrderSticker } from "@/app/(store)/components/store-hero";
+import { ISLAND_GREETINGS } from "@/lib/shared/island-greetings";
 import "./login.css";
-
-const inter = Inter({ subsets: ["latin"], variable: "--font-partner" });
 
 type PartnerLoginPageProps = {
   searchParams: Promise<{ error?: string }>;
@@ -40,16 +39,18 @@ export default async function PartnerLoginPage({
         : null;
 
   const picks = await listBestsellerBlueprints();
+  const greeting = ISLAND_GREETINGS[Math.floor(Date.now() / 86_400_000) % ISLAND_GREETINGS.length];
 
   return (
-    <div className={`${inter.variable} login`}>
+    <div className="login">
       <section className="login-form-side">
         <Link href="/" className="login-logo">
-          Sweet&apos;Oh
+          Sweet&apos;Oh <em>Creations</em>
         </Link>
         <div className="login-form-wrap">
-          <h1>Welcome back</h1>
-          <p className="login-sub">Sign in to manage your shop.</p>
+          <p className="login-kicker">{greeting.greeting} — {greeting.place}</p>
+          <h1>Welcome back to your shop.</h1>
+          <p className="login-sub">Sign in to your Sweet&apos;Oh back office — orders, mail and everything you make.</p>
 
           {accessError ? (
             <p role="alert" className="login-error">
@@ -74,11 +75,17 @@ export default async function PartnerLoginPage({
         </div>
       </section>
       <aside className="login-brand" aria-hidden="true">
+        <span className="so-pattern-layer" style={{ ["--pattern-ink" as string]: "rgba(255,255,255,.09)" }} />
         <div className="login-brand-copy">
-          <p className="login-kicker">Sweet&apos;Oh Studio</p>
-          <h2>Design it. Sell it. Print it locally.</h2>
-          <p>Pick a product, add your design, and publish to your shop in minutes.</p>
+          <p className="login-kicker">Sweet&apos;Oh Creations · Lacey, WA</p>
+          <h2>
+            Print the islands.
+            <br />
+            Run the <em>shop</em>.
+          </h2>
+          <p>Made to order, Micronesian-owned. Everything behind the storefront lives here.</p>
         </div>
+        <MadeToOrderSticker id="login-sticker" className="login-sticker" />
         {picks.length > 0 && (
           <div className="login-collage">
             {picks.map((b) => (

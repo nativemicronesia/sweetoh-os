@@ -29,7 +29,7 @@ import { logger } from "@/lib/shared/logger";
 
 let client: Resend | null = null;
 
-function getResendClient(): Resend {
+export function getResendClient(): Resend {
   if (!isResendApiConfigured()) {
     throw new Error(
       "Resend is not configured. Add RESEND_API_KEY to .env.local.",
