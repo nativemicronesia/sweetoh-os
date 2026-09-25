@@ -1,0 +1,22 @@
+/** Stable font keys and the license notice shipped with this application. */
+const ofl = (directory: string) => ({
+  license: "SIL Open Font License 1.1",
+  source: `https://github.com/google/fonts/tree/main/ofl/${directory}`,
+  notice: `docs/licenses/fonts/${directory}-OFL.txt`,
+});
+
+export const STUDIO_FONT_PROVENANCE = {
+  inter: ofl("inter"),
+  montserrat: ofl("montserrat"),
+  anton: ofl("anton"),
+  bebas: ofl("bebasneue"),
+  oswald: ofl("oswald"),
+  playfair: ofl("playfairdisplay"),
+  pacifico: ofl("pacifico"),
+  marker: { license: "Apache License 2.0", source: "https://github.com/google/fonts/tree/main/apache/permanentmarker", notice: "docs/licenses/fonts/permanentmarker-APACHE.txt" },
+  caveat: ofl("caveat"),
+  lobster: ofl("lobster"),
+  barlow: ofl("barlowcondensed"),
+  space: ofl("spacegrotesk"),
+  fraunces: ofl("fraunces"),
+} as const;

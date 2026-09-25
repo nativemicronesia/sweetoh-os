@@ -1,5 +1,7 @@
 # Studio next: Sweet'Oh's own mockup engine (2D + 3D)
 
+**Current editor status (2026-09-25):** The shipped creative-editor foundation and licensed asset registry are recorded in [STUDIO-EDITOR-FOUNDATION.md](./STUDIO-EDITOR-FOUNDATION.md). This document remains the roadmap for the realistic 2D/3D mockup engine; its historical build and deployment notes below describe the earlier handoff, not today's deployment state.
+
 Handoff for the next builder (Astra / Codex). Written 2026-09-19 after the
 Printify-style editor landed (`bd06757`); updated the same day after the
 foundation pass (Add Your Own Product, Canva-level studio tools, capability

@@ -179,9 +179,9 @@ export async function saveCanvasCompositionAction(formData: FormData): Promise<{
     const saveAsProduct = formData.get("saveAsProduct") === "true";
     if (saveAsProduct && !canModerateListings(session)) throw new ValidationError("Only the shop partner can prepare a finished listing here.");
 
-    // Text-only compositions retain a real asset reference for legacy consumers.
+    // Text, shape and registry-graphic compositions retain a preview asset for legacy consumers.
     if (studio && !designAssetId) {
-      const artwork = await uploadPartnerDesign({ventureId:session.ventureId,ventureSlug:session.ventureSlug,uploadedById:session.appUser.id,name:`${name} — text preview`,notes:"Text composition reference",file:buffer,filename:"text-preview.png",mimeType:"image/png",autoApprove:false});
+      const artwork = await uploadPartnerDesign({ventureId:session.ventureId,ventureSlug:session.ventureSlug,uploadedById:session.appUser.id,name:`${name} — composition preview`,notes:"Composition preview reference",file:buffer,filename:"composition-preview.png",mimeType:"image/png",autoApprove:false});
       designAssetId = artwork.id;
     }
     if (session.role === "creator") {

@@ -52,6 +52,8 @@ import {
   LockKeyhole,
   UnlockKeyhole,
   EyeOff,
+  Hand,
+  Library,
   Upload,
   X,
 } from "lucide-react";
@@ -76,6 +78,8 @@ import type { CatalogSource, VariantOptions } from "@/lib/domains/catalog/varian
 import { analyzePhoto, printAreaInBox, tintGarment } from "@/lib/studio/tint";
 import { sizedPhoto } from "@/lib/studio/photo";
 import { PRODUCT_FONTS, ensureFont, fontFamily } from "@/lib/studio/fonts";
+import { studioAsset, studioAssetUrl } from "@/lib/studio/asset-library";
+import { studioEditorCommandSchema, type StudioEditorCommand } from "@/lib/studio/editor-commands";
 import { SHAPES, makeShape, type ShapeKind } from "@/lib/studio/shapes";
 import { makePatternRect } from "@/lib/studio/pattern";
 import { getMockupRenderer } from "@/lib/studio/mockup";
@@ -89,6 +93,7 @@ import {
 import { regionPath } from "@/lib/studio/print-regions";
 import { ProductSetup } from "./product-setup";
 import { CropDialog, type CropPixels } from "./crop-dialog";
+import { AssetLibraryPanel } from "./asset-library-panel";
 
 type Area = StudioSurface["area"];
 type Surface = StudioLayout["surfaces"][number];
@@ -141,7 +146,7 @@ type Props = {
 type Selected =
   | null
   | {
-      kind: "image" | "text" | "shape" | "pattern";
+      kind: "image" | "text" | "shape" | "pattern" | "graphic";
       name: string;
       opacity: number;
       flipX: boolean;
@@ -165,7 +170,7 @@ type Selected =
       color?: string;
       bold?: boolean;
     };
-type Panel = "files" | "text" | "shapes" | "ai" | "inspiration" | "layers" | null;
+type Panel = "files" | "text" | "shapes" | "assets" | "ai" | "inspiration" | "layers" | null;
 type InspirationItem = { id: string; name: string; previewUrl: string };
 type Mockup = { color: string; hex: string; url: string };
 type PreviewData = { views: { name: string; url: string }[]; colors: Mockup[] };
@@ -253,6 +258,8 @@ export function ProductEditor({
   const [colorName, setColorName] = useState<string | null>(colors[0]?.name ?? null);
   const [panel, setPanel] = useState<Panel>(null);
   const [zoom, setZoom] = useState(1);
+  const [panMode, setPanMode] = useState(false);
+  const gesture = useRef<{ pointers: Map<number, { x: number; y: number }>; distance: number; zoom: number; lastX: number; lastY: number }>({ pointers: new Map(), distance: 0, zoom: 1, lastX: 0, lastY: 0 });
   const [ready, setReadyState] = useState(false);
   // Artwork uploaded while a view is still loading waits for it instead of being dropped.
   const readyRef = useRef(false);
@@ -410,7 +417,7 @@ export function ProductEditor({
     const assetId = base.kind === "image" || base.kind === "pattern" ? base.assetId : undefined;
     setSelected({
       kind: base.kind,
-      name: text ? (o as IText).text.slice(0, 40) : (library.find((d) => d.id === assetId)?.name ?? (base.kind === "shape" ? "Shape" : "Artwork")),
+      name: text ? (o as IText).text.slice(0, 40) : base.kind === "graphic" ? (studioAsset(base.assetKey)?.name ?? "Graphic") : (library.find((d) => d.id === assetId)?.name ?? (base.kind === "shape" ? "Shape" : "Artwork")),
       opacity: o.opacity,
       flipX: o.flipX,
       flipY: o.flipY,
@@ -444,6 +451,10 @@ export function ProductEditor({
     if (layer.kind === "image") {
       obj = await FabricImage.fromURL(urls.current[layer.assetId], { crossOrigin: "anonymous" });
       if (layer.crop) obj.set({ cropX: layer.crop.x, cropY: layer.crop.y, width: layer.crop.width, height: layer.crop.height });
+    } else if (layer.kind === "graphic") {
+      const asset = studioAsset(layer.assetKey);
+      if (!asset) throw new Error(`Studio graphic is unavailable: ${layer.assetKey}`);
+      obj = await FabricImage.fromURL(studioAssetUrl(asset));
     } else if (layer.kind === "shape") {
       obj = makeShape(layer.shape, layer.width, layer.height, layer.fill);
     } else if (layer.kind === "pattern") {
@@ -759,6 +770,13 @@ export function ProductEditor({
     return () => ro.disconnect();
   }, [zoom]);
 
+  useEffect(() => {
+    if (!editor.current) return;
+    editor.current.skipTargetFind = panMode;
+    if (panMode) editor.current.discardActiveObject();
+    editor.current.requestRenderAll();
+  }, [panMode]);
+
   // Keyboard: delete, undo, nudge — never while typing.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -771,6 +789,9 @@ export function ProductEditor({
         if (e.shiftKey) void redo(); else void undo();
         return;
       }
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "y") { e.preventDefault(); void redo(); return; }
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "d") { e.preventDefault(); void duplicate(); return; }
+      if (e.key === "Escape") { editor.current?.discardActiveObject(); editor.current?.requestRenderAll(); readSelection(); return; }
       if (!o || !meta.current.has(o) || (o instanceof IText && o.isEditing)) return;
       if (e.key === "Delete" || e.key === "Backspace") {
         e.preventDefault();
@@ -992,6 +1013,58 @@ export function ProductEditor({
     capture();
     readSelection();
     editor.current!.requestRenderAll();
+  }
+  async function addGraphic(assetKey: string) {
+    const asset = studioAsset(assetKey);
+    if (!asset || !canDesign() || locked) return;
+    checkpoint();
+    const a = surface().area;
+    const size = Math.min(a.width * SIZE * 0.55, 220);
+    const layer: StudioLayer = {
+      id: crypto.randomUUID(), kind: "graphic", assetKey,
+      printRegionId: surface().printRegions ? activeRegionId ?? surface().printRegions?.[0]?.id : undefined,
+      x: a.x * SIZE + (a.width * SIZE - size) / 2,
+      y: a.y * SIZE + (a.height * SIZE - size) / 2,
+      scaleX: size / 200, scaleY: size / 200, angle: 0,
+    };
+    const object = await makeLayer(layer);
+    editor.current!.add(object);
+    bringGuideToTop();
+    editor.current!.setActiveObject(object);
+    capture(); readSelection(); editor.current!.requestRenderAll();
+  }
+  async function addBackground(color: string) {
+    if (!canDesign() || locked) return;
+    checkpoint();
+    const a = surface().area;
+    const layer: StudioLayer = {
+      id: crypto.randomUUID(), kind: "shape", shape: "rect", fill: color,
+      printRegionId: surface().printRegions ? activeRegionId ?? surface().printRegions?.[0]?.id : undefined,
+      width: a.width * SIZE, height: a.height * SIZE,
+      x: a.x * SIZE, y: a.y * SIZE, scaleX: 1, scaleY: 1, angle: 0,
+    };
+    const object = await makeLayer(layer);
+    editor.current!.add(object);
+    editor.current!.sendObjectToBack(object);
+    bringGuideToTop(); editor.current!.setActiveObject(object);
+    capture(); readSelection(); editor.current!.requestRenderAll();
+  }
+  async function executeEditorCommand(command: StudioEditorCommand) {
+    // This is the sole validated intent entry point for library actions; a
+    // future AI tool can submit the same command without touching Fabric state.
+    const action = studioEditorCommandSchema.parse(command);
+    if (locked) return;
+    switch (action.type) {
+      case "add_graphic": return addGraphic(action.assetKey);
+      case "add_shape": return addShape(action.shape);
+      case "add_background": return addBackground(action.color);
+      case "add_text": return addText({ text: action.text, size: 52, font: action.font });
+      case "duplicate": return duplicate();
+      case "delete": return removeSelected();
+      case "undo": return undo();
+      case "redo": return redo();
+      case "align": return alignSelected(action.edge);
+    }
   }
   function setFill(hex: string, record = true) {
     changeSelected((o) => o.set({ fill: hex }), record);
@@ -1266,7 +1339,7 @@ export function ProductEditor({
     }
     return { ...defaultArea };
   }
-  async function useViewPhoto(photo: { imageUrl?: string; file?: File }) {
+  async function chooseViewPhoto(photo: { imageUrl?: string; file?: File }) {
     if (!viewPicker) return;
     setBusy("Setting up view…");
     setError("");
@@ -1528,6 +1601,7 @@ export function ProductEditor({
               ["files", Upload, "Uploads"],
               ["text", Type, "Text"],
               ["shapes", Shapes, "Shapes"],
+              ["assets", Library, "Library"],
               ["ai", Sparkles, "Create"],
               ["inspiration", Lightbulb, "Ideas"],
               ["layers", Layers, "Layers"],
@@ -1551,7 +1625,7 @@ export function ProductEditor({
           <aside className="pe-panel">
             <div className="pe-panel-head">
               <h2>
-                {{ files: "Uploads", text: "Text", shapes: "Shapes", ai: "Create with AI", inspiration: "Inspiration", layers: "Layers" }[panel]}
+                {{ files: "Uploads", text: "Text", shapes: "Shapes", assets: "Asset library", ai: "Create with AI", inspiration: "Inspiration", layers: "Layers" }[panel]}
               </h2>
               <button className="pe-icon-btn" aria-label="Close panel" onClick={() => setPanel(null)}>
                 <X size={16} />
@@ -1606,6 +1680,8 @@ export function ProductEditor({
 
             {panel === "shapes" && (
               <div className="pe-panel-body">
+                <p className="pe-label">Solid print background</p>
+                <div className="pe-swatches" aria-label="Background colors">{TEXT_COLORS.map((color) => <button key={color} type="button" disabled={locked} aria-label={`Add ${color} background`} style={{ background: color }} onClick={() => void executeEditorCommand({ type: "add_background", color })} />)}</div>
                 <div className="pe-shapes">
                   {SHAPES.map((sh) => (
                     <button key={sh.kind} disabled={locked} onClick={() => void addShape(sh.kind)} title={sh.label}>
@@ -1625,6 +1701,8 @@ export function ProductEditor({
                 <p className="pe-muted pe-small">Select a shape to change its color, size and angle.</p>
               </div>
             )}
+
+            {panel === "assets" && <AssetLibraryPanel disabled={locked} onAddGraphic={(id) => void executeEditorCommand({ type: "add_graphic", assetKey: id })} onAddFont={(key) => void executeEditorCommand({ type: "add_text", text: "Your text", font: key })} />}
 
             {panel === "inspiration" && (
               <div className="pe-panel-body">
@@ -1731,6 +1809,8 @@ export function ProductEditor({
                             <Type size={16} />
                           ) : l.kind === "shape" ? (
                             <Shapes size={16} />
+                          ) : l.kind === "graphic" ? (
+                            <img src={studioAssetUrl(studioAsset(l.assetKey)!)} alt="" />
                           ) : urls.current[l.assetId] ? (
                             <img src={urls.current[l.assetId]} alt="" />
                           ) : (
@@ -1741,6 +1821,8 @@ export function ProductEditor({
                               ? l.text
                               : l.kind === "shape"
                                 ? `${l.shape[0].toUpperCase()}${l.shape.slice(1)}`
+                                : l.kind === "graphic"
+                                  ? studioAsset(l.assetKey)?.name ?? "Graphic"
                                 : `${library.find((d) => d.id === l.assetId)?.name ?? "Artwork"}${l.kind === "pattern" ? " (pattern)" : ""}`}
                           </span>
                         </button>
@@ -1764,7 +1846,31 @@ export function ProductEditor({
               capture(); editor.current?.discardActiveObject(); surface().area = r.bounds; setActiveRegionId(r.id); setSurfaces([...doc.current.surfaces]); readSelection();
             }}>{currentRegions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}</select></label> : <button className="pe-btn pe-btn-primary" onClick={() => setSetupOpen(true)}>Add a print area</button>}
           </div>
-          <div className="pe-stage" ref={stage} onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = "copy"; }} onDrop={e => { e.preventDefault(); if (!busy) void upload(e.dataTransfer.files[0]); }}>
+          <div className="pe-stage" ref={stage} data-pan={panMode} onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = "copy"; }} onDrop={e => { e.preventDefault(); if (!busy) void upload(e.dataTransfer.files[0]); }}
+            onPointerDown={(e) => {
+              gesture.current.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+              gesture.current.lastX = e.clientX; gesture.current.lastY = e.clientY;
+              if (panMode || gesture.current.pointers.size > 1) e.currentTarget.setPointerCapture(e.pointerId);
+              if (gesture.current.pointers.size === 2) {
+                const [a, b] = [...gesture.current.pointers.values()];
+                gesture.current.distance = Math.hypot(a.x - b.x, a.y - b.y);
+                gesture.current.zoom = zoom;
+              }
+            }}
+            onPointerMove={(e) => {
+              if (!gesture.current.pointers.has(e.pointerId)) return;
+              gesture.current.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+              if (gesture.current.pointers.size === 2 && gesture.current.distance) {
+                const [a, b] = [...gesture.current.pointers.values()];
+                setZoom(Math.max(0.5, Math.min(3, round(gesture.current.zoom * Math.hypot(a.x - b.x, a.y - b.y) / gesture.current.distance))));
+              } else if (panMode) {
+                e.currentTarget.scrollLeft -= e.clientX - gesture.current.lastX;
+                e.currentTarget.scrollTop -= e.clientY - gesture.current.lastY;
+              }
+              gesture.current.lastX = e.clientX; gesture.current.lastY = e.clientY;
+            }}
+            onPointerUp={(e) => { gesture.current.pointers.delete(e.pointerId); gesture.current.distance = 0; }}
+            onPointerCancel={(e) => { gesture.current.pointers.delete(e.pointerId); gesture.current.distance = 0; }}>
             <div className="pe-canvas" ref={host} />
             {ready && !layers.length && <div className="pe-start"><button onClick={() => setPanel("files")}><Upload size={15}/> Add artwork</button><button onClick={() => setPanel("text")}><Type size={15}/> Add text</button><span>or drop an image here</span></div>}
             {!ready && !error && (
@@ -1773,6 +1879,7 @@ export function ProductEditor({
               </div>
             )}
             <div className="pe-zoom">
+              <button onClick={() => setPanMode((value) => !value)} aria-label="Pan canvas" aria-pressed={panMode} title="Drag to pan"><Hand size={15} /></button>
               <button onClick={() => setZoom((z) => Math.max(0.5, round(z - 0.25)))} aria-label="Zoom out">
                 <Minus size={15} />
               </button>
@@ -1842,7 +1949,7 @@ export function ProductEditor({
           {selected ? (
             <>
               <div className="pe-props-head">
-                <h2>{{ text: "Text", image: "Artwork", shape: "Shape", pattern: "Pattern" }[selected.kind]}</h2>
+                <h2>{{ text: "Text", image: "Artwork", shape: "Shape", pattern: "Pattern", graphic: "Graphic" }[selected.kind]}</h2>
                 <div>
                   <button className="pe-icon-btn" onClick={() => void duplicate()} aria-label="Duplicate" title="Duplicate">
                     <Copy size={16} />
@@ -1884,6 +1991,7 @@ export function ProductEditor({
                       <Bold size={15} />
                     </button>
                   </div>
+                  <label className="pe-num"><span>Pt</span><input type="number" min={12} max={120} step={1} aria-label="Font size" value={selected.fontSize ?? 48} onChange={(e) => { const value = Number(e.target.value); if (value >= 12 && value <= 120) changeSelected((o) => (o as IText).set({ fontSize: value })); }} /></label>
                   <div className="pe-swatches">
                     {TEXT_COLORS.map((c) => (
                       <button key={c} aria-label={c} aria-pressed={selected.color?.toLowerCase() === c} style={{ background: c }} onClick={() => changeSelected((o) => (o as IText).set({ fill: c }))} />
@@ -2265,7 +2373,7 @@ export function ProductEditor({
               {[...catalogPhotos]
                 .sort((a, b) => (photoScores[b] ?? -9) - (photoScores[a] ?? -9))
                 .map((src, i) => (
-                  <button key={src} disabled={Boolean(busy)} onClick={() => void useViewPhoto({ imageUrl: src })}>
+                  <button key={src} disabled={Boolean(busy)} onClick={() => void chooseViewPhoto({ imageUrl: src })}>
                     <img src={sizedPhoto(src, 400)} alt="" />
                     {i < 2 && (photoScores[src] ?? -1) > 0.3 && <span className="pe-photo-best">Recommended</span>}
                   </button>
@@ -2279,7 +2387,7 @@ export function ProductEditor({
                 onChange={(e) => {
                   const f = e.target.files?.[0];
                   e.target.value = "";
-                  if (f) void useViewPhoto({ file: f });
+                  if (f) void chooseViewPhoto({ file: f });
                 }}
               />
               <button className="pe-photo-upload" disabled={Boolean(busy)} onClick={() => photoInput.current?.click()}>

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { STUDIO_ASSET_IDS } from "@/lib/studio/asset-library";
 
 export const areaSchema = z
   .object({
@@ -62,6 +63,12 @@ const placement = {
 const hexColor = z.string().regex(/^#[0-9a-f]{6}$/i);
 export const SHAPE_KINDS = ["rect", "rounded", "circle", "triangle", "star", "heart", "line"] as const;
 export const layerSchema = z.discriminatedUnion("kind", [
+  z.object({
+    ...placement,
+    kind: z.literal("graphic"),
+    /** Stable key into the vetted Studio asset registry. */
+    assetKey: z.string().min(1).max(80).refine((key) => STUDIO_ASSET_IDS.has(key), "Unknown Studio graphic."),
+  }),
   z.object({
     ...placement,
     kind: z.literal("image"),

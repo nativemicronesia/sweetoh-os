@@ -9,6 +9,9 @@ import {
   Pacifico,
   Permanent_Marker,
   Playfair_Display,
+  Barlow_Condensed,
+  Space_Grotesk,
+  Fraunces,
 } from "next/font/google";
 
 /**
@@ -25,6 +28,9 @@ const pacifico = Pacifico({ subsets: ["latin"], weight: "400", display: "swap" }
 const marker = Permanent_Marker({ subsets: ["latin"], weight: "400", display: "swap" });
 const caveat = Caveat({ subsets: ["latin"], weight: ["400", "700"], display: "swap" });
 const lobster = Lobster({ subsets: ["latin"], weight: "400", display: "swap" });
+const barlow = Barlow_Condensed({ subsets: ["latin"], weight: ["400", "700"], display: "swap" });
+const space = Space_Grotesk({ subsets: ["latin"], weight: ["400", "700"], display: "swap" });
+const fraunces = Fraunces({ subsets: ["latin"], weight: ["400", "700"], display: "swap" });
 
 export const PRODUCT_FONTS = [
   { key: "inter", label: "Inter", family: inter.style.fontFamily, bold: true },
@@ -37,6 +43,9 @@ export const PRODUCT_FONTS = [
   { key: "marker", label: "Marker", family: marker.style.fontFamily, bold: false },
   { key: "caveat", label: "Caveat", family: caveat.style.fontFamily, bold: true },
   { key: "lobster", label: "Lobster", family: lobster.style.fontFamily, bold: false },
+  { key: "barlow", label: "Barlow Condensed", family: barlow.style.fontFamily, bold: true },
+  { key: "space", label: "Space Grotesk", family: space.style.fontFamily, bold: true },
+  { key: "fraunces", label: "Fraunces", family: fraunces.style.fontFamily, bold: true },
 ] as const;
 
 export type ProductFontKey = (typeof PRODUCT_FONTS)[number]["key"];
