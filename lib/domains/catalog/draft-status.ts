@@ -44,7 +44,10 @@ export function resolveInactiveDraftStatus(input: {
   }
 
   if (!input.hasAiSession) {
-    return input.currentStatus === "approved" ? "approved" : "draft";
+    if (input.currentStatus === "approved") {
+      return input.canPublish ? "approved" : "needs_work";
+    }
+    return "draft";
   }
 
   if (input.currentStatus === "draft") {

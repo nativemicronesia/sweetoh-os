@@ -7,6 +7,7 @@ import { updatePartnerJobStatus } from "../lib/domains/fulfillment/partner-jobs"
 import type { SessionUser } from "../lib/domains/identity/types";
 import { parsePartnerProductFields, validatePartnerProductFields } from "../lib/domains/catalog/product-form";
 import { colorHex, defaultUpcharges, sortSizes, variantOptionsSchema } from "../lib/domains/catalog/variants";
+import { resolveInactiveDraftStatus } from "../lib/domains/catalog/draft-status";
 
 const url = "https://manufacturer.example/products/tee";
 const research = { title: "Cotton tee", description: "A plain tee.", category: "apparel", identity: "matched", brand: "Example", model: "4000", evidence: "Visible label", specifications: [{ label: "Material", value: "Cotton", sourceUrl: url }], sources: [{ title: "Manufacturer", url }], unknowns: [], mockupPrompt: "A plain tee" };
@@ -47,6 +48,11 @@ test("partner product edits retain a selected production asset and catalog-compa
   const sizes = sortSizes(["XL", "M", "2XL"]);
   assert.deepEqual(sizes, ["M", "XL", "2XL"]);
   assert.deepEqual(variantOptionsSchema.parse({ colors: [{ name: "Black", hex: colorHex("Black") }], sizes, sizeUpchargeCents: defaultUpcharges(sizes) }).sizeUpchargeCents, { "2XL": 200 });
+});
+test("readiness approval remains private and loses approval when required production data becomes invalid", () => {
+  assert.equal(resolveInactiveDraftStatus({ hasAiSession: false, canPublish: true, currentStatus: "draft" }), "draft");
+  assert.equal(resolveInactiveDraftStatus({ hasAiSession: false, canPublish: true, currentStatus: "approved" }), "approved");
+  assert.equal(resolveInactiveDraftStatus({ hasAiSession: false, canPublish: false, currentStatus: "approved" }), "needs_work");
 });
 test("creators build only in their own workspace and cannot unpublish shop products or change fulfillment", async () => {
   const creator = { role: "creator", ventureId: "unused", appUser: { id: "unused" } } as SessionUser;

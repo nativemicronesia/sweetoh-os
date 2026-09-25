@@ -10,8 +10,12 @@ import { FlashBanner } from "@/app/(owner)/owner/components/flash-banner";
 import {
   evaluateProductPublishReadiness,
   getPrimaryProductImageUrl,
+  getProductMedia,
   getProductById,
 } from "@/lib/domains/catalog/service";
+import { getAssetById, getAssetSignedUrl } from "@/lib/domains/assets/service";
+import { isApprovedAssetStatus } from "@/lib/domains/assets/types";
+import { productMediaPublicUrl } from "@/lib/storage/client";
 import { canModerateListings } from "@/lib/domains/catalog/partner-listings";
 import type { ProductCategory } from "@/lib/domains/catalog/publish";
 import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
@@ -30,6 +34,7 @@ import {
   updatePartnerDraftAction,
   unpublishPartnerProductAction,
   deletePartnerProductAction,
+  markPartnerDraftReadyAction,
 } from "../../actions/drafts";
 
 /**
@@ -90,7 +95,8 @@ export default async function PartnerReviewDetailPage({
     !product.active &&
     (product.draftStatus === "draft" ||
       product.draftStatus === "needs_work" ||
-      product.draftStatus === "pending_review");
+      product.draftStatus === "pending_review" ||
+      product.draftStatus === "approved");
   const [aiSession, readiness, imageUrl] = await Promise.all([
     getAiCreationSessionForProduct({
       ventureId: session.ventureId,
@@ -101,6 +107,23 @@ export default async function PartnerReviewDetailPage({
       productId: id,
     }),
     getPrimaryProductImageUrl(id),
+  ]);
+  const mediaRows = await getProductMedia(id);
+  const [gallery, productionAsset] = await Promise.all([
+    Promise.all(mediaRows.map(async (media) => ({
+      id: media.id,
+      color: media.color,
+      url: media.objectKey
+        ? productMediaPublicUrl(media.objectKey)
+        : media.assetId
+          ? await getAssetSignedUrl({ ventureId: session.ventureId, assetId: media.assetId }).catch(() => null)
+          : null,
+    }))),
+    product.sourceAssetId
+      ? getAssetById({ ventureId: session.ventureId, assetId: product.sourceAssetId })
+          .then(async (asset) => ({ asset, url: await getAssetSignedUrl({ ventureId: session.ventureId, assetId: asset.id }).catch(() => null) }))
+          .catch(() => null)
+      : Promise.resolve(null),
   ]);
   const designAssets = canEdit
     ? (await listPartnerLibraryDesigns(session.ventureId)).filter((item) => item.status === "approved" || item.status === "licensed")
@@ -144,6 +167,11 @@ export default async function PartnerReviewDetailPage({
   async function rejectListing() {
     "use server";
     await rejectPendingListingAction(id);
+  }
+
+  async function markReady() {
+    "use server";
+    await markPartnerDraftReadyAction(id);
   }
 
   return (
@@ -280,6 +308,50 @@ export default async function PartnerReviewDetailPage({
             ) : null}
             {product.active && canModerate && <form action={unpublishNow}><SubmitButton pendingLabel="Unpublishing…">Unpublish</SubmitButton></form>}
             {canModerate && <DeleteProductButton action={deleteNow} />}
+          </div>
+        </div>
+      </section>
+
+      <section className="grid gap-5 rounded-xl border p-6 lg:grid-cols-2" style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}>
+        <div className="space-y-3">
+          <h2 className="font-medium" style={{ color: "var(--so-cream)" }}>Storefront preview</h2>
+          <p className="text-sm" style={{ color: "var(--so-cream-dim)" }}>This is the saved customer-facing copy and photo set. Product is private until published.</p>
+          <p className="text-sm" style={{ color: "var(--so-cream-dim)" }}>Category: {product.category}</p>
+          <div className="flex flex-wrap gap-2">
+            {gallery.map((photo, index) => photo.url ? <figure key={photo.id} className="w-24">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={photo.url} alt={`${product.name}${photo.color ? ` in ${photo.color}` : ` photo ${index + 1}`}`} className="aspect-square w-full rounded-lg object-cover" />
+              {photo.color && <figcaption className="mt-1 text-xs" style={{ color: "var(--so-cream-dim)" }}>{photo.color}</figcaption>}
+            </figure> : null)}
+            {gallery.length === 0 && <p className="text-sm" style={{ color: "var(--so-cream-dim)" }}>No product photos saved yet.</p>}
+          </div>
+          {product.variantOptions && <div className="space-y-1 text-sm" style={{ color: "var(--so-cream-dim)" }}>
+            <p>Colors: {product.variantOptions.colors.length ? product.variantOptions.colors.map((item) => item.name).join(", ") : "No color variants"}</p>
+            <p>Sizes: {product.variantOptions.sizes.length ? product.variantOptions.sizes.map((size) => `${size}${product.variantOptions?.sizeUpchargeCents[size] ? ` (+${formatPrice(product.variantOptions.sizeUpchargeCents[size])})` : ""}`).join(", ") : "No size variants"}</p>
+          </div>}
+          {!product.variantOptions && product.catalogSource && <p className="text-sm" style={{ color: "var(--so-cream-dim)" }}>No color or size variants are currently configured for sale.</p>}
+          {product.suggestedCollections?.length ? <p className="text-sm" style={{ color: "var(--so-cream-dim)" }}>Collections: {product.suggestedCollections.join(", ")}</p> : null}
+        </div>
+        <div className="space-y-3">
+          <h2 className="font-medium" style={{ color: "var(--so-cream)" }}>Production setup</h2>
+          <dl className="grid gap-2 text-sm sm:grid-cols-2">
+            <div><dt style={{ color: "var(--so-cream-dim)" }}>Fulfillment</dt><dd style={{ color: "var(--so-cream)" }}>{product.fulfillmentType}</dd></div>
+            <div><dt style={{ color: "var(--so-cream-dim)" }}>Supplier SKU</dt><dd style={{ color: "var(--so-cream)" }}>{product.supplierSku || "Not set"}</dd></div>
+            {product.catalogSource && <div className="sm:col-span-2"><dt style={{ color: "var(--so-cream-dim)" }}>Catalog source</dt><dd style={{ color: "var(--so-cream)" }}>{[product.catalogSource.provider, product.catalogSource.brand, product.catalogSource.model].filter(Boolean).join(" · ")}</dd></div>}
+          </dl>
+          <div>
+            <h3 className="text-sm font-medium" style={{ color: "var(--so-cream)" }}>Linked source / artwork</h3>
+            {productionAsset ? <div className="mt-2 flex items-center gap-3 text-sm">
+              {productionAsset.url && <div className="h-14 w-14 overflow-hidden rounded border" style={{ borderColor: "var(--so-border)" }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={productionAsset.url} alt="Linked production asset" className="h-full w-full object-contain" />
+              </div>}
+              <div style={{ color: "var(--so-cream-dim)" }}><p>{productionAsset.asset.name}</p><p>{productionAsset.asset.assetType} · {productionAsset.asset.status}{isApprovedAssetStatus(productionAsset.asset.status as import("@/lib/domains/assets/types").AssetStatus) ? " · approved for production" : " · approval required"}</p></div>
+            </div> : <p className="mt-1 text-sm" style={{ color: "var(--so-cream-dim)" }}>No linked production asset.</p>}
+          </div>
+          <div>
+            <h3 className="text-sm font-medium" style={{ color: "var(--so-cream)" }}>Print areas</h3>
+            {product.printArea?.surfaces?.length ? <ul className="mt-1 space-y-2 text-sm" style={{ color: "var(--so-cream-dim)" }}>{product.printArea.surfaces.map((surface) => <li key={surface.id}>{surface.name}{surface.position ? ` (${surface.position})` : ""} · artwork bounds {Math.round(surface.area.x * 100)}%, {Math.round(surface.area.y * 100)}%, {Math.round(surface.area.width * 100)}% × {Math.round(surface.area.height * 100)}%{surface.printRegions?.map((region) => ` · ${region.name} (${region.shape}${region.dimensions ? `, ${region.dimensions.width}×${region.dimensions.height}${region.dimensions.unit}` : ""})`).join("")}</li>)}</ul> : <p className="mt-1 text-sm" style={{ color: "var(--so-cream-dim)" }}>No print-area geometry is saved on this product.</p>}
           </div>
         </div>
       </section>
@@ -485,8 +557,10 @@ export default async function PartnerReviewDetailPage({
           style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}
         >
           <h2 className="text-lg font-medium" style={{ color: "var(--so-cream)" }}>
-            Ready for your shop
+            Publication readiness
           </h2>
+          {product.draftStatus === "approved" && !product.active ? <p className="mt-2 text-sm" style={{ color: "var(--so-gold)" }}>Approved and ready to publish. This listing is still private.</p> : null}
+          {!readiness.canPublish ? <p className="mt-2 text-sm" style={{ color: "var(--so-cream-dim)" }}>Complete the failed requirements below, save your changes, then check readiness again.</p> : null}
           <ul className="mt-4 space-y-2">
             {readiness.checks.map((check) => (
               <li key={check.label} className="flex items-start gap-2 text-sm">
@@ -505,14 +579,10 @@ export default async function PartnerReviewDetailPage({
           {!product.active ? (
             <div className="mt-4 flex flex-wrap gap-2">
 
-              <form action={submitForReview}>
-                <button
-                  type="submit"
-                  className="rounded-full border px-5 py-2.5 text-sm"
-                  style={{ borderColor: "var(--so-border)", color: "var(--so-cream-dim)" }}
-                >
-                  Send to pending
-                </button>
+              <form action={markReady}>
+                <SubmitButton pendingLabel="Checking…" variant="outline">
+                  {readiness.canPublish ? product.draftStatus === "approved" ? "Recheck readiness" : "Mark ready for publication (stays private)" : "Check readiness"}
+                </SubmitButton>
               </form>
             </div>
           ) : (

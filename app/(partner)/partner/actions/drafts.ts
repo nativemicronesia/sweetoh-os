@@ -15,6 +15,7 @@ import {
   unpublishPartnerProduct,
   deletePartnerProduct,
   updatePartnerDraftFields,
+  markPartnerDraftReady,
 } from "@/lib/domains/catalog/partner-listings";
 import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
 import { getActionErrorMessage } from "@/lib/shared/action-errors";
@@ -202,6 +203,23 @@ export async function updatePartnerDraftAction(
     redirect(
       reviewDetailPath(productId, { error: getActionErrorMessage(error) }),
     );
+  }
+}
+
+/** Partner readiness check writes the existing approved/needs_work status; it never publishes. */
+export async function markPartnerDraftReadyAction(productId: string): Promise<void> {
+  try {
+    const session = await requirePartnerWorkspace();
+    const row = await markPartnerDraftReady(session, productId);
+    revalidateListingSurfaces(productId);
+    redirect(reviewDetailPath(productId, {
+      success: row.draftStatus === "approved"
+        ? `“${row.name}” is approved and ready to publish. It is still private.`
+        : `“${row.name}” needs more work. Review the missing requirements below.`,
+    }));
+  } catch (error) {
+    unstable_rethrow(error);
+    redirect(reviewDetailPath(productId, { error: getActionErrorMessage(error) }));
   }
 }
 

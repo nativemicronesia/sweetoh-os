@@ -23,6 +23,7 @@ import {
   deleteProduct,
   updateProduct,
   getProductById,
+  markProductDraftReviewed,
 } from "./service";
 import { getAssetById } from "@/lib/domains/assets/service";
 import { isApprovedAssetStatus } from "@/lib/domains/assets/types";
@@ -31,6 +32,7 @@ const PARTNER_EDITABLE_STATUSES: ProductDraftStatus[] = [
   "draft",
   "needs_work",
   "pending_review",
+  "approved",
 ];
 
 /** Partner/owner may publish, approve, and reject. Creators submit only. */
@@ -206,4 +208,11 @@ export async function updatePartnerDraftFields(
     suggestedTags: fields.suggestedTags,
     suggestedCollections: fields.suggestedCollections,
   });
+}
+
+/** Record the partner's readiness review without publishing the storefront listing. */
+export async function markPartnerDraftReady(session: SessionUser, productId: string) {
+  if (!canModerateListings(session)) throw new ValidationError("Only the shop partner or owner can mark a listing ready.");
+  await assertPartnerOwnsEditableDraft(session, productId);
+  return markProductDraftReviewed({ ventureId: session.ventureId, productId, actorUserId: session.appUser.id });
 }
