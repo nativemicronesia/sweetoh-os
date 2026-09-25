@@ -8,9 +8,12 @@ import {
   StaticCanvas,
   FabricImage,
   FabricObject,
+  Ellipse,
   IText,
+  PencilBrush,
   Rect,
   Path,
+  Shadow,
   filters,
   Gradient,
 } from "fabric";
@@ -44,6 +47,7 @@ import {
   ImagePlus,
   Layers,
   Loader2,
+  PenLine,
   Maximize,
   Minus,
   Plus,
@@ -149,7 +153,7 @@ type Props = {
 type Selected =
   | null
   | {
-      kind: "image" | "text" | "shape" | "pattern" | "graphic";
+      kind: "image" | "text" | "shape" | "pattern" | "graphic" | "drawing";
       name: string;
       opacity: number;
       flipX: boolean;
@@ -161,6 +165,8 @@ type Selected =
       strokeWidth?: number;
       gradient?: { from: string; to: string; direction: "horizontal" | "vertical" | "diagonal" };
       adjustments?: { brightness?: number; contrast?: number; saturation?: number; blur?: number };
+      mask?: "circle" | "rounded";
+      shadow?: { color: string; opacity: number; blur: number; offsetX: number; offsetY: number };
       letterSpacing?: number;
       outline?: string;
       outlineWidth?: number;
@@ -263,12 +269,16 @@ export function ProductEditor({
   const dirty = useRef(false);
   const uploadInput = useRef<HTMLInputElement>(null);
   const photoInput = useRef<HTMLInputElement>(null);
+  const drawingCheckpoint = useRef(false);
 
   const [library, setLibrary] = useState(designs);
   const [colorName, setColorName] = useState<string | null>(colors[0]?.name ?? null);
   const [panel, setPanel] = useState<Panel>(null);
   const [zoom, setZoom] = useState(1);
   const [panMode, setPanMode] = useState(false);
+  const [drawing, setDrawing] = useState(false);
+  const [drawColor, setDrawColor] = useState("#173e39");
+  const [drawWidth, setDrawWidth] = useState(7);
   const gesture = useRef<{ pointers: Map<number, { x: number; y: number }>; distance: number; zoom: number; lastX: number; lastY: number }>({ pointers: new Map(), distance: 0, zoom: 1, lastX: 0, lastY: 0 });
   const [ready, setReadyState] = useState(false);
   // Artwork uploaded while a view is still loading waits for it instead of being dropped.
@@ -461,6 +471,8 @@ export function ProductEditor({
       strokeWidth: base.kind === "shape" ? o.strokeWidth : undefined,
       gradient: base.kind === "shape" ? base.gradient : undefined,
       adjustments: base.kind === "image" ? base.adjustments : undefined,
+      mask: base.kind === "image" ? base.mask : undefined,
+      shadow: base.shadow,
       tile: base.kind === "pattern" ? base.tile : undefined,
       gap: base.kind === "pattern" ? base.gap : undefined,
       brick: base.kind === "pattern" ? base.brick : undefined,
@@ -504,6 +516,8 @@ export function ProductEditor({
       const asset = studioAsset(layer.assetKey);
       if (!asset) throw new Error(`Studio graphic is unavailable: ${layer.assetKey}`);
       obj = await FabricImage.fromURL(studioAssetUrl(asset));
+    } else if (layer.kind === "drawing") {
+      obj = new Path(layer.pathData, { fill: "", stroke: layer.stroke, strokeWidth: layer.strokeWidth, strokeLineCap: "round", strokeLineJoin: "round", objectCaching: false });
     } else if (layer.kind === "shape") {
       obj = makeShape(layer.shape, layer.width, layer.height, layer.fill, layer.stroke, layer.strokeWidth);
       if (layer.gradient) {
@@ -525,6 +539,16 @@ export function ProductEditor({
         stroke: layer.outline ?? null,
         strokeWidth: layer.outlineWidth ?? 0,
       });
+    }
+    if (layer.kind === "image" && layer.mask === "circle") {
+      obj.clipPath = new Ellipse({ rx: obj.width / 2, ry: obj.height / 2, originX: "center", originY: "center" });
+    } else if (layer.kind === "image" && layer.mask === "rounded") {
+      obj.clipPath = new Rect({ width: obj.width, height: obj.height, rx: Math.min(obj.width, obj.height) * 0.16, ry: Math.min(obj.width, obj.height) * 0.16, originX: "center", originY: "center" });
+    }
+    if (layer.shadow) {
+      const { color, opacity, ...shadow } = layer.shadow;
+      const rgb = color.match(/[\da-f]{2}/gi)?.map((part) => parseInt(part, 16)) ?? [0, 0, 0];
+      obj.shadow = new Shadow({ ...shadow, color: `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${opacity})` });
     }
     obj.set({
       left: layer.x,
@@ -586,7 +610,11 @@ export function ProductEditor({
       const object = await makeLayer(layer);
       object.set({ visible: !layer.hidden, selectable: !layer.locked, evented: !layer.locked });
       if (withGuide && canvas !== editor.current) return;
-      if (!withGuide) object.clipPath = printClip(s, layer);
+      if (!withGuide) {
+        const regionClip = printClip(s, layer);
+        if (object.clipPath) object.clipPath.clipPath = regionClip;
+        else object.clipPath = regionClip;
+      }
       canvas.add(object);
     }
     if (withGuide) {
@@ -622,6 +650,7 @@ export function ProductEditor({
   }
 
   async function loadSurface(id: string) {
+    if (editor.current?.isDrawingMode) setFreehand(false);
     setReady(false);
     setError("");
     currentId.current = id;
@@ -724,6 +753,18 @@ export function ProductEditor({
     canvas.on("selection:created", readSelection);
     canvas.on("selection:updated", readSelection);
     canvas.on("selection:cleared", readSelection);
+    canvas.on("mouse:down", () => {
+      if (canvas.isDrawingMode && !drawingCheckpoint.current) { checkpoint(); drawingCheckpoint.current = true; }
+    });
+    canvas.on("path:created", ({ path }) => {
+      const fabricPath = path as Path;
+      const segments = fabricPath.path.length > 600 ? fabricPath.path.filter((_, index) => index === 0 || index === fabricPath.path.length - 1 || index % Math.ceil(fabricPath.path.length / 600) === 0).slice(0, 600) : fabricPath.path;
+      const pathData = segments.map((segment) => segment.map((part) => typeof part === "number" ? part.toFixed(2) : part).join(" ")).join(" ");
+      const stroke = typeof path.stroke === "string" && /^#[0-9a-f]{6}$/i.test(path.stroke) ? path.stroke : "#173e39";
+      const layer: StudioLayer = { id: crypto.randomUUID(), kind: "drawing", pathData, stroke, strokeWidth: Math.max(1, Math.min(50, Number(path.strokeWidth) || 7)), x: path.left ?? 0, y: path.top ?? 0, scaleX: path.scaleX ?? 1, scaleY: path.scaleY ?? 1, angle: path.angle ?? 0, printRegionId: activeRegionRef.current ?? undefined };
+      meta.current.set(path, layer); drawingCheckpoint.current = false;
+      capture(); readSelection(); dirty.current = true; canvas.requestRenderAll();
+    });
     canvas.on("before:transform", () => {
       if (canvas.getActiveObjects().length > 1) {
         future.current = []; setRedoCount(0);
@@ -834,10 +875,11 @@ export function ProductEditor({
 
   useEffect(() => {
     if (!editor.current) return;
-    editor.current.skipTargetFind = panMode;
+    editor.current.skipTargetFind = panMode || drawing;
+    editor.current.selection = !panMode && !drawing;
     if (panMode) editor.current.discardActiveObject();
     editor.current.requestRenderAll();
-  }, [panMode]);
+  }, [panMode, drawing]);
 
   // Keyboard: delete, undo, nudge — never while typing.
   useEffect(() => {
@@ -1038,7 +1080,7 @@ export function ProductEditor({
     const newGroup = sources.length > 1 && sources[0].groupId ? crypto.randomUUID() : undefined;
     const copies: FabricObject[] = [];
     for (const source of sources) {
-      const { groupId: _oldGroup, ...base } = source;
+      const base = { ...source }; delete base.groupId;
       const copy = await makeLayer({ ...base, id: crypto.randomUUID(), x: source.x + 16, y: source.y + 16, ...(newGroup ? { groupId: newGroup } : {}) } as StudioLayer);
       canvas.add(copy); copies.push(copy);
     }
@@ -1051,6 +1093,36 @@ export function ProductEditor({
   }
   /* ---------- Canva-style tools ---------- */
 
+  function setFreehand(enabled: boolean) {
+    const canvas = editor.current;
+    if (!canvas) return;
+    canvas.isDrawingMode = enabled; canvas.selection = !enabled && !panMode; canvas.skipTargetFind = enabled || panMode;
+    if (enabled) { const brush = new PencilBrush(canvas); brush.color = drawColor; brush.width = drawWidth; canvas.freeDrawingBrush = brush; }
+    setDrawing(enabled); canvas.requestRenderAll();
+  }
+  function updateFreehand(color: string, width: number) {
+    setDrawColor(color); setDrawWidth(width);
+    const brush = editor.current?.freeDrawingBrush;
+    if (brush) { brush.color = color; brush.width = width; }
+  }
+  function setImageMask(mask: "none" | "circle" | "rounded") {
+    changeSelected((object) => {
+      const layer = meta.current.get(object);
+      if (!(object instanceof FabricImage) || layer?.kind !== "image") return;
+      object.clipPath = mask === "circle" ? new Ellipse({ rx: object.width / 2, ry: object.height / 2, originX: "center", originY: "center" }) : mask === "rounded" ? new Rect({ width: object.width, height: object.height, rx: Math.min(object.width, object.height) * 0.16, ry: Math.min(object.width, object.height) * 0.16, originX: "center", originY: "center" }) : undefined;
+      const base = { ...layer }; delete base.mask;
+      meta.current.set(object, mask === "none" ? base as StudioLayer : { ...layer, mask });
+    });
+  }
+  function setLayerShadow(settings: { enabled: boolean; blur?: number; opacity?: number; offsetX?: number; offsetY?: number }, record = true) {
+    changeSelected((object) => {
+      const layer = meta.current.get(object); if (!layer) return;
+      if (!settings.enabled) { object.shadow = null; const base = { ...layer }; delete base.shadow; meta.current.set(object, base as StudioLayer); return; }
+      const shadow = { color: "#000000", opacity: settings.opacity ?? 0.24, blur: settings.blur ?? 18, offsetX: settings.offsetX ?? 0, offsetY: settings.offsetY ?? 8 };
+      object.shadow = new Shadow({ color: `rgba(0,0,0,${shadow.opacity})`, blur: shadow.blur, offsetX: shadow.offsetX, offsetY: shadow.offsetY });
+      meta.current.set(object, { ...layer, shadow });
+    }, record);
+  }
   async function addShape(kind: ShapeKind) {
     if (!canDesign()) return;
     if (locked) return;
@@ -1162,6 +1234,8 @@ export function ProductEditor({
         });
       }
       case "set_image_adjustment": return setImageAdjustment(action.field, action.value);
+      case "set_image_mask": return setImageMask(action.mask);
+      case "set_shadow": return setLayerShadow(action);
       case "prepare_artwork": {
         const region = regionsFor(surface()).find((item) => item.id === action.regionId);
         if (!region) throw new Error("Unknown print area for this view.");
@@ -1475,7 +1549,7 @@ export function ProductEditor({
     checkpoint();
     const targetIds = new Set(targets.map((layer) => layer.id));
     for (const object of editor.current!.getObjects()) if (targetIds.has(meta.current.get(object)?.id ?? "")) {
-      const { groupId: _groupId, ...layer } = meta.current.get(object)!;
+      const layer = { ...meta.current.get(object)! }; delete layer.groupId;
       meta.current.set(object, layer as StudioLayer);
     }
     capture(); readSelection();
@@ -1951,6 +2025,11 @@ export function ProductEditor({
 
             {panel === "shapes" && (
               <div className="pe-panel-body">
+                <section className="pe-section pe-draw-tool">
+                  <p className="pe-label">Draw freely</p>
+                  <button className="pe-btn pe-btn-primary pe-block" disabled={locked} aria-pressed={drawing} onClick={() => setFreehand(!drawing)}><PenLine size={16}/>{drawing ? "Finish drawing" : "Start drawing"}</button>
+                  {drawing && <><div className="pe-row"><label className="pe-color-input" title="Brush color"><input type="color" value={drawColor} onChange={(event) => updateFreehand(event.target.value, drawWidth)} /></label><label className="pe-slider pe-grow"><span>Brush <b>{drawWidth}px</b></span><input type="range" min={1} max={36} step={1} value={drawWidth} onChange={(event) => updateFreehand(drawColor, Number(event.target.value))}/></label></div><p className="pe-muted pe-small">Draw with a finger, stylus or mouse. Finish drawing to select and edit the stroke.</p></>}
+                </section>
                 <p className="pe-label">Solid print background</p>
                 <div className="pe-swatches" aria-label="Background colors">{TEXT_COLORS.map((color) => <button key={color} type="button" disabled={locked} aria-label={`Add ${color} background`} style={{ background: color }} onClick={() => void executeEditorCommand({ type: "add_background", color })} />)}</div>
                 <div className="pe-shapes">
@@ -2094,11 +2173,9 @@ export function ProductEditor({
                             <Shapes size={16} />
                           ) : l.kind === "graphic" ? (
                             <img src={studioAssetUrl(studioAsset(l.assetKey)!)} alt="" />
-                          ) : urls.current[l.assetId] ? (
-                            <img src={urls.current[l.assetId]} alt="" />
-                          ) : (
-                            <ImageIcon size={16} />
-                          )}
+                          ) : l.kind === "drawing" ? <PenLine size={16} />
+                            : (l.kind === "image" || l.kind === "pattern") && urls.current[l.assetId] ? <img src={urls.current[l.assetId]} alt="" />
+                              : <ImageIcon size={16} />}
                           <span>
                             {l.kind === "text"
                               ? l.text
@@ -2106,7 +2183,7 @@ export function ProductEditor({
                                 ? `${l.shape[0].toUpperCase()}${l.shape.slice(1)}`
                                 : l.kind === "graphic"
                                   ? studioAsset(l.assetKey)?.name ?? "Graphic"
-                                : `${library.find((d) => d.id === l.assetId)?.name ?? "Artwork"}${l.kind === "pattern" ? " (pattern)" : ""}`}{l.groupId ? " · Grouped" : ""}
+                                  : l.kind === "drawing" ? "Freehand stroke" : `${library.find((d) => d.id === l.assetId)?.name ?? "Artwork"}${l.kind === "pattern" ? " (pattern)" : ""}`}{l.groupId ? " · Grouped" : ""}
                           </span>
                         </button>
                         <button className="pe-icon-btn" aria-label={`${l.hidden ? "Show" : "Hide"} layer`} onClick={() => toggleLayer(l.id, "hidden")}>{l.hidden ? <EyeOff size={14}/> : <Eye size={14}/>}</button>
@@ -2240,12 +2317,13 @@ export function ProductEditor({
                 <p className="pe-label">Distribute evenly</p>
                 <div className="pe-row"><button className="pe-btn pe-btn-ghost pe-grow" disabled={selectedLayerIds.length < 3} onClick={() => distributeLayers(selectedLayerIds, "horizontal")}>Horizontal</button><button className="pe-btn pe-btn-ghost pe-grow" disabled={selectedLayerIds.length < 3} onClick={() => distributeLayers(selectedLayerIds, "vertical")}>Vertical</button></div>
                 <p className="pe-muted pe-small">Drag the selection together on the canvas. Group keeps these layers together when selecting from Layers.</p>
+                <p className="pe-label">Shared effect</p><button className="pe-btn pe-btn-ghost pe-block" onClick={() => setLayerShadow({ enabled: true })}>Add soft shadow to selection</button>
               </section>
             </>
           ) : selected ? (
             <>
               <div className="pe-props-head">
-                <h2>{{ text: "Text", image: "Artwork", shape: "Shape", pattern: "Pattern", graphic: "Graphic" }[selected.kind]}</h2>
+                <h2>{{ text: "Text", image: "Artwork", shape: "Shape", pattern: "Pattern", graphic: "Graphic", drawing: "Drawing" }[selected.kind]}</h2>
                 <div>
                   <button className="pe-icon-btn" onClick={() => void duplicate()} aria-label="Duplicate" title="Duplicate">
                     <Copy size={16} />
@@ -2260,6 +2338,7 @@ export function ProductEditor({
                 const layer = meta.current.get(o)!;
                 meta.current.set(o, { ...layer, printRegionId: e.target.value || undefined });
               })}><option value="">All print areas</option>{currentRegions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}</select></label></section>}
+              <section className="pe-section"><p className="pe-label">Depth and shadow</p><button className="pe-btn pe-btn-ghost pe-block" aria-pressed={Boolean(selected.shadow)} onClick={() => setLayerShadow({ enabled: !selected.shadow })}>{selected.shadow ? "Remove soft shadow" : "Add soft shadow"}</button>{selected.shadow && <><label className="pe-slider"><span>Blur <b>{selected.shadow.blur}px</b></span><input type="range" min={0} max={60} step={1} value={selected.shadow.blur} onPointerDown={() => checkpoint()} onChange={(event) => setLayerShadow({ enabled: true, ...selected.shadow, blur: Number(event.target.value) }, false)}/></label><label className="pe-slider"><span>Strength <b>{Math.round(selected.shadow.opacity * 100)}%</b></span><input type="range" min={0.05} max={0.7} step={0.01} value={selected.shadow.opacity} onPointerDown={() => checkpoint()} onChange={(event) => setLayerShadow({ enabled: true, ...selected.shadow, opacity: Number(event.target.value) }, false)}/></label><label className="pe-slider"><span>Horizontal <b>{selected.shadow.offsetX}px</b></span><input type="range" min={-40} max={40} step={1} value={selected.shadow.offsetX} onPointerDown={() => checkpoint()} onChange={(event) => setLayerShadow({ enabled: true, ...selected.shadow, offsetX: Number(event.target.value) }, false)}/></label><label className="pe-slider"><span>Vertical <b>{selected.shadow.offsetY}px</b></span><input type="range" min={-40} max={40} step={1} value={selected.shadow.offsetY} onPointerDown={() => checkpoint()} onChange={(event) => setLayerShadow({ enabled: true, ...selected.shadow, offsetY: Number(event.target.value) }, false)}/></label></>}</section>
               {selected.kind === "text" && (
                 <section className="pe-section">
                   <textarea
@@ -2303,6 +2382,7 @@ export function ProductEditor({
 
               {selected.kind === "image" && (
                 <section className="pe-section">
+                  <p className="pe-label">Image mask</p><div className="pe-row"><button className="pe-btn pe-btn-ghost pe-grow" aria-pressed={!selected.mask} onClick={() => setImageMask("none")}>Original</button><button className="pe-btn pe-btn-ghost pe-grow" aria-pressed={selected.mask === "circle"} onClick={() => setImageMask("circle")}>Oval</button><button className="pe-btn pe-btn-ghost pe-grow" aria-pressed={selected.mask === "rounded"} onClick={() => setImageMask("rounded")}>Round</button></div>
                   <div className="pe-tools">
                     <button onClick={openCrop} disabled={locked}>
                       <Scissors size={16} /> Crop

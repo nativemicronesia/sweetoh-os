@@ -56,13 +56,19 @@ test("new shape, image and typography controls stay serializable across save/reo
   const layout = structuredClone(base) as typeof base & { surfaces: { layers: Record<string, unknown>[] }[] };
   layout.surfaces[0].layers.push(
     { id: "outlined", kind: "shape", shape: "hexagon", fill: "#ffffff", stroke: "#173e39", strokeWidth: 8, gradient: { from: "#ef476f", to: "#ffd166", direction: "diagonal" }, x: 10, y: 10, scaleX: 1, scaleY: 1, angle: 0, width: 100, height: 90 },
-    { id: "image", kind: "image", assetId: "00000000-0000-4000-8000-000000000001", adjustments: { brightness: .2, contrast: -.1, saturation: .4, blur: .02 }, x: 10, y: 10, scaleX: 1, scaleY: 1, angle: 0 },
+    { id: "image", kind: "image", assetId: "00000000-0000-4000-8000-000000000001", mask: "circle", shadow: { color: "#000000", opacity: .25, blur: 20, offsetX: 0, offsetY: 8 }, adjustments: { brightness: .2, contrast: -.1, saturation: .4, blur: .02 }, x: 10, y: 10, scaleX: 1, scaleY: 1, angle: 0 },
     { id: "type", kind: "text", text: "PLAY", color: "#173e39", fontSize: 40, font: "anton", bold: true, letterSpacing: 40, outline: "#ffffff", outlineWidth: 2, x: 10, y: 10, scaleX: 1, scaleY: 1, angle: 0 },
+    { id: "stroke", kind: "drawing", pathData: "M 0 0 Q 10 20 30 30", stroke: "#173e39", strokeWidth: 8, x: 10, y: 10, scaleX: 1, scaleY: 1, angle: 0 },
   );
   const parsed = studioLayoutSchema.parse(layout);
   assert.equal(parsed.surfaces[0].layers[0].kind, "shape");
   assert.equal(parsed.surfaces[0].layers[1].kind, "image");
   assert.equal(parsed.surfaces[0].layers[2].kind, "text");
+  assert.equal(parsed.surfaces[0].layers[1].kind === "image" && parsed.surfaces[0].layers[1].mask, "circle");
+  assert.equal(parsed.surfaces[0].layers[3].kind, "drawing");
+  const unsafePath = structuredClone(layout) as { surfaces: { layers: { pathData?: string }[] }[] };
+  unsafePath.surfaces[0].layers[3].pathData = "<svg onload=alert(1)>";
+  assert.equal(studioLayoutSchema.safeParse(unsafePath).success, false);
   const invalid = structuredClone(layout) as { surfaces: { layers: { adjustments?: unknown }[] }[] };
   invalid.surfaces[0].layers[1].adjustments = { brightness: 4 };
   assert.equal(studioLayoutSchema.safeParse(invalid).success, false);
@@ -81,6 +87,8 @@ test("editor command boundary rejects unvetted resources and malformed actions",
   assert.equal(studioEditorCommandSchema.safeParse({ type: "move", dx: 12, dy: -8 }).success, true);
   assert.equal(studioEditorCommandSchema.safeParse({ type: "resize", width: 120, height: 60, keepRatio: true }).success, true);
   assert.equal(studioEditorCommandSchema.safeParse({ type: "set_shape_gradient", from: "#ef476f", to: "#ffd166" }).success, true);
+  assert.equal(studioEditorCommandSchema.safeParse({ type: "set_image_mask", mask: "circle" }).success, true);
+  assert.equal(studioEditorCommandSchema.safeParse({ type: "set_shadow", enabled: true, blur: 22 }).success, true);
   assert.equal(studioEditorCommandSchema.safeParse({ type: "crop_image", x: 0, y: 0, width: 250, height: 250 }).success, true);
   assert.equal(studioEditorCommandSchema.safeParse({ type: "crop_image", x: -1, y: 0, width: 250, height: 250 }).success, false);
 });

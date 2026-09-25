@@ -59,6 +59,8 @@ const placement = {
   scaleY: z.number().positive().max(100),
   angle: z.number().finite().min(-360).max(360),
   opacity: z.number().min(0).max(1).optional(),
+  /** User-authored soft depth effect; persisted as editable values. */
+  shadow: z.object({ color: z.string().regex(/^#[0-9a-f]{6}$/i), opacity: z.number().min(0).max(1), blur: z.number().min(0).max(80), offsetX: z.number().min(-100).max(100), offsetY: z.number().min(-100).max(100) }).optional(),
   flipX: z.boolean().optional(),
   flipY: z.boolean().optional(),
 };
@@ -77,6 +79,7 @@ export const layerSchema = z.discriminatedUnion("kind", [
     ...placement,
     kind: z.literal("image"),
     assetId: z.string().uuid(),
+    mask: z.enum(["circle", "rounded"]).optional(),
     adjustments: imageAdjustments.optional(),
     /** Crop window in the source image's pixels. */
     crop: z
@@ -118,6 +121,14 @@ export const layerSchema = z.discriminatedUnion("kind", [
     letterSpacing: z.number().min(-100).max(500).optional(),
     outline: hexColor.optional(),
     outlineWidth: z.number().min(0).max(24).optional(),
+  }),
+  z.object({
+    ...placement,
+    kind: z.literal("drawing"),
+    /** Fabric SVG path grammar only; never raw SVG or markup. */
+    pathData: z.string().min(4).max(16000).regex(/^[MmLlQqCcZz0-9\s.,+-]+$/),
+    stroke: hexColor,
+    strokeWidth: z.number().min(1).max(50),
   }),
 ]);
 export const studioLayoutSchema = z

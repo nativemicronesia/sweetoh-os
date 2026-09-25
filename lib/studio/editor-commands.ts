@@ -34,6 +34,8 @@ export const studioEditorCommandSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("set_shape_gradient"), from: z.string().regex(/^#[0-9a-f]{6}$/i), to: z.string().regex(/^#[0-9a-f]{6}$/i), direction: z.enum(["horizontal", "vertical", "diagonal"]).default("diagonal") }).strict(),
   z.object({ type: z.literal("set_text_style"), text: z.string().max(120).optional(), font: fontKeySchema.optional(), fontSize: z.number().min(12).max(120).optional(), color: z.string().regex(/^#[0-9a-f]{6}$/i).optional(), letterSpacing: z.number().min(-100).max(500).optional(), bold: z.boolean().optional(), outline: z.string().regex(/^#[0-9a-f]{6}$/i).nullable().optional(), outlineWidth: z.number().min(0).max(24).optional() }).strict(),
   z.object({ type: z.literal("set_image_adjustment"), field: z.enum(["brightness", "contrast", "saturation", "blur"]), value: z.number().min(-1).max(1) }).strict(),
+  z.object({ type: z.literal("set_image_mask"), mask: z.enum(["none", "circle", "rounded"]) }).strict(),
+  z.object({ type: z.literal("set_shadow"), enabled: z.boolean(), blur: z.number().min(0).max(80).default(18), opacity: z.number().min(0).max(1).default(0.25), offsetX: z.number().min(-100).max(100).default(0), offsetY: z.number().min(-100).max(100).default(8) }).strict(),
   z.object({ type: z.literal("prepare_artwork"), regionId: z.string().min(1).max(80), fit: z.enum(["contain", "cover"]).default("contain") }).strict(),
 ]).superRefine((action, ctx) => {
   if (action.type === "set_image_adjustment" && action.field === "blur" && (action.value < 0 || action.value > 0.2)) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Blur must be between zero and 0.2." });
@@ -71,7 +73,7 @@ export function buildStudioEditorState(layout: StudioLayout, surfaceId: string, 
       ...(layer.groupId ? { groupId: layer.groupId } : {}),
       ...(layer.kind === "shape" ? { fill: layer.fill, stroke: layer.stroke, strokeWidth: layer.strokeWidth, gradient: layer.gradient } : {}),
       ...(layer.kind === "text" ? { text: layer.text, font: layer.font, fontSize: layer.fontSize, color: layer.color, bold: layer.bold, letterSpacing: layer.letterSpacing } : {}),
-      ...(layer.kind === "image" ? { assetId: layer.assetId, crop: layer.crop, adjustments: layer.adjustments } : {}),
+      ...(layer.kind === "image" ? { assetId: layer.assetId, crop: layer.crop, adjustments: layer.adjustments, mask: layer.mask } : {}),
       ...(layer.kind === "graphic" ? { assetKey: layer.assetKey } : {}),
       ...(layer.kind === "pattern" ? { tile: layer.tile, gap: layer.gap, brick: layer.brick } : {}),
     },

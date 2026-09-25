@@ -25,15 +25,16 @@ Keep method reference material versioned and source-attributed. Make capability 
 ## Shipped in the current Studio phase
 
 - Persisted logical group IDs; multi-select from the layer list; multi-object duplicate, delete, opacity/style changes, grouping, ungrouping, alignment to the selection bounds, and even distribution.
+- Native freehand strokes saved as constrained SVG path commands (no raw SVG markup), with finger, stylus and mouse brush controls; persisted oval and rounded image clipping masks; editable per-layer shadows with blur, strength and offset controls.
 - A typed editor command boundary and authenticated `/api/studio/editor-proposals` adapter. The model receives only a validated serializable canvas snapshot and a provenance-labelled search slice from SweetOh's asset registry. It returns schema-checked commands that can reference only known layers, vetted fonts/assets and defined print regions.
 - AI proposals are reviewable in Studio and do not alter the canvas before acceptance. Accepted actions use existing editor functions and one undo checkpoint; failures restore the prior document. Creator requests are metered through the existing credit system.
 - Confirmed shop-method knowledge is represented separately from broad method education: sublimation and engraving are confirmed; DTF, DTG, screen printing, embroidery and HTV/vinyl are knowledge only. No method-specific production guarantees are inferred from that list.
 
 ## Still planned / unproven
 
-- Persistent geometric masks, a dedicated freehand drawing tool and richer configurable shadow/effect controls are not part of this phase.
+- Boolean/vector masks, layer nesting, pressure-sensitive/Bezier drawing, blend modes, and additional text effects are not part of this phase.
 - There are no rights-cleared garment mockup photos paired with validated per-product print geometry yet. Flat rendering remains the honest fallback; the template schema is groundwork, not an operational 3D mockup feature.
 - AI has no live-provider workflow tests. The current API and command schemas prove the boundary, while model quality, selected-layer targeting, stale-response handling and undo/rollback need hands-on browser testing across creator and partner sessions.
 - The print-region preparation command fits artwork to saved geometry; method-specific profiles, physical print dimensions, color checks and order acceptance rules still need authoritative production data.
 
-Focused Studio tests, TypeScript and the production build pass for this phase. Repository-wide ESLint still reports unrelated existing errors outside the changed Studio files; changed-file lint is reported separately in the phase handoff.
+Focused Studio tests, TypeScript and the production build pass for this phase. The authenticated route and typed proposal boundary are implemented, but the live provider → signed-in Studio → accepted edit → persisted reopen/undo loop has not been exercised because no authorized signed-in test session was available. Repository-wide ESLint still reports unrelated existing errors outside the changed Studio files; changed-file lint is reported separately in the phase handoff.
