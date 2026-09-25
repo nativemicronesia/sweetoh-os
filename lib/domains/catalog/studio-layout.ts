@@ -39,7 +39,11 @@ export const surfaceSchema = z.object({
   id: z.string().min(1).max(80),
   name: z.string().trim().min(1).max(60),
   assetId: z.string().uuid().nullable(),
-  /** A catalog photo for this view, used when there's no uploaded photo. */
+  /** Optional uploaded reference photo kept separate from a trusted production blank. */
+  referenceAssetId: z.string().uuid().nullable().optional(),
+  /** Whether the view photo is an actual blank, or a separate reference/mockup. */
+  imageRole: z.enum(["production_blank", "catalog_reference", "customer_mockup", "unverified"]).optional(),
+  /** Supplier/catalog photo for reference; never assumed to be a production blank. */
   imageUrl: catalogImageUrl.nullable().optional(),
   /** Print area position on the product (front, back, left_sleeve…). */
   position: z.string().max(40).optional(),
@@ -155,4 +159,35 @@ export const studioLayoutSchema = z
 export type StudioLayout = z.infer<typeof studioLayoutSchema>;
 export type StudioLayer = z.infer<typeof layerSchema>;
 export type StudioSurface = z.infer<typeof surfaceSchema>;
+
+export type SurfaceImageRole = NonNullable<StudioSurface["imageRole"]>;
+export const PRODUCTION_BLANK_ASSET_NOTES = "Background removed; reusable blank view.";
+
+export function isVerifiedProductionBlankAssetNotes(notes: string | null | undefined): boolean {
+  return notes === PRODUCTION_BLANK_ASSET_NOTES;
+}
+
+/** Resolve untagged historical surfaces without mistaking supplier photos for clean blanks. */
+export function inferSurfaceImageRole(input: {
+  imageRole?: SurfaceImageRole;
+  assetId: string | null;
+  imageUrl?: string | null;
+  catalogImages?: string[];
+  assetNotes?: string | null;
+}): SurfaceImageRole {
+  if (input.imageRole) return input.imageRole;
+  if (input.assetId && isVerifiedProductionBlankAssetNotes(input.assetNotes)) return "production_blank";
+  if (input.assetNotes?.startsWith("AI-generated visual preview.")) return "customer_mockup";
+  if (input.imageUrl && input.catalogImages?.includes(input.imageUrl)) return "catalog_reference";
+  return "unverified";
+}
+
+/** Product canvas background is sourced only from an explicitly trusted production blank asset. */
+export function productionSurfacePhoto(
+  surface: Pick<StudioSurface, "imageRole" | "assetId">,
+  signedUrls: Record<string, string>,
+): string | null {
+  if (surface.imageRole !== "production_blank" || !surface.assetId) return null;
+  return signedUrls[surface.assetId] ?? null;
+}
 export const defaultArea = { x: 0.25, y: 0.25, width: 0.5, height: 0.5 };

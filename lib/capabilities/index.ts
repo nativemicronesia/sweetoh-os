@@ -31,6 +31,7 @@ import {
 import { downloadFromBucket } from "@/lib/storage/client";
 import { opaqueBox, removeUniformBackground, skinShare, squareOnTransparent } from "@/lib/studio/cutout";
 import { ValidationError } from "@/lib/shared/errors";
+import { PRODUCTION_BLANK_ASSET_NOTES } from "@/lib/domains/catalog/studio-layout";
 
 /**
  * Sweet'Oh's creative actions. The studio calls these simple verbs; how each
@@ -272,6 +273,7 @@ export async function createOwnBlank(
       position: string;
       assetId: string;
       originalAssetId: string;
+      imageRole: "production_blank" | "unverified";
       area: Area;
       printRegions?: import("@/lib/domains/catalog/studio-layout").PrintRegion[];
       printWidthIn: number;
@@ -286,8 +288,11 @@ export async function createOwnBlank(
   const preset = TYPE_PRESETS[input.productType] ?? TYPE_PRESETS.other;
   // Every referenced photo must belong to this shop.
   for (const v of input.views) {
-    await getAssetById({ ventureId: session.ventureId, assetId: v.assetId });
+    const surfaceAsset = await getAssetById({ ventureId: session.ventureId, assetId: v.assetId });
     await getAssetById({ ventureId: session.ventureId, assetId: v.originalAssetId });
+    if (v.imageRole === "production_blank" && surfaceAsset.notes !== PRODUCTION_BLANK_ASSET_NOTES) {
+      throw new ValidationError("Only a background-removed blank view can be used as a production surface.");
+    }
   }
   const record: BuilderRecord = {
     kind: "partner_product_builder",
@@ -295,7 +300,6 @@ export async function createOwnBlank(
     fingerprint: createHash("sha256").update(JSON.stringify(input)).digest("hex"),
     research: null,
     confirmed: true,
-    mockupAssetId: input.views[0].assetId,
   };
   const saved = await persistDraftProduct({
     ventureId: session.ventureId, actorUserId: session.appUser.id, mode: "visual_intake",
@@ -315,7 +319,7 @@ export async function createOwnBlank(
     let id = v.position.replace(/[^a-z0-9_]/gi, "_").toLowerCase() || `view_${i + 1}`;
     while (used.has(id)) id = `${id}_${i + 1}`;
     used.add(id);
-    return { id, name: v.label.slice(0, 60) || `View ${i + 1}`, position: v.position, assetId: v.assetId, area: areaSchema.parse(v.area), printRegions: v.printRegions };
+    return { id, name: v.label.slice(0, 60) || `View ${i + 1}`, position: v.position, assetId: v.assetId, imageRole: v.imageRole, area: areaSchema.parse(v.area), printRegions: v.printRegions };
   });
   await setProductPrintArea({
     ventureId: session.ventureId, productId: saved.product.id,

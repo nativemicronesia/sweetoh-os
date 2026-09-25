@@ -1,6 +1,6 @@
 "use server";
 
-import { studioLayoutSchema, surfaceSchema } from "@/lib/domains/catalog/studio-layout";
+import { studioLayoutSchema, surfaceSchema, PRODUCTION_BLANK_ASSET_NOTES } from "@/lib/domains/catalog/studio-layout";
 import { assertBuilderRole } from "@/lib/domains/intelligence/partner-builder";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -148,10 +148,16 @@ export async function saveCanvasCompositionAction(formData: FormData): Promise<{
     if (studio) {
       if (!studio.surfaces.some(s => s.layers.length)) throw new ValidationError("Add artwork or text before saving.");
       if (surfaceFiles.length !== studio.surfaces.length - 1) throw new ValidationError("Preview every surface before saving.");
-      const ids = new Set(studio.surfaces.flatMap(s => [s.assetId, ...s.layers.flatMap(l => (l.kind === "image" || l.kind === "pattern") ? [l.assetId] : [])]).filter((id): id is string => Boolean(id)));
+      const ids = new Set(studio.surfaces.flatMap(s => [s.assetId, s.referenceAssetId, ...s.layers.flatMap(l => (l.kind === "image" || l.kind === "pattern") ? [l.assetId] : [])]).filter((id): id is string => Boolean(id)));
+      const referencedAssets = new Map<string, Awaited<ReturnType<typeof getAssetById>>>();
       for (const id of ids) {
         const asset = await getAssetById({ventureId: session.ventureId, assetId:id});
+        referencedAssets.set(id, asset);
         if (!["sweetoh_design", "product_asset"].includes(asset.assetType)) throw new ValidationError("Choose a product photo or library artwork.");
+      }
+      for (const surface of studio.surfaces) if (surface.imageRole === "production_blank") {
+        const blankAsset = surface.assetId ? referencedAssets.get(surface.assetId) : null;
+        if (!blankAsset || blankAsset.notes !== PRODUCTION_BLANK_ASSET_NOTES) throw new ValidationError("Only a verified background-removed blank can be used as a production surface.");
       }
       for (const image of surfaceFiles) validateImageUpload({mimeType:image.type,sizeBytes:image.size});
       const firstImage = studio.surfaces.flatMap(s=>s.layers).find(l=>l.kind === "image");
@@ -178,6 +184,16 @@ export async function saveCanvasCompositionAction(formData: FormData): Promise<{
     }
     const saveAsProduct = formData.get("saveAsProduct") === "true";
     if (saveAsProduct && !canModerateListings(session)) throw new ValidationError("Only the shop partner can prepare a finished listing here.");
+    if (saveAsProduct) {
+      const front = studio?.surfaces[0] ?? blank.printArea?.surfaces?.[0];
+      if (!front || front.imageRole !== "production_blank" || !front.assetId) {
+        throw new ValidationError("Prepare a verified clean production blank before creating a customer-facing product mockup. Your design can still be saved to My files.");
+      }
+      const frontAsset = await getAssetById({ ventureId: session.ventureId, assetId: front.assetId });
+      if (frontAsset.notes !== PRODUCTION_BLANK_ASSET_NOTES) {
+        throw new ValidationError("This product surface has not been verified as a clean blank, so it cannot be used as a customer-facing product mockup.");
+      }
+    }
 
     // Text, shape and registry-graphic compositions retain a preview asset for legacy consumers.
     if (studio && !designAssetId) {
@@ -351,7 +367,14 @@ export async function saveBlankSurfacesAction(productId: string, input: unknown)
     const session=await requireStudioWorkspace(); assertBuilderRole(session);
     const surfaces=z.array(surfaceSchema).min(1).max(12).refine(ss => new Set(ss.map(s => s.id)).size === ss.length, "Surface IDs must be unique.").parse(input);
     const blank=await getProductById({ventureId:session.ventureId,productId:z.string().uuid().parse(productId)});
-    for(const s of surfaces) if(s.assetId) await getAssetById({ventureId:session.ventureId,assetId:s.assetId});
+    for(const s of surfaces) if(s.assetId || s.referenceAssetId) {
+      if(s.assetId) {
+        const surfaceAsset=await getAssetById({ventureId:session.ventureId,assetId:s.assetId});
+        if(s.imageRole==="production_blank" && surfaceAsset.notes!==PRODUCTION_BLANK_ASSET_NOTES) throw new ValidationError("Only a verified background-removed blank can be used as a production surface.");
+      }
+      if(s.referenceAssetId) await getAssetById({ventureId:session.ventureId,assetId:s.referenceAssetId});
+    }
+    for(const s of surfaces) if(s.imageRole==="production_blank" && !s.assetId) throw new ValidationError("A production blank needs its saved background-removed image asset.");
     const photos=new Set(blank.catalogSource?.images ?? []);
     for(const s of surfaces) if(s.imageUrl && !photos.has(s.imageUrl)) throw new ValidationError("Choose a photo of this product.");
     await setProductPrintArea({ventureId:session.ventureId,productId,printArea:{...surfaces[0].area,...{surfaces}}});

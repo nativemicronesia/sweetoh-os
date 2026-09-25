@@ -75,7 +75,7 @@ export async function startCatalogDesign(form: FormData) {
       })(),
     );
     const frontArea = detected.success ? detected.data : defaultPrintAreaFor(catalogSource.printAreas);
-    const frontView = { id: "front", name: "Front", position: "front", assetId: null, imageUrl: url, area: frontArea };
+    const frontView = { id: "front", name: "Front", position: "front", assetId: null, imageUrl: url, imageRole: "catalog_reference" as const, area: frontArea };
     // Reuse the local blank if this catalog product was already chosen.
     const existing = (await listBuilderBlanks(session)).find(
       (b) => b.catalogSource?.blueprintId === id || b.name === name,
@@ -89,7 +89,7 @@ export async function startCatalogDesign(form: FormData) {
       });
       // Older blanks designed on a downloaded photo move to the chosen catalog photo.
       const current = (await getProductById({ ventureId: session.ventureId, productId: existing.id })).printArea;
-      if (!current?.surfaces?.[0]?.imageUrl) {
+      if (!current?.surfaces?.[0]?.assetId && !current?.surfaces?.[0]?.imageUrl) {
         const others = current?.surfaces?.slice(1) ?? [];
         await setProductPrintArea({
           ventureId: session.ventureId,

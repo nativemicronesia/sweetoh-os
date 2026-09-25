@@ -14,6 +14,7 @@ import { actionCreditsForKey } from "@/lib/domains/creator/plans";
 import { getActorProductDraft, listActorProductDrafts, persistDraftProduct } from "./service";
 import { builderRecord, type BuilderRecord, type ProductResearch } from "./product-research-schema";
 import { plainCatalogDescription } from "@/lib/integrations/printify/catalog";
+import { inferSurfaceImageRole } from "@/lib/domains/catalog/studio-layout";
 
 export function assertBuilderRole(session: SessionUser) {
   // Creators manage blanks inside their own private workspace (session.ventureId).
@@ -133,8 +134,28 @@ export async function listBuilderBlanks(session: SessionUser) {
     const data = builderRecord(row.session?.rawResponse);
     if (!data) return null;
     const assetId = data.mockupAssetId || row.product.sourceAssetId;
-    return { id: row.product.id, name: row.product.name, category: row.product.category, description: row.product.description, printArea: row.product.printArea,
+    const surfaces = await Promise.all((row.product.printArea?.surfaces ?? []).map(async surface => {
+      const surfaceAsset = surface.assetId
+        ? await getAssetById({ ventureId: session.ventureId, assetId: surface.assetId }).catch(() => null)
+        : null;
+      return {
+        ...surface,
+        imageRole: inferSurfaceImageRole({
+          ...surface,
+          catalogImages: row.product.catalogSource?.images,
+          assetNotes: surfaceAsset?.notes,
+        }),
+      };
+    }));
+    const printArea = row.product.printArea
+      ? { ...row.product.printArea, surfaces }
+      : null;
+    const productionSurface = surfaces.find(surface => surface.imageRole === "production_blank");
+    const productionPhoto = productionSurface?.assetId
+      ? await getAssetSignedUrl({ ventureId: session.ventureId, assetId: productionSurface.assetId }).catch(() => null)
+      : null;
+    return { id: row.product.id, name: row.product.name, category: row.product.category, description: row.product.description, printArea,
       variantOptions: row.product.variantOptions, catalogSource: row.product.catalogSource,
-      imageUrl: row.product.printArea?.surfaces?.[0]?.imageUrl ?? (assetId ? await getAssetSignedUrl({ ventureId: session.ventureId, assetId }) : null) };
+      imageUrl: productionPhoto ?? surfaces.find(surface => surface.imageUrl)?.imageUrl ?? (assetId ? await getAssetSignedUrl({ ventureId: session.ventureId, assetId }) : null) };
   })).then(rows => rows.filter((row): row is NonNullable<typeof row> => row !== null));
 }

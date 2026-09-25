@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import {
   studioLayoutSchema,
   areaSchema,
+  inferSurfaceImageRole,
+  productionSurfacePhoto,
 } from "../lib/domains/catalog/studio-layout";
 const layer = {
   id: "art",
@@ -59,6 +61,26 @@ test("print areas must remain inside the product canvas", () => {
   assert.equal(areaSchema.safeParse({ ...area, width: 0 }).success, false);
   assert.equal(areaSchema.safeParse(area).success, true);
 });
+test("only verified production blank assets are used as Studio product backgrounds", () => {
+  const assetId = "11111111-1111-4111-8111-111111111111";
+  const signed = { [assetId]: "https://assets.example/blank.png" };
+  const cleanRole = inferSurfaceImageRole({ assetId, imageRole: undefined, assetNotes: "Background removed; reusable blank view." });
+  assert.equal(cleanRole, "production_blank");
+  assert.equal(productionSurfacePhoto({ assetId, imageRole: cleanRole }, signed), signed[assetId]);
+
+  const catalogUrl = "https://images.printify.com/product/example.png";
+  const catalogRole = inferSurfaceImageRole({ assetId: null, imageUrl: catalogUrl, catalogImages: [catalogUrl] });
+  assert.equal(catalogRole, "catalog_reference");
+  assert.equal(productionSurfacePhoto({ assetId: null, imageRole: catalogRole }, signed), null);
+
+  const generatedRole = inferSurfaceImageRole({ assetId, assetNotes: "AI-generated visual preview. Verify appearance before production." });
+  assert.equal(generatedRole, "customer_mockup");
+  assert.equal(productionSurfacePhoto({ assetId, imageRole: generatedRole }, signed), null);
+  const unknownRole = inferSurfaceImageRole({ assetId, assetNotes: "Original partner product photo." });
+  assert.equal(unknownRole, "unverified");
+  assert.equal(productionSurfacePhoto({ assetId, imageRole: unknownRole }, signed), null);
+  assert.equal(productionSurfacePhoto({ assetId }, signed), null, "untagged legacy photos stay off the canvas until server provenance resolves them");
+});
 test("surface ids cannot collide on reopen", () =>
   assert.equal(
     studioLayoutSchema.safeParse({
@@ -76,6 +98,32 @@ test("partner-defined print regions survive save and reopen without template res
   ];
   const input = { ...document, surfaces: [{ ...document.surfaces[0], printRegions: regions, layers: [{ ...layer, hidden: true, locked: true }] }] };
   assert.deepEqual(studioLayoutSchema.parse(JSON.parse(JSON.stringify(input))), input);
+});
+
+test("production-image roles roundtrip with the saved print-area geometry", () => {
+  const surface = {
+    ...document.surfaces[0],
+    assetId: "11111111-1111-4111-8111-111111111111",
+    referenceAssetId: "22222222-2222-4222-8222-222222222222",
+    imageRole: "production_blank",
+    area,
+    printRegions: [{ id: "front-print", name: "Front print", shape: "rectangle", bounds: area, dimensions: { width: 12, height: 14, unit: "in" } }],
+  };
+  const layout = { version: 1 as const, surfaces: [surface] };
+  assert.deepEqual(studioLayoutSchema.parse(JSON.parse(JSON.stringify(layout))), layout);
+});
+
+test("reference photos remain separate from the verified canvas blank", () => {
+  const productionId = "11111111-1111-4111-8111-111111111111";
+  const referenceId = "22222222-2222-4222-8222-222222222222";
+  const surface = studioLayoutSchema.parse({
+    ...document,
+    surfaces: [{ ...document.surfaces[0], assetId: productionId, referenceAssetId: referenceId, imageRole: "production_blank" }],
+  }).surfaces[0];
+  assert.equal(productionSurfacePhoto(surface, {
+    [productionId]: "https://assets.example/clean-blank.png",
+    [referenceId]: "https://assets.example/lifestyle-reference.png",
+  }), "https://assets.example/clean-blank.png");
 });
 
 test("deleting all print areas is distinct from a legacy product's default area", async () => {

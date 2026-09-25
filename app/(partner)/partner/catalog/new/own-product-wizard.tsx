@@ -141,6 +141,7 @@ export function OwnProductWizard({ types }: { types: TypeOption[] }) {
         position: v.position,
         assetId: v.useCutout && v.cutoutAssetId ? v.cutoutAssetId : v.originalAssetId,
         originalAssetId: v.originalAssetId,
+        imageRole: v.useCutout && v.cutoutAssetId ? "production_blank" as const : "unverified" as const,
         area: v.area,
         printRegions: manual ? [] : undefined,
         printWidthIn: v.printWidthIn,

@@ -66,6 +66,7 @@ const blankInput = z.object({
         position: z.string().max(40),
         assetId: z.string().uuid(),
         originalAssetId: z.string().uuid(),
+        imageRole: z.enum(["production_blank", "unverified"]),
         area: areaSchema,
         printRegions: z.array(printRegionSchema).max(24).optional(),
         printWidthIn: z.number().min(0.5).max(120),

@@ -108,6 +108,7 @@ async function blankFromPhoto(session: SessionUser, name: string, photo: Buffer)
       // Prefer the cleaned-up cutout; fall back to her original photo.
       assetId: v.cutoutAssetId ?? v.originalAssetId,
       originalAssetId: v.originalAssetId,
+      imageRole: v.cutoutAssetId ? "production_blank" : "unverified",
       area: v.area,
       printWidthIn: v.printWidthIn,
       printHeightIn: v.printHeightIn,

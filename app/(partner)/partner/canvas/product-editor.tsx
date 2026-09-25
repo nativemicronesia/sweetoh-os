@@ -86,9 +86,10 @@ import {
   type StudioLayout,
   type StudioLayer,
   type StudioSurface,
+  productionSurfacePhoto,
 } from "@/lib/domains/catalog/studio-layout";
 import type { CatalogSource, VariantOptions } from "@/lib/domains/catalog/variants";
-import { analyzePhoto, printAreaInBox, tintGarment } from "@/lib/studio/tint";
+import { analyzePhoto, tintGarment } from "@/lib/studio/tint";
 import { sizedPhoto } from "@/lib/studio/photo";
 import { PRODUCT_FONTS, ensureFont, fontFamily } from "@/lib/studio/fonts";
 import { studioAsset, studioAssetUrl } from "@/lib/studio/asset-library";
@@ -197,7 +198,7 @@ type Selected =
 type Panel = "files" | "text" | "shapes" | "assets" | "ai" | "inspiration" | "layers" | null;
 type InspirationItem = { id: string; name: string; previewUrl: string };
 type Mockup = { color: string; hex: string; url: string };
-type PreviewData = { views: { name: string; url: string }[]; colors: Mockup[] };
+type PreviewData = { views: { name: string; url: string; hasProductionBlank: boolean }[]; colors: Mockup[] };
 
 /** Extend Fabric's PencilBrush input lifecycle and keep the completed drawing
  * represented as one selectable Fabric Group inside the existing drawing layer. */
@@ -328,7 +329,18 @@ export function ProductEditor({
     ...Object.fromEntries(designs.filter((d) => d.previewUrl).map((d) => [d.id, d.previewUrl!])),
   });
   const initial = useRef<StudioLayout>(
-    initialStudio ?? {
+    initialStudio ? {
+      ...initialStudio,
+      surfaces: initialStudio.surfaces.map(surface => {
+        const productSurface = blank?.printArea?.surfaces?.find(candidate => candidate.id === surface.id);
+        const sameProductionImage = productSurface?.assetId && productSurface.assetId === surface.assetId;
+        const sameReferenceImage = productSurface?.imageUrl && productSurface.imageUrl === surface.imageUrl;
+        return {
+          ...surface,
+          imageRole: surface.imageRole ?? (sameProductionImage || sameReferenceImage ? productSurface?.imageRole : undefined) ?? "unverified",
+        };
+      }),
+    } : {
       version: 1,
       surfaces: (
         blank?.printArea?.surfaces ?? [
@@ -684,7 +696,16 @@ export function ProductEditor({
   }
 
   function photoFor(s: Surface) {
-    return sizedPhoto((s.assetId ? urls.current[s.assetId] : null) ?? s.imageUrl ?? blank?.imageUrl ?? null);
+    const photo = productionSurfacePhoto(s, urls.current);
+    return photo ? sizedPhoto(photo) : null;
+  }
+  /** Reference photos remain available in the view picker without becoming canvas surfaces. */
+  function referencePhotoFor(s: Surface) {
+    return (s.imageRole === "production_blank" && s.assetId ? urls.current[s.assetId] : null)
+      ?? (s.referenceAssetId ? urls.current[s.referenceAssetId] : null)
+      ?? (s.imageRole !== "production_blank" && s.assetId ? urls.current[s.assetId] : null)
+      ?? s.imageUrl
+      ?? null;
   }
   /** The view photo cleaned and recolored to a garment color; null keeps the original. */
   function recolored(src: string, hex: string | null, area: Area) {
@@ -703,20 +724,21 @@ export function ProductEditor({
 
   async function paint(canvas: StaticCanvas, s: Surface, withGuide = false, hex: string | null = colorRef.current) {
     canvas.clear();
-    canvas.backgroundColor = "#f4f5f7";
+    canvas.backgroundColor = "#ffffff";
     const original = photoFor(s);
-    if (!original) throw new Error("This view’s photo is unavailable. Choose another photo.");
-    const source = (await recolored(original, hex, s.area)) ?? original;
-    const image = await FabricImage.fromURL(source, { crossOrigin: "anonymous" });
-    if (withGuide && canvas !== editor.current) return;
-    const ratio = Math.min(SIZE / image.width, SIZE / image.height);
-    image.set({
-      left: (SIZE - image.width * ratio) / 2,
-      top: (SIZE - image.height * ratio) / 2,
-      scaleX: ratio,
-      scaleY: ratio,
-    });
-    canvas.backgroundImage = image;
+    if (original) {
+      const source = (await recolored(original, hex, s.area)) ?? original;
+      const image = await FabricImage.fromURL(source, { crossOrigin: "anonymous" });
+      if (withGuide && canvas !== editor.current) return;
+      const ratio = Math.min(SIZE / image.width, SIZE / image.height);
+      image.set({
+        left: (SIZE - image.width * ratio) / 2,
+        top: (SIZE - image.height * ratio) / 2,
+        scaleX: ratio,
+        scaleY: ratio,
+      });
+      canvas.backgroundImage = image;
+    }
     for (const layer of s.layers) {
       const object = await makeLayer(layer);
       object.set({ visible: !layer.hidden, selectable: !layer.locked, evented: !layer.locked });
@@ -728,14 +750,14 @@ export function ProductEditor({
       }
       canvas.add(object);
     }
-    if (withGuide) {
+    if (withGuide || !original) {
       const a = s.area;
       const rect = new Rect({
         left: a.x * SIZE,
         top: a.y * SIZE,
         width: a.width * SIZE,
         height: a.height * SIZE,
-        fill: "rgba(31,112,72,0.04)",
+        fill: original ? "rgba(31,112,72,0.04)" : "rgba(31,112,72,0.08)",
         stroke: INK,
         strokeWidth: 1.2,
         strokeDashArray: [6, 5],
@@ -827,6 +849,10 @@ export function ProductEditor({
   const renderMockups = useCallback(async () => {
     const s = doc.current.surfaces.find((x) => x.id === currentId.current);
     if (!s) return;
+    if (!photoFor(s)) {
+      setMockups([]);
+      return;
+    }
     const list = colors.length ? colors.slice(0, 12) : [{ name: "", hex: "#ffffff" }];
     const out: Mockup[] = [];
     for (const c of list) {
@@ -1836,7 +1862,9 @@ export function ProductEditor({
         id: s.id,
         name: s.name,
         assetId: s.assetId,
+        referenceAssetId: s.referenceAssetId ?? null,
         imageUrl: s.imageUrl ?? null,
+        imageRole: s.imageRole,
         position: s.position,
         area: s.area,
         printRegions: s.printRegions,
@@ -1844,35 +1872,12 @@ export function ProductEditor({
     );
     if (result.error) throw new Error(result.error);
   }
-  /** A print area on a photo, placed on the garment when it can be found. */
-  async function areaForPhoto(src: string, position: string): Promise<Area> {
-    const sp = specs.find((a) => a.position === position);
-    const ratio = sp ? sp.height / sp.width : 1.2;
-    if (position.includes("sleeve") || position === "neck") {
-      const w = 0.12;
-      return { x: 0.44, y: 0.3, width: w, height: Math.min(0.3, w * ratio) };
-    }
-    try {
-      const info = await analyzePhoto(src);
-      if (info.box) {
-        const img = await FabricImage.fromURL(sizedPhoto(src), { crossOrigin: "anonymous" });
-        const r = Math.min(SIZE / img.width, SIZE / img.height);
-        const [ox, oy, dw, dh] = [(SIZE - img.width * r) / 2, (SIZE - img.height * r) / 2, img.width * r, img.height * r];
-        const a = printAreaInBox(info.box, (ratio * dw) / dh);
-        return { x: (ox + a.x * dw) / SIZE, y: (oy + a.y * dh) / SIZE, width: (a.width * dw) / SIZE, height: (a.height * dh) / SIZE };
-      }
-    } catch {
-      // fall through
-    }
-    return { ...defaultArea };
-  }
   async function chooseViewPhoto(photo: { imageUrl?: string; file?: File }) {
     if (!viewPicker) return;
     setBusy("Setting up view…");
     setError("");
     try {
       let assetId: string | null = null;
-      let src = photo.imageUrl ?? null;
       if (photo.file) {
         const data = new FormData();
         data.set("photo", photo.file);
@@ -1880,22 +1885,30 @@ export function ProductEditor({
         if (result.error || !result.assetId || !result.previewUrl) throw new Error(result.error || "Upload failed.");
         assetId = result.assetId;
         urls.current[assetId] = result.previewUrl;
-        src = result.previewUrl;
       }
-      const area = await areaForPhoto(src!, viewPicker.position);
+      const area = viewPicker.mode === "replace" ? surface().area : { ...defaultArea };
       checkpoint();
       if (viewPicker.mode === "replace") {
         const s = surface();
-        s.assetId = assetId;
-        s.imageUrl = assetId ? null : photo.imageUrl;
-        if (s.printRegions === undefined) s.area = area;
+        if (s.imageRole === "production_blank") {
+          s.referenceAssetId = assetId;
+          s.imageUrl = assetId ? null : photo.imageUrl;
+        } else {
+          s.assetId = assetId;
+          s.referenceAssetId = null;
+          s.imageUrl = assetId ? null : photo.imageUrl;
+          s.imageRole = assetId ? "unverified" : "catalog_reference";
+        }
+        // A photo reference cannot redefine the saved print geometry.
       } else {
         doc.current.surfaces.push({
           id: `${viewPicker.position}-${crypto.randomUUID().slice(0, 6)}`,
           name: POSITION_LABEL[viewPicker.position] ?? viewPicker.position,
           position: viewPicker.position,
           assetId,
+          referenceAssetId: null,
           imageUrl: assetId ? null : photo.imageUrl,
+          imageRole: assetId ? "unverified" : "catalog_reference",
           area,
           layers: [],
         });
@@ -1931,7 +1944,7 @@ export function ProductEditor({
       const canvas = new StaticCanvas(document.createElement("canvas"), { width: SIZE, height: SIZE });
       try {
         await paint(canvas, s);
-        views.push({ name: s.name, url: canvas.toDataURL({ format: "png", multiplier: 1 }) });
+        views.push({ name: s.name, url: canvas.toDataURL({ format: "png", multiplier: 1 }), hasProductionBlank: Boolean(photoFor(s)) });
       } finally {
         await canvas.dispose();
       }
@@ -2033,6 +2046,7 @@ export function ProductEditor({
     },
     mockups: async () => {
       const data = await buildPreview();
+      if (!data.views[0]?.hasProductionBlank) throw new Error("A verified clean production blank is needed before creating a product mockup.");
       const toBlob = async (url: string) => (await fetch(url)).blob();
       return {
         front: await toBlob(data.views[0].url),
@@ -2086,6 +2100,11 @@ export function ProductEditor({
   const visibleLibrary = library.filter((d) => d.name.toLowerCase().includes(search.trim().toLowerCase()));
   const previewImage =
     preview && (previewPick.kind === "view" ? preview.views[previewPick.index]?.url : preview.colors[previewPick.index]?.url);
+  const previewHasProductionBlank = preview
+    ? previewPick.kind === "view"
+      ? Boolean(preview.views[previewPick.index]?.hasProductionBlank)
+      : Boolean(preview.colors[previewPick.index])
+    : false;
 
   return (
     <div className="pe">
@@ -2110,11 +2129,11 @@ export function ProductEditor({
             <Eye size={16} /> Preview
           </button>
           {mode === "creator" ? (
-            <button className="pe-btn pe-btn-primary" onClick={() => { capture(); setPublishOpen(true); }} disabled={!hasDesign || locked || !PublishPanel}>
+            <button className="pe-btn pe-btn-primary" onClick={() => { capture(); setPublishOpen(true); }} disabled={!hasDesign || locked || !PublishPanel || !photoFor(doc.current.surfaces[0])} title={!photoFor(doc.current.surfaces[0]) ? "Prepare a verified clean blank before publishing." : undefined}>
               Sell it →
             </button>
           ) : (
-            <button className="pe-btn pe-btn-primary" onClick={() => void save(true)} disabled={!hasDesign || locked}>
+            <button className="pe-btn pe-btn-primary" onClick={() => void save(true)} disabled={!hasDesign || locked || !photoFor(doc.current.surfaces[0])} title={!photoFor(doc.current.surfaces[0]) ? "Prepare a verified clean blank before continuing to pricing." : undefined}>
               Continue to pricing
             </button>
           )}
@@ -2394,12 +2413,15 @@ export function ProductEditor({
         )}
 
         <main className="pe-stage-wrap">
-          <div className="pe-surface-bar"><span><strong>{current.name}</strong><small>{setupSaved ? "Product setup saved" : "Design workspace"}</small></span>
+          <div className="pe-surface-bar"><span><strong>{current.name}</strong><small>{photoFor(current) ? setupSaved ? "Product setup saved" : "Verified production blank" : "Print-area surface only · no clean blank photo"}</small></span>
             {currentRegions.length > 0 ? <label>Print area <select aria-label="Active print area" value={activeRegionId ?? currentRegions[0]?.id} onChange={e => {
               const r = currentRegions.find(r => r.id === e.target.value)!;
               capture(); editor.current?.discardActiveObject(); surface().area = r.bounds; setActiveRegionId(r.id); setSurfaces([...doc.current.surfaces]); readSelection();
             }}>{currentRegions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}</select></label> : <button className="pe-btn pe-btn-primary" onClick={() => setSetupOpen(true)}>Add a print area</button>}
           </div>
+          {!photoFor(current) && <div className="pe-production-boundary" role="status" style={{ margin: "8px 12px 0", padding: "10px 12px", border: "1px solid #e8c887", borderRadius: 8, background: "#fff9e9", color: "#72551d", fontSize: 12 }}>
+            <strong>No verified clean blank for this view.</strong> Artwork is placed on the saved print-area surface only. Supplier photos and generated mockups stay references and are not used as the production canvas.
+          </div>}
           <div className="pe-stage" ref={stage} data-pan={panMode} onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = "copy"; }} onDrop={e => { e.preventDefault(); if (!busy) void upload(e.dataTransfer.files[0]); }}
             onPointerDown={(e) => {
               gesture.current.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -2463,7 +2485,7 @@ export function ProductEditor({
                   void loadSurface(s.id);
                 }}
               >
-                {viewThumbs[s.id] || photoFor(s) ? <img src={viewThumbs[s.id] ?? photoFor(s)!} alt="" /> : <ImageIcon size={18} />}
+                {viewThumbs[s.id] || referencePhotoFor(s) ? <img src={viewThumbs[s.id] ?? referencePhotoFor(s)!} alt="" /> : <ImageIcon size={18} />}
                 <span>
                   {s.name}
                   {s.layers.length ? <i aria-label="Has design" /> : null}
@@ -2819,14 +2841,15 @@ export function ProductEditor({
         <div className="pe-modal" role="dialog" aria-modal="true" aria-label="Preview">
           <div className="pe-modal-card pe-preview">
             <div className="pe-modal-head">
-              <h2>Preview</h2>
+              <h2>{previewHasProductionBlank ? "Product preview" : "Print-area preview"}</h2>
               <button className="pe-icon-btn" onClick={() => setPreview(null)} aria-label="Close preview">
                 <X size={18} />
               </button>
             </div>
             <div className="pe-preview-body">
-              <div className="pe-preview-main">{previewImage && <img src={previewImage} alt="Mockup" />}</div>
+              <div className="pe-preview-main">{previewImage && <img src={previewImage} alt={previewHasProductionBlank ? "Product mockup" : "Artwork on the saved print-area surface"} />}</div>
               <div className="pe-preview-side">
+                {!previewHasProductionBlank && <p className="pe-production-boundary" role="status"><strong>No verified clean production blank for this view.</strong> This is artwork over the saved print-area geometry, not a product mockup. Supplier photos and generated previews remain references.</p>}
                 <p className="pe-label">Views</p>
                 <div className="pe-preview-thumbs">
                   {preview.views.map((v, i) => (
@@ -2866,7 +2889,7 @@ export function ProductEditor({
                     Sell it →
                   </button>
                 ) : (
-                  <button className="pe-btn pe-btn-primary pe-block pe-mt" disabled={Boolean(busy)} onClick={() => void save(true)}>
+                  <button className="pe-btn pe-btn-primary pe-block pe-mt" disabled={Boolean(busy) || !preview.views[0]?.hasProductionBlank} title={!preview.views[0]?.hasProductionBlank ? "Prepare a verified clean blank before continuing to pricing." : undefined} onClick={() => void save(true)}>
                     Continue to pricing
                   </button>
                 )}
@@ -2957,7 +2980,7 @@ export function ProductEditor({
                 ))}
               </div>
             )}
-            <p className="pe-muted">Pick a photo that shows this side flat and straight on.</p>
+            <p className="pe-muted">Catalog photos stay references; uploads remain unverified. Prepare a blank with the existing background-removed product setup flow to use a photo on this canvas.</p>
             {catalogPhotos.length > 0 && !Object.keys(photoScores).length && (
               <p className="pe-muted pe-small">
                 <Loader2 size={13} className="pe-spin" /> Finding the best photos…
