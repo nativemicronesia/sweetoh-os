@@ -20,3 +20,8 @@ export const STUDIO_FONT_PROVENANCE = {
   space: ofl("spacegrotesk"),
   fraunces: ofl("fraunces"),
 } as const;
+
+/** Stable names/rights for catalog search without loading fonts into the canvas. */
+export const STUDIO_FONT_LABELS: Record<keyof typeof STUDIO_FONT_PROVENANCE, string> = {
+  inter: "Inter", montserrat: "Montserrat", anton: "Anton", bebas: "Bebas Neue", oswald: "Oswald", playfair: "Playfair Display", pacifico: "Pacifico", marker: "Permanent Marker", caveat: "Caveat", lobster: "Lobster", barlow: "Barlow Condensed", space: "Space Grotesk", fraunces: "Fraunces",
+};

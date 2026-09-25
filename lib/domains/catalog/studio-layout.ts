@@ -61,7 +61,9 @@ const placement = {
   flipY: z.boolean().optional(),
 };
 const hexColor = z.string().regex(/^#[0-9a-f]{6}$/i);
-export const SHAPE_KINDS = ["rect", "rounded", "circle", "triangle", "star", "heart", "line"] as const;
+const linearGradient = z.object({ from: hexColor, to: hexColor, direction: z.enum(["horizontal", "vertical", "diagonal"]).default("diagonal") });
+const imageAdjustments = z.object({ brightness: z.number().min(-1).max(1), contrast: z.number().min(-1).max(1), saturation: z.number().min(-1).max(1), blur: z.number().min(0).max(0.2) }).partial();
+export const SHAPE_KINDS = ["rect", "rounded", "circle", "oval", "triangle", "star", "burst", "heart", "hexagon", "arrow", "line"] as const;
 export const layerSchema = z.discriminatedUnion("kind", [
   z.object({
     ...placement,
@@ -73,6 +75,7 @@ export const layerSchema = z.discriminatedUnion("kind", [
     ...placement,
     kind: z.literal("image"),
     assetId: z.string().uuid(),
+    adjustments: imageAdjustments.optional(),
     /** Crop window in the source image's pixels. */
     crop: z
       .object({ x: z.number().min(0), y: z.number().min(0), width: z.number().positive(), height: z.number().positive() })
@@ -83,6 +86,9 @@ export const layerSchema = z.discriminatedUnion("kind", [
     kind: z.literal("shape"),
     shape: z.enum(SHAPE_KINDS),
     fill: hexColor,
+    stroke: hexColor.optional(),
+    strokeWidth: z.number().min(0).max(100).optional(),
+    gradient: linearGradient.optional(),
     width: z.number().positive().max(2000),
     height: z.number().positive().max(2000),
   }),
@@ -107,6 +113,9 @@ export const layerSchema = z.discriminatedUnion("kind", [
     /** Key into the editor's font list; missing means the default font. */
     font: z.string().max(40).optional(),
     bold: z.boolean().optional(),
+    letterSpacing: z.number().min(-100).max(500).optional(),
+    outline: hexColor.optional(),
+    outlineWidth: z.number().min(0).max(24).optional(),
   }),
 ]);
 export const studioLayoutSchema = z

@@ -10,6 +10,8 @@ import {
   IText,
   Rect,
   Path,
+  filters,
+  Gradient,
 } from "fabric";
 import { initAligningGuidelines } from "fabric/extensions";
 import {
@@ -154,6 +156,13 @@ type Selected =
       assetId?: string;
       printRegionId?: string;
       fill?: string;
+      stroke?: string;
+      strokeWidth?: number;
+      gradient?: { from: string; to: string; direction: "horizontal" | "vertical" | "diagonal" };
+      adjustments?: { brightness?: number; contrast?: number; saturation?: number; blur?: number };
+      letterSpacing?: number;
+      outline?: string;
+      outlineWidth?: number;
       tile?: number;
       gap?: number;
       brick?: boolean;
@@ -347,9 +356,12 @@ export function ProductEditor({
                 color: String(o.fill),
                 fontSize: o.fontSize,
                 bold: o.fontWeight === "bold" || o.fontWeight === 700,
+                letterSpacing: o.charSpacing,
+                outline: typeof o.stroke === "string" ? o.stroke : undefined,
+                outlineWidth: o.strokeWidth || undefined,
               }
             : {}),
-          ...(base.kind === "shape" && typeof o.fill === "string" ? { fill: o.fill } : {}),
+          ...(base.kind === "shape" ? { ...(typeof o.fill === "string" ? { fill: o.fill } : {}), stroke: typeof o.stroke === "string" ? o.stroke : undefined, strokeWidth: o.strokeWidth || undefined } : {}),
         } as StudioLayer;
       });
     setLayers([...s.layers]);
@@ -424,6 +436,10 @@ export function ProductEditor({
       assetId,
       printRegionId: base.printRegionId,
       fill: base.kind === "shape" && typeof o.fill === "string" ? o.fill : undefined,
+      stroke: base.kind === "shape" && typeof o.stroke === "string" ? o.stroke : undefined,
+      strokeWidth: base.kind === "shape" ? o.strokeWidth : undefined,
+      gradient: base.kind === "shape" ? base.gradient : undefined,
+      adjustments: base.kind === "image" ? base.adjustments : undefined,
       tile: base.kind === "pattern" ? base.tile : undefined,
       gap: base.kind === "pattern" ? base.gap : undefined,
       brick: base.kind === "pattern" ? base.brick : undefined,
@@ -441,6 +457,9 @@ export function ProductEditor({
             fontSize: (o as IText).fontSize,
             color: String((o as IText).fill),
             bold: (o as IText).fontWeight === "bold" || (o as IText).fontWeight === 700,
+            letterSpacing: (o as IText).charSpacing,
+            outline: typeof (o as IText).stroke === "string" ? String((o as IText).stroke) : undefined,
+            outlineWidth: (o as IText).strokeWidth,
           }
         : {}),
     });
@@ -451,12 +470,25 @@ export function ProductEditor({
     if (layer.kind === "image") {
       obj = await FabricImage.fromURL(urls.current[layer.assetId], { crossOrigin: "anonymous" });
       if (layer.crop) obj.set({ cropX: layer.crop.x, cropY: layer.crop.y, width: layer.crop.width, height: layer.crop.height });
+      const a = layer.adjustments ?? {};
+      const image = obj as FabricImage;
+      image.filters = [
+        ...(a.brightness ? [new filters.Brightness({ brightness: a.brightness })] : []),
+        ...(a.contrast ? [new filters.Contrast({ contrast: a.contrast })] : []),
+        ...(a.saturation ? [new filters.Saturation({ saturation: a.saturation })] : []),
+        ...(a.blur ? [new filters.Blur({ blur: a.blur })] : []),
+      ];
+      if (image.filters.length) image.applyFilters();
     } else if (layer.kind === "graphic") {
       const asset = studioAsset(layer.assetKey);
       if (!asset) throw new Error(`Studio graphic is unavailable: ${layer.assetKey}`);
       obj = await FabricImage.fromURL(studioAssetUrl(asset));
     } else if (layer.kind === "shape") {
-      obj = makeShape(layer.shape, layer.width, layer.height, layer.fill);
+      obj = makeShape(layer.shape, layer.width, layer.height, layer.fill, layer.stroke, layer.strokeWidth);
+      if (layer.gradient) {
+        const end = layer.gradient.direction === "horizontal" ? { x: layer.width, y: 0 } : layer.gradient.direction === "vertical" ? { x: 0, y: layer.height } : { x: layer.width, y: layer.height };
+        obj.set({ fill: new Gradient({ type: "linear", gradientUnits: "pixels", coords: { x1: 0, y1: 0, x2: end.x, y2: end.y }, colorStops: [{ offset: 0, color: layer.gradient.from }, { offset: 1, color: layer.gradient.to }] }) });
+      }
     } else if (layer.kind === "pattern") {
       obj = await makePatternRect(urls.current[layer.assetId], layer);
       obj.set({ lockMovementX: true, lockMovementY: true, lockScalingX: true, lockScalingY: true, lockRotation: true, hasControls: false });
@@ -468,6 +500,9 @@ export function ProductEditor({
         fill: layer.color,
         fontFamily: fontFamily(layer.font),
         fontWeight: bold ? "bold" : "normal",
+        charSpacing: layer.letterSpacing ?? 0,
+        stroke: layer.outline ?? null,
+        strokeWidth: layer.outlineWidth ?? 0,
       });
     }
     obj.set({
@@ -1064,13 +1099,79 @@ export function ProductEditor({
       case "undo": return undo();
       case "redo": return redo();
       case "align": return alignSelected(action.edge);
+      case "move": return changeSelected((o) => o.set({ left: o.left + action.dx, top: o.top + action.dy }));
+      case "resize": return changeSelected((o) => o.set({ scaleX: action.width / o.width, scaleY: action.keepRatio ? action.width / o.width : action.height / o.height }));
+      case "rotate": return changeSelected((o) => o.rotate(action.degrees));
+      case "flip": return flip(action.axis);
+      case "crop_image": return applyCrop(action);
+      case "make_pattern": return makePattern(action.assetId);
+      case "set_layer_flags": return setLayerFlags(action.layerId, { hidden: action.hidden, locked: action.locked });
+      case "set_layer_order": return setLayerOrder(action.layerId, action.direction);
+      case "set_opacity": return changeSelected((o) => o.set({ opacity: action.opacity }));
+      case "set_shape_style": return changeSelected((o) => {
+        const layer = meta.current.get(o);
+        if (layer?.kind !== "shape") return;
+        if (action.fill) meta.current.set(o, { ...layer, fill: action.fill, gradient: undefined });
+        o.set({ ...(action.fill ? { fill: action.fill } : {}), ...(action.stroke !== undefined ? { stroke: action.stroke ?? undefined } : {}), ...(action.strokeWidth !== undefined ? { strokeWidth: action.strokeWidth } : {}) });
+      });
+      case "set_shape_gradient": return setShapeGradient(action.from, action.to, action.direction);
+      case "set_text_style": {
+        if (action.font) await ensureFont(action.font, action.bold ?? selected?.bold ?? false);
+        return changeSelected((o) => {
+          if (!(o instanceof IText)) return;
+          const base = meta.current.get(o);
+          o.set({ ...(action.text !== undefined ? { text: action.text } : {}), ...(action.font ? { fontFamily: fontFamily(action.font) } : {}), ...(action.fontSize !== undefined ? { fontSize: action.fontSize } : {}), ...(action.color ? { fill: action.color } : {}), ...(action.letterSpacing !== undefined ? { charSpacing: action.letterSpacing } : {}), ...(action.bold !== undefined ? { fontWeight: action.bold ? "bold" : "normal" } : {}), ...(action.outline !== undefined ? { stroke: action.outline ?? undefined } : {}), ...(action.outlineWidth !== undefined ? { strokeWidth: action.outlineWidth } : {}) });
+          if (base?.kind === "text" && action.font) meta.current.set(o, { ...base, font: action.font });
+        });
+      }
+      case "set_image_adjustment": return setImageAdjustment(action.field, action.value);
+      case "prepare_artwork": {
+        const region = regionsFor(surface()).find((item) => item.id === action.regionId);
+        if (!region) throw new Error("Unknown print area for this view.");
+        surface().area = region.bounds; setActiveRegionId(region.id);
+        return changeSelected((o) => {
+          const layer = meta.current.get(o);
+          if (layer) meta.current.set(o, { ...layer, printRegionId: region.id });
+          const width = region.bounds.width * SIZE, height = region.bounds.height * SIZE;
+          const scale = Math.min(width / o.width, height / o.height);
+          o.set({ scaleX: scale, scaleY: scale, left: region.bounds.x * SIZE + (width - o.width * scale) / 2, top: region.bounds.y * SIZE + (height - o.height * scale) / 2 });
+        });
+      }
     }
   }
   function setFill(hex: string, record = true) {
-    changeSelected((o) => o.set({ fill: hex }), record);
+    changeSelected((o) => {
+      o.set({ fill: hex });
+      const base = meta.current.get(o);
+      if (base?.kind === "shape") meta.current.set(o, { ...base, fill: hex, gradient: undefined });
+    }, record);
+  }
+  function setShapeGradient(from: string, to: string, direction: "horizontal" | "vertical" | "diagonal" = "diagonal") {
+    changeSelected((o) => {
+      const base = meta.current.get(o);
+      if (base?.kind !== "shape") return;
+      const end = direction === "horizontal" ? { x: base.width, y: 0 } : direction === "vertical" ? { x: 0, y: base.height } : { x: base.width, y: base.height };
+      o.set({ fill: new Gradient({ type: "linear", gradientUnits: "pixels", coords: { x1: 0, y1: 0, x2: end.x, y2: end.y }, colorStops: [{ offset: 0, color: from }, { offset: 1, color: to }] }) });
+      meta.current.set(o, { ...base, gradient: { from, to, direction } });
+    });
   }
   function setOpacity(v: number) {
     changeSelected((o) => o.set({ opacity: v }), false);
+  }
+  function setImageAdjustment(field: "brightness" | "contrast" | "saturation" | "blur", value: number, record = true) {
+    const o = editor.current?.getActiveObject();
+    const base = o && meta.current.get(o);
+    if (!(o instanceof FabricImage) || base?.kind !== "image") return;
+    if (record) checkpoint();
+    const adjustments = { ...(base.adjustments ?? {}), [field]: value };
+    meta.current.set(o, { ...base, adjustments });
+    o.filters = [
+      ...(adjustments.brightness ? [new filters.Brightness({ brightness: adjustments.brightness })] : []),
+      ...(adjustments.contrast ? [new filters.Contrast({ contrast: adjustments.contrast })] : []),
+      ...(adjustments.saturation ? [new filters.Saturation({ saturation: adjustments.saturation })] : []),
+      ...(adjustments.blur ? [new filters.Blur({ blur: adjustments.blur })] : []),
+    ];
+    o.applyFilters(); capture(); readSelection(); editor.current?.requestRenderAll();
   }
   function flip(axis: "x" | "y") {
     changeSelected((o) => o.set(axis === "x" ? { flipX: !o.flipX } : { flipY: !o.flipY }));
@@ -1082,6 +1183,13 @@ export function ProductEditor({
     setCropping({ src: urls.current[base.assetId], initial: base.crop });
   }
   function applyCrop(px: CropPixels | null) {
+    const image = editor.current?.getActiveObject();
+    if (!(image instanceof FabricImage)) return;
+    const source = image.getElement() as HTMLImageElement;
+    if (px && (px.x + px.width > source.naturalWidth || px.y + px.height > source.naturalHeight)) {
+      setError("That crop extends beyond the source image.");
+      return;
+    }
     changeSelected((o) => {
       const img = o as FabricImage;
       const base = meta.current.get(o);
@@ -1291,6 +1399,28 @@ export function ProductEditor({
     meta.current.set(object, next);
     object.set({ visible: !next.hidden, selectable: !next.locked, evented: !next.locked });
     editor.current!.discardActiveObject(); editor.current!.requestRenderAll(); capture(); readSelection();
+  }
+  function setLayerFlags(id: string, patch: { hidden?: boolean; locked?: boolean }) {
+    const object = editor.current?.getObjects().find((candidate) => meta.current.get(candidate)?.id === id);
+    const layer = object && meta.current.get(object);
+    if (!object || !layer || (patch.hidden === undefined && patch.locked === undefined)) return;
+    checkpoint();
+    const next = { ...layer, ...(patch.hidden !== undefined ? { hidden: patch.hidden } : {}), ...(patch.locked !== undefined ? { locked: patch.locked } : {}) };
+    meta.current.set(object, next);
+    object.set({ visible: !next.hidden, selectable: !next.locked, evented: !next.locked });
+    if (next.hidden || next.locked) editor.current!.discardActiveObject();
+    capture(); readSelection(); editor.current!.requestRenderAll();
+  }
+  function setLayerOrder(id: string, direction: "forward" | "backward" | "front" | "back") {
+    const canvas = editor.current;
+    const object = canvas?.getObjects().find((candidate) => meta.current.get(candidate)?.id === id);
+    if (!canvas || !object || meta.current.get(object)?.locked) return;
+    checkpoint();
+    if (direction === "forward") canvas.bringObjectForward(object);
+    else if (direction === "backward") canvas.sendObjectBackwards(object);
+    else if (direction === "front") canvas.bringObjectToFront(object);
+    else canvas.sendObjectToBack(object);
+    bringGuideToTop(); capture(); readSelection(); canvas.requestRenderAll();
   }
   function pickColor(c: { name: string; hex: string }) {
     if (colorName === c.name || locked) return;
@@ -1689,9 +1819,13 @@ export function ProductEditor({
                         {sh.kind === "rect" && <rect x="12" y="12" width="76" height="76" />}
                         {sh.kind === "rounded" && <rect x="12" y="12" width="76" height="76" rx="16" />}
                         {sh.kind === "circle" && <circle cx="50" cy="50" r="38" />}
+                        {sh.kind === "oval" && <ellipse cx="50" cy="50" rx="42" ry="28" />}
                         {sh.kind === "triangle" && <polygon points="50,12 90,86 10,86" />}
                         {sh.kind === "star" && <polygon points="50,8 61,38 94,38 67,58 77,90 50,70 23,90 33,58 6,38 39,38" />}
+                        {sh.kind === "burst" && <path d="M50 4 57 27 76 12 72 36 96 32 81 50 99 62 75 66 83 90 61 77 50 99 39 77 17 90 25 66 1 62 19 50 4 32 28 36 24 12 43 27Z" />}
                         {sh.kind === "heart" && <path d="M50 88C20 66 6 50 6 32 6 18 16 10 28 10c9 0 17 5 22 13 5-8 13-13 22-13 12 0 22 8 22 22 0 18-14 34-44 56z" />}
+                        {sh.kind === "hexagon" && <polygon points="25,12 75,12 94,50 75,88 25,88 6,50" />}
+                        {sh.kind === "arrow" && <polygon points="5,35 62,35 62,15 95,50 62,85 62,65 5,65" />}
                         {sh.kind === "line" && <rect x="8" y="46" width="84" height="8" rx="4" />}
                       </svg>
                       <span>{sh.label}</span>
@@ -1992,6 +2126,8 @@ export function ProductEditor({
                     </button>
                   </div>
                   <label className="pe-num"><span>Pt</span><input type="number" min={12} max={120} step={1} aria-label="Font size" value={selected.fontSize ?? 48} onChange={(e) => { const value = Number(e.target.value); if (value >= 12 && value <= 120) changeSelected((o) => (o as IText).set({ fontSize: value })); }} /></label>
+                  <label className="pe-slider"><span>Letter spacing <b>{selected.letterSpacing ?? 0}</b></span><input type="range" min={-100} max={500} step={10} value={selected.letterSpacing ?? 0} onPointerDown={() => checkpoint()} onChange={(e) => changeSelected((o) => (o as IText).set({ charSpacing: Number(e.target.value) }), false)} /></label>
+                  <div className="pe-row"><label className="pe-color-input" title="Text outline"><input type="color" value={selected.outline ?? "#ffffff"} onChange={(e) => changeSelected((o) => (o as IText).set({ stroke: e.target.value }), false)} /></label><label className="pe-num"><span>Outline</span><input type="number" min={0} max={24} step={1} value={selected.outlineWidth ?? 0} onChange={(e) => changeSelected((o) => (o as IText).set({ stroke: e.target.value ? selected.outline ?? "#ffffff" : null, strokeWidth: Number(e.target.value) }))} /></label></div>
                   <div className="pe-swatches">
                     {TEXT_COLORS.map((c) => (
                       <button key={c} aria-label={c} aria-pressed={selected.color?.toLowerCase() === c} style={{ background: c }} onClick={() => changeSelected((o) => (o as IText).set({ fill: c }))} />
@@ -2016,6 +2152,13 @@ export function ProductEditor({
                       <Grid3x3 size={16} /> Make a pattern
                     </button>
                   </div>
+                  <p className="pe-label">Image adjustments</p>
+                  {([ ["brightness", "Brightness", -1, 1], ["contrast", "Contrast", -1, 1], ["saturation", "Saturation", -1, 1], ["blur", "Soft focus", 0, 0.2] ] as const).map(([field, label, min, max]) => (
+                    <label className="pe-slider" key={field}>
+                      <span>{label}<b>{Math.round((selected.adjustments?.[field] ?? 0) * (field === "blur" ? 500 : 100))}{field === "blur" ? "%" : ""}</b></span>
+                      <input type="range" min={min} max={max} step={field === "blur" ? 0.005 : 0.02} value={selected.adjustments?.[field] ?? 0} onPointerDown={() => checkpoint()} onChange={(e) => setImageAdjustment(field, Number(e.target.value), false)} />
+                    </label>
+                  ))}
                   <p className="pe-label">Edit with AI</p>
                   <div className="pe-row">
                     <input
@@ -2043,6 +2186,17 @@ export function ProductEditor({
                     <label className="pe-color-input" title="Custom color">
                       <input type="color" value={selected.fill ?? "#1f7048"} onChange={(e) => setFill(e.target.value, false)} />
                     </label>
+                  </div>
+                  <p className="pe-label">Gradient fills</p>
+                  <div className="pe-gradient-presets">
+                    <button aria-label="Coral to gold gradient" style={{ background: "linear-gradient(135deg,#ef476f,#ffd166)" }} onClick={() => setShapeGradient("#ef476f", "#ffd166")} />
+                    <button aria-label="Ocean gradient" style={{ background: "linear-gradient(135deg,#06a6a6,#26547c)" }} onClick={() => setShapeGradient("#06a6a6", "#26547c")} />
+                    <button aria-label="Garden gradient" style={{ background: "linear-gradient(135deg,#94c973,#1f7048)" }} onClick={() => setShapeGradient("#94c973", "#1f7048")} />
+                  </div>
+                  <p className="pe-label">Outline</p>
+                  <div className="pe-row">
+                    <label className="pe-color-input" title="Outline color"><input type="color" value={selected.stroke ?? "#ffffff"} onChange={(e) => changeSelected((o) => o.set({ stroke: e.target.value }), false)} /></label>
+                    <label className="pe-num"><span>Width</span><input type="number" min={0} max={100} step={1} value={selected.strokeWidth ?? 0} onChange={(e) => changeSelected((o) => o.set({ stroke: e.target.value ? selected.stroke ?? "#ffffff" : undefined, strokeWidth: Number(e.target.value) }))} /></label>
                   </div>
                 </section>
               )}

@@ -7,8 +7,8 @@ import { STUDIO_ASSETS, studioAssetUrl } from "@/lib/studio/asset-library";
 
 const FAVORITES_KEY = "sweetoh:studio:favorites:v1";
 const RECENTS_KEY = "sweetoh:studio:recent:v1";
-type Filter = "All" | "Nature" | "Accents" | "Frames" | "Patterns" | "Fonts" | "Favorites" | "Recent";
-const FILTERS: Filter[] = ["All", "Nature", "Accents", "Frames", "Patterns", "Fonts", "Favorites", "Recent"];
+type Filter = "All" | "Nature" | "Accents" | "Frames" | "Patterns" | "Textures" | "Backgrounds" | "Fonts" | "Favorites" | "Recent";
+const FILTERS: Filter[] = ["All", "Nature", "Accents", "Frames", "Patterns", "Textures", "Backgrounds", "Fonts", "Favorites", "Recent"];
 
 function readIds(key: string): string[] {
   try {
