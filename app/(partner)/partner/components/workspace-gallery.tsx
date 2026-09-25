@@ -12,22 +12,27 @@ type Card = {
   name: string;
   priceCents: number;
   image: string | null;
-  kind: string;
   ownership: "yours" | "shop";
+  state: "private" | "ready" | "live" | "review" | "blank" | "archived" | "shop";
+  stateLabel: string;
   href: string;
-  action: string | null;
+  actionLabel: string;
+  builderHref: string | null;
 };
 const filters = [
   ["all", "All products"],
-  ["draft", "Drafts"],
-  ["live", "Published"],
+  ["private", "Private drafts"],
+  ["ready", "Ready to publish"],
+  ["live", "Live in shop"],
+  ["review", "Review status"],
   ["blank", "Saved blanks"],
+  ["shop", "Other shop listings"],
 ];
-export function WorkspaceGallery({ cards }: { cards: Card[] }) {
-  const [filter, setFilter] = useState("all");
+export function WorkspaceGallery({ cards, initialFilter }: { cards: Card[]; initialFilter?: string }) {
+  const [filter, setFilter] = useState(filters.some(([value]) => value === initialFilter) ? initialFilter! : "all");
   const [search, setSearch] = useState("");
   const matches = (c: Card, value: string) =>
-    value === "all" ? c.kind !== "blank" : c.kind === value;
+    value === "all" ? c.state !== "archived" : c.state === value;
   const visible = cards.filter(
     (c) =>
       matches(c, filter) &&
@@ -87,13 +92,11 @@ export function WorkspaceGallery({ cards }: { cards: Card[] }) {
                             <span>
                               {c.name}
                               <small>
-                                {c.kind === "blank"
-                                  ? "Reusable product blank"
-                                  : c.kind === "live"
-                                    ? c.ownership === "yours"
-                                      ? "Your live listing · visible in the shop"
-                                      : "Shop listing · managed by the shop"
-                                    : "Private draft · only you can see it"}
+                                {c.state === "live" && c.ownership === "yours"
+                                  ? "Your live listing · visible in the shop"
+                                  : c.state === "private"
+                                    ? "Private draft · only you can see it"
+                                    : c.stateLabel}
                               </small>
                             </span>
                           </Link>
@@ -101,33 +104,23 @@ export function WorkspaceGallery({ cards }: { cards: Card[] }) {
                         <td>
                           <Badge
                             variant={
-                              c.kind === "live" ? "default" : "secondary"
+                              c.state === "live" || c.state === "ready" ? "default" : "secondary"
                             }
                           >
-                            {c.kind === "blank"
-                              ? "Blank"
-                              : c.kind === "live"
-                                ? "Published"
-                                : "Draft"}
+                            {c.state === "blank" ? "Saved blank" : c.stateLabel}
                           </Badge>
                         </td>
                         <td>
                           {c.priceCents > 0 ? formatPrice(c.priceCents) : "—"}
                         </td>
                         <td>
-                          <Link
-                            className="product-row-action"
-                            href={c.action ?? c.href}
-                          >
-                            {c.action
-                              ? "Start designing"
-                              : c.kind === "live"
-                                ? c.ownership === "yours"
-                                  ? "Inspect live listing"
-                                  : "View listing"
-                                : "Continue"}
+                          <div className="flex flex-wrap items-center gap-3">
+                          <Link className="product-row-action" href={c.href}>
+                            {c.actionLabel}
                             <ArrowRight size={15} />
                           </Link>
+                          {c.builderHref && <Link className="text-xs underline" href={c.builderHref}>Product Builder</Link>}
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -142,12 +135,18 @@ export function WorkspaceGallery({ cards }: { cards: Card[] }) {
                     ? "No matching products"
                     : filter === "live"
                       ? "No published products yet"
+                      : filter === "ready"
+                        ? "No products ready to publish"
+                        : filter === "private"
+                          ? "No private drafts need attention"
                       : "Create your first product"}
                 </h3>
                 <p>
                   {search
                     ? "Try another search term."
-                    : "Choose a product from the catalog and add your design."}
+                    : filter === "shop"
+                      ? "Your own products will appear in the other lifecycle groups."
+                      : "Choose a product from the catalog and add your design."}
                 </p>
                 <Link
                   href="/partner/catalog"

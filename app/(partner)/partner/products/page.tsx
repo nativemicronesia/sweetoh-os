@@ -9,22 +9,29 @@ import {
 } from "@/lib/domains/catalog/service";
 import { getAssetSignedUrl } from "@/lib/domains/assets/service";
 import { WorkspaceGallery } from "../components/workspace-gallery";
+import {
+  partnerProductWorkspaceLabel,
+  partnerProductNextAction,
+  partnerProductWorkspaceState,
+} from "@/lib/domains/catalog/partner-product-workspace";
 
 type ProductCard = {
   id: string;
   name: string;
   priceCents: number;
   image: string | null;
-  kind: string;
   ownership: "yours" | "shop";
+  state: "private" | "ready" | "live" | "review" | "blank" | "archived" | "shop";
+  stateLabel: string;
   href: string;
-  action: string | null;
+  actionLabel: string;
+  builderHref: string | null;
 };
 
 export default async function PartnerProductsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ success?: string; error?: string }>;
+  searchParams: Promise<{ success?: string; error?: string; state?: string }>;
 }) {
   const session = await requirePartnerWorkspace();
   const [rows, published, query] = await Promise.all([
@@ -38,8 +45,18 @@ export default async function PartnerProductsPage({
   const cards: ProductCard[] = await Promise.all(
     rows
       .filter(({ product }) => product.draftStatus !== "archived")
-      .map(async ({ product, session: draft }) => {
+        .map(async ({ product, session: draft }) => {
         const record = builderRecord(draft?.rawResponse);
+        const state = partnerProductWorkspaceState({
+          active: product.active,
+          draftStatus: product.draftStatus,
+          isBlank: record?.purpose === "blank",
+        });
+        const nextAction = partnerProductNextAction({
+          id: product.id,
+          state,
+          confirmedBlank: Boolean(record?.purpose === "blank" && record.confirmed),
+        });
         const assetId = record?.mockupAssetId || product.sourceAssetId;
         const image = assetId
           ? await getAssetSignedUrl({ ventureId: session.ventureId, assetId })
@@ -49,20 +66,12 @@ export default async function PartnerProductsPage({
           name: product.name,
           priceCents: product.priceCents,
           image,
-          kind:
-            record?.purpose === "blank"
-              ? "blank"
-              : product.active
-                ? "live"
-                : "draft",
           ownership: "yours" as const,
-          href: record
-            ? `/partner/builder/${product.id}`
-            : `/partner/review/${product.id}`,
-          action:
-            record?.purpose === "blank" && record.confirmed
-              ? `/partner/canvas?blank=${product.id}`
-              : null,
+          state,
+          href: nextAction.href,
+          actionLabel: nextAction.label,
+          stateLabel: partnerProductWorkspaceLabel(state),
+          builderHref: record && record.purpose !== "blank" && !product.active ? `/partner/builder/${product.id}` : null,
         };
       }),
   );
@@ -76,10 +85,12 @@ export default async function PartnerProductsPage({
           name: p.name,
           priceCents: p.priceCents,
           image: await getPrimaryProductImageUrl(p.id),
-          kind: "live",
           ownership: "shop" as const,
+          state: "shop" as const,
+          stateLabel: "Published shop listing",
           href: `/partner/review/${p.id}`,
-          action: null,
+          actionLabel: "Inspect listing",
+          builderHref: null,
         })),
     )),
   );
@@ -90,7 +101,7 @@ export default async function PartnerProductsPage({
       <header className="studio-page-heading">
         <div>
           <h1>My products</h1>
-          <p>Everything you’ve made — drafts, published products and saved blanks.</p>
+          <p>Your products grouped by what you can do next. Drafts stay private; ready products still need your publish action.</p>
         </div>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <Link className="studio-primary" href="/partner/list">
@@ -101,7 +112,7 @@ export default async function PartnerProductsPage({
           </Link>
         </div>
       </header>
-      <WorkspaceGallery cards={cards} />
+      <WorkspaceGallery cards={cards} initialFilter={query.state} />
     </div>
   );
 }

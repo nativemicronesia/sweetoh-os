@@ -28,6 +28,7 @@ import { formatPrice } from "@/lib/shared/format";
 import { OperationsOverview } from "./components/operations-overview";
 import { countOpenShopRequests } from "@/lib/domains/creator/print-requests";
 import { sizedPhoto } from "@/lib/studio/photo";
+import { partnerProductWorkspaceState } from "@/lib/domains/catalog/partner-product-workspace";
 
 const JOB_LABEL: Record<string, string> = {
   new: "New",
@@ -58,6 +59,18 @@ export default async function PartnerHomePage() {
     ]);
 
   const open = drafts.filter(({ product }) => product.draftStatus !== "archived");
+  const ownProductCounts = open.reduce(
+    (counts, { product, session: draft }) => {
+      const state = partnerProductWorkspaceState({
+        active: product.active,
+        draftStatus: product.draftStatus,
+        isBlank: builderRecord(draft?.rawResponse)?.purpose === "blank",
+      });
+      counts[state] += 1;
+      return counts;
+    },
+    { private: 0, ready: 0, live: 0, review: 0, blank: 0, archived: 0 },
+  );
   const blanks = open.filter(
     ({ session: d }) => builderRecord(d?.rawResponse)?.purpose === "blank",
   ).length;
@@ -94,7 +107,7 @@ export default async function PartnerHomePage() {
       icon: PenTool,
     },
     {
-      done: published.length > 0,
+      done: ownProductCounts.live > 0,
       title: "Set your price and publish",
       body: "Name it, price it, and put it live in your store.",
       href: "/partner/products",
@@ -210,17 +223,40 @@ export default async function PartnerHomePage() {
             <span className="ho-tile-label">Custom requests open</span>
           </span>
         </Link>
-        <Link href="/partner/products" className="ho-tile so-lift" data-tone="reef">
+        <Link href="/partner/products?state=live" className="ho-tile so-lift" data-tone="reef">
           <span className="so-pattern-layer" />
           <span className="ho-tile-top">
             <span className="so-tag">{inProgress} in progress</span>
             <ArrowUpRight size={20} />
           </span>
           <span>
-            <strong>{published.length}</strong>
-            <span className="ho-tile-label">{published.length === 1 ? "Product live in the shop" : "Products live in the shop"}</span>
+            <strong>{ownProductCounts.live}</strong>
+            <span className="ho-tile-label">{ownProductCounts.live === 1 ? "Your product live in the shop" : "Your products live in the shop"}</span>
           </span>
         </Link>
+      </section>
+
+      <section className="ho-card space-y-4" aria-labelledby="product-next-steps">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 id="product-next-steps" className="text-lg font-semibold">Your products · next steps</h2>
+            <p className="mt-1 text-sm" style={{ color: "var(--pf-muted)" }}>Your own products, grouped by what you can do next.</p>
+          </div>
+          <Link href="/partner/products" className="so-link">See all products <ArrowRight size={15} /></Link>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {([
+            { state: "private", title: "Private drafts", count: ownProductCounts.private, action: "Continue editing" },
+            { state: "ready", title: "Ready to publish", count: ownProductCounts.ready, action: "Review readiness & publish" },
+            { state: "live", title: "Live in the shop", count: ownProductCounts.live, action: "Inspect live & manage" },
+            { state: "review", title: "Awaiting review", count: ownProductCounts.review, action: "Check review status" },
+          ] as const).map(({ state, title, count, action }) => (
+            <Link key={state} href={`/partner/products?state=${state}`} className="rounded-xl border p-4 transition hover:border-[var(--so-gold)]" style={{ borderColor: "var(--so-border)", color: "var(--so-cream)" }}>
+              <span className="flex items-center justify-between gap-2"><strong>{title}</strong><span className="rounded-full px-2 py-0.5 text-xs" style={{ background: "var(--so-black)", color: "var(--so-gold)" }}>{count}</span></span>
+              <span className="mt-3 flex items-center gap-1 text-sm" style={{ color: "var(--so-cream-dim)" }}>{action}<ArrowRight size={14} /></span>
+            </Link>
+          ))}
+        </div>
       </section>
 
       {creatorOpen > 0 && (

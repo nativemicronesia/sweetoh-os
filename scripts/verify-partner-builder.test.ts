@@ -8,6 +8,7 @@ import type { SessionUser } from "../lib/domains/identity/types";
 import { parsePartnerProductFields, validatePartnerProductFields } from "../lib/domains/catalog/product-form";
 import { colorHex, defaultUpcharges, sortSizes, variantOptionsSchema } from "../lib/domains/catalog/variants";
 import { resolveInactiveDraftStatus } from "../lib/domains/catalog/draft-status";
+import { partnerProductNextAction, partnerProductWorkspaceState } from "../lib/domains/catalog/partner-product-workspace";
 
 const url = "https://manufacturer.example/products/tee";
 const research = { title: "Cotton tee", description: "A plain tee.", category: "apparel", identity: "matched", brand: "Example", model: "4000", evidence: "Visible label", specifications: [{ label: "Material", value: "Cotton", sourceUrl: url }], sources: [{ title: "Manufacturer", url }], unknowns: [], mockupPrompt: "A plain tee" };
@@ -73,4 +74,18 @@ test("unpublishing accepts only an active published listing", () => {
   assert.doesNotThrow(() => assertProductCanBeUnpublished({ active: true, draftStatus: "published" }));
   assert.throws(() => assertProductCanBeUnpublished({ active: false, draftStatus: "draft" }), /Only your own published products/);
   assert.throws(() => assertProductCanBeUnpublished({ active: false, draftStatus: "approved" }), /Only your own published products/);
+});
+test("partner product lifecycle groups map to existing next-step routes", () => {
+  const states = [
+    [{ active: false, draftStatus: "needs_work", isBlank: false }, "private"],
+    [{ active: false, draftStatus: "approved", isBlank: false }, "ready"],
+    [{ active: true, draftStatus: "published", isBlank: false }, "live"],
+    [{ active: false, draftStatus: "pending_review", isBlank: false }, "review"],
+    [{ active: false, draftStatus: "draft", isBlank: true }, "blank"],
+  ] as const;
+  for (const [input, expected] of states) assert.equal(partnerProductWorkspaceState(input), expected);
+  assert.deepEqual(partnerProductNextAction({ id: "p1", state: "private", confirmedBlank: false }), { href: "/partner/review/p1", label: "Continue editing" });
+  assert.deepEqual(partnerProductNextAction({ id: "p1", state: "ready", confirmedBlank: false }), { href: "/partner/review/p1", label: "Review readiness & publish" });
+  assert.deepEqual(partnerProductNextAction({ id: "p1", state: "live", confirmedBlank: false }), { href: "/partner/review/p1", label: "Inspect live & manage" });
+  assert.deepEqual(partnerProductNextAction({ id: "p1", state: "blank", confirmedBlank: true }), { href: "/partner/canvas?blank=p1", label: "Continue designing" });
 });
