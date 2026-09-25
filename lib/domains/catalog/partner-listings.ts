@@ -93,13 +93,22 @@ export async function publishPartnerDraft(
     );
   }
 
-  await assertPartnerOwnsDraft(session, productId);
+  const owned = await assertPartnerOwnsEditableDraft(session, productId);
+  assertPartnerPublishReadyStatus(owned.product.draftStatus as ProductDraftStatus);
 
   return publishProduct({
     ventureId: session.ventureId,
     productId,
     actorUserId: session.appUser.id,
+    expectedDraftStatus: "approved",
   });
+}
+
+/** The draft must have passed the existing private readiness review first. */
+export function assertPartnerPublishReadyStatus(status: ProductDraftStatus): void {
+  if (status !== "approved") {
+    throw new ValidationError("Mark this product ready for publication before publishing it.");
+  }
 }
 
 /** Take a live product back to draft. Same gate the Products button uses. */
@@ -152,10 +161,16 @@ export async function approvePartnerPendingListing(
     throw new ValidationError("Only the Sweet'Oh partner can approve listings.");
   }
 
+  const pending = await getProductById({ ventureId: session.ventureId, productId });
+  if (pending.active || pending.draftStatus !== "pending_review") {
+    throw new ValidationError("Only a listing waiting for review can be approved here.");
+  }
+
   return publishProduct({
     ventureId: session.ventureId,
     productId,
     actorUserId: session.appUser.id,
+    expectedDraftStatus: "pending_review",
   });
 }
 

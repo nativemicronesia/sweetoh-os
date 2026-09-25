@@ -46,7 +46,11 @@ export async function listOwnProductAction(form: FormData): Promise<ListingResul
     revalidatePath("/partner/products");
     revalidatePath("/partner");
     revalidatePath("/collections");
-    return { ok: true, productId: created.id, published: form.get("publish") === "true" };
+    if (created.active) {
+      revalidatePath("/products");
+      revalidatePath(`/products/${created.slug}`);
+    }
+    return { ok: true, productId: created.id, published: created.active };
   } catch (error) {
     const raw = getActionErrorMessage(error);
     // Internal publishing rules shouldn't reach her in engineering language.

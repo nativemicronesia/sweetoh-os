@@ -30,6 +30,7 @@ import { listPartnerLibraryDesigns } from "@/lib/domains/catalog/partner-design-
 import {
   approvePendingListingAction,
   rejectPendingListingAction,
+  publishPartnerDraftAction,
   submitPartnerDraftForReviewAction,
   updatePartnerDraftAction,
   unpublishPartnerProductAction,
@@ -172,6 +173,11 @@ export default async function PartnerReviewDetailPage({
   async function markReady() {
     "use server";
     await markPartnerDraftReadyAction(id);
+  }
+
+  async function publishNow() {
+    "use server";
+    await publishPartnerDraftAction(id);
   }
 
   return (
@@ -546,7 +552,6 @@ export default async function PartnerReviewDetailPage({
             </div></details>
             <div className="flex flex-wrap gap-3 md:col-span-2">
               <SubmitButton variant="outline" pendingLabel="Saving…">Save draft</SubmitButton>
-              {canModerate && <SubmitButton name="intent" value="publish" pendingLabel="Saving & publishing…">Publish to shop</SubmitButton>}
             </div>
           </form>
         </section>
@@ -579,11 +584,14 @@ export default async function PartnerReviewDetailPage({
           {!product.active ? (
             <div className="mt-4 flex flex-wrap gap-2">
 
-              <form action={markReady}>
+              {canEdit ? <form action={markReady}>
                 <SubmitButton pendingLabel="Checking…" variant="outline">
                   {readiness.canPublish ? product.draftStatus === "approved" ? "Recheck readiness" : "Mark ready for publication (stays private)" : "Check readiness"}
                 </SubmitButton>
-              </form>
+              </form> : null}
+              {canEdit && product.draftStatus === "approved" && readiness.canPublish ? <form action={publishNow}>
+                <SubmitButton pendingLabel="Publishing…">Publish this approved product</SubmitButton>
+              </form> : null}
             </div>
           ) : (
             <p className="mt-4 text-sm" style={{ color: "var(--so-gold)" }}>

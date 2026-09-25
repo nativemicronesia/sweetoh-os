@@ -234,8 +234,7 @@ export default async function PartnerReviewPage({
                     >
                       Open
                     </Link>
-                    {canModerate ? (
-                      <>
+                    {canModerate && product.draftStatus === "approved" ? (
                         <form action={publishPartnerDraftAction.bind(null, product.id)}>
                           <button
                             type="submit"
@@ -245,6 +244,8 @@ export default async function PartnerReviewPage({
                             Publish
                           </button>
                         </form>
+                    ) : null}
+                    {canModerate && product.draftStatus !== "approved" ? (
                         <form
                           action={submitPartnerDraftForReviewAction.bind(null, product.id)}
                         >
@@ -256,8 +257,8 @@ export default async function PartnerReviewPage({
                             Send to pending
                           </button>
                         </form>
-                      </>
-                    ) : (
+                    ) : null}
+                    {!canModerate ? (
                       <form
                         action={submitPartnerDraftForReviewAction.bind(null, product.id)}
                       >
@@ -269,7 +270,7 @@ export default async function PartnerReviewPage({
                           Submit for review
                         </button>
                       </form>
-                    )}
+                    ) : null}
                   </div>
                 </li>
               ))}

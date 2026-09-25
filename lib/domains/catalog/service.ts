@@ -632,9 +632,12 @@ export async function publishProduct(input: {
   ventureId: string;
   productId: string;
   actorUserId: string;
+  /** Conditional status transition for approval-based partner publication. */
+  expectedDraftStatus?: import("./draft-status").ProductDraftStatus;
 }) {
   const db = getDb();
   const existing = await getProductById(input);
+  if (existing.active) throw new ValidationError("This product is already published.");
   const prepared = builderRecord((await getLatestAiSessionForProduct(input))?.rawResponse);
   if (prepared?.purpose === "blank") throw new ValidationError("Blanks stay private. Create a finished design before publishing.");
   if (prepared && !prepared.confirmed) throw new ValidationError("Confirm the product details in Product Builder before publishing.");
@@ -645,6 +648,13 @@ export async function publishProduct(input: {
 
   if (existing.draftStatus === "rejected") {
     throw new ValidationError("Rejected products cannot be published.");
+  }
+  if (input.expectedDraftStatus && existing.draftStatus !== input.expectedDraftStatus) {
+    throw new ValidationError("Product status changed. Review its publication readiness again.");
+  }
+  const publishFromStatus = input.expectedDraftStatus ?? existing.draftStatus;
+  if (publishFromStatus !== "approved" && publishFromStatus !== "pending_review") {
+    throw new ValidationError("Only an approved listing or a listing explicitly awaiting review can be published.");
   }
 
   const mediaCount = await countProductMedia(existing.id);
@@ -666,19 +676,23 @@ export async function publishProduct(input: {
     throw new ValidationError(gate.reason);
   }
 
+  const conditions = [
+    eq(product.id, input.productId),
+    eq(product.ventureId, input.ventureId),
+    eq(product.active, false),
+    eq(product.draftStatus, publishFromStatus),
+    eq(product.updatedAt, existing.updatedAt),
+  ];
   const [row] = await db
     .update(product)
     .set({ active: true, draftStatus: "published", updatedAt: new Date() })
     .where(
-      and(
-        eq(product.id, input.productId),
-        eq(product.ventureId, input.ventureId),
-      ),
+      and(...conditions),
     )
     .returning();
 
   if (!row) {
-    throw new NotFoundError("Product not found");
+    throw new ValidationError("Product status changed. Review its publication readiness again.");
   }
 
   const aiSession = await getLatestAiSessionForProduct({

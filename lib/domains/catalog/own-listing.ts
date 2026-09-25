@@ -6,7 +6,7 @@ import type { SessionUser } from "@/lib/domains/identity/types";
 import { ValidationError } from "@/lib/shared/errors";
 import { approveAsset, createAssetWithUpload, getAssetById } from "@/lib/domains/assets/service";
 import { isApprovedAssetStatus } from "@/lib/domains/assets/types";
-import { addProductMediaUpload, createProduct, publishProduct, setProductVariantSetup } from "./service";
+import { addProductMediaUpload, createProduct, markProductDraftReviewed, publishProduct, setProductVariantSetup } from "./service";
 import { createHash } from "node:crypto";
 import { PRODUCT_CATEGORIES, type ProductCategory } from "./categories";
 import { analyzeProductImageWithOpenAi } from "@/lib/integrations/ai/intake-openai";
@@ -146,11 +146,13 @@ export async function listOwnProduct(
     });
   }
 
-  if (input.publish) {
-    await publishProduct({ ventureId: session.ventureId, productId: created.id, actorUserId: session.appUser.id });
-  }
+  if (!input.publish) return created;
 
-  return created;
+  // The direct create-screen publish control uses the same readiness status
+  // transition as the review screen. A failed gate leaves a recoverable draft.
+  const reviewed = await markProductDraftReviewed({ ventureId: session.ventureId, productId: created.id, actorUserId: session.appUser.id });
+  if (reviewed.draftStatus !== "approved") return reviewed;
+  return publishProduct({ ventureId: session.ventureId, productId: created.id, actorUserId: session.appUser.id, expectedDraftStatus: "approved" });
 }
 
 export type ListingSuggestion = {

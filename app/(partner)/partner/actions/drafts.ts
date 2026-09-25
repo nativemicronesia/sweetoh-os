@@ -49,12 +49,14 @@ function productsPath(query?: Record<string, string>): string {
   return suffix ? `/partner/products?${suffix}` : "/partner/products";
 }
 
-function revalidateListingSurfaces(productId: string): void {
+function revalidateListingSurfaces(productId: string, productSlug?: string): void {
   revalidatePath("/partner");
   revalidatePath("/partner/review");
   revalidatePath(`/partner/review/${productId}`);
   revalidatePath("/partner/products");
   revalidatePath("/products");
+  revalidatePath("/collections");
+  if (productSlug) revalidatePath(`/products/${productSlug}`);
 }
 
 export async function publishPartnerDraftAction(
@@ -64,7 +66,7 @@ export async function publishPartnerDraftAction(
     const session = await requirePartnerWorkspace();
     const row = await publishPartnerDraft(session, productId);
 
-    revalidateListingSurfaces(productId);
+    revalidateListingSurfaces(productId, row.slug);
 
     redirect(
       productsPath({
@@ -86,7 +88,7 @@ export async function unpublishPartnerProductAction(
     const session = await requirePartnerWorkspace();
     const row = await unpublishPartnerProduct(session, productId);
 
-    revalidateListingSurfaces(productId);
+    revalidateListingSurfaces(productId, row.slug);
 
     redirect(
       productsPath({
@@ -103,7 +105,7 @@ export async function deletePartnerProductAction(productId: string): Promise<voi
   try {
     const session = await requirePartnerWorkspace();
     const row = await deletePartnerProduct(session, productId);
-    revalidateListingSurfaces(productId);
+    revalidateListingSurfaces(productId, row.slug);
     redirect(productsPath({ success: `"${row.name}" deleted.` }));
   } catch (error) {
     unstable_rethrow(error);
@@ -118,7 +120,7 @@ export async function submitPartnerDraftForReviewAction(
     const session = await requirePartnerWorkspace();
     const row = await submitPartnerDraft(session, productId);
 
-    revalidateListingSurfaces(productId);
+    revalidateListingSurfaces(productId, row.slug);
 
     redirect(
       reviewDetailPath(productId, {
@@ -143,7 +145,7 @@ export async function approvePendingListingAction(
     const session = await requirePartnerWorkspace();
     const row = await approvePartnerPendingListing(session, productId);
 
-    revalidateListingSurfaces(productId);
+    revalidateListingSurfaces(productId, row.slug);
 
     redirect(
       reviewPath({
@@ -186,11 +188,6 @@ export async function updatePartnerDraftAction(
     const row = await updatePartnerDraftFields(session, productId, fields);
     if (formData.get("variantsPresent") === "1") await saveVariantFields(session, productId, formData);
 
-    if (formData.get("intent") === "publish") {
-      await publishPartnerDraft(session, productId);
-      revalidateListingSurfaces(productId);
-      redirect(productsPath({ success: `"${row.name}" is live in your Sweet’Oh shop.` }));
-    }
     revalidateListingSurfaces(productId);
 
     redirect(

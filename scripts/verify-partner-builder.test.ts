@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { groundResearch, safeSourceUrl, builderRecord } from "../lib/domains/intelligence/product-research-schema";
 import { assertBuilderRole } from "../lib/domains/intelligence/partner-builder";
-import { unpublishPartnerProduct } from "../lib/domains/catalog/partner-listings";
+import { publishPartnerDraft, assertPartnerPublishReadyStatus, unpublishPartnerProduct } from "../lib/domains/catalog/partner-listings";
 import { updatePartnerJobStatus } from "../lib/domains/fulfillment/partner-jobs";
 import type { SessionUser } from "../lib/domains/identity/types";
 import { parsePartnerProductFields, validatePartnerProductFields } from "../lib/domains/catalog/product-form";
@@ -53,6 +53,14 @@ test("readiness approval remains private and loses approval when required produc
   assert.equal(resolveInactiveDraftStatus({ hasAiSession: false, canPublish: true, currentStatus: "draft" }), "draft");
   assert.equal(resolveInactiveDraftStatus({ hasAiSession: false, canPublish: true, currentStatus: "approved" }), "approved");
   assert.equal(resolveInactiveDraftStatus({ hasAiSession: false, canPublish: false, currentStatus: "approved" }), "needs_work");
+});
+test("partner publication accepts only the approved private status; creators cannot publish", async () => {
+  assert.doesNotThrow(() => assertPartnerPublishReadyStatus("approved"));
+  for (const status of ["draft", "needs_work", "pending_review", "published"] as const) {
+    assert.throws(() => assertPartnerPublishReadyStatus(status), /Mark this product ready/);
+  }
+  const creator = { role: "creator", ventureId: "unused", appUser: { id: "unused" } } as SessionUser;
+  await assert.rejects(() => publishPartnerDraft(creator, "unused"), /Sweet'Oh partner approves listings/);
 });
 test("creators build only in their own workspace and cannot unpublish shop products or change fulfillment", async () => {
   const creator = { role: "creator", ventureId: "unused", appUser: { id: "unused" } } as SessionUser;
