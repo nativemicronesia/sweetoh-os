@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { STUDIO_ASSET_IDS } from "@/lib/studio/asset-library";
+import { studioBrushPresetSchema } from "@/lib/studio/drawing-brushes";
 
 export const areaSchema = z
   .object({
@@ -135,6 +136,8 @@ export const layerSchema = z.discriminatedUnion("kind", [
     brush: drawingBrush.optional(),
     /** Local stylus samples for reproducible variable-width strokes. */
     pressurePoints: z.array(pressurePoint).min(1).max(240).optional(),
+    /** Full immutable preset snapshot makes custom artwork independent of local preset edits. */
+    brushPreset: studioBrushPresetSchema.optional(),
   }),
 ]);
 export const studioLayoutSchema = z

@@ -10,6 +10,7 @@ import { mockupTemplateSchema } from "../lib/studio/mockup/templates";
 import { CONFIRMED_SHOP_METHODS, KNOWLEDGE_ONLY_METHODS } from "../lib/domains/production/methods";
 import { drawingDashPattern, STUDIO_DRAW_BRUSHES } from "../lib/studio/drawing-brushes";
 import { compactPressureSamples, pointerPressure, pressureSegment } from "../lib/studio/drawing-pressure";
+import { STUDIO_DRAW_TEXTURES, studioBrushPresetSchema } from "../lib/studio/drawing-brushes";
 
 test("seed graphics have stable unique identities and explicit provenance", () => {
   assert.ok(STUDIO_ASSETS.length >= 10);
@@ -110,6 +111,20 @@ test("stylus pressure changes persisted brush segments with mouse/touch fallback
   ] }] });
   const reopened = studioLayoutSchema.parse(JSON.parse(JSON.stringify(layout)));
   assert.deepEqual(reopened.surfaces[0].layers[0].kind === "drawing" && reopened.surfaces[0].layers[0].pressurePoints, [{ x: 0, y: 1, pressure: .2 }, { x: 14, y: 8, pressure: .9 }]);
+});
+
+test("reusable texture brush presets retain provenance and artwork snapshots across reopen", () => {
+  assert.ok(STUDIO_DRAW_TEXTURES.length >= 2);
+  for (const texture of STUDIO_DRAW_TEXTURES) assert.ok(texture.source && texture.license);
+  const preset = studioBrushPresetSchema.parse({ id: "local-1", name: "Soft weave", baseBrush: "marker", textureId: "sweetoh-woven", textureScale: 1.4, pressureMode: "size-opacity" });
+  assert.equal(studioBrushPresetSchema.safeParse({ ...preset, textureId: "remote-image-url" }).success, false);
+  assert.ok(pressureSegment({ x: 0, y: 0, pressure: .9 }, { x: 8, y: 0, pressure: .9 }, 10, "marker", preset).width > 10);
+  const layout = studioLayoutSchema.parse({ ...base, surfaces: [{ ...base.surfaces[0], layers: [
+    { id: "textured-stroke", kind: "drawing", pathData: "M 0 0 Q 10 20 30 30", stroke: "#173e39", strokeWidth: 10, brush: "marker", brushPreset: preset, pressurePoints: [{ x: 1, y: 2, pressure: .2 }, { x: 12, y: 18, pressure: .9 }], x: 40, y: 60, scaleX: 1, scaleY: 1, angle: 0 },
+  ] }] });
+  const reopened = studioLayoutSchema.parse(JSON.parse(JSON.stringify(layout)));
+  assert.deepEqual(reopened.surfaces[0].layers[0].kind === "drawing" && reopened.surfaces[0].layers[0].brushPreset, preset);
+  assert.deepEqual(reopened.surfaces[0].layers[0].kind === "drawing" && reopened.surfaces[0].layers[0].pressurePoints?.map(({ pressure }) => pressure), [.2, .9]);
 });
 
 test("editor command boundary rejects unvetted resources and malformed actions", () => {
