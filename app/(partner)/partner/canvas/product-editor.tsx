@@ -11,6 +11,7 @@ import {
   Ellipse,
   IText,
   PencilBrush,
+  Point,
   Rect,
   Path,
   Shadow,
@@ -270,6 +271,10 @@ export function ProductEditor({
   const uploadInput = useRef<HTMLInputElement>(null);
   const photoInput = useRef<HTMLInputElement>(null);
   const drawingCheckpoint = useRef(false);
+  const erasingCheckpoint = useRef(false);
+  const eraseMode = useRef(false);
+  const eraseGesture = useRef(false);
+  const priorTargetTolerance = useRef(0);
 
   const [library, setLibrary] = useState(designs);
   const [colorName, setColorName] = useState<string | null>(colors[0]?.name ?? null);
@@ -277,6 +282,7 @@ export function ProductEditor({
   const [zoom, setZoom] = useState(1);
   const [panMode, setPanMode] = useState(false);
   const [drawing, setDrawing] = useState(false);
+  const [erasing, setErasing] = useState(false);
   const [drawColor, setDrawColor] = useState("#173e39");
   const [drawWidth, setDrawWidth] = useState(7);
   const gesture = useRef<{ pointers: Map<number, { x: number; y: number }>; distance: number; zoom: number; lastX: number; lastY: number }>({ pointers: new Map(), distance: 0, zoom: 1, lastX: 0, lastY: 0 });
@@ -468,7 +474,8 @@ export function ProductEditor({
       printRegionId: base.printRegionId,
       fill: base.kind === "shape" && typeof o.fill === "string" ? o.fill : undefined,
       stroke: base.kind === "shape" && typeof o.stroke === "string" ? o.stroke : undefined,
-      strokeWidth: base.kind === "shape" ? o.strokeWidth : undefined,
+      strokeWidth: base.kind === "shape" || base.kind === "drawing" ? o.strokeWidth : undefined,
+      ...(base.kind === "drawing" && typeof o.stroke === "string" ? { stroke: o.stroke } : {}),
       gradient: base.kind === "shape" ? base.gradient : undefined,
       adjustments: base.kind === "image" ? base.adjustments : undefined,
       mask: base.kind === "image" ? base.mask : undefined,
@@ -610,7 +617,7 @@ export function ProductEditor({
       const object = await makeLayer(layer);
       object.set({ visible: !layer.hidden, selectable: !layer.locked, evented: !layer.locked });
       if (withGuide && canvas !== editor.current) return;
-      if (!withGuide) {
+      if (!withGuide || layer.kind === "drawing") {
         const regionClip = printClip(s, layer);
         if (object.clipPath) object.clipPath.clipPath = regionClip;
         else object.clipPath = regionClip;
@@ -651,6 +658,7 @@ export function ProductEditor({
 
   async function loadSurface(id: string) {
     if (editor.current?.isDrawingMode) setFreehand(false);
+    if (eraseMode.current) setEraseMode(false);
     setReady(false);
     setError("");
     currentId.current = id;
@@ -753,16 +761,22 @@ export function ProductEditor({
     canvas.on("selection:created", readSelection);
     canvas.on("selection:updated", readSelection);
     canvas.on("selection:cleared", readSelection);
-    canvas.on("mouse:down", () => {
+    canvas.on("mouse:down", ({ scenePoint, viewportPoint }) => {
+      if (eraseMode.current) { erasingCheckpoint.current = false; eraseGesture.current = true; eraseDrawingAt(scenePoint.x, scenePoint.y, viewportPoint.x, viewportPoint.y); return; }
       if (canvas.isDrawingMode && !drawingCheckpoint.current) { checkpoint(); drawingCheckpoint.current = true; }
     });
+    canvas.on("mouse:move", ({ scenePoint, viewportPoint }) => {
+      if (eraseMode.current && eraseGesture.current) eraseDrawingAt(scenePoint.x, scenePoint.y, viewportPoint.x, viewportPoint.y);
+    });
+    canvas.on("mouse:up", () => { erasingCheckpoint.current = false; eraseGesture.current = false; drawingCheckpoint.current = false; });
     canvas.on("path:created", ({ path }) => {
       const fabricPath = path as Path;
-      const segments = fabricPath.path.length > 600 ? fabricPath.path.filter((_, index) => index === 0 || index === fabricPath.path.length - 1 || index % Math.ceil(fabricPath.path.length / 600) === 0).slice(0, 600) : fabricPath.path;
+      const segments = fabricPath.path.length > 400 ? Array.from({ length: 400 }, (_, index) => fabricPath.path[Math.round(index * (fabricPath.path.length - 1) / 399)]) : fabricPath.path;
       const pathData = segments.map((segment) => segment.map((part) => typeof part === "number" ? part.toFixed(2) : part).join(" ")).join(" ");
       const stroke = typeof path.stroke === "string" && /^#[0-9a-f]{6}$/i.test(path.stroke) ? path.stroke : "#173e39";
       const layer: StudioLayer = { id: crypto.randomUUID(), kind: "drawing", pathData, stroke, strokeWidth: Math.max(1, Math.min(50, Number(path.strokeWidth) || 7)), x: path.left ?? 0, y: path.top ?? 0, scaleX: path.scaleX ?? 1, scaleY: path.scaleY ?? 1, angle: path.angle ?? 0, printRegionId: activeRegionRef.current ?? undefined };
       meta.current.set(path, layer); drawingCheckpoint.current = false;
+      path.clipPath = printClip(surface(), layer);
       capture(); readSelection(); dirty.current = true; canvas.requestRenderAll();
     });
     canvas.on("before:transform", () => {
@@ -875,11 +889,11 @@ export function ProductEditor({
 
   useEffect(() => {
     if (!editor.current) return;
-    editor.current.skipTargetFind = panMode || drawing;
-    editor.current.selection = !panMode && !drawing;
+    editor.current.skipTargetFind = panMode || drawing || erasing;
+    editor.current.selection = !panMode && !drawing && !erasing;
     if (panMode) editor.current.discardActiveObject();
     editor.current.requestRenderAll();
-  }, [panMode, drawing]);
+  }, [panMode, drawing, erasing]);
 
   // Keyboard: delete, undo, nudge — never while typing.
   useEffect(() => {
@@ -1096,14 +1110,44 @@ export function ProductEditor({
   function setFreehand(enabled: boolean) {
     const canvas = editor.current;
     if (!canvas) return;
+    canvas.setTargetFindTolerance(priorTargetTolerance.current); eraseGesture.current = false; erasingCheckpoint.current = false;
+    eraseMode.current = false; setErasing(false);
     canvas.isDrawingMode = enabled; canvas.selection = !enabled && !panMode; canvas.skipTargetFind = enabled || panMode;
     if (enabled) { const brush = new PencilBrush(canvas); brush.color = drawColor; brush.width = drawWidth; canvas.freeDrawingBrush = brush; }
     setDrawing(enabled); canvas.requestRenderAll();
+  }
+  function setEraseMode(enabled: boolean) {
+    const canvas = editor.current;
+    if (!canvas) return;
+    eraseMode.current = enabled; setErasing(enabled);
+    eraseGesture.current = false; erasingCheckpoint.current = false;
+    if (enabled) { priorTargetTolerance.current = canvas.targetFindTolerance; canvas.setTargetFindTolerance(5); }
+    else canvas.setTargetFindTolerance(priorTargetTolerance.current);
+    if (enabled) { canvas.isDrawingMode = false; setDrawing(false); drawingCheckpoint.current = false; canvas.selection = false; canvas.skipTargetFind = true; }
+    else { canvas.selection = !panMode; canvas.skipTargetFind = panMode; }
+    canvas.requestRenderAll();
+  }
+  function eraseDrawingAt(x: number, y: number, viewportX: number, viewportY: number) {
+    const canvas = editor.current;
+    if (!canvas) return;
+    const object = [...canvas.getObjects()].reverse().find((candidate) => meta.current.get(candidate)?.kind === "drawing" && candidate.containsPoint(new Point(x, y)) && !canvas.isTargetTransparent(candidate, viewportX, viewportY));
+    if (!object) return;
+    if (!erasingCheckpoint.current) { checkpoint(); erasingCheckpoint.current = true; }
+    if (canvas.getActiveObjects().includes(object)) canvas.discardActiveObject();
+    canvas.remove(object); capture(); readSelection(); dirty.current = true; canvas.requestRenderAll();
   }
   function updateFreehand(color: string, width: number) {
     setDrawColor(color); setDrawWidth(width);
     const brush = editor.current?.freeDrawingBrush;
     if (brush) { brush.color = color; brush.width = width; }
+  }
+  function setDrawingStyle(style: { stroke?: string; strokeWidth?: number }, record = true) {
+    changeSelected((object) => {
+      const layer = meta.current.get(object);
+      if (layer?.kind !== "drawing") return;
+      object.set(style);
+      meta.current.set(object, { ...layer, ...style });
+    }, record);
   }
   function setImageMask(mask: "none" | "circle" | "rounded") {
     changeSelected((object) => {
@@ -2027,8 +2071,9 @@ export function ProductEditor({
               <div className="pe-panel-body">
                 <section className="pe-section pe-draw-tool">
                   <p className="pe-label">Draw freely</p>
-                  <button className="pe-btn pe-btn-primary pe-block" disabled={locked} aria-pressed={drawing} onClick={() => setFreehand(!drawing)}><PenLine size={16}/>{drawing ? "Finish drawing" : "Start drawing"}</button>
-                  {drawing && <><div className="pe-row"><label className="pe-color-input" title="Brush color"><input type="color" value={drawColor} onChange={(event) => updateFreehand(event.target.value, drawWidth)} /></label><label className="pe-slider pe-grow"><span>Brush <b>{drawWidth}px</b></span><input type="range" min={1} max={36} step={1} value={drawWidth} onChange={(event) => updateFreehand(drawColor, Number(event.target.value))}/></label></div><p className="pe-muted pe-small">Draw with a finger, stylus or mouse. Finish drawing to select and edit the stroke.</p></>}
+                  <div className="pe-row"><button className="pe-btn pe-btn-primary pe-grow" disabled={locked} aria-pressed={drawing} onClick={() => setFreehand(!drawing)}><PenLine size={16}/>{drawing ? "Finish drawing" : "Draw"}</button><button className="pe-btn pe-btn-ghost pe-grow" disabled={locked} aria-pressed={erasing} onClick={() => setEraseMode(!erasing)}><Eraser size={16}/>{erasing ? "Finish erasing" : "Erase strokes"}</button></div>
+                {drawing && <><div className="pe-row"><label className="pe-color-input" title="Brush color"><input type="color" value={drawColor} onChange={(event) => updateFreehand(event.target.value, drawWidth)} /></label><label className="pe-slider pe-grow"><span>Brush <b>{drawWidth}px</b></span><input type="range" min={1} max={36} step={1} value={drawWidth} onChange={(event) => updateFreehand(drawColor, Number(event.target.value))}/></label></div><p className="pe-muted pe-small">Draw with a finger, stylus or mouse. Finish drawing to select and edit the stroke.</p></>}
+                  {erasing && <p className="pe-muted pe-small">Swipe over a stroke to erase it. Other artwork and text are left alone.</p>}
                 </section>
                 <p className="pe-label">Solid print background</p>
                 <div className="pe-swatches" aria-label="Background colors">{TEXT_COLORS.map((color) => <button key={color} type="button" disabled={locked} aria-label={`Add ${color} background`} style={{ background: color }} onClick={() => void executeEditorCommand({ type: "add_background", color })} />)}</div>
@@ -2336,7 +2381,9 @@ export function ProductEditor({
 
               {current.printRegions && currentRegions.length > 0 && <section className="pe-section"><label className="ps-field">Print in<select className="pe-select" aria-label="Layer print area" value={selected.printRegionId ?? ""} onChange={e => changeSelected(o => {
                 const layer = meta.current.get(o)!;
-                meta.current.set(o, { ...layer, printRegionId: e.target.value || undefined });
+                const updated = { ...layer, printRegionId: e.target.value || undefined } as StudioLayer;
+                meta.current.set(o, updated);
+                if (updated.kind === "drawing") o.clipPath = printClip(surface(), updated);
               })}><option value="">All print areas</option>{currentRegions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}</select></label></section>}
               <section className="pe-section"><p className="pe-label">Depth and shadow</p><button className="pe-btn pe-btn-ghost pe-block" aria-pressed={Boolean(selected.shadow)} onClick={() => setLayerShadow({ enabled: !selected.shadow })}>{selected.shadow ? "Remove soft shadow" : "Add soft shadow"}</button>{selected.shadow && <><label className="pe-slider"><span>Blur <b>{selected.shadow.blur}px</b></span><input type="range" min={0} max={60} step={1} value={selected.shadow.blur} onPointerDown={() => checkpoint()} onChange={(event) => setLayerShadow({ enabled: true, ...selected.shadow, blur: Number(event.target.value) }, false)}/></label><label className="pe-slider"><span>Strength <b>{Math.round(selected.shadow.opacity * 100)}%</b></span><input type="range" min={0.05} max={0.7} step={0.01} value={selected.shadow.opacity} onPointerDown={() => checkpoint()} onChange={(event) => setLayerShadow({ enabled: true, ...selected.shadow, opacity: Number(event.target.value) }, false)}/></label><label className="pe-slider"><span>Horizontal <b>{selected.shadow.offsetX}px</b></span><input type="range" min={-40} max={40} step={1} value={selected.shadow.offsetX} onPointerDown={() => checkpoint()} onChange={(event) => setLayerShadow({ enabled: true, ...selected.shadow, offsetX: Number(event.target.value) }, false)}/></label><label className="pe-slider"><span>Vertical <b>{selected.shadow.offsetY}px</b></span><input type="range" min={-40} max={40} step={1} value={selected.shadow.offsetY} onPointerDown={() => checkpoint()} onChange={(event) => setLayerShadow({ enabled: true, ...selected.shadow, offsetY: Number(event.target.value) }, false)}/></label></>}</section>
               {selected.kind === "text" && (
@@ -2442,6 +2489,8 @@ export function ProductEditor({
                   </div>
                 </section>
               )}
+
+              {selected.kind === "drawing" && <section className="pe-section"><p className="pe-label">Stroke style</p><div className="pe-row"><label className="pe-color-input" title="Stroke color"><input type="color" value={selected.stroke ?? drawColor} onPointerDown={() => checkpoint()} onChange={(event) => setDrawingStyle({ stroke: event.target.value }, false)} /></label><label className="pe-slider pe-grow"><span>Size <b>{selected.strokeWidth ?? drawWidth}px</b></span><input type="range" min={1} max={50} step={1} value={selected.strokeWidth ?? drawWidth} onPointerDown={() => checkpoint()} onChange={(event) => setDrawingStyle({ strokeWidth: Number(event.target.value) }, false)}/></label></div><p className="pe-muted pe-small">Erase strokes with the stroke eraser, or remove this whole stroke below.</p><button className="pe-btn pe-btn-ghost pe-block" onClick={removeSelected}><Eraser size={15}/>Erase this stroke</button></section>}
 
               {selected.kind === "pattern" && (
                 <section className="pe-section">
