@@ -202,6 +202,7 @@ export async function createProduct(input: {
   supplierSku?: string | null;
   sourceAssetId?: string | null;
   actorUserId: string | null;
+  submittedByUserId?: string | null;
   /**
    * Defaults to false (the owner's manually-curated catalog flow, which
    * goes through the draftStatus editorial pipeline before publishProduct
@@ -229,6 +230,7 @@ export async function createProduct(input: {
       fulfillmentType: input.fulfillmentType,
       supplierSku: input.supplierSku ?? null,
       sourceAssetId: input.sourceAssetId ?? null,
+      submittedByUserId: input.submittedByUserId ?? null,
       active: input.active ?? false,
       draftStatus: "draft",
     })

@@ -11,6 +11,7 @@ import { getActionErrorMessage } from "@/lib/shared/action-errors";
 import { getPrimaryProductImageBuffer, getProductById } from "@/lib/domains/catalog/service";
 import { createOwnBlank, turnPhotoIntoBlank } from "@/lib/capabilities";
 import { listBuilderBlanks } from "@/lib/domains/intelligence/partner-builder";
+import { colorHex, defaultUpcharges, sortSizes, variantOptionsSchema } from "@/lib/domains/catalog/variants";
 
 export type ListingResult = { ok: true; productId: string; published: boolean } | { ok: false; error: string };
 
@@ -26,6 +27,11 @@ export async function listOwnProductAction(form: FormData): Promise<ListingResul
       .slice(0, LISTING_MAX_PHOTOS);
     if (!photos.length) return { ok: false, error: "Add at least one photo." };
 
+    const colorNames = String(form.get("variantColors") ?? "").split(",").map((x) => x.trim()).filter(Boolean);
+    const sizes = sortSizes(String(form.get("variantSizes") ?? "").split(",").map((x) => x.trim()).filter(Boolean));
+    const variantOptions = colorNames.length || sizes.length
+      ? variantOptionsSchema.parse({ colors: colorNames.map((name) => ({ name, hex: colorHex(name) })), sizes, sizeUpchargeCents: defaultUpcharges(sizes) })
+      : null;
     const created = await listOwnProduct(session, {
       name: String(form.get("name") ?? ""),
       priceCents: Math.round(Number(dollars) * 100),
@@ -33,6 +39,8 @@ export async function listOwnProductAction(form: FormData): Promise<ListingResul
       category: z.enum(PRODUCT_CATEGORIES as unknown as [ProductCategory, ...ProductCategory[]]).parse(form.get("category")),
       photos: await Promise.all(photos.map(async (f) => ({ file: Buffer.from(await f.arrayBuffer()), filename: f.name }))),
       publish: form.get("publish") === "true",
+      artworkAssetId: String(form.get("artworkAssetId") ?? "").trim() || null,
+      variantOptions,
     });
 
     revalidatePath("/partner/products");

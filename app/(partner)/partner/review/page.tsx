@@ -65,7 +65,7 @@ export default async function PartnerReviewPage({
       : Promise.resolve([]),
   ]);
 
-  const openDrafts = drafts.filter(({ product, session }) => !product.active && builderRecord(session.rawResponse)?.purpose !== "blank");
+  const openDrafts = drafts.filter(({ product, session }) => !product.active && builderRecord(session?.rawResponse)?.purpose !== "blank");
   const pendingIds = new Set(pending.map((product) => product.id));
   // Submissions already listed in "Waiting on you" are not repeated below.
   const ownDrafts = openDrafts.filter(({ product }) => !pendingIds.has(product.id));
@@ -216,8 +216,8 @@ export default async function PartnerReviewPage({
                         </Link>
                         <p className="mt-1 text-xs" style={{ color: "var(--so-cream-dim)" }}>
                           {formatPrice(product.priceCents)} ·{" "}
-                          {aiSession.mode.replaceAll("_", " ")} ·{" "}
-                          {new Date(aiSession.createdAt).toLocaleDateString()}
+                          {aiSession?.mode.replaceAll("_", " ") ?? "Manual product setup"} ·{" "}
+                          {aiSession ? new Date(aiSession.createdAt).toLocaleDateString() : new Date(product.updatedAt).toLocaleDateString()}
                         </p>
                       </div>
                     </div>

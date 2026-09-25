@@ -65,7 +65,7 @@ export async function preparePartnerProduct(session: SessionUser, input: {
   const image = await sharp(input.file, { limitInputPixels: 40_000_000 }).rotate().resize(1800, 1800, { fit: "inside", withoutEnlargement: true }).png().toBuffer();
   const fingerprint = createHash("sha256").update(image).update(JSON.stringify([input.notes, input.sourceUrl, input.purpose, input.useAi, input.name])).digest("hex");
   const previous = await listActorProductDrafts({ ventureId: session.ventureId, actorUserId: session.appUser.id });
-  const cached = previous.find(row => row.product.draftStatus !== "archived" && row.product.draftStatus !== "rejected" && builderRecord(row.session.rawResponse)?.fingerprint === fingerprint);
+  const cached = previous.find(row => row.session && row.product.draftStatus !== "archived" && row.product.draftStatus !== "rejected" && builderRecord(row.session.rawResponse)?.fingerprint === fingerprint);
   if (cached) return cached.product;
   let research: ProductResearch | null = null;
   if (input.useAi) {
@@ -97,15 +97,15 @@ export async function preparePartnerProduct(session: SessionUser, input: {
 export async function getOwnedBuilder(session: SessionUser, productId: string) {
   assertBuilderRole(session);
   const row = await getActorProductDraft({ ventureId: session.ventureId, actorUserId: session.appUser.id, productId });
-  const record = builderRecord(row?.session.rawResponse);
-  if (!row || !record) throw new ValidationError("This product is not in your builder workspace.");
-  return { ...row, record };
+  const record = builderRecord(row?.session?.rawResponse);
+  if (!row?.session || !record) throw new ValidationError("This product is not in your builder workspace.");
+  return { ...row, session: row.session, record };
 }
 
 export async function confirmBuilderProduct(session: SessionUser, productId: string) {
   const row = await getOwnedBuilder(session, productId);
   if (row.product.sourceAssetId) await approveAsset({ ventureId: session.ventureId, assetId: row.product.sourceAssetId, approvedById: session.appUser.id });
-  await getDb().update(aiCreationSession).set({ rawResponse: { ...row.record, confirmed: true } }).where(eq(aiCreationSession.id, row.session.id));
+  await getDb().update(aiCreationSession).set({ rawResponse: { ...row.record, confirmed: true } }).where(eq(aiCreationSession.id, row.session!.id));
 }
 
 export async function prepareBlankPreview(session: SessionUser, productId: string) {
@@ -120,20 +120,21 @@ export async function prepareBlankPreview(session: SessionUser, productId: strin
   const image = await createAssetWithUpload({ ventureId: session.ventureId, ventureSlug: session.ventureSlug,
     uploadedById: session.appUser.id, name: `${row.product.name} — generated blank preview`, assetType: "product_asset",
     file: preview, filename: "blank-preview.png", mimeType: "image/png", notes: "AI-generated visual preview. Verify appearance and print area before production." });
-  await getDb().update(aiCreationSession).set({ rawResponse: { ...row.record, mockupAssetId: image.id } }).where(eq(aiCreationSession.id, row.session.id));
+  await getDb().update(aiCreationSession).set({ rawResponse: { ...row.record, mockupAssetId: image.id } }).where(eq(aiCreationSession.id, row.session!.id));
   return image.id;
 }
 
 export async function listBuilderBlanks(session: SessionUser) {
   const rows = await listActorProductDrafts({ ventureId: session.ventureId, actorUserId: session.appUser.id });
   return Promise.all(rows.filter(row => {
-    const data = builderRecord(row.session.rawResponse);
+    const data = builderRecord(row.session?.rawResponse);
     return data?.purpose === "blank" && data.confirmed && row.product.draftStatus !== "archived";
   }).map(async row => {
-    const data = builderRecord(row.session.rawResponse)!;
+    const data = builderRecord(row.session?.rawResponse);
+    if (!data) return null;
     const assetId = data.mockupAssetId || row.product.sourceAssetId;
     return { id: row.product.id, name: row.product.name, category: row.product.category, description: row.product.description, printArea: row.product.printArea,
       variantOptions: row.product.variantOptions, catalogSource: row.product.catalogSource,
       imageUrl: row.product.printArea?.surfaces?.[0]?.imageUrl ?? (assetId ? await getAssetSignedUrl({ ventureId: session.ventureId, assetId }) : null) };
-  }));
+  })).then(rows => rows.filter((row): row is NonNullable<typeof row> => row !== null));
 }

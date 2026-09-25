@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, inArray, or } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import {
   aiCreationSession,
@@ -314,7 +314,7 @@ export async function listVentureAiDraftsForReview(ventureId: string) {
     .orderBy(desc(aiCreationSession.createdAt));
 }
 
-/** Partner (or owner) AI drafts — read-only handoff list; partners cannot publish. */
+/** Partner-owned drafts and AI drafts, using the product's existing submitter field for non-AI onboarding. */
 export async function listActorProductDrafts(input: {
   ventureId: string;
   actorUserId: string;
@@ -326,18 +326,22 @@ export async function listActorProductDrafts(input: {
       product,
       session: aiCreationSession,
     })
-    .from(aiCreationSession)
-    .innerJoin(product, eq(aiCreationSession.productId, product.id))
+    .from(product)
+    .leftJoin(aiCreationSession, and(
+      eq(aiCreationSession.productId, product.id),
+      eq(aiCreationSession.ventureId, product.ventureId),
+      eq(aiCreationSession.actorUserId, input.actorUserId),
+    ))
     .where(
       and(
-        eq(aiCreationSession.ventureId, input.ventureId),
-        eq(aiCreationSession.actorUserId, input.actorUserId),
+        eq(product.ventureId, input.ventureId),
+        or(eq(product.submittedByUserId, input.actorUserId), eq(aiCreationSession.actorUserId, input.actorUserId)),
       ),
     )
-    .orderBy(desc(aiCreationSession.createdAt));
+    .orderBy(desc(product.updatedAt));
 }
 
-/** Partner-owned AI draft by product id (null if not owned). */
+/** Partner-owned product by id (null if not owned), whether AI-assisted or manually onboarded. */
 export async function getActorProductDraft(input: {
   ventureId: string;
   actorUserId: string;

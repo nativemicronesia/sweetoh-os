@@ -27,7 +27,7 @@ export default async function PartnerProductsPage({
     rows
       .filter(({ product }) => product.draftStatus !== "archived")
       .map(async ({ product, session: draft }) => {
-        const record = builderRecord(draft.rawResponse);
+        const record = builderRecord(draft?.rawResponse);
         const assetId = record?.mockupAssetId || product.sourceAssetId;
         const image = assetId
           ? await getAssetSignedUrl({ ventureId: session.ventureId, assetId })

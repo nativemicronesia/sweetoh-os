@@ -59,12 +59,12 @@ export default async function PartnerHomePage() {
 
   const open = drafts.filter(({ product }) => product.draftStatus !== "archived");
   const blanks = open.filter(
-    ({ session: d }) => builderRecord(d.rawResponse)?.purpose === "blank",
+    ({ session: d }) => builderRecord(d?.rawResponse)?.purpose === "blank",
   ).length;
   const designed = open.length - blanks;
   const inProgress = open.filter(
     ({ product, session: d }) =>
-      !product.active && builderRecord(d.rawResponse)?.purpose !== "blank",
+      !product.active && builderRecord(d?.rawResponse)?.purpose !== "blank",
   ).length;
   const toProduce = jobs.filter(({ job }) =>
     ["new", "in_production", "ready_to_ship"].includes(job.status),

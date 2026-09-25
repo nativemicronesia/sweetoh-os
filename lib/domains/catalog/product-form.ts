@@ -31,6 +31,7 @@ export type ParsedPartnerProductFormFields = {
   seoDescription: string | null;
   suggestedTags: string[] | null;
   suggestedCollections: string[] | null;
+  sourceAssetId?: string | null;
 };
 
 export function parsePartnerProductFields(
@@ -55,6 +56,9 @@ export function parsePartnerProductFields(
   const suggestedCollections = parseDelimitedList(
     String(formData.get("suggestedCollections") ?? ""),
   );
+  const sourceAssetId = formData.has("sourceAssetId")
+    ? String(formData.get("sourceAssetId") ?? "").trim() || null
+    : undefined;
 
   return {
     name,
@@ -67,6 +71,7 @@ export function parsePartnerProductFields(
     suggestedTags: suggestedTags.length > 0 ? suggestedTags : null,
     suggestedCollections:
       suggestedCollections.length > 0 ? suggestedCollections : null,
+    sourceAssetId,
   };
 }
 

@@ -6,6 +6,7 @@ import { unpublishPartnerProduct } from "../lib/domains/catalog/partner-listings
 import { updatePartnerJobStatus } from "../lib/domains/fulfillment/partner-jobs";
 import type { SessionUser } from "../lib/domains/identity/types";
 import { parsePartnerProductFields, validatePartnerProductFields } from "../lib/domains/catalog/product-form";
+import { colorHex, defaultUpcharges, sortSizes, variantOptionsSchema } from "../lib/domains/catalog/variants";
 
 const url = "https://manufacturer.example/products/tee";
 const research = { title: "Cotton tee", description: "A plain tee.", category: "apparel", identity: "matched", brand: "Example", model: "4000", evidence: "Visible label", specifications: [{ label: "Material", value: "Cotton", sourceUrl: url }], sources: [{ title: "Manufacturer", url }], unknowns: [], mockupPrompt: "A plain tee" };
@@ -37,6 +38,15 @@ test("partner prices use dollars without silently accepting fractional cents", (
   assert.equal(parsed.priceCents, 2995); validatePartnerProductFields(parsed);
   form.set("priceDollars", "1.999"); assert.throws(() => parsePartnerProductFields(form), /decimal/);
   form.set("priceDollars", "-4"); assert.throws(() => parsePartnerProductFields(form), /dollars/);
+});
+test("partner product edits retain a selected production asset and catalog-compatible options", () => {
+  const assetId = "00000000-0000-4000-8000-000000000001";
+  const form = new FormData(); form.set("name", "Studio tee"); form.set("category", "apparel"); form.set("priceDollars", "24.00"); form.set("sourceAssetId", assetId);
+  assert.equal(parsePartnerProductFields(form).sourceAssetId, assetId);
+  assert.equal(parsePartnerProductFields(new FormData()).sourceAssetId, undefined);
+  const sizes = sortSizes(["XL", "M", "2XL"]);
+  assert.deepEqual(sizes, ["M", "XL", "2XL"]);
+  assert.deepEqual(variantOptionsSchema.parse({ colors: [{ name: "Black", hex: colorHex("Black") }], sizes, sizeUpchargeCents: defaultUpcharges(sizes) }).sizeUpchargeCents, { "2XL": 200 });
 });
 test("creators build only in their own workspace and cannot unpublish shop products or change fulfillment", async () => {
   const creator = { role: "creator", ventureId: "unused", appUser: { id: "unused" } } as SessionUser;

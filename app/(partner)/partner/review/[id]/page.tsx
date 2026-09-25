@@ -22,6 +22,7 @@ import {
 } from "@/lib/domains/intelligence/service";
 import { formatPrice } from "@/lib/shared/format";
 import { NotFoundError } from "@/lib/shared/errors";
+import { listPartnerLibraryDesigns } from "@/lib/domains/catalog/partner-design-library";
 import {
   approvePendingListingAction,
   rejectPendingListingAction,
@@ -84,6 +85,12 @@ export default async function PartnerReviewDetailPage({
   }
 
   const isOwn = Boolean(owned);
+  const canEdit =
+    isOwn &&
+    !product.active &&
+    (product.draftStatus === "draft" ||
+      product.draftStatus === "needs_work" ||
+      product.draftStatus === "pending_review");
   const [aiSession, readiness, imageUrl] = await Promise.all([
     getAiCreationSessionForProduct({
       ventureId: session.ventureId,
@@ -95,6 +102,9 @@ export default async function PartnerReviewDetailPage({
     }),
     getPrimaryProductImageUrl(id),
   ]);
+  const designAssets = canEdit
+    ? (await listPartnerLibraryDesigns(session.ventureId)).filter((item) => item.status === "approved" || item.status === "licensed")
+    : [];
 
   const draftCompleteness = aiSession && !builderRecord(aiSession.session.rawResponse) && (aiSession.session.rawResponse as { kind?: string })?.kind !== "canvas_composition"
     ? evaluateAiProductDraftCompleteness({
@@ -103,13 +113,6 @@ export default async function PartnerReviewDetailPage({
         mediaCount: aiSession.media.length,
       })
     : null;
-
-  const canEdit =
-    isOwn &&
-    !product.active &&
-    (product.draftStatus === "draft" ||
-      product.draftStatus === "needs_work" ||
-      product.draftStatus === "pending_review");
 
   const isPending = !product.active && product.draftStatus === "pending_review";
 
@@ -341,6 +344,16 @@ export default async function PartnerReviewDetailPage({
                   color: "var(--so-cream)",
                 }}
               />
+            </label>
+
+            <label className="block text-sm md:col-span-2">
+              <span className="mb-1 block" style={{ color: "var(--so-cream)" }}>Production artwork</span>
+              <select name="sourceAssetId" defaultValue={product.sourceAssetId ?? ""} className="w-full rounded-lg border px-3 py-2" style={{ borderColor: "var(--so-border)", background: "var(--so-black)", color: "var(--so-cream)" }}>
+                <option value="">No linked artwork</option>
+                {product.sourceAssetId && !designAssets.some((item) => item.id === product.sourceAssetId) && <option value={product.sourceAssetId}>Keep current product source</option>}
+                {designAssets.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+              </select>
+              <span className="mt-1 block text-xs" style={{ color: "var(--so-cream-dim)" }}>Only approved artwork can be linked for production. Uploads and designs remain in My files.</span>
             </label>
 
             <label className="block text-sm">

@@ -24,6 +24,8 @@ import {
   updateProduct,
   getProductById,
 } from "./service";
+import { getAssetById } from "@/lib/domains/assets/service";
+import { isApprovedAssetStatus } from "@/lib/domains/assets/types";
 
 const PARTNER_EDITABLE_STATUSES: ProductDraftStatus[] = [
   "draft",
@@ -178,6 +180,12 @@ export async function updatePartnerDraftFields(
   fields: ParsedPartnerProductFormFields,
 ) {
   const owned = await assertPartnerOwnsEditableDraft(session, productId);
+  if (fields.sourceAssetId) {
+    const asset = await getAssetById({ ventureId: session.ventureId, assetId: fields.sourceAssetId });
+    if ((asset.assetType !== "sweetoh_design" && asset.assetType !== "product_asset") || !isApprovedAssetStatus(asset.status as import("@/lib/domains/assets/types").AssetStatus)) {
+      throw new ValidationError("Choose approved artwork from your SweetOh library.");
+    }
+  }
 
   return updateProduct({
     ventureId: session.ventureId,
@@ -190,7 +198,7 @@ export async function updatePartnerDraftFields(
     category: fields.category,
     fulfillmentType: owned.product.fulfillmentType as "dropship" | "sweetoh",
     supplierSku: owned.product.supplierSku,
-    sourceAssetId: owned.product.sourceAssetId,
+    sourceAssetId: fields.sourceAssetId !== undefined ? fields.sourceAssetId : owned.product.sourceAssetId,
     shortDescription: fields.shortDescription,
     seoTitle: fields.seoTitle,
     seoDescription: fields.seoDescription,

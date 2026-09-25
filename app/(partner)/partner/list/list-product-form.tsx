@@ -27,10 +27,11 @@ const fieldStyle = { borderColor: "var(--pf-border)" };
  * 3. She checks one screen and publishes (or saves a draft).
  * 4. Her original photo becomes a design blank automatically, ready in the Studio.
  */
-export function ListProductForm({ categories, maxPhotos }: { categories: Category[]; maxPhotos: number }) {
+export function ListProductForm({ categories, maxPhotos, designs }: { categories: Category[]; maxPhotos: number; designs: { id: string; name: string }[] }) {
   const router = useRouter();
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [prepared, setPrepared] = useState<Prepared | null>(null);
+  const [manualEntry, setManualEntry] = useState(false);
   const [useShot, setUseShot] = useState(true);
   const [done, setDone] = useState<Done | null>(null);
   const [blank, setBlank] = useState<BlankState | null>(null);
@@ -69,6 +70,7 @@ export function ListProductForm({ categories, maxPhotos }: { categories: Categor
   function reset() {
     setPhotos([]);
     setPrepared(null);
+    setManualEntry(false);
     setUseShot(true);
     setDone(null);
     setBlank(null);
@@ -94,6 +96,7 @@ export function ListProductForm({ categories, maxPhotos }: { categories: Categor
         return;
       }
       setPrepared(result);
+      setManualEntry(false);
       setUseShot(Boolean(result.productShot));
     });
   }
@@ -166,7 +169,7 @@ export function ListProductForm({ categories, maxPhotos }: { categories: Categor
   if (prepared) {
     const s = prepared.suggestion;
     return (
-      <form ref={formRef} className="space-y-5" onSubmit={(e) => { e.preventDefault(); submit(true); }}>
+      <form ref={formRef} className="space-y-5" onSubmit={(e) => { e.preventDefault(); submit(!manualEntry); }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 12 }}>
           {prepared.productShot && (
             <button
@@ -230,13 +233,27 @@ export function ListProductForm({ categories, maxPhotos }: { categories: Categor
           Description
           <textarea name="description" rows={5} maxLength={2000} defaultValue={s?.description ?? ""} placeholder="Say what makes it special…" className="mt-2 w-full rounded-xl border p-3" style={fieldStyle} />
         </label>
+        <label className="block text-sm">Attach approved SweetOh artwork (optional)
+          <select name="artworkAssetId" defaultValue="" className="mt-2 w-full rounded-xl border p-3" style={fieldStyle}>
+            <option value="">No artwork selected</option>
+            {designs.map((design) => <option key={design.id} value={design.id}>{design.name}</option>)}
+          </select>
+        </label>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="block text-sm">Colors (optional, comma-separated)
+            <input name="variantColors" maxLength={600} placeholder="Black, White, Navy" className="mt-2 w-full rounded-xl border p-3" style={fieldStyle} />
+          </label>
+          <label className="block text-sm">Sizes (optional, comma-separated)
+            <input name="variantSizes" maxLength={300} placeholder="S, M, L, XL, 2XL" className="mt-2 w-full rounded-xl border p-3" style={fieldStyle} />
+          </label>
+        </div>
 
         {error && <p role="alert" className="print-error">{error}</p>}
         {busy && <p className="text-sm" style={{ color: "var(--pf-muted)" }}><Loader2 size={14} className="pe-spin" /> {busy}</p>}
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
           <button type="submit" className="pe-btn pe-btn-primary" disabled={pending}>
-            <Camera size={16} /> Publish to my shop
+            <Camera size={16} /> {manualEntry ? "Save private draft" : "Publish to my shop"}
           </button>
           <button type="button" className="pe-btn pe-btn-ghost" disabled={pending} onClick={() => submit(false)}>
             Save as draft
@@ -295,6 +312,9 @@ export function ListProductForm({ categories, maxPhotos }: { categories: Categor
       <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
         <button type="button" className="pe-btn pe-btn-primary" disabled={pending || !photos.length} onClick={prepare}>
           <Sparkles size={16} /> Let Skink prepare it
+        </button>
+        <button type="button" className="pe-btn pe-btn-ghost" disabled={pending || !photos.length} onClick={() => { setPrepared({ ok: true, suggestion: null, productShot: null, notes: [] }); setManualEntry(true); setUseShot(false); }}>
+          Enter details myself
         </button>
         {photos.length > 0 && (
           <button type="button" className="pe-btn pe-btn-ghost" disabled={pending} onClick={() => setPhotos([])}>

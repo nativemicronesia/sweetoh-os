@@ -4,13 +4,15 @@ import { getDb } from "@/lib/db/client";
 import { product } from "@/lib/db/schema";
 import type { SessionUser } from "@/lib/domains/identity/types";
 import { ValidationError } from "@/lib/shared/errors";
-import { approveAsset, createAssetWithUpload } from "@/lib/domains/assets/service";
-import { addProductMediaUpload, createProduct, publishProduct } from "./service";
+import { approveAsset, createAssetWithUpload, getAssetById } from "@/lib/domains/assets/service";
+import { isApprovedAssetStatus } from "@/lib/domains/assets/types";
+import { addProductMediaUpload, createProduct, publishProduct, setProductVariantSetup } from "./service";
 import { createHash } from "node:crypto";
 import { PRODUCT_CATEGORIES, type ProductCategory } from "./categories";
 import { analyzeProductImageWithOpenAi } from "@/lib/integrations/ai/intake-openai";
 import { aiProductShot } from "@/lib/integrations/ai/product-research";
 import { reservePartnerAi } from "@/lib/domains/intelligence/partner-builder";
+import type { VariantOptions } from "./variants";
 
 /**
  * "Add a product I already make."
@@ -76,6 +78,8 @@ export async function listOwnProduct(
     category: ProductCategory;
     photos: { file: Buffer; filename: string }[];
     publish: boolean;
+    artworkAssetId?: string | null;
+    variantOptions?: VariantOptions | null;
   },
 ) {
   if (session.role !== "partner" && session.role !== "owner") {
@@ -88,6 +92,14 @@ export async function listOwnProduct(
   if (input.photos.length > LISTING_MAX_PHOTOS) throw new ValidationError(`Up to ${LISTING_MAX_PHOTOS} photos per product.`);
 
   const photos = await Promise.all(input.photos.map(async (p) => ({ ...(await normalizePhoto(p.file)), filename: p.filename })));
+  let attachedArtworkId: string | null = null;
+  if (input.artworkAssetId) {
+    const artwork = await getAssetById({ ventureId: session.ventureId, assetId: input.artworkAssetId });
+    if (artwork.assetType !== "sweetoh_design" || !isApprovedAssetStatus(artwork.status as import("@/lib/domains/assets/types").AssetStatus)) {
+      throw new ValidationError("Choose approved artwork from your SweetOh library.");
+    }
+    attachedArtworkId = artwork.id;
+  }
 
   // Publishing a Sweet'Oh product needs an approved source asset behind it,
   // so her main photo becomes that asset.
@@ -106,7 +118,7 @@ export async function listOwnProduct(
 
   const created = await createProduct({
     ventureId: session.ventureId,
-    sourceAssetId: source.id,
+    sourceAssetId: attachedArtworkId ?? source.id,
     slug: await uniqueSlug(session.ventureId, name),
     name,
     description: input.description?.trim() || null,
@@ -114,7 +126,12 @@ export async function listOwnProduct(
     category: input.category,
     fulfillmentType: "sweetoh",
     actorUserId: session.appUser.id,
+    submittedByUserId: session.appUser.id,
   });
+
+  if (input.variantOptions) {
+    await setProductVariantSetup({ ventureId: session.ventureId, productId: created.id, variantOptions: input.variantOptions });
+  }
 
   // The first photo is what the shop shows; the rest are extra angles.
   for (const [index, photo] of photos.entries()) {
