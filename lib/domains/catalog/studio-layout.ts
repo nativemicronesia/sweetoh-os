@@ -48,6 +48,8 @@ export const surfaceSchema = z.object({
 });
 const placement = {
   printRegionId: z.string().min(1).max(80).optional(),
+  /** Logical persisted group identity; groups remain ordinary independently editable layers. */
+  groupId: z.string().uuid().optional(),
   hidden: z.boolean().optional(),
   locked: z.boolean().optional(),
   id: z.string().min(1).max(80),

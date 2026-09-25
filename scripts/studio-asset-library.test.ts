@@ -5,8 +5,9 @@ import sharp from "sharp";
 import { studioLayoutSchema } from "../lib/domains/catalog/studio-layout";
 import { STUDIO_ASSETS, studioAsset, studioAssetUrl } from "../lib/studio/asset-library";
 import { STUDIO_FONT_PROVENANCE } from "../lib/studio/font-provenance";
-import { buildStudioEditorState, findStudioAssets, studioAssetSearchSchema, studioEditorCommandSchema } from "../lib/studio/editor-commands";
+import { buildStudioEditorState, findStudioAssets, studioAssetSearchSchema, studioEditorCommandSchema, studioEditorProposalSchema } from "../lib/studio/editor-commands";
 import { mockupTemplateSchema } from "../lib/studio/mockup/templates";
+import { CONFIRMED_SHOP_METHODS, KNOWLEDGE_ONLY_METHODS } from "../lib/domains/production/methods";
 
 test("seed graphics have stable unique identities and explicit provenance", () => {
   assert.ok(STUDIO_ASSETS.length >= 10);
@@ -34,6 +35,21 @@ test("old layouts still load and vetted graphics round trip", () => {
   assert.equal(studioLayoutSchema.parse(withGraphic).surfaces[0].layers[0].kind, "graphic");
   withGraphic.surfaces[0].layers[0].assetKey = "unknown-asset";
   assert.equal(studioLayoutSchema.safeParse(withGraphic).success, false);
+});
+
+test("logical group identity persists across layout validation and exposes real capability truth", () => {
+  const groupId = "00000000-0000-4000-8000-000000000010";
+  const layout = studioLayoutSchema.parse({ ...base, surfaces: [{ ...base.surfaces[0], layers: [
+    { id: "a", kind: "shape", shape: "rect", fill: "#ffffff", x: 10, y: 10, scaleX: 1, scaleY: 1, angle: 0, width: 30, height: 30, groupId },
+    { id: "b", kind: "text", text: "PLAY", color: "#173e39", fontSize: 32, x: 50, y: 10, scaleX: 1, scaleY: 1, angle: 0, groupId },
+  ] }] });
+  const snapshot = buildStudioEditorState(layout, "front", ["a", "b"], 1);
+  assert.equal(snapshot.layers[0].geometry.groupId, groupId);
+  assert.deepEqual(snapshot.selectedLayerIds, ["a", "b"]);
+  assert.equal(studioEditorCommandSchema.safeParse({ type: "group_selection", layerIds: ["a", "b"] }).success, true);
+  assert.equal(studioEditorCommandSchema.safeParse({ type: "distribute_selection", layerIds: ["a", "b"], axis: "horizontal" }).success, false);
+  assert.deepEqual(CONFIRMED_SHOP_METHODS, ["sublimation", "engraving"]);
+  assert.ok(KNOWLEDGE_ONLY_METHODS.includes("embroidery"));
 });
 
 test("new shape, image and typography controls stay serializable across save/reopen", () => {
@@ -78,12 +94,12 @@ test("mockup templates require versioned identity and documented photo rights", 
 
 test("AI-facing canvas state is a validated read-only serializable snapshot", () => {
   const layout = studioLayoutSchema.parse({ ...base, surfaces: [{ ...base.surfaces[0], layers: [{ id: "t1", kind: "text", text: "Hello", color: "#173e39", fontSize: 48, x: 22, y: 30, scaleX: 1, scaleY: 1, angle: 0 }] }] });
-  const state = buildStudioEditorState(layout, "front", "t1", 7);
+  const state = buildStudioEditorState(layout, "front", ["t1"], 7);
   assert.equal(state.revision, 7);
   assert.equal(state.layers[0].name, "Hello");
-  assert.equal(state.selectedLayerId, "t1");
+  assert.deepEqual(state.selectedLayerIds, ["t1"]);
   assert.doesNotThrow(() => JSON.stringify(state));
-  assert.throws(() => buildStudioEditorState(layout, "missing", null, 0));
+  assert.throws(() => buildStudioEditorState(layout, "missing", [], 0));
 });
 
 test("assistant asset search returns only vetted, provenance-labelled Studio resources", () => {
@@ -92,6 +108,8 @@ test("assistant asset search returns only vetted, provenance-labelled Studio res
   assert.ok(results.every((asset) => asset.source && asset.license));
   assert.equal(studioAssetSearchSchema.safeParse({ query: "x", limit: 500 }).success, false);
   assert.equal(studioEditorCommandSchema.safeParse({ type: "set_text_style", font: "made-up-font" }).success, false);
+  assert.equal(studioEditorProposalSchema.safeParse({ summary: "Darken the selected image", actions: [{ targetLayerIds: ["img"], command: { type: "set_image_adjustment", field: "brightness", value: -.25 } }] }).success, true);
+  assert.equal(studioEditorProposalSchema.safeParse({ summary: "Raw mutation", actions: [{ command: { type: "set_raw_canvas", value: {} } }] }).success, false);
 });
 
 test("font notices are bundled for every font in the Studio", () => {

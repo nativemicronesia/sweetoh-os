@@ -5,7 +5,7 @@ Sweet'Oh has two doors:
 - **Shop with Sweet'Oh**: customers buy from the Sweet'Oh Creations shop (`/`, `/collections`).
 - **Create with Sweet'Oh**: creators build their own print-on-demand brand with the Sweet'Oh Studio and **Skink**, Sweet'Oh AI (`/create` → `/studio`).
 
-Creators aren't locked in. They send products to **their own** Printify store (and from there to Etsy, Shopify, TikTok Shop and so on), download print files for any printer, or request a print from the Sweet'Oh shop when it has capacity. Sweet'Oh-hosted creator stores (with custom domains and Stripe Connect) are the next phase and aren't built yet.
+Creators aren't locked in. They send products to **their own** Printify store (and from there to Etsy, Shopify, TikTok Shop and so on), download print files for any printer, or request a print from the Sweet'Oh shop when it has capacity. Sweet'Oh's currently confirmed shop methods are sublimation and engraving. Sweet'Oh AI can teach broader methods without implying the shop offers them. Sweet'Oh-hosted creator stores (with custom domains and Stripe Connect) are the next phase and aren't built yet.
 
 ## Where things live
 
@@ -39,9 +39,13 @@ Each creator gets their **own `venture` row** (their private workspace) plus a `
 
 **Memory** (`lib/domains/skink/memory.ts`) is durable private intelligence (brand, goal, decision, correction, and so on), separate from saved conversations (`skink_thread` / `skink_message`). Skink saves with its `remember` tool. Creators edit it at `/studio/memory`.
 
+## Shared intelligence and operators
+
+SweetOh AI is the shared specialized intelligence. The Green Tree Skink is SweetOh's lead operator and the creator-facing Studio presence. Western Skinks and Western Fence Lizards are planned subordinate agents that may use SweetOh AI within scoped roles; autonomous agent workflows are not active.
+
 ## What creators are paying for
 
-Sweet'Oh AI is the intelligence layer; **Skink** is the agent creators talk to. Subscribers pay for Skink's help running a print-on-demand business: learning it, setting up **their own** store (Printify, Etsy, Shopify…), finding a niche, designing products, pricing, listings and what to make next. Printing with Sweet'Oh is optional and capped by the partner's capacity.
+Sweet'Oh AI is the shared intelligence; the **Green Tree Skink** is the lead operator creators meet in Studio. Subscribers use SweetOh AI's help running a print-on-demand business: learning it, setting up **their own** store (Printify, Etsy, Shopify…), finding a niche, designing products, pricing, listings and what to make next. Printing with Sweet'Oh is optional and capped by the partner's capacity.
 
 Sweet'Oh does not try to replace ChatGPT, Claude, Gemini, Canva or Printify. Skink uses them — see **My tools** below.
 

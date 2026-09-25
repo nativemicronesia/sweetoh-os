@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   Canvas,
+  ActiveSelection,
   StaticCanvas,
   FabricImage,
   FabricObject,
@@ -81,7 +82,7 @@ import { analyzePhoto, printAreaInBox, tintGarment } from "@/lib/studio/tint";
 import { sizedPhoto } from "@/lib/studio/photo";
 import { PRODUCT_FONTS, ensureFont, fontFamily } from "@/lib/studio/fonts";
 import { studioAsset, studioAssetUrl } from "@/lib/studio/asset-library";
-import { studioEditorCommandSchema, type StudioEditorCommand } from "@/lib/studio/editor-commands";
+import { buildStudioEditorState, studioEditorCommandSchema, studioEditorProposalSchema, type StudioEditorCommand } from "@/lib/studio/editor-commands";
 import { SHAPES, makeShape, type ShapeKind } from "@/lib/studio/shapes";
 import { makePatternRect } from "@/lib/studio/pattern";
 import { getMockupRenderer } from "@/lib/studio/mockup";
@@ -284,6 +285,12 @@ export function ProductEditor({
   const [name, setName] = useState(initialName || blank?.name || "My product");
   const [layers, setLayers] = useState<StudioLayer[]>([]);
   const [selected, setSelected] = useState<Selected>(null);
+  const [selectedLayerIds, setSelectedLayerIds] = useState<string[]>([]);
+  const revision = useRef(0);
+  const batching = useRef(false);
+  const [editorAsk, setEditorAsk] = useState("");
+  const [editorProposal, setEditorProposal] = useState<{ summary: string; actions: { targetLayerIds: string[]; command: StudioEditorCommand }[]; revision: number } | null>(null);
+  const [proposalBusy, setProposalBusy] = useState(false);
   const [redoCount, setRedoCount] = useState(0);
   const [undoCount, setUndoCount] = useState(0);
   const [search, setSearch] = useState("");
@@ -335,6 +342,9 @@ export function ProductEditor({
     const canvas = editor.current;
     if (!canvas) return;
     const s = surface();
+    const activeIds = canvas.getActiveObjects().map((object) => meta.current.get(object)?.id).filter((id): id is string => Boolean(id));
+    const restoreMulti = activeIds.length > 1;
+    if (restoreMulti) canvas.discardActiveObject();
     s.layers = canvas
       .getObjects()
       .filter((o) => meta.current.has(o))
@@ -364,16 +374,23 @@ export function ProductEditor({
           ...(base.kind === "shape" ? { ...(typeof o.fill === "string" ? { fill: o.fill } : {}), stroke: typeof o.stroke === "string" ? o.stroke : undefined, strokeWidth: o.strokeWidth || undefined } : {}),
         } as StudioLayer;
       });
+    if (restoreMulti) {
+      const objects = canvas.getObjects().filter((object) => activeIds.includes(meta.current.get(object)?.id ?? ""));
+      if (objects.length > 1) canvas.setActiveObject(new ActiveSelection(objects, { canvas }));
+    }
+    revision.current++;
     setLayers([...s.layers]);
     checkOutside();
     scheduleMockups();
   }
   function checkpoint() {
+    if (batching.current) return;
     capture();
     future.current = []; setRedoCount(0);
     history.current = [...history.current.slice(-39), structuredClone(doc.current)];
     setUndoCount(history.current.length);
     dirty.current = true;
+    revision.current++;
     saveDraft();
   }
 
@@ -412,7 +429,11 @@ export function ProductEditor({
   }
 
   function readSelection() {
-    const o = editor.current?.getActiveObject();
+    const canvas = editor.current;
+    const selectedObjects = canvas?.getActiveObjects().filter((object) => meta.current.has(object)) ?? [];
+    setSelectedLayerIds(selectedObjects.map((object) => meta.current.get(object)!.id));
+    if (selectedObjects.length > 1) { setSelected(null); return; }
+    const o = selectedObjects[0] ?? canvas?.getActiveObject();
     if (!o || o === guide.current || !meta.current.has(o)) {
       setSelected(null);
       return;
@@ -697,13 +718,19 @@ export function ProductEditor({
       width: SIZE,
       height: SIZE,
       preserveObjectStacking: true,
-      selection: false,
+      selection: true,
     });
     editor.current = canvas;
     canvas.on("selection:created", readSelection);
     canvas.on("selection:updated", readSelection);
     canvas.on("selection:cleared", readSelection);
-    canvas.on("before:transform", () => checkpoint());
+    canvas.on("before:transform", () => {
+      if (canvas.getActiveObjects().length > 1) {
+        future.current = []; setRedoCount(0);
+        history.current = [...history.current.slice(-39), structuredClone(doc.current)];
+        setUndoCount(history.current.length); dirty.current = true;
+      } else checkpoint();
+    });
     canvas.on("text:editing:entered", () => checkpoint());
     canvas.on("object:modified", () => {
       capture();
@@ -941,11 +968,10 @@ export function ProductEditor({
     for (const object of editor.current.getObjects()) if (object.excludeFromExport) editor.current.bringObjectToFront(object);
   }
   function changeSelected(change: (obj: FabricObject) => void, record = true) {
-    const o = editor.current?.getActiveObject();
-    if (!o || !meta.current.has(o)) return;
+    const targets = editor.current?.getActiveObjects().filter((object) => meta.current.has(object)) ?? [];
+    if (!targets.length) return;
     if (record) checkpoint();
-    change(o);
-    o.setCoords();
+    for (const object of targets) { change(object); object.setCoords(); }
     capture();
     editor.current!.requestRenderAll();
     readSelection();
@@ -1004,17 +1030,24 @@ export function ProductEditor({
     });
   }
   async function duplicate() {
-    const o = editor.current?.getActiveObject();
-    if (!o || !meta.current.has(o)) return;
+    const canvas = editor.current;
+    const targets = canvas?.getActiveObjects().filter((object) => meta.current.has(object));
+    if (!canvas || !targets?.length) return;
     checkpoint();
-    const source = surface().layers.find((l) => l.id === meta.current.get(o)?.id)!;
-    const copy = await makeLayer({ ...source, id: crypto.randomUUID(), x: source.x + 16, y: source.y + 16 });
-    editor.current!.add(copy);
+    const sources = targets.map((object) => meta.current.get(object)!).map((layer) => surface().layers.find((candidate) => candidate.id === layer.id)!).filter(Boolean);
+    const newGroup = sources.length > 1 && sources[0].groupId ? crypto.randomUUID() : undefined;
+    const copies: FabricObject[] = [];
+    for (const source of sources) {
+      const { groupId: _oldGroup, ...base } = source;
+      const copy = await makeLayer({ ...base, id: crypto.randomUUID(), x: source.x + 16, y: source.y + 16, ...(newGroup ? { groupId: newGroup } : {}) } as StudioLayer);
+      canvas.add(copy); copies.push(copy);
+    }
     bringGuideToTop();
-    editor.current!.setActiveObject(copy);
+    if (copies.length === 1) canvas.setActiveObject(copies[0]);
+    else canvas.setActiveObject(new ActiveSelection(copies, { canvas }));
     capture();
     readSelection();
-    editor.current!.requestRenderAll();
+    canvas.requestRenderAll();
   }
   /* ---------- Canva-style tools ---------- */
 
@@ -1107,6 +1140,10 @@ export function ProductEditor({
       case "make_pattern": return makePattern(action.assetId);
       case "set_layer_flags": return setLayerFlags(action.layerId, { hidden: action.hidden, locked: action.locked });
       case "set_layer_order": return setLayerOrder(action.layerId, action.direction);
+      case "group_selection": return groupLayers(action.layerIds);
+      case "ungroup_selection": return ungroupLayers(action.layerIds);
+      case "align_selection": return alignLayers(action.layerIds, action.edge);
+      case "distribute_selection": return distributeLayers(action.layerIds, action.axis);
       case "set_opacity": return changeSelected((o) => o.set({ opacity: action.opacity }));
       case "set_shape_style": return changeSelected((o) => {
         const layer = meta.current.get(o);
@@ -1139,6 +1176,40 @@ export function ProductEditor({
       }
     }
   }
+  async function askStudioAi() {
+    if (!editorAsk.trim() || proposalBusy || !editor.current) return;
+    capture();
+    const activeIds = editor.current.getActiveObjects().map((object) => meta.current.get(object)?.id).filter((id): id is string => Boolean(id));
+    const state = buildStudioEditorState(doc.current as StudioLayout, currentId.current, activeIds, revision.current);
+    setProposalBusy(true); setEditorProposal(null);
+    try {
+      const response = await fetch("/api/studio/editor-proposals", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ request: editorAsk.trim(), state }) });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Could not prepare a proposal.");
+      const parsed = studioEditorProposalSchema.safeParse(result.proposal);
+      if (!parsed.success) throw new Error("SweetOh AI returned a proposal the editor cannot review.");
+      setEditorProposal({ ...parsed.data, revision: result.revision });
+    } catch (error) { window.alert(error instanceof Error ? error.message : "Could not prepare a proposal."); }
+    finally { setProposalBusy(false); }
+  }
+  async function acceptStudioProposal() {
+    const proposal = editorProposal;
+    if (!proposal || proposal.revision !== revision.current) { setEditorProposal(null); window.alert("The canvas changed. Ask SweetOh AI again so its proposal matches the current design."); return; }
+    const before = structuredClone(doc.current), oldHistory = [...history.current], oldFuture = [...future.current], oldSelection = [...selectedLayerIds];
+    checkpoint(); batching.current = true;
+    try {
+      for (const item of proposal.actions) {
+        if (item.targetLayerIds.length) setSelectionByIds(item.targetLayerIds);
+        await executeEditorCommand(item.command);
+      }
+      batching.current = false; capture(); setEditorProposal(null); setEditorAsk("");
+    } catch (error) {
+      batching.current = false; doc.current = before; history.current = oldHistory; future.current = oldFuture;
+      setSurfaces([...before.surfaces]); setUndoCount(oldHistory.length); setRedoCount(oldFuture.length);
+      await loadSurface(currentId.current); setSelectionByIds(oldSelection);
+      window.alert(error instanceof Error ? `Proposal was rolled back: ${error.message}` : "Proposal was rolled back.");
+    }
+  }
   function setFill(hex: string, record = true) {
     changeSelected((o) => {
       o.set({ fill: hex });
@@ -1159,19 +1230,23 @@ export function ProductEditor({
     changeSelected((o) => o.set({ opacity: v }), false);
   }
   function setImageAdjustment(field: "brightness" | "contrast" | "saturation" | "blur", value: number, record = true) {
-    const o = editor.current?.getActiveObject();
-    const base = o && meta.current.get(o);
-    if (!(o instanceof FabricImage) || base?.kind !== "image") return;
+    const targets = editor.current?.getActiveObjects().filter((object) => object instanceof FabricImage && meta.current.get(object)?.kind === "image") as FabricImage[] | undefined;
+    if (!targets?.length) return;
     if (record) checkpoint();
-    const adjustments = { ...(base.adjustments ?? {}), [field]: value };
-    meta.current.set(o, { ...base, adjustments });
-    o.filters = [
-      ...(adjustments.brightness ? [new filters.Brightness({ brightness: adjustments.brightness })] : []),
-      ...(adjustments.contrast ? [new filters.Contrast({ contrast: adjustments.contrast })] : []),
-      ...(adjustments.saturation ? [new filters.Saturation({ saturation: adjustments.saturation })] : []),
-      ...(adjustments.blur ? [new filters.Blur({ blur: adjustments.blur })] : []),
-    ];
-    o.applyFilters(); capture(); readSelection(); editor.current?.requestRenderAll();
+    for (const o of targets) {
+      const base = meta.current.get(o);
+      if (base?.kind !== "image") continue;
+      const adjustments = { ...(base.adjustments ?? {}), [field]: value };
+      meta.current.set(o, { ...base, adjustments });
+      o.filters = [
+        ...(adjustments.brightness ? [new filters.Brightness({ brightness: adjustments.brightness })] : []),
+        ...(adjustments.contrast ? [new filters.Contrast({ contrast: adjustments.contrast })] : []),
+        ...(adjustments.saturation ? [new filters.Saturation({ saturation: adjustments.saturation })] : []),
+        ...(adjustments.blur ? [new filters.Blur({ blur: adjustments.blur })] : []),
+      ];
+      o.applyFilters();
+    }
+    capture(); readSelection(); editor.current?.requestRenderAll();
   }
   function flip(axis: "x" | "y") {
     changeSelected((o) => o.set(axis === "x" ? { flipX: !o.flipX } : { flipY: !o.flipY }));
@@ -1351,11 +1426,11 @@ export function ProductEditor({
     }
   }
   function removeSelected() {
-    const o = editor.current?.getActiveObject();
-    if (!o || !meta.current.has(o)) return;
+    const canvas = editor.current;
+    const objects = canvas?.getActiveObjects().filter((object) => meta.current.has(object));
+    if (!canvas || !objects?.length) return;
     checkpoint();
-    editor.current!.remove(o);
-    editor.current!.discardActiveObject();
+    canvas.discardActiveObject(); canvas.remove(...objects);
     capture();
     readSelection();
     editor.current!.requestRenderAll();
@@ -1368,11 +1443,77 @@ export function ProductEditor({
     });
   }
   function selectLayer(id: string) {
-    const o = editor.current?.getObjects().find((x) => meta.current.get(x)?.id === id);
-    if (!o) return;
-    editor.current!.setActiveObject(o);
-    editor.current!.requestRenderAll();
-    readSelection();
+    const layer = surface().layers.find((item) => item.id === id);
+    if (!layer) return;
+    const ids = layer.groupId ? surface().layers.filter((item) => item.groupId === layer.groupId).map((item) => item.id) : [id];
+    setSelectionByIds(ids);
+  }
+  function setSelectionByIds(ids: string[]) {
+    const canvas = editor.current;
+    if (!canvas) return;
+    const unique = [...new Set(ids)];
+    const objects = unique.map((id) => canvas.getObjects().find((object) => meta.current.get(object)?.id === id)).filter((object): object is FabricObject => Boolean(object && object.selectable && object.visible));
+    canvas.discardActiveObject();
+    if (objects.length === 1) canvas.setActiveObject(objects[0]);
+    else if (objects.length > 1) canvas.setActiveObject(new ActiveSelection(objects, { canvas }));
+    canvas.requestRenderAll(); readSelection();
+  }
+  function groupLayers(ids: string[]) {
+    const members = [...new Set(ids)].filter((id) => surface().layers.some((layer) => layer.id === id));
+    if (members.length < 2) return;
+    checkpoint();
+    const groupId = crypto.randomUUID();
+    const objects = editor.current!.getObjects().filter((object) => members.includes(meta.current.get(object)?.id ?? ""));
+    for (const object of objects) { const layer = meta.current.get(object)!; meta.current.set(object, { ...layer, groupId }); }
+    capture(); readSelection();
+  }
+  function ungroupLayers(ids: string[]) {
+    const members = new Set(ids);
+    const selectedGroups = new Set(surface().layers.filter((layer) => members.has(layer.id)).map((layer) => layer.groupId).filter((id): id is string => Boolean(id)));
+    const targets = surface().layers.filter((layer) => members.has(layer.id) || (layer.groupId && selectedGroups.has(layer.groupId)));
+    if (!targets.some((layer) => layer.groupId)) return;
+    checkpoint();
+    const targetIds = new Set(targets.map((layer) => layer.id));
+    for (const object of editor.current!.getObjects()) if (targetIds.has(meta.current.get(object)?.id ?? "")) {
+      const { groupId: _groupId, ...layer } = meta.current.get(object)!;
+      meta.current.set(object, layer as StudioLayer);
+    }
+    capture(); readSelection();
+  }
+  function alignLayers(ids: string[], edge: "left" | "hcenter" | "right" | "top" | "vcenter" | "bottom") {
+    const canvas = editor.current;
+    if (!canvas || ids.length < 2) return;
+    const targets = canvas.getObjects().filter((object) => ids.includes(meta.current.get(object)?.id ?? "") && !meta.current.get(object)?.locked);
+    if (targets.length < 2) return;
+    checkpoint(); canvas.discardActiveObject();
+    const bounds = targets.map((object) => ({ object, rect: object.getBoundingRect() }));
+    const left = Math.min(...bounds.map((item) => item.rect.left)), right = Math.max(...bounds.map((item) => item.rect.left + item.rect.width));
+    const top = Math.min(...bounds.map((item) => item.rect.top)), bottom = Math.max(...bounds.map((item) => item.rect.top + item.rect.height));
+    for (const { object, rect } of bounds) {
+      const dx = edge === "left" ? left - rect.left : edge === "right" ? right - (rect.left + rect.width) : ["hcenter"].includes(edge) ? (left + right) / 2 - (rect.left + rect.width / 2) : 0;
+      const dy = edge === "top" ? top - rect.top : edge === "bottom" ? bottom - (rect.top + rect.height) : edge === "vcenter" ? (top + bottom) / 2 - (rect.top + rect.height / 2) : 0;
+      object.set({ left: object.left + dx, top: object.top + dy }); object.setCoords();
+    }
+    capture(); readSelection(); canvas.requestRenderAll();
+  }
+  function distributeLayers(ids: string[], axis: "horizontal" | "vertical") {
+    const canvas = editor.current;
+    if (!canvas || ids.length < 3) return;
+    const targets = canvas.getObjects().filter((object) => ids.includes(meta.current.get(object)?.id ?? "") && !meta.current.get(object)?.locked);
+    if (targets.length < 3) return;
+    checkpoint(); canvas.discardActiveObject();
+    const horizontal = axis === "horizontal";
+    const bounds = targets.map((object) => ({ object, rect: object.getBoundingRect() })).sort((a, b) => horizontal ? a.rect.left - b.rect.left : a.rect.top - b.rect.top);
+    const start = horizontal ? bounds[0].rect.left : bounds[0].rect.top;
+    const end = horizontal ? bounds.at(-1)!.rect.left + bounds.at(-1)!.rect.width : bounds.at(-1)!.rect.top + bounds.at(-1)!.rect.height;
+    const span = bounds.reduce((sum, item) => sum + (horizontal ? item.rect.width : item.rect.height), 0);
+    const gap = (end - start - span) / (bounds.length - 1);
+    let cursor = start;
+    for (const { object, rect } of bounds) {
+      object.set(horizontal ? { left: object.left + cursor - rect.left } : { top: object.top + cursor - rect.top });
+      cursor += (horizontal ? rect.width : rect.height) + gap; object.setCoords();
+    }
+    capture(); readSelection(); canvas.requestRenderAll();
   }
   async function undo() {
     const previous = history.current.pop();
@@ -1891,6 +2032,13 @@ export function ProductEditor({
 
             {panel === "ai" && (
               <div className="pe-panel-body">
+                <div className="pe-ai-editor-help">
+                  <p className="pe-label">Ask about this canvas</p>
+                  <textarea className="pe-textarea" rows={3} value={editorAsk} onChange={(event) => setEditorAsk(event.target.value)} placeholder="Try: Make this text more streetwear, center and group these objects, or prepare this artwork for sublimation." />
+                  <button className="pe-btn pe-btn-primary pe-block" disabled={proposalBusy || editorAsk.trim().length < 4} onClick={() => void askStudioAi()}><Sparkles size={15}/>{proposalBusy ? "Preparing review…" : "Suggest Studio edits"}</button>
+                  {editorProposal && <div className="pe-ai-proposal" role="status"><strong>Review these edits</strong><p>{editorProposal.summary}</p>{editorProposal.actions.length ? <ol>{editorProposal.actions.map((item, index) => <li key={index}>{item.command.type.replaceAll("_", " ")}{item.targetLayerIds.length ? ` · ${item.targetLayerIds.length} object${item.targetLayerIds.length === 1 ? "" : "s"}` : ""}</li>)}</ol> : <p>Select a compatible object, then ask again.</p>}<div className="pe-row"><button className="pe-btn pe-btn-primary pe-grow" disabled={!editorProposal.actions.length} onClick={() => void acceptStudioProposal()}>Accept edits</button><button className="pe-btn pe-btn-ghost pe-grow" onClick={() => setEditorProposal(null)}>Discard</button></div></div>}
+                  <p className="pe-muted pe-small">SweetOh AI can only suggest typed editor actions. Nothing changes until you accept; accepted edits share one undo step.</p>
+                </div>
                 <div className="pe-seg" role="tablist" aria-label="What to create">
                   <button role="tab" aria-selected={aiMode === "design"} onClick={() => setAiMode("design")}>
                     <Sparkles size={14} /> Design
@@ -1938,6 +2086,7 @@ export function ProductEditor({
                   <ul className="pe-layers">
                     {[...layers].reverse().map((l) => (
                       <li key={l.id} className="pe-layer-row" data-hidden={l.hidden}>
+                        <input className="pe-layer-select" type="checkbox" aria-label={`Select ${l.kind === "text" ? l.text : l.kind === "shape" ? l.shape : "artwork"} for multi-object actions`} checked={selectedLayerIds.includes(l.id)} disabled={Boolean(l.locked || l.hidden)} onChange={(event) => setSelectionByIds(event.target.checked ? [...selectedLayerIds, l.id] : selectedLayerIds.filter((id) => id !== l.id))} />
                         <button disabled={l.locked || l.hidden} onClick={() => selectLayer(l.id)}>
                           {l.kind === "text" ? (
                             <Type size={16} />
@@ -1957,7 +2106,7 @@ export function ProductEditor({
                                 ? `${l.shape[0].toUpperCase()}${l.shape.slice(1)}`
                                 : l.kind === "graphic"
                                   ? studioAsset(l.assetKey)?.name ?? "Graphic"
-                                : `${library.find((d) => d.id === l.assetId)?.name ?? "Artwork"}${l.kind === "pattern" ? " (pattern)" : ""}`}
+                                : `${library.find((d) => d.id === l.assetId)?.name ?? "Artwork"}${l.kind === "pattern" ? " (pattern)" : ""}`}{l.groupId ? " · Grouped" : ""}
                           </span>
                         </button>
                         <button className="pe-icon-btn" aria-label={`${l.hidden ? "Show" : "Hide"} layer`} onClick={() => toggleLayer(l.id, "hidden")}>{l.hidden ? <EyeOff size={14}/> : <Eye size={14}/>}</button>
@@ -2080,7 +2229,20 @@ export function ProductEditor({
         </main>
 
         <aside className="pe-props" aria-label="Properties">
-          {selected ? (
+          {selectedLayerIds.length > 1 ? (
+            <>
+              <div className="pe-props-head"><h2>{selectedLayerIds.length} objects</h2><button className="pe-icon-btn pe-danger" onClick={removeSelected} aria-label="Delete selected objects"><Trash2 size={16}/></button></div>
+              <section className="pe-section">
+                <p className="pe-label">Arrange together</p>
+                <div className="pe-row"><button className="pe-btn pe-btn-ghost pe-grow" onClick={() => groupLayers(selectedLayerIds)}>Group</button><button className="pe-btn pe-btn-ghost pe-grow" onClick={() => ungroupLayers(selectedLayerIds)}>Ungroup</button></div>
+                <p className="pe-label">Align edges</p>
+                <div className="pe-align">{(["left", "hcenter", "right", "top", "vcenter", "bottom"] as const).map((edge) => <button key={edge} aria-label={`Align selected ${edge}`} title={`Align ${edge}`} onClick={() => alignLayers(selectedLayerIds, edge)}>{edge.slice(0,1).toUpperCase()}</button>)}</div>
+                <p className="pe-label">Distribute evenly</p>
+                <div className="pe-row"><button className="pe-btn pe-btn-ghost pe-grow" disabled={selectedLayerIds.length < 3} onClick={() => distributeLayers(selectedLayerIds, "horizontal")}>Horizontal</button><button className="pe-btn pe-btn-ghost pe-grow" disabled={selectedLayerIds.length < 3} onClick={() => distributeLayers(selectedLayerIds, "vertical")}>Vertical</button></div>
+                <p className="pe-muted pe-small">Drag the selection together on the canvas. Group keeps these layers together when selecting from Layers.</p>
+              </section>
+            </>
+          ) : selected ? (
             <>
               <div className="pe-props-head">
                 <h2>{{ text: "Text", image: "Artwork", shape: "Shape", pattern: "Pattern", graphic: "Graphic" }[selected.kind]}</h2>

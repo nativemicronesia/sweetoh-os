@@ -79,7 +79,7 @@ export default async function CreateWithSweetOhPage() {
             <p className="cs-eyebrow">Create with Sweet&apos;Oh</p>
             <h1 className="cw-title">Start your print-on-demand brand — with an AI that teaches you.</h1>
             <p className="cw-lead">
-              Meet <strong>Skink</strong> — the Sweet&apos;Oh AI agent for print-on-demand. He teaches you the business, researches your niche, designs with you in the Studio, and helps you set up your own store. He works with what you already pay for, too.
+              Meet the <strong>Green Tree Skink</strong>, Sweet&apos;Oh&apos;s lead operator powered by SweetOh AI. Get help learning print-on-demand, researching your niche, designing in Studio and setting up your own store.
             </p>
             <div className="cs-row" style={{ marginTop: 26 }}>
               <Link href="/studio/join" className="cs-btn cs-btn-primary cs-btn-lg">{joinLabel} <ArrowRight size={18} /></Link>
@@ -172,7 +172,7 @@ export default async function CreateWithSweetOhPage() {
             <p className="cs-eyebrow">Meet Skink</p>
             <h2 className="cw-h2">Your POD teacher, researcher and creative director.</h2>
             <p className="cw-lead">
-              Skink is Sweet&apos;Oh&apos;s green tree skink — and the AI agent inside your Studio. It teaches you print-on-demand from zero, finds what&apos;s selling, helps you price for profit and writes your listings. It keeps a private memory of your brand, so every conversation picks up where you left off. You can see and edit everything it remembers.
+              The Green Tree Skink is Sweet&apos;Oh&apos;s lead operator in Studio, powered by SweetOh AI — the shared intelligence behind creative and business guidance. It teaches print-on-demand from zero, researches what&apos;s selling, helps with pricing and listings, and keeps a private memory of your brand that you can review and edit. Future Western Skink and Western Fence Lizard agents are not active yet.
             </p>
             <p className="cs-muted" style={{ fontSize: 14 }}>Powered by OpenAI — Skink picks the right model for each job.</p>
           </div>

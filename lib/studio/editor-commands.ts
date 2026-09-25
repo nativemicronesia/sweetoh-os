@@ -2,9 +2,9 @@ import { z } from "zod";
 import { SHAPE_KINDS } from "@/lib/domains/catalog/studio-layout";
 import { STUDIO_ASSET_IDS, STUDIO_ASSETS } from "./asset-library";
 import { STUDIO_FONT_LABELS, STUDIO_FONT_PROVENANCE } from "./font-provenance";
+import { regionsFor, type StudioLayout, type StudioLayer } from "@/lib/domains/catalog/studio-layout";
 
 const fontKeySchema = z.string().max(40).refine((key) => Object.hasOwn(STUDIO_FONT_PROVENANCE, key), "Choose an available Studio font.");
-import { regionsFor, type StudioLayout, type StudioLayer } from "@/lib/domains/catalog/studio-layout";
 
 /** Serializable intent boundary shared by buttons now and an AI assistant later. */
 export const studioEditorCommandSchema = z.discriminatedUnion("type", [
@@ -25,6 +25,10 @@ export const studioEditorCommandSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("make_pattern"), assetId: z.string().uuid().optional() }).strict(),
   z.object({ type: z.literal("set_layer_flags"), layerId: z.string().min(1).max(80), hidden: z.boolean().optional(), locked: z.boolean().optional() }).strict(),
   z.object({ type: z.literal("set_layer_order"), layerId: z.string().min(1).max(80), direction: z.enum(["forward", "backward", "front", "back"]) }).strict(),
+  z.object({ type: z.literal("group_selection"), layerIds: z.array(z.string().min(1).max(80)).min(2).max(30) }).strict(),
+  z.object({ type: z.literal("ungroup_selection"), layerIds: z.array(z.string().min(1).max(80)).min(1).max(30) }).strict(),
+  z.object({ type: z.literal("align_selection"), layerIds: z.array(z.string().min(1).max(80)).min(2).max(30), edge: z.enum(["left", "hcenter", "right", "top", "vcenter", "bottom"]) }).strict(),
+  z.object({ type: z.literal("distribute_selection"), layerIds: z.array(z.string().min(1).max(80)).min(3).max(30), axis: z.enum(["horizontal", "vertical"]) }).strict(),
   z.object({ type: z.literal("set_opacity"), opacity: z.number().min(0).max(1) }).strict(),
   z.object({ type: z.literal("set_shape_style"), fill: z.string().regex(/^#[0-9a-f]{6}$/i).optional(), stroke: z.string().regex(/^#[0-9a-f]{6}$/i).nullable().optional(), strokeWidth: z.number().min(0).max(100).optional() }).strict(),
   z.object({ type: z.literal("set_shape_gradient"), from: z.string().regex(/^#[0-9a-f]{6}$/i), to: z.string().regex(/^#[0-9a-f]{6}$/i), direction: z.enum(["horizontal", "vertical", "diagonal"]).default("diagonal") }).strict(),
@@ -53,10 +57,10 @@ export const studioEditorStateSchema = z.object({
   surfaceId: z.string(),
   printRegions: z.array(z.object({ id: z.string(), name: z.string(), bounds: z.object({ x: z.number(), y: z.number(), width: z.number(), height: z.number() }) })),
   layers: z.array(z.object({ id: z.string(), kind: z.string(), name: z.string(), locked: z.boolean(), hidden: z.boolean(), geometry: z.record(z.string(), z.unknown()) })),
-  selectedLayerId: z.string().nullable(),
+  selectedLayerIds: z.array(z.string()),
 });
 
-export function buildStudioEditorState(layout: StudioLayout, surfaceId: string, selectedLayerId: string | null, revision: number) {
+export function buildStudioEditorState(layout: StudioLayout, surfaceId: string, selectedLayerIds: string[], revision: number) {
   const surface = layout.surfaces.find((candidate) => candidate.id === surfaceId);
   if (!surface) throw new Error("Unknown Studio surface.");
   const describe = (layer: StudioLayer) => ({
@@ -64,12 +68,19 @@ export function buildStudioEditorState(layout: StudioLayout, surfaceId: string, 
     name: layer.kind === "text" ? layer.text : layer.kind === "graphic" ? layer.assetKey : layer.kind === "shape" ? layer.shape : layer.kind === "pattern" ? "Pattern" : "Artwork",
     locked: Boolean(layer.locked), hidden: Boolean(layer.hidden),
     geometry: { x: layer.x, y: layer.y, scaleX: layer.scaleX, scaleY: layer.scaleY, angle: layer.angle, opacity: layer.opacity ?? 1,
-      ...(layer.kind === "shape" ? { fill: layer.fill, stroke: layer.stroke, strokeWidth: layer.strokeWidth } : {}),
+      ...(layer.groupId ? { groupId: layer.groupId } : {}),
+      ...(layer.kind === "shape" ? { fill: layer.fill, stroke: layer.stroke, strokeWidth: layer.strokeWidth, gradient: layer.gradient } : {}),
       ...(layer.kind === "text" ? { text: layer.text, font: layer.font, fontSize: layer.fontSize, color: layer.color, bold: layer.bold, letterSpacing: layer.letterSpacing } : {}),
       ...(layer.kind === "image" ? { assetId: layer.assetId, crop: layer.crop, adjustments: layer.adjustments } : {}),
       ...(layer.kind === "graphic" ? { assetKey: layer.assetKey } : {}),
       ...(layer.kind === "pattern" ? { tile: layer.tile, gap: layer.gap, brick: layer.brick } : {}),
     },
   });
-  return studioEditorStateSchema.parse({ revision, surfaceId, printRegions: regionsFor(surface).map(({ id, name, bounds }) => ({ id, name, bounds })), layers: surface.layers.map(describe), selectedLayerId });
+  const knownIds = new Set(surface.layers.map((layer) => layer.id));
+  return studioEditorStateSchema.parse({ revision, surfaceId, printRegions: regionsFor(surface).map(({ id, name, bounds }) => ({ id, name, bounds })), layers: surface.layers.map(describe), selectedLayerIds: selectedLayerIds.filter((id) => knownIds.has(id)) });
 }
+
+export const studioEditorProposalSchema = z.object({
+  summary: z.string().trim().min(1).max(500),
+  actions: z.array(z.object({ targetLayerIds: z.array(z.string().min(1).max(80)).max(30).default([]), command: studioEditorCommandSchema })).max(12),
+}).strict();
