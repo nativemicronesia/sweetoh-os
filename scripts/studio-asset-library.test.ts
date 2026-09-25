@@ -9,6 +9,7 @@ import { buildStudioEditorState, findStudioAssets, studioAssetSearchSchema, stud
 import { mockupTemplateSchema } from "../lib/studio/mockup/templates";
 import { CONFIRMED_SHOP_METHODS, KNOWLEDGE_ONLY_METHODS } from "../lib/domains/production/methods";
 import { drawingDashPattern, STUDIO_DRAW_BRUSHES } from "../lib/studio/drawing-brushes";
+import { compactPressureSamples, pointerPressure, pressureSegment } from "../lib/studio/drawing-pressure";
 
 test("seed graphics have stable unique identities and explicit provenance", () => {
   assert.ok(STUDIO_ASSETS.length >= 10);
@@ -93,6 +94,22 @@ test("drawing brush identity and opacity survive save/reopen with stable built-i
   assert.deepEqual(reopened.surfaces[0].layers.map((layer) => layer.kind === "drawing" ? layer.brush : undefined), ["marker", "dashed"]);
   assert.equal(reopened.surfaces[0].layers[0].kind === "drawing" && reopened.surfaces[0].layers[0].opacity, 0.42);
   assert.equal(studioLayoutSchema.safeParse({ ...layout, surfaces: [{ ...layout.surfaces[0], layers: [{ ...layout.surfaces[0].layers[0], kind: "drawing", brush: "airbrush" }] }] }).success, false);
+});
+
+test("stylus pressure changes persisted brush segments with mouse/touch fallback and bounded samples", () => {
+  assert.equal(pointerPressure({ pointerType: "pen", pressure: 0.2 }), 0.2);
+  assert.equal(pointerPressure({ pointerType: "mouse", pressure: 0.9 }), 0.5);
+  assert.equal(pointerPressure({ pointerType: "touch", pressure: 0.8 }), 0.5);
+  const light = pressureSegment({ x: 0, y: 0, pressure: 0.2 }, { x: 8, y: 0, pressure: 0.2 }, 10, "pencil");
+  const firm = pressureSegment({ x: 0, y: 0, pressure: 0.9 }, { x: 8, y: 0, pressure: 0.9 }, 10, "pencil");
+  assert.ok(firm.width > light.width);
+  assert.ok(pressureSegment({ x: 0, y: 0, pressure: 0.9 }, { x: 8, y: 0, pressure: 0.9 }, 10, "marker").opacity > pressureSegment({ x: 0, y: 0, pressure: 0.2 }, { x: 8, y: 0, pressure: 0.2 }, 10, "marker").opacity);
+  assert.equal(compactPressureSamples(Array.from({ length: 500 }, (_, x) => ({ x, y: x / 2, pressure: x / 500 }))).length, 240);
+  const layout = studioLayoutSchema.parse({ ...base, surfaces: [{ ...base.surfaces[0], layers: [
+    { id: "pressed", kind: "drawing", pathData: "M 0 0 Q 10 20 30 30", stroke: "#173e39", strokeWidth: 10, brush: "pencil", pressurePoints: [{ x: 0, y: 1, pressure: .2 }, { x: 14, y: 8, pressure: .9 }], x: 40, y: 60, scaleX: 1, scaleY: 1, angle: 0 },
+  ] }] });
+  const reopened = studioLayoutSchema.parse(JSON.parse(JSON.stringify(layout)));
+  assert.deepEqual(reopened.surfaces[0].layers[0].kind === "drawing" && reopened.surfaces[0].layers[0].pressurePoints, [{ x: 0, y: 1, pressure: .2 }, { x: 14, y: 8, pressure: .9 }]);
 });
 
 test("editor command boundary rejects unvetted resources and malformed actions", () => {

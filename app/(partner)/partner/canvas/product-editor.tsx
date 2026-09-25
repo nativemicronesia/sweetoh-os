@@ -9,6 +9,8 @@ import {
   FabricImage,
   FabricObject,
   Ellipse,
+  Circle,
+  Group,
   IText,
   PencilBrush,
   Point,
@@ -20,6 +22,7 @@ import {
 } from "fabric";
 import { initAligningGuidelines } from "fabric/extensions";
 import { drawingDashPattern, STUDIO_DRAW_BRUSHES, studioDrawBrush, type StudioDrawBrush } from "@/lib/studio/drawing-brushes";
+import { compactPressureSamples, normalizePressureSamples, pointerPressure, pressureSegment, pressureSegments, type LocalPressureSample, type PressureSample } from "@/lib/studio/drawing-pressure";
 import {
   AlignCenterHorizontal,
   AlignCenterVertical,
@@ -193,6 +196,78 @@ type Panel = "files" | "text" | "shapes" | "assets" | "ai" | "inspiration" | "la
 type InspirationItem = { id: string; name: string; previewUrl: string };
 type Mockup = { color: string; hex: string; url: string };
 type PreviewData = { views: { name: string; url: string }[]; colors: Mockup[] };
+
+/** Extend Fabric's PencilBrush input lifecycle and keep the completed drawing
+ * represented as one selectable Fabric Group inside the existing drawing layer. */
+class StudioPressurePencilBrush extends PencilBrush {
+  kind: StudioDrawBrush;
+  samples: PressureSample[] = [];
+  lastPathData = "";
+  lastPressurePoints: LocalPressureSample[] = [];
+  lastOrigin = { x: 0, y: 0 };
+
+  constructor(canvas: Canvas, kind: StudioDrawBrush) { super(canvas); this.kind = kind; }
+  override needsFullRender() { return true; }
+
+  private recordPressure(pointer: Point, event: Parameters<PencilBrush["onMouseMove"]>[1]) {
+    this.samples.push({ x: pointer.x, y: pointer.y, pressure: pointerPressure(event.e as PointerEvent) });
+    if (this.samples.length > 480) this.samples = compactPressureSamples(this.samples, 240);
+  }
+  override onMouseDown(pointer: Point, event: Parameters<PencilBrush["onMouseDown"]>[1]) {
+    this.samples = []; this.recordPressure(pointer, event); super.onMouseDown(pointer, event);
+  }
+  override onMouseMove(pointer: Point, event: Parameters<PencilBrush["onMouseMove"]>[1]) {
+    this.recordPressure(pointer, event); super.onMouseMove(pointer, event);
+  }
+
+  override _render(ctx: CanvasRenderingContext2D = this.canvas.contextTop) {
+    if (!this.samples.length) return super._render(ctx);
+    const normalized = normalizePressureSamples(this.samples);
+    this._saveAndTransform(ctx); ctx.lineCap = this.strokeLineCap; ctx.lineJoin = this.strokeLineJoin;
+    ctx.strokeStyle = this.color; ctx.setLineDash([]);
+    if (normalized.points.length === 1) {
+      const point = normalized.points[0]; const size = pressureSegment(point, point, this.width, this.kind);
+      ctx.globalAlpha = size.opacity; ctx.beginPath(); ctx.arc(this.samples[0].x, this.samples[0].y, size.width / 2, 0, Math.PI * 2); ctx.fillStyle = this.color; ctx.fill();
+    } else {
+      const segments = pressureSegments(normalized.points, this.width, this.kind);
+      for (let index = 0; index < segments.length; index++) {
+        const originalIndex = Math.round((segments[index].startIndex ?? 0) * (this.samples.length - 1) / Math.max(1, normalized.points.length - 1));
+        const a = this.samples[originalIndex];
+        const b = this.samples[Math.min(this.samples.length - 1, originalIndex + Math.ceil((this.samples.length - 1) / Math.max(1, normalized.points.length - 1)))];
+        ctx.globalAlpha = segments[index].opacity; ctx.lineWidth = segments[index].width;
+        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      }
+    }
+    ctx.restore();
+  }
+
+  override _finalizeAndAddPath() {
+    if (this.decimate) this._points = this.decimatePoints(this._points, this.decimate);
+    const normalized = normalizePressureSamples(compactPressureSamples(this.samples));
+    this.lastOrigin = { x: normalized.x, y: normalized.y };
+    this.lastPressurePoints = normalized.points;
+    const pathPoints = this._points.length > 300 ? Array.from({ length: 300 }, (_, index) => this._points[Math.round(index * (this._points.length - 1) / 299)]) : this._points;
+    this.lastPathData = this.convertPointsToSVGPath(pathPoints).map((segment) => segment.map((part) => typeof part === "number" ? part.toFixed(2) : part).join(" ")).join(" ");
+    const group = makePressureDrawingGroup(normalized.points, this.width, this.color, this.kind);
+    this.canvas.clearContext(this.canvas.contextTop);
+    this.canvas.fire("before:path:created", { path: group as unknown as Path });
+    this.canvas.add(group); this.canvas.requestRenderAll(); group.setCoords();
+    this.canvas.fire("path:created", { path: group as unknown as Path });
+    this._reset(); this.samples = [];
+  }
+}
+
+function makePressureDrawingGroup(points: LocalPressureSample[], width: number, color: string, kind: StudioDrawBrush) {
+  const children: FabricObject[] = pressureSegments(points, width, kind).map((segment) => new Path(segment.pathData, {
+    fill: "", stroke: color, strokeWidth: segment.width, opacity: segment.opacity,
+    strokeLineCap: "round", strokeLineJoin: "round", objectCaching: false,
+  }));
+  if (!children.length && points[0]) {
+    const point = points[0]; const size = pressureSegment(point, point, width, kind);
+    children.push(new Circle({ left: point.x - size.width / 2, top: point.y - size.width / 2, radius: size.width / 2, fill: color, opacity: size.opacity, objectCaching: false }));
+  }
+  return new Group(children, { left: 0, top: 0, originX: "left", originY: "top", objectCaching: false });
+}
 
 const SIZE = 720;
 const DPI = 300;
@@ -478,8 +553,8 @@ export function ProductEditor({
       printRegionId: base.printRegionId,
       fill: base.kind === "shape" && typeof o.fill === "string" ? o.fill : undefined,
       stroke: base.kind === "shape" && typeof o.stroke === "string" ? o.stroke : undefined,
-      strokeWidth: base.kind === "shape" || base.kind === "drawing" ? o.strokeWidth : undefined,
-      ...(base.kind === "drawing" && typeof o.stroke === "string" ? { stroke: o.stroke } : {}),
+      strokeWidth: base.kind === "drawing" ? base.strokeWidth : base.kind === "shape" ? o.strokeWidth : undefined,
+      ...(base.kind === "drawing" ? { stroke: base.stroke } : base.kind === "shape" && typeof o.stroke === "string" ? { stroke: o.stroke } : {}),
       ...(base.kind === "drawing" ? { brush: studioDrawBrush(base.brush) } : {}),
       gradient: base.kind === "shape" ? base.gradient : undefined,
       adjustments: base.kind === "image" ? base.adjustments : undefined,
@@ -530,7 +605,7 @@ export function ProductEditor({
       obj = await FabricImage.fromURL(studioAssetUrl(asset));
     } else if (layer.kind === "drawing") {
       const brush = studioDrawBrush(layer.brush);
-      obj = new Path(layer.pathData, { fill: "", stroke: layer.stroke, strokeWidth: layer.strokeWidth, strokeDashArray: drawingDashPattern(brush, layer.strokeWidth), strokeLineCap: brush === "marker" ? "butt" : "round", strokeLineJoin: "round", objectCaching: false });
+      obj = layer.pressurePoints?.length ? makePressureDrawingGroup(layer.pressurePoints, layer.strokeWidth, layer.stroke, brush) : new Path(layer.pathData, { fill: "", stroke: layer.stroke, strokeWidth: layer.strokeWidth, strokeDashArray: drawingDashPattern(brush, layer.strokeWidth), strokeLineCap: brush === "marker" ? "butt" : "round", strokeLineJoin: "round", objectCaching: false });
     } else if (layer.kind === "shape") {
       obj = makeShape(layer.shape, layer.width, layer.height, layer.fill, layer.stroke, layer.strokeWidth);
       if (layer.gradient) {
@@ -776,13 +851,14 @@ export function ProductEditor({
     });
     canvas.on("mouse:up", () => { erasingCheckpoint.current = false; eraseGesture.current = false; drawingCheckpoint.current = false; });
     canvas.on("path:created", ({ path }) => {
+      const pressureBrush = canvas.freeDrawingBrush instanceof StudioPressurePencilBrush ? canvas.freeDrawingBrush : null;
       const fabricPath = path as Path;
-      const segments = fabricPath.path.length > 400 ? Array.from({ length: 400 }, (_, index) => fabricPath.path[Math.round(index * (fabricPath.path.length - 1) / 399)]) : fabricPath.path;
-      const pathData = segments.map((segment) => segment.map((part) => typeof part === "number" ? part.toFixed(2) : part).join(" ")).join(" ");
-      const stroke = typeof path.stroke === "string" && /^#[0-9a-f]{6}$/i.test(path.stroke) ? path.stroke : "#173e39";
-      const brush = drawBrush;
-      path.set({ opacity: drawOpacity, strokeDashArray: drawingDashPattern(brush, Number(path.strokeWidth) || drawWidth), strokeLineCap: brush === "marker" ? "butt" : "round" });
-      const layer: StudioLayer = { id: crypto.randomUUID(), kind: "drawing", pathData, stroke, strokeWidth: Math.max(1, Math.min(50, Number(path.strokeWidth) || 7)), brush, opacity: drawOpacity < 1 ? drawOpacity : undefined, x: path.left ?? 0, y: path.top ?? 0, scaleX: path.scaleX ?? 1, scaleY: path.scaleY ?? 1, angle: path.angle ?? 0, printRegionId: activeRegionRef.current ?? undefined };
+      const segments = fabricPath.path?.length > 400 ? Array.from({ length: 400 }, (_, index) => fabricPath.path[Math.round(index * (fabricPath.path.length - 1) / 399)]) : fabricPath.path ?? [];
+      const pathData = pressureBrush?.lastPathData || segments.map((segment) => segment.map((part) => typeof part === "number" ? part.toFixed(2) : part).join(" ")).join(" ");
+      const stroke = typeof pressureBrush?.color === "string" ? pressureBrush.color : typeof path.stroke === "string" && /^#[0-9a-f]{6}$/i.test(path.stroke) ? path.stroke : "#173e39";
+      const brush = pressureBrush?.kind ?? drawBrush;
+      path.set({ opacity: drawOpacity, left: pressureBrush?.lastOrigin.x ?? path.left, top: pressureBrush?.lastOrigin.y ?? path.top, strokeDashArray: drawingDashPattern(brush, Number(path.strokeWidth) || drawWidth), strokeLineCap: brush === "marker" ? "butt" : "round" });
+      const layer: StudioLayer = { id: crypto.randomUUID(), kind: "drawing", pathData, stroke, strokeWidth: Math.max(1, Math.min(50, Number(path.strokeWidth) || drawWidth)), brush, pressurePoints: pressureBrush?.lastPressurePoints, opacity: drawOpacity < 1 ? drawOpacity : undefined, x: pressureBrush?.lastOrigin.x ?? path.left ?? 0, y: pressureBrush?.lastOrigin.y ?? path.top ?? 0, scaleX: path.scaleX ?? 1, scaleY: path.scaleY ?? 1, angle: path.angle ?? 0, printRegionId: activeRegionRef.current ?? undefined };
       meta.current.set(path, layer); drawingCheckpoint.current = false;
       path.clipPath = printClip(surface(), layer);
       capture(); readSelection(); dirty.current = true; canvas.requestRenderAll();
@@ -1145,11 +1221,12 @@ export function ProductEditor({
     canvas.remove(object); capture(); readSelection(); dirty.current = true; canvas.requestRenderAll();
   }
   function applyFreehandBrush(canvas: Canvas, kind: StudioDrawBrush, color: string, width: number) {
-    const brush = new PencilBrush(canvas);
+    const brush = new StudioPressurePencilBrush(canvas, kind);
     brush.color = color;
     brush.width = width;
     brush.strokeDashArray = drawingDashPattern(kind, width) ?? null;
     brush.strokeLineCap = kind === "marker" ? "butt" : "round";
+    brush.limitedToCanvasSize = true;
     canvas.freeDrawingBrush = brush;
   }
   function updateFreehand(color: string, width: number, opacity = drawOpacity, kind = drawBrush) {
@@ -1161,7 +1238,15 @@ export function ProductEditor({
       const layer = meta.current.get(object);
       if (layer?.kind !== "drawing") return;
       const brush = style.brush ?? studioDrawBrush(layer.brush);
-      object.set({ ...style, strokeDashArray: drawingDashPattern(brush, style.strokeWidth ?? layer.strokeWidth), strokeLineCap: brush === "marker" ? "butt" : "round" });
+      const width = style.strokeWidth ?? layer.strokeWidth;
+      if (object instanceof Group && layer.pressurePoints?.length) {
+        const segments = pressureSegments(layer.pressurePoints, width, brush);
+        object.getObjects().forEach((child, index) => {
+          const segment = segments[index];
+          if (child instanceof Circle) child.set({ fill: style.stroke ?? layer.stroke, radius: segment?.width ? segment.width / 2 : width / 2 });
+          else child.set({ stroke: style.stroke ?? layer.stroke, strokeWidth: segment?.width ?? width, opacity: segment?.opacity ?? 1, strokeDashArray: undefined, strokeLineCap: "round" });
+        });
+      } else object.set({ ...style, strokeDashArray: drawingDashPattern(brush, width), strokeLineCap: brush === "marker" ? "butt" : "round" });
       meta.current.set(object, { ...layer, ...style });
     }, record);
   }
@@ -2088,7 +2173,7 @@ export function ProductEditor({
                 <section className="pe-section pe-draw-tool">
                   <p className="pe-label">Draw freely</p>
                   <div className="pe-row"><button className="pe-btn pe-btn-primary pe-grow" disabled={locked} aria-pressed={drawing} onClick={() => setFreehand(!drawing)}><PenLine size={16}/>{drawing ? "Finish drawing" : "Draw"}</button><button className="pe-btn pe-btn-ghost pe-grow" disabled={locked} aria-pressed={erasing} onClick={() => setEraseMode(!erasing)}><Eraser size={16}/>{erasing ? "Finish erasing" : "Erase strokes"}</button></div>
-                {drawing && <><label className="pe-select"><span>Brush</span><select value={drawBrush} onChange={(event) => { const brush = STUDIO_DRAW_BRUSHES.find((item) => item.id === event.target.value) ?? STUDIO_DRAW_BRUSHES[0]; updateFreehand(drawColor, brush.width, brush.opacity, brush.id); }} aria-label="Drawing brush">{STUDIO_DRAW_BRUSHES.map((brush) => <option key={brush.id} value={brush.id}>{brush.label} · {brush.description}</option>)}</select></label><div className="pe-row"><label className="pe-color-input" title="Brush color"><input type="color" value={drawColor} onChange={(event) => updateFreehand(event.target.value, drawWidth)} /></label><label className="pe-slider pe-grow"><span>Size <b>{drawWidth}px</b></span><input type="range" min={1} max={50} step={1} value={drawWidth} onChange={(event) => updateFreehand(drawColor, Number(event.target.value))}/></label></div><label className="pe-slider"><span>Brush opacity <b>{Math.round(drawOpacity * 100)}%</b></span><input type="range" min={0.1} max={1} step={0.01} value={drawOpacity} onChange={(event) => updateFreehand(drawColor, drawWidth, Number(event.target.value))}/></label><p className="pe-muted pe-small">{STUDIO_DRAW_BRUSHES.find((brush) => brush.id === drawBrush)?.description} Draw with a finger, stylus or mouse. Finish drawing to select and edit the stroke.</p></>}
+                {drawing && <><label className="pe-select"><span>Brush</span><select value={drawBrush} onChange={(event) => { const brush = STUDIO_DRAW_BRUSHES.find((item) => item.id === event.target.value) ?? STUDIO_DRAW_BRUSHES[0]; updateFreehand(drawColor, brush.width, brush.opacity, brush.id); }} aria-label="Drawing brush">{STUDIO_DRAW_BRUSHES.map((brush) => <option key={brush.id} value={brush.id}>{brush.label} · {brush.description}</option>)}</select></label><div className="pe-row"><label className="pe-color-input" title="Brush color"><input type="color" value={drawColor} onChange={(event) => updateFreehand(event.target.value, drawWidth)} /></label><label className="pe-slider pe-grow"><span>Size <b>{drawWidth}px</b></span><input type="range" min={1} max={50} step={1} value={drawWidth} onChange={(event) => updateFreehand(drawColor, Number(event.target.value))}/></label></div><label className="pe-slider"><span>Brush opacity <b>{Math.round(drawOpacity * 100)}%</b></span><input type="range" min={0.1} max={1} step={0.01} value={drawOpacity} onChange={(event) => updateFreehand(drawColor, drawWidth, Number(event.target.value))}/></label><p className="pe-muted pe-small">{STUDIO_DRAW_BRUSHES.find((brush) => brush.id === drawBrush)?.description} Stylus pressure varies the line width; Marker pressure also changes opacity. Mouse and touch use a steady pressure fallback. Draw with a finger, stylus or mouse, then finish drawing to select and edit.</p></>}
                   {erasing && <p className="pe-muted pe-small">Swipe over a stroke to erase it. Other artwork and text are left alone.</p>}
                 </section>
                 <p className="pe-label">Solid print background</p>
