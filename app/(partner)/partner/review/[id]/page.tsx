@@ -306,13 +306,14 @@ export default async function PartnerReviewDetailPage({
               <Link
                 href={`/products/${product.slug}`}
                 target="_blank"
+                rel="noreferrer"
                 className="rounded-full border px-4 py-2 text-sm"
                 style={{ borderColor: "var(--so-border)", color: "var(--so-cream)" }}
               >
-                View live listing
+                Inspect exact live listing ↗
               </Link>
             ) : null}
-            {product.active && canModerate && <form action={unpublishNow}><SubmitButton pendingLabel="Unpublishing…">Unpublish</SubmitButton></form>}
+            {product.active && isOwn && canModerate && <form action={unpublishNow}><SubmitButton pendingLabel="Unpublishing…">Unpublish and return to private draft</SubmitButton></form>}
             {canModerate && <DeleteProductButton action={deleteNow} />}
           </div>
         </div>
@@ -321,7 +322,7 @@ export default async function PartnerReviewDetailPage({
       <section className="grid gap-5 rounded-xl border p-6 lg:grid-cols-2" style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}>
         <div className="space-y-3">
           <h2 className="font-medium" style={{ color: "var(--so-cream)" }}>Storefront preview</h2>
-          <p className="text-sm" style={{ color: "var(--so-cream-dim)" }}>This is the saved customer-facing copy and photo set. Product is private until published.</p>
+          <p className="text-sm" style={{ color: "var(--so-cream-dim)" }}>{product.active ? "This product is live. Open the customer listing above to inspect the exact storefront experience." : "This is the saved customer-facing copy and photo set. Product remains private until published."}</p>
           <p className="text-sm" style={{ color: "var(--so-cream-dim)" }}>Category: {product.category}</p>
           <div className="flex flex-wrap gap-2">
             {gallery.map((photo, index) => photo.url ? <figure key={photo.id} className="w-24">

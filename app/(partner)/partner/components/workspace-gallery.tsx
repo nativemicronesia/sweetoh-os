@@ -13,6 +13,7 @@ type Card = {
   priceCents: number;
   image: string | null;
   kind: string;
+  ownership: "yours" | "shop";
   href: string;
   action: string | null;
 };
@@ -88,7 +89,11 @@ export function WorkspaceGallery({ cards }: { cards: Card[] }) {
                               <small>
                                 {c.kind === "blank"
                                   ? "Reusable product blank"
-                                  : "Sweet’Oh local production"}
+                                  : c.kind === "live"
+                                    ? c.ownership === "yours"
+                                      ? "Your live listing · visible in the shop"
+                                      : "Shop listing · managed by the shop"
+                                    : "Private draft · only you can see it"}
                               </small>
                             </span>
                           </Link>
@@ -117,7 +122,9 @@ export function WorkspaceGallery({ cards }: { cards: Card[] }) {
                             {c.action
                               ? "Start designing"
                               : c.kind === "live"
-                                ? "Manage"
+                                ? c.ownership === "yours"
+                                  ? "Inspect live listing"
+                                  : "View listing"
                                 : "Continue"}
                             <ArrowRight size={15} />
                           </Link>

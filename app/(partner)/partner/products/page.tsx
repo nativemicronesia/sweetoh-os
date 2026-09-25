@@ -9,6 +9,18 @@ import {
 } from "@/lib/domains/catalog/service";
 import { getAssetSignedUrl } from "@/lib/domains/assets/service";
 import { WorkspaceGallery } from "../components/workspace-gallery";
+
+type ProductCard = {
+  id: string;
+  name: string;
+  priceCents: number;
+  image: string | null;
+  kind: string;
+  ownership: "yours" | "shop";
+  href: string;
+  action: string | null;
+};
+
 export default async function PartnerProductsPage({
   searchParams,
 }: {
@@ -23,7 +35,7 @@ export default async function PartnerProductsPage({
     listActiveProducts(session.ventureId),
     searchParams,
   ]);
-  const cards = await Promise.all(
+  const cards: ProductCard[] = await Promise.all(
     rows
       .filter(({ product }) => product.draftStatus !== "archived")
       .map(async ({ product, session: draft }) => {
@@ -43,6 +55,7 @@ export default async function PartnerProductsPage({
               : product.active
                 ? "live"
                 : "draft",
+          ownership: "yours" as const,
           href: record
             ? `/partner/builder/${product.id}`
             : `/partner/review/${product.id}`,
@@ -64,6 +77,7 @@ export default async function PartnerProductsPage({
           priceCents: p.priceCents,
           image: await getPrimaryProductImageUrl(p.id),
           kind: "live",
+          ownership: "shop" as const,
           href: `/partner/review/${p.id}`,
           action: null,
         })),

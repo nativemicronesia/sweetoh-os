@@ -768,6 +768,9 @@ export async function unpublishProduct(input: {
 }) {
   const db = getDb();
   const existing = await getProductById(input);
+  if (!existing.active || existing.draftStatus !== "published") {
+    throw new ValidationError("This product is no longer published.");
+  }
 
   const readiness = await evaluateProductPublishReadiness(input);
   const aiSession = await getLatestAiSessionForProduct({
@@ -793,12 +796,15 @@ export async function unpublishProduct(input: {
       and(
         eq(product.id, input.productId),
         eq(product.ventureId, input.ventureId),
+        eq(product.active, true),
+        eq(product.draftStatus, "published"),
+        eq(product.updatedAt, existing.updatedAt),
       ),
     )
     .returning();
 
   if (!row) {
-    throw new NotFoundError("Product not found");
+    throw new ValidationError("Product status changed. Refresh before unpublishing it again.");
   }
 
   const actorFields = await resolveAiUserAuditFields(input.actorUserId);

@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { groundResearch, safeSourceUrl, builderRecord } from "../lib/domains/intelligence/product-research-schema";
 import { assertBuilderRole } from "../lib/domains/intelligence/partner-builder";
-import { publishPartnerDraft, assertPartnerPublishReadyStatus, unpublishPartnerProduct } from "../lib/domains/catalog/partner-listings";
+import { publishPartnerDraft, assertPartnerPublishReadyStatus, unpublishPartnerProduct, assertProductCanBeUnpublished } from "../lib/domains/catalog/partner-listings";
 import { updatePartnerJobStatus } from "../lib/domains/fulfillment/partner-jobs";
 import type { SessionUser } from "../lib/domains/identity/types";
 import { parsePartnerProductFields, validatePartnerProductFields } from "../lib/domains/catalog/product-form";
@@ -68,4 +68,9 @@ test("creators build only in their own workspace and cannot unpublish shop produ
   assert.doesNotThrow(() => assertBuilderRole(creator));
   await assert.rejects(() => unpublishPartnerProduct(creator, "unused"), /partner or owner/);
   await assert.rejects(() => updatePartnerJobStatus(creator, { jobId: "unused", status: "shipped" }), /partner or owner/);
+});
+test("unpublishing accepts only an active published listing", () => {
+  assert.doesNotThrow(() => assertProductCanBeUnpublished({ active: true, draftStatus: "published" }));
+  assert.throws(() => assertProductCanBeUnpublished({ active: false, draftStatus: "draft" }), /Only your own published products/);
+  assert.throws(() => assertProductCanBeUnpublished({ active: false, draftStatus: "approved" }), /Only your own published products/);
 });

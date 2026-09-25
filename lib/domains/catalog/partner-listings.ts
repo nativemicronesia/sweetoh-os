@@ -117,13 +117,23 @@ export async function unpublishPartnerProduct(
   productId: string,
 ) {
   if (!canModerateListings(session)) throw new ValidationError("Only the shop partner or owner can unpublish products.");
-  await getProductById({ ventureId: session.ventureId, productId });
+  const owned = await assertPartnerOwnsDraft(session, productId);
+  assertProductCanBeUnpublished(owned.product);
 
   return unpublishProduct({
     ventureId: session.ventureId,
     productId,
     actorUserId: session.appUser.id,
   });
+}
+
+export function assertProductCanBeUnpublished(product: {
+  active: boolean;
+  draftStatus: ProductDraftStatus;
+}): void {
+  if (!product.active || product.draftStatus !== "published") {
+    throw new ValidationError("Only your own published products can be unpublished here.");
+  }
 }
 
 /** Delete a product for good — partner/owner only, and only while it has no orders. */
