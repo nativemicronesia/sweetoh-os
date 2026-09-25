@@ -65,6 +65,7 @@ const placement = {
   flipY: z.boolean().optional(),
 };
 const hexColor = z.string().regex(/^#[0-9a-f]{6}$/i);
+const drawingBrush = z.enum(["pencil", "marker", "dashed"]);
 const linearGradient = z.object({ from: hexColor, to: hexColor, direction: z.enum(["horizontal", "vertical", "diagonal"]).default("diagonal") });
 const imageAdjustments = z.object({ brightness: z.number().min(-1).max(1), contrast: z.number().min(-1).max(1), saturation: z.number().min(-1).max(1), blur: z.number().min(0).max(0.2) }).partial();
 export const SHAPE_KINDS = ["rect", "rounded", "circle", "oval", "triangle", "star", "burst", "heart", "hexagon", "arrow", "line"] as const;
@@ -129,6 +130,8 @@ export const layerSchema = z.discriminatedUnion("kind", [
     pathData: z.string().min(4).max(16000).regex(/^[MmLlQqCcZz0-9\s.,+-]+$/),
     stroke: hexColor,
     strokeWidth: z.number().min(1).max(50),
+    /** Built-in drawing behavior; missing means pencil for older designs. */
+    brush: drawingBrush.optional(),
   }),
 ]);
 export const studioLayoutSchema = z

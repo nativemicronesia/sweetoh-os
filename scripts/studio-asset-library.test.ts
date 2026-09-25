@@ -8,6 +8,7 @@ import { STUDIO_FONT_PROVENANCE } from "../lib/studio/font-provenance";
 import { buildStudioEditorState, findStudioAssets, studioAssetSearchSchema, studioEditorCommandSchema, studioEditorProposalSchema } from "../lib/studio/editor-commands";
 import { mockupTemplateSchema } from "../lib/studio/mockup/templates";
 import { CONFIRMED_SHOP_METHODS, KNOWLEDGE_ONLY_METHODS } from "../lib/domains/production/methods";
+import { drawingDashPattern, STUDIO_DRAW_BRUSHES } from "../lib/studio/drawing-brushes";
 
 test("seed graphics have stable unique identities and explicit provenance", () => {
   assert.ok(STUDIO_ASSETS.length >= 10);
@@ -68,12 +69,30 @@ test("new shape, image and typography controls stay serializable across save/reo
   assert.equal(parsed.surfaces[0].layers[1].kind === "image" && parsed.surfaces[0].layers[1].mask, "circle");
   assert.equal(reopened.surfaces[0].layers[3].kind, "drawing");
   assert.equal(reopened.surfaces[0].layers[3].opacity, .45);
+  const stroke = reopened.surfaces[0].layers[3];
+  assert.equal(stroke.kind, "drawing");
+  assert.deepEqual(stroke.kind === "drawing" && stroke.brush, undefined); // prior freehand documents retain their pencil appearance
   const unsafePath = structuredClone(layout) as { surfaces: { layers: { pathData?: string }[] }[] };
   unsafePath.surfaces[0].layers[3].pathData = "<svg onload=alert(1)>";
   assert.equal(studioLayoutSchema.safeParse(unsafePath).success, false);
   const invalid = structuredClone(layout) as { surfaces: { layers: { adjustments?: unknown }[] }[] };
   invalid.surfaces[0].layers[1].adjustments = { brightness: 4 };
   assert.equal(studioLayoutSchema.safeParse(invalid).success, false);
+});
+
+test("drawing brush identity and opacity survive save/reopen with stable built-in behavior", () => {
+  assert.deepEqual(STUDIO_DRAW_BRUSHES.map(({ id }) => id), ["pencil", "marker", "dashed"]);
+  assert.equal(drawingDashPattern("pencil", 8), undefined);
+  assert.equal(drawingDashPattern("marker", 8), undefined);
+  assert.deepEqual(drawingDashPattern("dashed", 8), [13.6, 9.2]);
+  const layout = studioLayoutSchema.parse({ ...base, surfaces: [{ ...base.surfaces[0], layers: [
+    { id: "marker-stroke", kind: "drawing", pathData: "M 0 0 Q 10 20 30 30", stroke: "#173e39", strokeWidth: 16, brush: "marker", opacity: 0.42, x: 10, y: 10, scaleX: 1, scaleY: 1, angle: 0 },
+    { id: "dotted-stroke", kind: "drawing", pathData: "M 0 0 Q 10 20 30 30", stroke: "#173e39", strokeWidth: 6, brush: "dashed", x: 10, y: 10, scaleX: 1, scaleY: 1, angle: 0 },
+  ] }] });
+  const reopened = studioLayoutSchema.parse(JSON.parse(JSON.stringify(layout)));
+  assert.deepEqual(reopened.surfaces[0].layers.map((layer) => layer.kind === "drawing" ? layer.brush : undefined), ["marker", "dashed"]);
+  assert.equal(reopened.surfaces[0].layers[0].kind === "drawing" && reopened.surfaces[0].layers[0].opacity, 0.42);
+  assert.equal(studioLayoutSchema.safeParse({ ...layout, surfaces: [{ ...layout.surfaces[0], layers: [{ ...layout.surfaces[0].layers[0], kind: "drawing", brush: "airbrush" }] }] }).success, false);
 });
 
 test("editor command boundary rejects unvetted resources and malformed actions", () => {

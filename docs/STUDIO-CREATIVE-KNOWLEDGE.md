@@ -25,14 +25,14 @@ Keep method reference material versioned and source-attributed. Make capability 
 ## Shipped in the current Studio phase
 
 - Persisted logical group IDs; multi-select from the layer list; multi-object duplicate, delete, opacity/style changes, grouping, ungrouping, alignment to the selection bounds, and even distribution.
-- Native freehand strokes saved as constrained SVG path commands (no raw SVG markup), with finger, stylus and mouse brush controls. A selected stroke can be moved, resized, rotated, recolored, have its width and opacity changed, erased alone or removed; the stroke eraser hits only the painted pixels of drawing layers and groups each drag into one undo checkpoint.
+- Native freehand strokes saved as constrained SVG path commands (no raw SVG markup), with Pencil, translucent Marker and dashed-line brushes. Brush identity and opacity persist with each stroke; creators can change brush, color, width and opacity after selection. Finger, stylus and mouse share the same path, print-area clipping, eraser and document history workflow. The stroke eraser hits only painted pixels of drawing layers and groups each drag into one undo checkpoint.
 - A typed editor command boundary and authenticated `/api/studio/editor-proposals` adapter. The model receives only a validated serializable canvas snapshot and a provenance-labelled search slice from SweetOh's asset registry. It returns schema-checked commands that can reference only known layers, vetted fonts/assets and defined print regions.
 - AI proposals are reviewable in Studio and do not alter the canvas before acceptance. Accepted actions use existing editor functions and one undo checkpoint; failures restore the prior document. Creator requests are metered through the existing credit system.
 - Confirmed shop-method knowledge is represented separately from broad method education: sublimation and engraving are confirmed; DTF, DTG, screen printing, embroidery and HTV/vinyl are knowledge only. No method-specific production guarantees are inferred from that list.
 
 ## Still planned / unproven
 
-- Boolean/vector masks, layer nesting, pressure-sensitive/Bezier drawing, blend modes, and additional text effects are not part of this phase.
+- Pressure-sensitive input, custom/texture brushes, brush libraries, blending, Bezier path editing and additional text effects are not part of this phase.
 - There are no rights-cleared garment mockup photos paired with validated per-product print geometry yet. Flat rendering remains the honest fallback; the template schema is groundwork, not an operational 3D mockup feature.
 - AI has no live-provider workflow tests. The current API and command schemas prove the boundary, while model quality, selected-layer targeting, stale-response handling and undo/rollback need hands-on browser testing across creator and partner sessions.
 - The print-region preparation command fits artwork to saved geometry; method-specific profiles, physical print dimensions, color checks and order acceptance rules still need authoritative production data.

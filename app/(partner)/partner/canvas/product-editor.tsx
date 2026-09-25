@@ -19,6 +19,7 @@ import {
   Gradient,
 } from "fabric";
 import { initAligningGuidelines } from "fabric/extensions";
+import { drawingDashPattern, STUDIO_DRAW_BRUSHES, studioDrawBrush, type StudioDrawBrush } from "@/lib/studio/drawing-brushes";
 import {
   AlignCenterHorizontal,
   AlignCenterVertical,
@@ -164,6 +165,7 @@ type Selected =
       fill?: string;
       stroke?: string;
       strokeWidth?: number;
+      brush?: StudioDrawBrush;
       gradient?: { from: string; to: string; direction: "horizontal" | "vertical" | "diagonal" };
       adjustments?: { brightness?: number; contrast?: number; saturation?: number; blur?: number };
       mask?: "circle" | "rounded";
@@ -285,6 +287,8 @@ export function ProductEditor({
   const [erasing, setErasing] = useState(false);
   const [drawColor, setDrawColor] = useState("#173e39");
   const [drawWidth, setDrawWidth] = useState(7);
+  const [drawOpacity, setDrawOpacity] = useState(1);
+  const [drawBrush, setDrawBrush] = useState<StudioDrawBrush>("pencil");
   const gesture = useRef<{ pointers: Map<number, { x: number; y: number }>; distance: number; zoom: number; lastX: number; lastY: number }>({ pointers: new Map(), distance: 0, zoom: 1, lastX: 0, lastY: 0 });
   const [ready, setReadyState] = useState(false);
   // Artwork uploaded while a view is still loading waits for it instead of being dropped.
@@ -476,6 +480,7 @@ export function ProductEditor({
       stroke: base.kind === "shape" && typeof o.stroke === "string" ? o.stroke : undefined,
       strokeWidth: base.kind === "shape" || base.kind === "drawing" ? o.strokeWidth : undefined,
       ...(base.kind === "drawing" && typeof o.stroke === "string" ? { stroke: o.stroke } : {}),
+      ...(base.kind === "drawing" ? { brush: studioDrawBrush(base.brush) } : {}),
       gradient: base.kind === "shape" ? base.gradient : undefined,
       adjustments: base.kind === "image" ? base.adjustments : undefined,
       mask: base.kind === "image" ? base.mask : undefined,
@@ -524,7 +529,8 @@ export function ProductEditor({
       if (!asset) throw new Error(`Studio graphic is unavailable: ${layer.assetKey}`);
       obj = await FabricImage.fromURL(studioAssetUrl(asset));
     } else if (layer.kind === "drawing") {
-      obj = new Path(layer.pathData, { fill: "", stroke: layer.stroke, strokeWidth: layer.strokeWidth, strokeLineCap: "round", strokeLineJoin: "round", objectCaching: false });
+      const brush = studioDrawBrush(layer.brush);
+      obj = new Path(layer.pathData, { fill: "", stroke: layer.stroke, strokeWidth: layer.strokeWidth, strokeDashArray: drawingDashPattern(brush, layer.strokeWidth), strokeLineCap: brush === "marker" ? "butt" : "round", strokeLineJoin: "round", objectCaching: false });
     } else if (layer.kind === "shape") {
       obj = makeShape(layer.shape, layer.width, layer.height, layer.fill, layer.stroke, layer.strokeWidth);
       if (layer.gradient) {
@@ -774,7 +780,9 @@ export function ProductEditor({
       const segments = fabricPath.path.length > 400 ? Array.from({ length: 400 }, (_, index) => fabricPath.path[Math.round(index * (fabricPath.path.length - 1) / 399)]) : fabricPath.path;
       const pathData = segments.map((segment) => segment.map((part) => typeof part === "number" ? part.toFixed(2) : part).join(" ")).join(" ");
       const stroke = typeof path.stroke === "string" && /^#[0-9a-f]{6}$/i.test(path.stroke) ? path.stroke : "#173e39";
-      const layer: StudioLayer = { id: crypto.randomUUID(), kind: "drawing", pathData, stroke, strokeWidth: Math.max(1, Math.min(50, Number(path.strokeWidth) || 7)), x: path.left ?? 0, y: path.top ?? 0, scaleX: path.scaleX ?? 1, scaleY: path.scaleY ?? 1, angle: path.angle ?? 0, printRegionId: activeRegionRef.current ?? undefined };
+      const brush = drawBrush;
+      path.set({ opacity: drawOpacity, strokeDashArray: drawingDashPattern(brush, Number(path.strokeWidth) || drawWidth), strokeLineCap: brush === "marker" ? "butt" : "round" });
+      const layer: StudioLayer = { id: crypto.randomUUID(), kind: "drawing", pathData, stroke, strokeWidth: Math.max(1, Math.min(50, Number(path.strokeWidth) || 7)), brush, opacity: drawOpacity < 1 ? drawOpacity : undefined, x: path.left ?? 0, y: path.top ?? 0, scaleX: path.scaleX ?? 1, scaleY: path.scaleY ?? 1, angle: path.angle ?? 0, printRegionId: activeRegionRef.current ?? undefined };
       meta.current.set(path, layer); drawingCheckpoint.current = false;
       path.clipPath = printClip(surface(), layer);
       capture(); readSelection(); dirty.current = true; canvas.requestRenderAll();
@@ -1113,7 +1121,7 @@ export function ProductEditor({
     canvas.setTargetFindTolerance(priorTargetTolerance.current); eraseGesture.current = false; erasingCheckpoint.current = false;
     eraseMode.current = false; setErasing(false);
     canvas.isDrawingMode = enabled; canvas.selection = !enabled && !panMode; canvas.skipTargetFind = enabled || panMode;
-    if (enabled) { const brush = new PencilBrush(canvas); brush.color = drawColor; brush.width = drawWidth; canvas.freeDrawingBrush = brush; }
+    if (enabled) applyFreehandBrush(canvas, drawBrush, drawColor, drawWidth);
     setDrawing(enabled); canvas.requestRenderAll();
   }
   function setEraseMode(enabled: boolean) {
@@ -1136,16 +1144,24 @@ export function ProductEditor({
     if (canvas.getActiveObjects().includes(object)) canvas.discardActiveObject();
     canvas.remove(object); capture(); readSelection(); dirty.current = true; canvas.requestRenderAll();
   }
-  function updateFreehand(color: string, width: number) {
-    setDrawColor(color); setDrawWidth(width);
-    const brush = editor.current?.freeDrawingBrush;
-    if (brush) { brush.color = color; brush.width = width; }
+  function applyFreehandBrush(canvas: Canvas, kind: StudioDrawBrush, color: string, width: number) {
+    const brush = new PencilBrush(canvas);
+    brush.color = color;
+    brush.width = width;
+    brush.strokeDashArray = drawingDashPattern(kind, width) ?? null;
+    brush.strokeLineCap = kind === "marker" ? "butt" : "round";
+    canvas.freeDrawingBrush = brush;
   }
-  function setDrawingStyle(style: { stroke?: string; strokeWidth?: number }, record = true) {
+  function updateFreehand(color: string, width: number, opacity = drawOpacity, kind = drawBrush) {
+    setDrawColor(color); setDrawWidth(width); setDrawOpacity(opacity); setDrawBrush(kind);
+    if (editor.current?.isDrawingMode) applyFreehandBrush(editor.current, kind, color, width);
+  }
+  function setDrawingStyle(style: { stroke?: string; strokeWidth?: number; brush?: StudioDrawBrush }, record = true) {
     changeSelected((object) => {
       const layer = meta.current.get(object);
       if (layer?.kind !== "drawing") return;
-      object.set(style);
+      const brush = style.brush ?? studioDrawBrush(layer.brush);
+      object.set({ ...style, strokeDashArray: drawingDashPattern(brush, style.strokeWidth ?? layer.strokeWidth), strokeLineCap: brush === "marker" ? "butt" : "round" });
       meta.current.set(object, { ...layer, ...style });
     }, record);
   }
@@ -2072,7 +2088,7 @@ export function ProductEditor({
                 <section className="pe-section pe-draw-tool">
                   <p className="pe-label">Draw freely</p>
                   <div className="pe-row"><button className="pe-btn pe-btn-primary pe-grow" disabled={locked} aria-pressed={drawing} onClick={() => setFreehand(!drawing)}><PenLine size={16}/>{drawing ? "Finish drawing" : "Draw"}</button><button className="pe-btn pe-btn-ghost pe-grow" disabled={locked} aria-pressed={erasing} onClick={() => setEraseMode(!erasing)}><Eraser size={16}/>{erasing ? "Finish erasing" : "Erase strokes"}</button></div>
-                {drawing && <><div className="pe-row"><label className="pe-color-input" title="Brush color"><input type="color" value={drawColor} onChange={(event) => updateFreehand(event.target.value, drawWidth)} /></label><label className="pe-slider pe-grow"><span>Brush <b>{drawWidth}px</b></span><input type="range" min={1} max={36} step={1} value={drawWidth} onChange={(event) => updateFreehand(drawColor, Number(event.target.value))}/></label></div><p className="pe-muted pe-small">Draw with a finger, stylus or mouse. Finish drawing to select and edit the stroke.</p></>}
+                {drawing && <><label className="pe-select"><span>Brush</span><select value={drawBrush} onChange={(event) => { const brush = STUDIO_DRAW_BRUSHES.find((item) => item.id === event.target.value) ?? STUDIO_DRAW_BRUSHES[0]; updateFreehand(drawColor, brush.width, brush.opacity, brush.id); }} aria-label="Drawing brush">{STUDIO_DRAW_BRUSHES.map((brush) => <option key={brush.id} value={brush.id}>{brush.label} · {brush.description}</option>)}</select></label><div className="pe-row"><label className="pe-color-input" title="Brush color"><input type="color" value={drawColor} onChange={(event) => updateFreehand(event.target.value, drawWidth)} /></label><label className="pe-slider pe-grow"><span>Size <b>{drawWidth}px</b></span><input type="range" min={1} max={50} step={1} value={drawWidth} onChange={(event) => updateFreehand(drawColor, Number(event.target.value))}/></label></div><label className="pe-slider"><span>Brush opacity <b>{Math.round(drawOpacity * 100)}%</b></span><input type="range" min={0.1} max={1} step={0.01} value={drawOpacity} onChange={(event) => updateFreehand(drawColor, drawWidth, Number(event.target.value))}/></label><p className="pe-muted pe-small">{STUDIO_DRAW_BRUSHES.find((brush) => brush.id === drawBrush)?.description} Draw with a finger, stylus or mouse. Finish drawing to select and edit the stroke.</p></>}
                   {erasing && <p className="pe-muted pe-small">Swipe over a stroke to erase it. Other artwork and text are left alone.</p>}
                 </section>
                 <p className="pe-label">Solid print background</p>
@@ -2490,7 +2506,7 @@ export function ProductEditor({
                 </section>
               )}
 
-              {selected.kind === "drawing" && <section className="pe-section"><p className="pe-label">Stroke style</p><div className="pe-row"><label className="pe-color-input" title="Stroke color"><input type="color" value={selected.stroke ?? drawColor} onPointerDown={() => checkpoint()} onChange={(event) => setDrawingStyle({ stroke: event.target.value }, false)} /></label><label className="pe-slider pe-grow"><span>Size <b>{selected.strokeWidth ?? drawWidth}px</b></span><input type="range" min={1} max={50} step={1} value={selected.strokeWidth ?? drawWidth} onPointerDown={() => checkpoint()} onChange={(event) => setDrawingStyle({ strokeWidth: Number(event.target.value) }, false)}/></label></div><p className="pe-muted pe-small">Erase strokes with the stroke eraser, or remove this whole stroke below.</p><button className="pe-btn pe-btn-ghost pe-block" onClick={removeSelected}><Eraser size={15}/>Erase this stroke</button></section>}
+              {selected.kind === "drawing" && <section className="pe-section"><p className="pe-label">Stroke style</p><label className="pe-select"><span>Brush</span><select value={selected.brush ?? "pencil"} onChange={(event) => setDrawingStyle({ brush: studioDrawBrush(event.target.value) })}>{STUDIO_DRAW_BRUSHES.map((brush) => <option key={brush.id} value={brush.id}>{brush.label}</option>)}</select></label><div className="pe-row"><label className="pe-color-input" title="Stroke color"><input type="color" value={selected.stroke ?? drawColor} onPointerDown={() => checkpoint()} onChange={(event) => setDrawingStyle({ stroke: event.target.value }, false)} /></label><label className="pe-slider pe-grow"><span>Size <b>{selected.strokeWidth ?? drawWidth}px</b></span><input type="range" min={1} max={50} step={1} value={selected.strokeWidth ?? drawWidth} onPointerDown={() => checkpoint()} onChange={(event) => setDrawingStyle({ strokeWidth: Number(event.target.value) }, false)}/></label></div><p className="pe-muted pe-small">Erase strokes with the stroke eraser, or remove this whole stroke below.</p><button className="pe-btn pe-btn-ghost pe-block" onClick={removeSelected}><Eraser size={15}/>Erase this stroke</button></section>}
 
               {selected.kind === "pattern" && (
                 <section className="pe-section">

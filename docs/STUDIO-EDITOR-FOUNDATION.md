@@ -27,7 +27,7 @@ This phase adds original SweetOh vector elements (confetti, scallop border, rain
 ## Boundaries still ahead
 
 - The seed graphics are single SVG-backed canvas objects, not editable path nodes. Pattern tiles from this pack are transformable graphics; the existing uploaded-artwork pattern tool remains the adjustable tile/repeat editor.
-- Grouped layers, freehand drawing, gradient fills, masks, shadows, text-on-path, multi-object distribution, and brush/path editing are not shipped. Group/multi-select needs an explicit saved-layout model before exposing it.
+- Native freehand drawing is shipped with persisted Pencil, Marker and dashed-line brush identities, plus color, size and opacity editing. Pressure sensitivity, custom or textured brushes, blending and path-node editing remain future work.
 - Perspective templates are infrastructure only until licensed product photographs and measured print-area corners exist for a specific blank.
 - SweetOh AI currently generates/edits artwork and operates selected server-side partner tools. It does not yet dispatch canvas commands. The typed command boundary exists; the next AI integration must route suggestions through the visible editor with user review, undo, print-area constraints, and save validation.
 - Favorites/recents are local to one browser. Shared team libraries, uploaded public packs, license review, storage quotas and template versioning need a server-side asset catalog before rollout.
