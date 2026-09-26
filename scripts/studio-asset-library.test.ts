@@ -116,6 +116,38 @@ test("text styles validate, survive save/reopen and unavailable saved fonts use 
   assert.match(editor, /resolveStudioFontKey\(layer\.font\)/);
 });
 
+test("image crop, mask, and nondestructive adjustments remain in the production layout", () => {
+  assert.equal(studioEditorCommandSchema.safeParse({ type: "set_image_adjustment", field: "temperature", value: -0.4 }).success, true);
+  assert.equal(studioEditorCommandSchema.safeParse({ type: "set_image_mask", mask: "rounded" }).success, true);
+  assert.equal(studioEditorCommandSchema.safeParse({ type: "crop_image", x: 20, y: 10, width: 300, height: 240 }).success, true);
+  const layout = studioLayoutSchema.parse({ ...base, surfaces: [{ ...base.surfaces[0], printRegions: [{ id: "front-art", name: "Front art", bounds: { x: .2, y: .2, width: .5, height: .5 }, shape: "rectangle" }], layers: [
+    { id: "creative-image", kind: "image", assetId: "00000000-0000-4000-8000-000000000001", printRegionId: "front-art", crop: { x: 20, y: 10, width: 300, height: 240 }, mask: "rounded", adjustments: { brightness: .15, contrast: -.1, saturation: .2, temperature: -.4, blur: .02 }, opacity: .7, shadow: { color: "#000000", opacity: .2, blur: 12, offsetX: 0, offsetY: 4 }, x: 70, y: 80, scaleX: .8, scaleY: .8, angle: 12, flipX: true },
+  ] }] });
+  const reopened = studioLayoutSchema.parse(JSON.parse(JSON.stringify(layout)));
+  const image = reopened.surfaces[0].layers[0];
+  assert.equal(image.kind, "image");
+  if (image.kind === "image") {
+    assert.equal(image.assetId, "00000000-0000-4000-8000-000000000001");
+    assert.equal(image.printRegionId, "front-art");
+    assert.deepEqual(image.crop, { x: 20, y: 10, width: 300, height: 240 });
+    assert.deepEqual(image.adjustments, { brightness: .15, contrast: -.1, saturation: .2, temperature: -.4, blur: .02 });
+    assert.equal(image.mask, "rounded");
+    assert.equal(image.opacity, .7);
+    assert.equal(image.angle, 12);
+    assert.equal(image.flipX, true);
+  }
+  const snapshot = buildStudioEditorState(reopened, "front", ["creative-image"], 3);
+  assert.deepEqual(snapshot.layers[0].geometry.adjustments, { brightness: .15, contrast: -.1, saturation: .2, temperature: -.4, blur: .02 });
+  const editor = readFileSync("app/(partner)/partner/canvas/product-editor.tsx", "utf8");
+  assert.match(editor, /function imageFiltersFor[\s\S]*?filters\.BlendColor/);
+  assert.match(editor, /function setImageAdjustment[\s\S]*?checkpoint\(\)[\s\S]*?applyFilters\(\)/);
+  assert.match(editor, /case "set_image_adjustment": return setImageAdjustment\(action\.field, action\.value, record\)/);
+  assert.match(editor, /onApply=\{\(px\) => void executeEditorCommand\(\{ type: "crop_image", \.\.\.px \}\)\}/);
+  assert.match(editor, /function capture\(\)[\s\S]*?\.\.\.base,[\s\S]*?scheduleMockups\(\)/);
+  const cropDialog = readFileSync("app/(partner)/partner/canvas/crop-dialog.tsx", "utf8");
+  assert.match(cropDialog, /initialCroppedAreaPixels=\{initial\}/);
+});
+
 test("new shape, image and typography controls stay serializable across save/reopen", () => {
   const layout = structuredClone(base) as typeof base & { surfaces: { layers: Record<string, unknown>[] }[] };
   layout.surfaces[0].layers.push(

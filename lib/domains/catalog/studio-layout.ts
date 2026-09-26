@@ -73,7 +73,7 @@ const hexColor = z.string().regex(/^#[0-9a-f]{6}$/i);
 const drawingBrush = z.enum(["pencil", "marker", "dashed"]);
 const pressurePoint = z.object({ x: z.number().finite().min(0).max(720), y: z.number().finite().min(0).max(720), pressure: z.number().min(0).max(1) });
 const linearGradient = z.object({ from: hexColor, to: hexColor, direction: z.enum(["horizontal", "vertical", "diagonal"]).default("diagonal") });
-const imageAdjustments = z.object({ brightness: z.number().min(-1).max(1), contrast: z.number().min(-1).max(1), saturation: z.number().min(-1).max(1), blur: z.number().min(0).max(0.2) }).partial();
+const imageAdjustments = z.object({ brightness: z.number().min(-1).max(1), contrast: z.number().min(-1).max(1), saturation: z.number().min(-1).max(1), temperature: z.number().min(-1).max(1), blur: z.number().min(0).max(0.2) }).partial();
 export const SHAPE_KINDS = ["rect", "rounded", "circle", "oval", "triangle", "star", "burst", "heart", "hexagon", "arrow", "line"] as const;
 export const layerSchema = z.discriminatedUnion("kind", [
   z.object({

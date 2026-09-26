@@ -179,7 +179,7 @@ type Selected =
       brush?: StudioDrawBrush;
       brushPreset?: StudioBrushPreset;
       gradient?: { from: string; to: string; direction: "horizontal" | "vertical" | "diagonal" };
-      adjustments?: { brightness?: number; contrast?: number; saturation?: number; blur?: number };
+      adjustments?: { brightness?: number; contrast?: number; saturation?: number; temperature?: number; blur?: number };
       mask?: "circle" | "rounded";
       shadow?: { color: string; opacity: number; blur: number; offsetX: number; offsetY: number };
       letterSpacing?: number;
@@ -293,6 +293,17 @@ const DPI = 300;
 const BRUSH_PRESETS_KEY = "sweetoh:studio:brush-presets:v1";
 const INK = "#1f7048";
 const TEXT_COLORS = ["#101828", "#ffffff", "#c8102e", "#f2a900", "#1f7048", "#2a4ea6", "#e7407c", "#7c5cc4"];
+type ImageAdjustmentValues = NonNullable<Extract<StudioLayer, { kind: "image" }>["adjustments"]>;
+function imageFiltersFor(adjustments: ImageAdjustmentValues = {}) {
+  const temperature = adjustments.temperature ?? 0;
+  return [
+    ...(adjustments.brightness ? [new filters.Brightness({ brightness: adjustments.brightness })] : []),
+    ...(adjustments.contrast ? [new filters.Contrast({ contrast: adjustments.contrast })] : []),
+    ...(adjustments.saturation ? [new filters.Saturation({ saturation: adjustments.saturation })] : []),
+    ...(temperature ? [new filters.BlendColor({ color: temperature > 0 ? "#ff9138" : "#498cdb", mode: "tint", alpha: Math.abs(temperature) * 0.3 })] : []),
+    ...(adjustments.blur ? [new filters.Blur({ blur: adjustments.blur })] : []),
+  ];
+}
 const POSITION_LABEL: Record<string, string> = {
   front: "Front",
   back: "Back",
@@ -647,14 +658,8 @@ export function ProductEditor({
     if (layer.kind === "image") {
       obj = await FabricImage.fromURL(urls.current[layer.assetId], { crossOrigin: "anonymous" });
       if (layer.crop) obj.set({ cropX: layer.crop.x, cropY: layer.crop.y, width: layer.crop.width, height: layer.crop.height });
-      const a = layer.adjustments ?? {};
       const image = obj as FabricImage;
-      image.filters = [
-        ...(a.brightness ? [new filters.Brightness({ brightness: a.brightness })] : []),
-        ...(a.contrast ? [new filters.Contrast({ contrast: a.contrast })] : []),
-        ...(a.saturation ? [new filters.Saturation({ saturation: a.saturation })] : []),
-        ...(a.blur ? [new filters.Blur({ blur: a.blur })] : []),
-      ];
+      image.filters = imageFiltersFor(layer.adjustments);
       if (image.filters.length) image.applyFilters();
     } else if (layer.kind === "graphic") {
       const asset = studioAsset(layer.assetKey);
@@ -1350,14 +1355,14 @@ export function ProductEditor({
       meta.current.set(object, { ...layer, ...style, brushPreset: preset ?? undefined });
     }, record);
   }
-  function setImageMask(mask: "none" | "circle" | "rounded") {
+  function setImageMask(mask: "none" | "circle" | "rounded", record = true) {
     changeSelected((object) => {
       const layer = meta.current.get(object);
       if (!(object instanceof FabricImage) || layer?.kind !== "image") return;
       object.clipPath = mask === "circle" ? new Ellipse({ rx: object.width / 2, ry: object.height / 2, originX: "center", originY: "center" }) : mask === "rounded" ? new Rect({ width: object.width, height: object.height, rx: Math.min(object.width, object.height) * 0.16, ry: Math.min(object.width, object.height) * 0.16, originX: "center", originY: "center" }) : undefined;
       const base = { ...layer }; delete base.mask;
       meta.current.set(object, mask === "none" ? base as StudioLayer : { ...layer, mask });
-    });
+    }, record);
   }
   function setLayerShadow(settings: { enabled: boolean; blur?: number; opacity?: number; offsetX?: number; offsetY?: number }, record = true) {
     changeSelected((object) => {
@@ -1453,7 +1458,7 @@ export function ProductEditor({
       case "move": return changeSelected((o) => o.set({ left: o.left + action.dx, top: o.top + action.dy }));
       case "resize": return changeSelected((o) => o.set({ scaleX: action.width / o.width, scaleY: action.keepRatio ? action.width / o.width : action.height / o.height }));
       case "rotate": return changeSelected((o) => o.rotate(action.degrees));
-      case "flip": return flip(action.axis);
+      case "flip": return flip(action.axis, record);
       case "crop_image": return applyCrop(action);
       case "make_pattern": return makePattern(action.assetId);
       case "set_layer_flags": return setLayerFlags(action.layerId, { hidden: action.hidden, locked: action.locked });
@@ -1465,7 +1470,7 @@ export function ProductEditor({
       case "align_selection": return alignLayers(action.layerIds, action.edge);
       case "align_canvas": return alignCanvas(action.layerIds, action.edge);
       case "distribute_selection": return distributeLayers(action.layerIds, action.axis);
-      case "set_opacity": return changeSelected((o) => o.set({ opacity: action.opacity }));
+      case "set_opacity": return changeSelected((o) => o.set({ opacity: action.opacity }), record);
       case "set_shape_style": return changeSelected((o) => {
         const layer = meta.current.get(o);
         if (layer?.kind !== "shape") return;
@@ -1486,9 +1491,9 @@ export function ProductEditor({
           if (base?.kind === "text") meta.current.set(o, { ...base, ...(action.font ? { font: action.font } : {}), ...(action.bold !== undefined || action.font !== undefined ? { bold: effectiveBold } : {}), ...(action.italic !== undefined ? { italic: action.italic } : {}), ...(action.textAlign !== undefined ? { textAlign: action.textAlign } : {}), ...(action.lineHeight !== undefined ? { lineHeight: action.lineHeight } : {}), ...(action.textBoxWidth !== undefined ? { textBoxWidth: action.textBoxWidth } : {}) });
         }, record);
       }
-      case "set_image_adjustment": return setImageAdjustment(action.field, action.value);
-      case "set_image_mask": return setImageMask(action.mask);
-      case "set_shadow": return setLayerShadow(action);
+      case "set_image_adjustment": return setImageAdjustment(action.field, action.value, record);
+      case "set_image_mask": return setImageMask(action.mask, record);
+      case "set_shadow": return setLayerShadow(action, record);
       case "prepare_artwork": {
         const region = regionsFor(surface()).find((item) => item.id === action.regionId);
         if (!region) throw new Error("Unknown print area for this view.");
@@ -1553,10 +1558,7 @@ export function ProductEditor({
       meta.current.set(o, { ...base, gradient: { from, to, direction } });
     });
   }
-  function setOpacity(v: number) {
-    changeSelected((o) => o.set({ opacity: v }), false);
-  }
-  function setImageAdjustment(field: "brightness" | "contrast" | "saturation" | "blur", value: number, record = true) {
+  function setImageAdjustment(field: "brightness" | "contrast" | "saturation" | "temperature" | "blur", value: number, record = true) {
     const targets = editor.current?.getActiveObjects().filter((object) => object instanceof FabricImage && meta.current.get(object)?.kind === "image") as FabricImage[] | undefined;
     if (!targets?.length) return;
     if (record) checkpoint();
@@ -1565,18 +1567,13 @@ export function ProductEditor({
       if (base?.kind !== "image") continue;
       const adjustments = { ...(base.adjustments ?? {}), [field]: value };
       meta.current.set(o, { ...base, adjustments });
-      o.filters = [
-        ...(adjustments.brightness ? [new filters.Brightness({ brightness: adjustments.brightness })] : []),
-        ...(adjustments.contrast ? [new filters.Contrast({ contrast: adjustments.contrast })] : []),
-        ...(adjustments.saturation ? [new filters.Saturation({ saturation: adjustments.saturation })] : []),
-        ...(adjustments.blur ? [new filters.Blur({ blur: adjustments.blur })] : []),
-      ];
+      o.filters = imageFiltersFor(adjustments);
       o.applyFilters();
     }
     capture(); readSelection(); editor.current?.requestRenderAll();
   }
-  function flip(axis: "x" | "y") {
-    changeSelected((o) => o.set(axis === "x" ? { flipX: !o.flipX } : { flipY: !o.flipY }));
+  function flip(axis: "x" | "y", record = true) {
+    changeSelected((o) => o.set(axis === "x" ? { flipX: !o.flipX } : { flipY: !o.flipY }), record);
   }
   function openCrop() {
     const o = editor.current?.getActiveObject();
@@ -2613,7 +2610,7 @@ export function ProductEditor({
                 meta.current.set(o, updated);
                 if (updated.kind === "drawing") o.clipPath = printClip(surface(), updated);
               })}><option value="">All print areas</option>{currentRegions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}</select></label></section>}
-              <section className="pe-section"><p className="pe-label">Depth and shadow</p><button className="pe-btn pe-btn-ghost pe-block" aria-pressed={Boolean(selected.shadow)} onClick={() => setLayerShadow({ enabled: !selected.shadow })}>{selected.shadow ? "Remove soft shadow" : "Add soft shadow"}</button>{selected.shadow && <><label className="pe-slider"><span>Blur <b>{selected.shadow.blur}px</b></span><input type="range" min={0} max={60} step={1} value={selected.shadow.blur} onPointerDown={() => checkpoint()} onChange={(event) => setLayerShadow({ enabled: true, ...selected.shadow, blur: Number(event.target.value) }, false)}/></label><label className="pe-slider"><span>Strength <b>{Math.round(selected.shadow.opacity * 100)}%</b></span><input type="range" min={0.05} max={0.7} step={0.01} value={selected.shadow.opacity} onPointerDown={() => checkpoint()} onChange={(event) => setLayerShadow({ enabled: true, ...selected.shadow, opacity: Number(event.target.value) }, false)}/></label><label className="pe-slider"><span>Horizontal <b>{selected.shadow.offsetX}px</b></span><input type="range" min={-40} max={40} step={1} value={selected.shadow.offsetX} onPointerDown={() => checkpoint()} onChange={(event) => setLayerShadow({ enabled: true, ...selected.shadow, offsetX: Number(event.target.value) }, false)}/></label><label className="pe-slider"><span>Vertical <b>{selected.shadow.offsetY}px</b></span><input type="range" min={-40} max={40} step={1} value={selected.shadow.offsetY} onPointerDown={() => checkpoint()} onChange={(event) => setLayerShadow({ enabled: true, ...selected.shadow, offsetY: Number(event.target.value) }, false)}/></label></>}</section>
+              <section className="pe-section"><p className="pe-label">Depth and shadow</p><button className="pe-btn pe-btn-ghost pe-block" aria-pressed={Boolean(selected.shadow)} onClick={() => void executeEditorCommand({ type: "set_shadow", enabled: !selected.shadow, blur: selected.shadow?.blur ?? 18, opacity: selected.shadow?.opacity ?? 0.24, offsetX: selected.shadow?.offsetX ?? 0, offsetY: selected.shadow?.offsetY ?? 8 })}>{selected.shadow ? "Remove soft shadow" : "Add soft shadow"}</button>{selected.shadow && <><label className="pe-slider"><span>Blur <b>{selected.shadow.blur}px</b></span><input type="range" min={0} max={60} step={1} value={selected.shadow.blur} onPointerDown={() => checkpoint()} onChange={(event) => void executeEditorCommand({ type: "set_shadow", enabled: true, blur: Number(event.target.value), opacity: selected.shadow!.opacity, offsetX: selected.shadow!.offsetX, offsetY: selected.shadow!.offsetY }, false)}/></label><label className="pe-slider"><span>Strength <b>{Math.round(selected.shadow.opacity * 100)}%</b></span><input type="range" min={0.05} max={0.7} step={0.01} value={selected.shadow.opacity} onPointerDown={() => checkpoint()} onChange={(event) => void executeEditorCommand({ type: "set_shadow", enabled: true, blur: selected.shadow!.blur, opacity: Number(event.target.value), offsetX: selected.shadow!.offsetX, offsetY: selected.shadow!.offsetY }, false)}/></label><label className="pe-slider"><span>Horizontal <b>{selected.shadow.offsetX}px</b></span><input type="range" min={-40} max={40} step={1} value={selected.shadow.offsetX} onPointerDown={() => checkpoint()} onChange={(event) => void executeEditorCommand({ type: "set_shadow", enabled: true, blur: selected.shadow!.blur, opacity: selected.shadow!.opacity, offsetX: Number(event.target.value), offsetY: selected.shadow!.offsetY }, false)}/></label><label className="pe-slider"><span>Vertical <b>{selected.shadow.offsetY}px</b></span><input type="range" min={-40} max={40} step={1} value={selected.shadow.offsetY} onPointerDown={() => checkpoint()} onChange={(event) => void executeEditorCommand({ type: "set_shadow", enabled: true, blur: selected.shadow!.blur, opacity: selected.shadow!.opacity, offsetX: selected.shadow!.offsetX, offsetY: Number(event.target.value) }, false)}/></label></>}</section>
               {selected.kind === "text" && (
                 <section className="pe-section">
                   {fontFallbackNotice && <p className="pe-muted" role="status">A saved font is unavailable, so Studio is using Inter. Choosing a font here saves the replacement.</p>}
@@ -2664,7 +2661,7 @@ export function ProductEditor({
 
               {selected.kind === "image" && (
                 <section className="pe-section">
-                  <p className="pe-label">Image mask</p><div className="pe-row"><button className="pe-btn pe-btn-ghost pe-grow" aria-pressed={!selected.mask} onClick={() => setImageMask("none")}>Original</button><button className="pe-btn pe-btn-ghost pe-grow" aria-pressed={selected.mask === "circle"} onClick={() => setImageMask("circle")}>Oval</button><button className="pe-btn pe-btn-ghost pe-grow" aria-pressed={selected.mask === "rounded"} onClick={() => setImageMask("rounded")}>Round</button></div>
+                  <p className="pe-label">Image mask</p><div className="pe-row"><button className="pe-btn pe-btn-ghost pe-grow" aria-pressed={!selected.mask} onClick={() => void executeEditorCommand({ type: "set_image_mask", mask: "none" })}>Original</button><button className="pe-btn pe-btn-ghost pe-grow" aria-pressed={selected.mask === "circle"} onClick={() => void executeEditorCommand({ type: "set_image_mask", mask: "circle" })}>Oval</button><button className="pe-btn pe-btn-ghost pe-grow" aria-pressed={selected.mask === "rounded"} onClick={() => void executeEditorCommand({ type: "set_image_mask", mask: "rounded" })}>Round</button></div>
                   <div className="pe-tools">
                     <button onClick={openCrop} disabled={locked}>
                       <Scissors size={16} /> Crop
@@ -2677,10 +2674,10 @@ export function ProductEditor({
                     </button>
                   </div>
                   <p className="pe-label">Image adjustments</p>
-                  {([ ["brightness", "Brightness", -1, 1], ["contrast", "Contrast", -1, 1], ["saturation", "Saturation", -1, 1], ["blur", "Soft focus", 0, 0.2] ] as const).map(([field, label, min, max]) => (
+                  {([ ["brightness", "Brightness", -1, 1], ["contrast", "Contrast", -1, 1], ["saturation", "Saturation", -1, 1], ["temperature", "Cool ↔ Warm tint", -1, 1], ["blur", "Soft focus", 0, 0.2] ] as const).map(([field, label, min, max]) => (
                     <label className="pe-slider" key={field}>
-                      <span>{label}<b>{Math.round((selected.adjustments?.[field] ?? 0) * (field === "blur" ? 500 : 100))}{field === "blur" ? "%" : ""}</b></span>
-                      <input type="range" min={min} max={max} step={field === "blur" ? 0.005 : 0.02} value={selected.adjustments?.[field] ?? 0} onPointerDown={() => checkpoint()} onChange={(e) => setImageAdjustment(field, Number(e.target.value), false)} />
+                      <span>{label}<b>{field === "temperature" ? (selected.adjustments?.temperature ?? 0) > 0 ? "Warm" : (selected.adjustments?.temperature ?? 0) < 0 ? "Cool" : "Neutral" : `${Math.round((selected.adjustments?.[field] ?? 0) * (field === "blur" ? 500 : 100))}${field === "blur" ? "%" : ""}`}</b></span>
+                      <input type="range" min={min} max={max} step={field === "blur" ? 0.005 : 0.02} value={selected.adjustments?.[field] ?? 0} onPointerDown={() => checkpoint()} onChange={(e) => void executeEditorCommand({ type: "set_image_adjustment", field, value: Number(e.target.value) }, false)} />
                     </label>
                   ))}
                   <p className="pe-label">Edit with AI</p>
@@ -2807,10 +2804,10 @@ export function ProductEditor({
                   <button className="pe-btn pe-btn-ghost pe-grow" onClick={() => void executeEditorCommand({ type: "set_layer_order", layerId: selectedLayerIds[0], direction: "back" })}>To back</button>
                 </div>
                 <div className="pe-row">
-                  <button className="pe-btn pe-btn-ghost pe-grow" aria-pressed={selected.flipX} onClick={() => flip("x")}>
+                    <button className="pe-btn pe-btn-ghost pe-grow" aria-pressed={selected.flipX} onClick={() => void executeEditorCommand({ type: "flip", axis: "x" })}>
                     <FlipHorizontal2 size={14} /> Flip
                   </button>
-                  <button className="pe-btn pe-btn-ghost pe-grow" aria-pressed={selected.flipY} onClick={() => flip("y")}>
+                    <button className="pe-btn pe-btn-ghost pe-grow" aria-pressed={selected.flipY} onClick={() => void executeEditorCommand({ type: "flip", axis: "y" })}>
                     <FlipVertical2 size={14} /> Flip
                   </button>
                 </div>
@@ -2822,7 +2819,7 @@ export function ProductEditor({
                   <span>
                     <Blend size={14} /> Opacity <b>{Math.round(selected.opacity * 100)}%</b>
                   </span>
-                  <input type="range" min={0.1} max={1} step={0.01} value={selected.opacity} onChange={(e) => setOpacity(Number(e.target.value))} onPointerDown={() => { checkpoint(); }} />
+                  <input type="range" min={0.1} max={1} step={0.01} value={selected.opacity} onChange={(e) => void executeEditorCommand({ type: "set_opacity", opacity: Number(e.target.value) }, false)} onPointerDown={() => { checkpoint(); }} />
                 </label>
               </section>
 
@@ -3030,7 +3027,8 @@ export function ProductEditor({
           <CropDialog
             src={cropping.src}
             natural={{ width: el.naturalWidth, height: el.naturalHeight }}
-            onApply={(px) => applyCrop(px)}
+            initial={cropping.initial}
+            onApply={(px) => void executeEditorCommand({ type: "crop_image", ...px })}
             onReset={() => applyCrop(null)}
             onClose={() => setCropping(null)}
           />

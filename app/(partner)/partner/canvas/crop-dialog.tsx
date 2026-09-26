@@ -17,19 +17,21 @@ const ASPECTS: { label: string; value: number | null }[] = [
 export function CropDialog({
   src,
   natural,
+  initial,
   onApply,
   onReset,
   onClose,
 }: {
   src: string;
   natural: { width: number; height: number };
+  initial?: CropPixels;
   onApply: (px: CropPixels) => void;
   onReset: () => void;
   onClose: () => void;
 }) {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
-  const [aspect, setAspect] = useState<number | null>(null);
+  const [aspect, setAspect] = useState<number | null>(initial ? initial.width / initial.height : null);
   const [pixels, setPixels] = useState<Area | null>(null);
 
   return (
@@ -47,6 +49,7 @@ export function CropDialog({
             crop={crop}
             zoom={zoom}
             aspect={aspect ?? natural.width / natural.height}
+            initialCroppedAreaPixels={initial}
             onCropChange={setCrop}
             onZoomChange={setZoom}
             onCropComplete={(_, px) => setPixels(px)}
