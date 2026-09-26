@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import sharp from "sharp";
-import { studioLayoutSchema } from "../lib/domains/catalog/studio-layout";
+import { productPrintAreaFromStudio, studioLayoutSchema, studioMatchesProductPrintArea } from "../lib/domains/catalog/studio-layout";
 import { prepareStudioTemplateCopy } from "../lib/domains/catalog/studio-template-copy";
 import { STUDIO_ASSETS, studioAsset, studioAssetUrl } from "../lib/studio/asset-library";
 import { STUDIO_FONT_PROVENANCE, resolveStudioFontKey } from "../lib/studio/font-provenance";
@@ -190,6 +190,42 @@ test("saved Studio designs instantiate independent rights-safe copies and preser
   assert.match(action, /getCreativeLibraryAsset\(\{ ventureId: session\.ventureId, assetId \}\)/);
   assert.match(action, /canInsertCreativeLibraryAsset\(creativeAsset, session\.ventureId\)/);
   assert.match(action, /resolveStudioFontKey\(layer\.font\)/);
+});
+
+test("product draft artwork links to the editable composition and persists exact production geometry separately", () => {
+  const sourceId = "00000000-0000-4000-8000-000000000001";
+  const draftId = "00000000-0000-4000-8000-000000000002";
+  const studio = studioLayoutSchema.parse({ ...base, surfaces: [{
+    ...base.surfaces[0], id: "front", position: "front", assetId: sourceId, imageRole: "production_blank",
+    area: { x: .18, y: .11, width: .62, height: .72 },
+    printRegions: [{ id: "front-print", name: "Front print", bounds: { x: .2, y: .16, width: .5, height: .6 }, shape: "rectangle", dimensions: { width: 10, height: 12, unit: "in" } }],
+    layers: [{ id: "source-text", kind: "text", text: "Original artwork", color: "#173e39", font: "montserrat", fontSize: 32, x: 90, y: 80, scaleX: 1, scaleY: 1, angle: 0 }],
+  }] });
+  const productArea = productPrintAreaFromStudio(studio);
+  assert.equal(studioMatchesProductPrintArea(studio, productArea), true);
+  assert.equal(studioMatchesProductPrintArea(studio, { ...productArea, surfaces: productArea.surfaces.map((surface) => ({ ...surface, area: { ...surface.area, x: .01 } })) }), false);
+  const serializedDesign = JSON.parse(JSON.stringify({ blankProductId: draftId, studio }));
+  const reopenedDesign = studioLayoutSchema.parse(serializedDesign.studio);
+  assert.equal(serializedDesign.blankProductId, draftId);
+  assert.equal(reopenedDesign.surfaces[0].layers[0].kind === "text" && reopenedDesign.surfaces[0].layers[0].text, "Original artwork");
+  assert.deepEqual(productArea.surfaces[0].area, studio.surfaces[0].area);
+  assert.deepEqual(productArea.surfaces[0].printRegions, studio.surfaces[0].printRegions);
+  assert.equal("layers" in productArea.surfaces[0], false);
+  assert.equal(studio.surfaces[0].layers.length, 1, "linking a product does not flatten or mutate the source composition");
+
+  const action = readFileSync("app/(partner)/partner/actions/library.ts", "utf8");
+  const review = readFileSync("app/(partner)/partner/review/[id]/page.tsx", "utf8");
+  const editor = readFileSync("app/(partner)/partner/canvas/product-editor.tsx", "utf8");
+  const readiness = readFileSync("lib/domains/catalog/service.ts", "utf8");
+  assert.match(action, /getActorProductDraft\(\{ ventureId: session\.ventureId, actorUserId: session\.appUser\.id, productId:/);
+  assert.match(action, /isDeepStrictEqual\(source\.compositionLayout\.studio, studio\)/);
+  assert.match(action, /blankProductId: applyTarget\?\.product\.id \?\? blankProductId/);
+  assert.match(action, /sourceAssetId: composition\.id/);
+  assert.match(action, /productPrintAreaFromStudio\(studio\)/);
+  assert.match(action, /markProductDraftReviewed\(\{ ventureId: session\.ventureId, productId: target\.id/);
+  assert.match(editor, /applyToProductDraftId/);
+  assert.match(review, /compositionLayout\?\.studio/);
+  assert.match(readiness, /isSweetohPathValid[\s\S]*?isApprovedAssetStatus\(sourceAsset\.status\)/);
 });
 
 test("new shape, image and typography controls stay serializable across save/reopen", () => {

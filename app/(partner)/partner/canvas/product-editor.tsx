@@ -156,6 +156,8 @@ type Props = {
   draftScope?: string;
   /** Rights fallback notice for resources removed while opening a saved design. */
   rightsFallbackNotice?: string | null;
+  /** Existing composition id, reused when applying it without edits. */
+  initialCompositionAssetId?: string | null;
   PublishPanel?: React.ComponentType<{ api: EditorPublishApi }>;
   blanks: CanvasBlankOption[];
   designs: CanvasDesignOption[];
@@ -165,6 +167,9 @@ type Props = {
   initialStudio?: StudioLayout | null;
   surfaceImages?: Record<string, string>;
   savedDesigns?: SavedDesignOption[];
+  /** Owned, editable private product drafts that may receive a compatible design. */
+  privateProductDrafts?: { id: string; name: string }[];
+  initialApplyTargetId?: string | null;
   creativeAssets?: StudioCreativeAssetOption[];
 };
 type Selected =
@@ -333,11 +338,14 @@ export function ProductEditor({
   initialStudio,
   surfaceImages = {},
   savedDesigns = [],
+  privateProductDrafts = [],
+  initialApplyTargetId = null,
   creativeAssets = [],
   mode = "partner",
   initialName = null,
   draftScope = "fresh",
   rightsFallbackNotice = null,
+  initialCompositionAssetId = null,
   PublishPanel,
 }: Props) {
   const base = mode === "creator" ? { catalog: "/studio/catalog", canvas: "/studio/design" } : { catalog: "/partner/catalog", canvas: "/partner/canvas" };
@@ -433,6 +441,7 @@ export function ProductEditor({
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [name, setName] = useState(initialName || blank?.name || "My product");
+  const [applyTargetId, setApplyTargetId] = useState(initialApplyTargetId ?? privateProductDrafts[0]?.id ?? "");
   const [layers, setLayers] = useState<StudioLayer[]>([]);
   const [selected, setSelected] = useState<Selected>(null);
   const [selectedLayerIds, setSelectedLayerIds] = useState<string[]>([]);
@@ -2110,8 +2119,8 @@ export function ProductEditor({
       };
     },
   });
-  async function save(asProduct: boolean) {
-    setBusy(asProduct ? "Preparing your product…" : "Saving to My files…");
+  async function save(asProduct: boolean, applyToProductDraft = false) {
+    setBusy(asProduct ? "Preparing your product…" : applyToProductDraft ? "Saving artwork to this product draft…" : "Saving to My files…");
     setError("");
     try {
       const data = await buildPreview();
@@ -2119,6 +2128,8 @@ export function ProductEditor({
       form.set("name", name.trim() || blank.name);
       form.set("saveAsProduct", String(asProduct));
       form.set("blankProductId", blank.id);
+      if (applyToProductDraft) form.set("applyToProductDraftId", applyTargetId);
+      if (applyToProductDraft && initialCompositionAssetId) form.set("sourceCompositionId", initialCompositionAssetId);
       form.set("studioLayout", JSON.stringify(doc.current));
       for (let i = 0; i < data.views.length; i++) {
         const blob = await (await fetch(data.views[i].url)).blob();
@@ -2181,6 +2192,12 @@ export function ProductEditor({
           <button className="pe-btn pe-btn-ghost" onClick={() => void save(false)} disabled={!hasDesign || locked}>
             {mode === "creator" ? "Save design" : "Save reusable design"}
           </button>
+          {mode === "partner" && privateProductDrafts.length > 0 && <>
+            <label className="pe-select"><span>Apply to private product draft</span><select value={applyTargetId} onChange={(event) => setApplyTargetId(event.target.value)} aria-label="Choose private product draft">{privateProductDrafts.map((draft) => <option key={draft.id} value={draft.id}>{draft.name}</option>)}</select></label>
+            <button className="pe-btn pe-btn-ghost" onClick={() => void save(false, true)} disabled={!hasDesign || locked || !applyTargetId || !photoFor(doc.current.surfaces[0])} title={!photoFor(doc.current.surfaces[0]) ? "A verified clean production blank is required." : "Save a new editable design and link it to the selected private product draft."}>
+              Apply design to draft
+            </button>
+          </>}
           <button className="pe-btn pe-btn-ghost" onClick={() => void openPreview()} disabled={!hasDesign || locked}>
             <Eye size={16} /> Preview
           </button>

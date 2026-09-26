@@ -188,7 +188,7 @@ export default async function PartnerReviewDetailPage({
 
       <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
         <Link href="/partner/products" className="so-link">← My products</Link>
-        {(aiSession?.session.rawResponse as {kind?:string})?.kind === "canvas_composition" && product.sourceAssetId && <Link className="so-link" href={`/partner/canvas?composition=${product.sourceAssetId}`}>Edit design</Link>}
+        {productionAsset?.asset.compositionLayout?.studio && product.sourceAssetId && <Link className="so-link" href={`/partner/canvas?composition=${product.sourceAssetId}&targetDraft=${product.id}`}>Edit product artwork</Link>}
       </div>
 
       {/* Photo beside the AI-written copy — the whole point of this screen. */}

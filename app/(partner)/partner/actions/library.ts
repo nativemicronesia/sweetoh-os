@@ -1,17 +1,16 @@
 "use server";
 
-import { studioLayoutSchema, surfaceSchema, PRODUCTION_BLANK_ASSET_NOTES } from "@/lib/domains/catalog/studio-layout";
+import { studioLayoutSchema, surfaceSchema, PRODUCTION_BLANK_ASSET_NOTES, inferSurfaceImageRole, productPrintAreaFromStudio, studioMatchesProductPrintArea } from "@/lib/domains/catalog/studio-layout";
 import { assertBuilderRole } from "@/lib/domains/intelligence/partner-builder";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { redirect } from "next/navigation";
 import { approveAsset, archiveAsset, getAssetById, getAssetSignedUrl, validateImageUpload } from "@/lib/domains/assets/service";
 import { persistDraftProduct } from "@/lib/domains/intelligence/service";
-import { getProductById, addProductMediaUpload, setProductVariantSetup } from "@/lib/domains/catalog/service";
+import { getProductById, addProductMediaUpload, markProductDraftReviewed, setProductPrintArea, setProductVariantSetup, updateProduct } from "@/lib/domains/catalog/service";
 import { ValidationError } from "@/lib/shared/errors";
 import { uploadPartnerDesign } from "@/lib/domains/catalog/partner-design-library";
 import { canModerateListings } from "@/lib/domains/catalog/partner-listings";
-import { setProductPrintArea } from "@/lib/domains/catalog/service";
 import { requirePartnerWorkspace, requireStudioWorkspace, studioBase } from "@/lib/domains/identity/service";
 import { getCreditBalance } from "@/lib/domains/creator/credits";
 import { listPartnerLibraryDesigns } from "@/lib/domains/catalog/partner-design-library";
@@ -20,6 +19,9 @@ import { plainCatalogDescription } from "@/lib/integrations/printify/catalog";
 import { canInsertCreativeLibraryAsset } from "@/lib/domains/library/model";
 import { getCreativeLibraryAsset } from "@/lib/domains/library/service";
 import { resolveStudioFontKey } from "@/lib/studio/font-provenance";
+import { getActorProductDraft } from "@/lib/domains/intelligence/service";
+import { builderRecord } from "@/lib/domains/intelligence/product-research-schema";
+import { isDeepStrictEqual } from "node:util";
 
 export async function resolveStudioCreativeAssetAction(assetId: string) {
   const session = await requirePartnerWorkspace();
@@ -171,6 +173,7 @@ export async function saveCanvasCompositionAction(formData: FormData): Promise<{
       })),
     } : undefined;
     const surfaceFiles = formData.getAll("surfaceFiles").filter((f): f is File => f instanceof File && f.size > 0);
+    const referencedAssets = new Map<string, Awaited<ReturnType<typeof getAssetById>>>();
     if (studio) {
       if (!studio.surfaces.some(s => s.layers.length)) throw new ValidationError("Add artwork or text before saving.");
       if (surfaceFiles.length !== studio.surfaces.length - 1) throw new ValidationError("Preview every surface before saving.");
@@ -182,7 +185,6 @@ export async function saveCanvasCompositionAction(formData: FormData): Promise<{
         }
       }
       const ids = new Set(studio.surfaces.flatMap(s => [s.assetId, s.referenceAssetId, ...s.layers.flatMap(l => (l.kind === "image" || l.kind === "pattern") ? [l.assetId] : [])]).filter((id): id is string => Boolean(id)));
-      const referencedAssets = new Map<string, Awaited<ReturnType<typeof getAssetById>>>();
       for (const id of ids) {
         const asset = await getAssetById({ventureId: session.ventureId, assetId:id});
         referencedAssets.set(id, asset);
@@ -207,6 +209,37 @@ export async function saveCanvasCompositionAction(formData: FormData): Promise<{
       blankProductId &&
       designAssetId &&
       [offsetX, offsetY, scale, rotation, canvasSize].every(Number.isFinite);
+
+    const applyToProductDraftId = String(formData.get("applyToProductDraftId") ?? "").trim();
+    let applyTarget: Awaited<ReturnType<typeof getActorProductDraft>> = null;
+    if (applyToProductDraftId) {
+      if (session.role !== "partner" && session.role !== "owner") throw new ValidationError("Only the Sweet'Oh partner can apply Studio designs to product drafts.");
+      if (!studio || formData.get("saveAsProduct") === "true") throw new ValidationError("Save a Studio composition before applying it to a product draft.");
+      applyTarget = await getActorProductDraft({ ventureId: session.ventureId, actorUserId: session.appUser.id, productId: z.string().uuid().parse(applyToProductDraftId) });
+      const builderData = builderRecord(applyTarget?.session?.rawResponse);
+      if (!applyTarget || applyTarget.product.active || !["draft", "needs_work", "pending_review", "approved"].includes(applyTarget.product.draftStatus)
+        || applyTarget.product.fulfillmentType !== "sweetoh" || builderData?.purpose === "blank"
+        || !studioMatchesProductPrintArea(studio, applyTarget.product.printArea)) {
+        throw new ValidationError("Choose one of your editable private product drafts with matching production surfaces.");
+      }
+      const savedSurfaces = applyTarget.product.printArea?.surfaces ?? [];
+      if (!studio.surfaces.length || studio.surfaces.some((surface, index) => {
+        const saved = savedSurfaces[index];
+        const imageRole = saved ? inferSurfaceImageRole({ ...saved, assetNotes: saved.assetId ? referencedAssets.get(saved.assetId)?.notes : null }) : null;
+        return !saved || imageRole !== "production_blank" || !saved.assetId || surface.imageRole !== "production_blank";
+      })) {
+        throw new ValidationError("This product draft needs matching verified production blanks on every surface.");
+      }
+    }
+    const sourceCompositionId = String(formData.get("sourceCompositionId") ?? "").trim();
+    let reusableComposition: Awaited<ReturnType<typeof getAssetById>> | null = null;
+    if (applyTarget && studio && z.string().uuid().safeParse(sourceCompositionId).success) {
+      const source = await getAssetById({ ventureId: session.ventureId, assetId: sourceCompositionId }).catch(() => null);
+      if (source?.assetType === "sweetoh_design" && ["approved", "licensed"].includes(source.status)
+        && source.compositionLayout?.studio && isDeepStrictEqual(source.compositionLayout.studio, studio)) {
+        reusableComposition = source;
+      }
+    }
 
     validateImageUpload({ mimeType: file.type, sizeBytes: file.size });
     if (!studio && !hasLayout) throw new ValidationError("Choose a blank and an artwork before saving.");
@@ -241,11 +274,11 @@ export async function saveCanvasCompositionAction(formData: FormData): Promise<{
       }
     }
     // A creator's blank lives in their own workspace, so they own its print setup too.
-    if (studio && (canModerateListings(session) || session.role === "creator")) {
+    if (studio && !applyTarget && (canModerateListings(session) || session.role === "creator")) {
       const surfaces = studio.surfaces.map(({layers,...surface})=>surface);
       await setProductPrintArea({ventureId:session.ventureId,productId:blank.id,printArea:{...surfaces[0].area,...{surfaces}}});
     }
-    const composition = await uploadPartnerDesign({
+    const composition = reusableComposition ?? await uploadPartnerDesign({
       ventureId: session.ventureId,
       ventureSlug: session.ventureSlug,
       uploadedById: session.appUser.id,
@@ -256,9 +289,27 @@ export async function saveCanvasCompositionAction(formData: FormData): Promise<{
       mimeType: file.type || "image/png",
       autoApprove: canModerateListings(session),
       compositionLayout: studio || hasLayout
-        ? { blankProductId, designAssetId, offsetX, offsetY, scale, rotation, canvasSize, text, studio }
+        ? { blankProductId: applyTarget?.product.id ?? blankProductId, designAssetId, offsetX, offsetY, scale, rotation, canvasSize, text, studio }
         : null,
     });
+
+    if (applyTarget && studio) {
+      const target = applyTarget.product;
+      await updateProduct({
+        ventureId: session.ventureId, productId: target.id, actorUserId: session.appUser.id,
+        slug: target.slug, name: target.name, description: target.description, priceCents: target.priceCents,
+        category: target.category as import("@/lib/domains/catalog/publish").ProductCategory,
+        fulfillmentType: target.fulfillmentType as "dropship" | "sweetoh", supplierSku: target.supplierSku,
+        sourceAssetId: composition.id, shortDescription: target.shortDescription, seoTitle: target.seoTitle,
+        seoDescription: target.seoDescription, internalNotes: target.internalNotes,
+        suggestedTags: target.suggestedTags, suggestedCollections: target.suggestedCollections,
+      });
+      await setProductPrintArea({ ventureId: session.ventureId, productId: target.id, printArea: productPrintAreaFromStudio(studio) });
+      await markProductDraftReviewed({ ventureId: session.ventureId, productId: target.id, actorUserId: session.appUser.id });
+      revalidatePath(`/partner/review/${target.id}`);
+      revalidatePath("/partner/products");
+      redirect(`/partner/review/${target.id}?success=${encodeURIComponent("Studio artwork saved to this private product draft.")}`);
+    }
 
     if (saveAsProduct) {
       const saved = await persistDraftProduct({ ventureId: session.ventureId, actorUserId: session.appUser.id,

@@ -164,6 +164,29 @@ export type StudioLayout = z.infer<typeof studioLayoutSchema>;
 export type StudioLayer = z.infer<typeof layerSchema>;
 export type StudioSurface = z.infer<typeof surfaceSchema>;
 
+/** Product drafts store production geometry while the linked design asset keeps editable layers. */
+export function productPrintAreaFromStudio(studio: StudioLayout) {
+  const { area } = studio.surfaces[0];
+  return {
+    ...area,
+    surfaces: studio.surfaces.map(({ layers: _surfaceLayers, ...surface }) => surface),
+  };
+}
+
+/** Require the editor and target draft to use the same verified production surface geometry. */
+export function studioMatchesProductPrintArea(studio: StudioLayout, printArea: {
+  surfaces?: StudioSurface[];
+} | null | undefined): boolean {
+  const target = printArea?.surfaces;
+  if (!target?.length || target.length !== studio.surfaces.length) return false;
+  return studio.surfaces.every((surface, index) => {
+    const other = target[index];
+    return Boolean(other && surface.id === other.id && (surface.position ?? surface.id) === (other.position ?? other.id)
+      && surface.assetId === other.assetId && JSON.stringify(surface.area) === JSON.stringify(other.area)
+      && JSON.stringify(surface.printRegions ?? []) === JSON.stringify(other.printRegions ?? []));
+  });
+}
+
 export type SurfaceImageRole = NonNullable<StudioSurface["imageRole"]>;
 export const PRODUCTION_BLANK_ASSET_NOTES = "Background removed; reusable blank view.";
 
