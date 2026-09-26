@@ -5,7 +5,7 @@ import { assertBuilderRole } from "@/lib/domains/intelligence/partner-builder";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { redirect } from "next/navigation";
-import { approveAsset, archiveAsset, getAssetById, validateImageUpload } from "@/lib/domains/assets/service";
+import { approveAsset, archiveAsset, getAssetById, getAssetSignedUrl, validateImageUpload } from "@/lib/domains/assets/service";
 import { persistDraftProduct } from "@/lib/domains/intelligence/service";
 import { getProductById, addProductMediaUpload, setProductVariantSetup } from "@/lib/domains/catalog/service";
 import { ValidationError } from "@/lib/shared/errors";
@@ -17,6 +17,22 @@ import { getCreditBalance } from "@/lib/domains/creator/credits";
 import { listPartnerLibraryDesigns } from "@/lib/domains/catalog/partner-design-library";
 import { getActionErrorMessage } from "@/lib/shared/action-errors";
 import { plainCatalogDescription } from "@/lib/integrations/printify/catalog";
+import { canInsertCreativeLibraryAsset } from "@/lib/domains/library/model";
+import { getCreativeLibraryAsset } from "@/lib/domains/library/service";
+
+export async function resolveStudioCreativeAssetAction(assetId: string) {
+  const session = await requirePartnerWorkspace();
+  const unavailable = (error: string) => ({ assetId: null, name: null, previewUrl: null, error });
+  if (!z.string().uuid().safeParse(assetId).success) return unavailable("That library asset is unavailable.");
+  const creativeAsset = await getCreativeLibraryAsset({ ventureId: session.ventureId, assetId });
+  if (!creativeAsset || !canInsertCreativeLibraryAsset(creativeAsset, session.ventureId)) {
+    return unavailable("That library asset is not available for Studio use.");
+  }
+  const asset = await getAssetById({ ventureId: session.ventureId, assetId });
+  const previewUrl = await getAssetSignedUrl({ ventureId: session.ventureId, assetId });
+  if (!previewUrl) return unavailable("A preview is not available for that asset.");
+  return { assetId: asset.id, name: asset.name, previewUrl, error: null };
+}
 
 function isNextRedirect(error: unknown): boolean {
   return (

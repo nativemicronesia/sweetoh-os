@@ -28,9 +28,11 @@ export const creativeLibraryMetadataSchema = z.object({
 });
 export type CreativeLibraryMetadata = z.infer<typeof creativeLibraryMetadataSchema>;
 export type LibraryUse = "studio_edit" | "commercial_product" | "redistribute_source";
+export const STUDIO_IMAGE_LIBRARY_KINDS = ["element", "vector", "sticker", "pattern", "texture", "background", "illustration", "shape_frame", "design_template"] as const;
 
 export type CreativeLibraryAsset = {
   assetId: string; ventureId: string; ownerId: string | null; assetType: AssetType; status: AssetStatus;
+  mimeType?: string | null;
   authorityLevel: "canonical" | "derived" | "licensed"; name: string; notes: string | null;
   metadata: CreativeLibraryMetadata | null;
   metadataInvalid?: boolean;
@@ -65,6 +67,13 @@ export function canUseCreativeLibraryAsset(asset: CreativeLibraryAsset, input: {
     return Boolean(asset.status === "approved" && m.rightsVerifiedAt && m.rightsVerifiedById && m.commercialUse && m.modificationAllowed && (!m.attributionRequired || m.attributionText));
   }
   return Boolean(m.rightsVerifiedAt && m.rightsVerifiedById && m.redistributionAllowed && (!m.attributionRequired || m.attributionText));
+}
+
+/** Image-backed creative files supported by the existing canvas image layer. */
+export function canInsertCreativeLibraryAsset(asset: CreativeLibraryAsset, ventureId: string): boolean {
+  return canUseCreativeLibraryAsset(asset, { ventureId, use: "studio_edit" }) &&
+    asset.assetType !== "product_asset" && Boolean(asset.mimeType?.startsWith("image/")) &&
+    Boolean(asset.metadata && STUDIO_IMAGE_LIBRARY_KINDS.includes(asset.metadata.kind as typeof STUDIO_IMAGE_LIBRARY_KINDS[number]));
 }
 
 export function matchesCreativeLibraryQuery(asset: Pick<CreativeLibraryAsset, "name" | "metadata">, query: string): boolean {

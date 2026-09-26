@@ -8,4 +8,6 @@ Legacy assets without an entry keep the established same-venture Studio workflow
 
 `searchCreativeLibrary` is the venture-scoped, rights-filtered search boundary for Studio and future SweetOh AI/Green Tree Skink tools. AI and agent work is not activated by this foundation. Static SweetOh-created Studio graphics and fonts continue through the existing vetted registries; their explicit source/license metadata is normalized through the same usage policy.
 
+The partner canvas has a separate **My reusable assets** browser for existing image-backed entries whose `studio_edit` rights pass. It filters by kind, category, tags, and production relevance, shows existing signed previews, then checks rights again when inserting. Compatible assets use the existing image layer and retain its asset ID; the normal canvas checkpoint/capture path supplies undo, redo, save, and reopen behavior. My Files and its legacy saved-design flow remain available, and library browsing does not copy asset bytes.
+
 Migration application was not performed. Before applying `0030_creative_library.sql`, reconcile the existing migration journal and pending migration files and verify the live database state. The table is additive and references existing assets; it does not rewrite or migrate their files.

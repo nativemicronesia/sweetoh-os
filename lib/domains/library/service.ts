@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import { asset, creativeLibraryEntry } from "@/lib/db/schema";
 import { getAssetById } from "@/lib/domains/assets/service";
@@ -22,7 +22,7 @@ export function normalizeCreativeLibraryAsset(row: typeof asset.$inferSelect, me
   const metadata = toMetadata(metadataRow);
   return {
     assetId: row.id, ventureId: row.ventureId, ownerId: row.uploadedById, assetType: row.assetType,
-    status: row.status, authorityLevel: row.authorityLevel, name: row.name, notes: row.notes,
+    status: row.status, mimeType: row.mimeType, authorityLevel: row.authorityLevel, name: row.name, notes: row.notes,
     metadata: metadata ?? (metadataRow || row.authorityLevel === "licensed" ? null : {
       kind: libraryKindForAssetType(row.assetType), category: row.assetType.replaceAll("_", " "), tags: [], productionMethods: [],
       sourceKind: row.uploadedById ? "partner_upload" : "legacy_unknown", sourceName: row.uploadedById ? "Partner workspace upload" : "Existing SweetOh asset",
@@ -39,6 +39,15 @@ export async function getCreativeLibraryAsset(input: { ventureId: string; assetI
     .leftJoin(creativeLibraryEntry, eq(creativeLibraryEntry.assetId, asset.id))
     .where(and(eq(asset.id, input.assetId), eq(asset.ventureId, input.ventureId))).limit(1);
   return row ? normalizeCreativeLibraryAsset(row.asset, row.entry) : null;
+}
+
+export async function getCreativeLibraryAssets(input: { ventureId: string; assetIds: string[] }): Promise<CreativeLibraryAsset[]> {
+  if (!input.assetIds.length) return [];
+  const db = getDb();
+  const rows = await db.select({ asset, entry: creativeLibraryEntry }).from(asset)
+    .leftJoin(creativeLibraryEntry, eq(creativeLibraryEntry.assetId, asset.id))
+    .where(and(eq(asset.ventureId, input.ventureId), inArray(asset.id, input.assetIds)));
+  return rows.map(row => normalizeCreativeLibraryAsset(row.asset, row.entry));
 }
 
 /** Workspace-scoped search extension point for Studio and later SweetOh AI tools. */

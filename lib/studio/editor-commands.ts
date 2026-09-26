@@ -10,6 +10,7 @@ const fontKeySchema = z.string().max(40).refine((key) => Object.hasOwn(STUDIO_FO
 /** Serializable intent boundary shared by buttons now and an AI assistant later. */
 export const studioEditorCommandSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("add_graphic"), assetKey: z.string().refine((key) => STUDIO_ASSET_IDS.has(key)) }).strict(),
+  z.object({ type: z.literal("add_library_asset"), assetId: z.string().uuid() }).strict(),
   z.object({ type: z.literal("add_shape"), shape: z.enum(SHAPE_KINDS) }).strict(),
   z.object({ type: z.literal("add_background"), color: z.string().regex(/^#[0-9a-f]{6}$/i) }).strict(),
   z.object({ type: z.literal("add_text"), text: z.string().min(1).max(120), font: fontKeySchema.optional() }).strict(),

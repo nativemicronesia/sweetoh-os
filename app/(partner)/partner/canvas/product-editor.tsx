@@ -75,6 +75,7 @@ import {
   generateArtworkAction,
   uploadSurfaceAction,
 } from "../actions/builder";
+import { resolveStudioCreativeAssetAction } from "../actions/library";
 import {
   saveCanvasCompositionAction,
   saveBlankSurfacesAction,
@@ -108,6 +109,7 @@ import { regionPath } from "@/lib/studio/print-regions";
 import { ProductSetup } from "./product-setup";
 import { CropDialog, type CropPixels } from "./crop-dialog";
 import { AssetLibraryPanel } from "./asset-library-panel";
+import type { StudioCreativeAssetOption } from "@/lib/studio/creative-library-browser";
 
 type Area = StudioSurface["area"];
 type Surface = StudioLayout["surfaces"][number];
@@ -156,6 +158,7 @@ type Props = {
   initialStudio?: StudioLayout | null;
   surfaceImages?: Record<string, string>;
   savedDesigns?: SavedDesignOption[];
+  creativeAssets?: StudioCreativeAssetOption[];
 };
 type Selected =
   | null
@@ -308,6 +311,7 @@ export function ProductEditor({
   initialStudio,
   surfaceImages = {},
   savedDesigns = [],
+  creativeAssets = [],
   mode = "partner",
   initialName = null,
   PublishPanel,
@@ -1098,6 +1102,19 @@ export function ProductEditor({
       setBusy(null);
     }
   }
+  async function addCreativeLibraryAsset(id: string) {
+    try {
+      const resolved = await resolveStudioCreativeAssetAction(id);
+      if (resolved.error || !resolved.previewUrl) {
+        setError(resolved.error ?? "That library asset is not available for Studio use.");
+        return;
+      }
+      urls.current[resolved.assetId] = resolved.previewUrl;
+      await addArtwork(resolved.assetId);
+    } catch {
+      setError("That library asset is no longer available for Studio use.");
+    }
+  }
   async function upload(file: File | undefined, ai = false) {
     if (!file && !ai) return;
     setBusy(ai ? "Creating artwork with AI…" : "Uploading…");
@@ -1404,6 +1421,7 @@ export function ProductEditor({
     if (locked) return;
     switch (action.type) {
       case "add_graphic": return addGraphic(action.assetKey);
+      case "add_library_asset": return addCreativeLibraryAsset(action.assetId);
       case "add_shape": return addShape(action.shape);
       case "add_background": return addBackground(action.color);
       case "add_text": return addText({ text: action.text, size: 52, font: action.font });
@@ -2269,7 +2287,7 @@ export function ProductEditor({
               </div>
             )}
 
-            {panel === "assets" && <AssetLibraryPanel disabled={locked} onAddGraphic={(id) => void executeEditorCommand({ type: "add_graphic", assetKey: id })} onAddFont={(key) => void executeEditorCommand({ type: "add_text", text: "Your text", font: key })} />}
+            {panel === "assets" && <AssetLibraryPanel creativeAssets={creativeAssets} disabled={locked} onAddCreativeAsset={(assetId) => void executeEditorCommand({ type: "add_library_asset", assetId })} onAddGraphic={(id) => void executeEditorCommand({ type: "add_graphic", assetKey: id })} onAddFont={(key) => void executeEditorCommand({ type: "add_text", text: "Your text", font: key })} />}
 
             {panel === "inspiration" && (
               <div className="pe-panel-body">
