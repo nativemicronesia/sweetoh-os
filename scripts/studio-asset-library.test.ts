@@ -4,7 +4,7 @@ import { test } from "node:test";
 import sharp from "sharp";
 import { studioLayoutSchema } from "../lib/domains/catalog/studio-layout";
 import { STUDIO_ASSETS, studioAsset, studioAssetUrl } from "../lib/studio/asset-library";
-import { STUDIO_FONT_PROVENANCE } from "../lib/studio/font-provenance";
+import { STUDIO_FONT_PROVENANCE, resolveStudioFontKey } from "../lib/studio/font-provenance";
 import { buildStudioEditorState, findStudioAssets, studioAssetSearchSchema, studioEditorCommandSchema, studioEditorProposalSchema } from "../lib/studio/editor-commands";
 import { reorderLayers } from "../lib/studio/layer-order";
 import { mockupTemplateSchema } from "../lib/studio/mockup/templates";
@@ -90,6 +90,30 @@ test("multi-layer z-order moves selected objects as a stable block or one step",
   assert.deepEqual(reorderLayers(layers, selected, "back"), ["b", "d", "a", "c", "e"]);
   assert.deepEqual(reorderLayers(layers, selected, "forward"), ["a", "c", "b", "e", "d"]);
   assert.deepEqual(reorderLayers(layers, selected, "backward"), ["b", "a", "d", "c", "e"]);
+});
+
+test("text styles validate, survive save/reopen and unavailable saved fonts use Inter", () => {
+  const style = { type: "set_text_style", font: "montserrat", fontSize: 42, color: "#c8102e", bold: true, italic: true, textAlign: "center", lineHeight: 1.35, letterSpacing: 36, textBoxWidth: 240, text: "Sweet Oh" } as const;
+  assert.equal(studioEditorCommandSchema.safeParse(style).success, true);
+  assert.equal(studioEditorCommandSchema.safeParse({ ...style, font: "unlicensed-font" }).success, false);
+  assert.equal(resolveStudioFontKey("montserrat"), "montserrat");
+  assert.equal(resolveStudioFontKey("font-removed-from-build"), "inter");
+  const layout = studioLayoutSchema.parse({ ...base, surfaces: [{ ...base.surfaces[0], layers: [
+    { id: "type-style", kind: "text", text: style.text, color: style.color, font: style.font, fontSize: style.fontSize, bold: style.bold, italic: style.italic, textAlign: style.textAlign, lineHeight: style.lineHeight, letterSpacing: style.letterSpacing, textBoxWidth: style.textBoxWidth, x: 20, y: 30, scaleX: 1, scaleY: 1, angle: 0 },
+    { id: "legacy-font", kind: "text", text: "Old", color: "#101828", font: "retired-font", fontSize: 24, x: 20, y: 80, scaleX: 1, scaleY: 1, angle: 0 },
+  ] }] });
+  const reopened = studioLayoutSchema.parse(JSON.parse(JSON.stringify(layout)));
+  const snapshot = buildStudioEditorState(reopened, "front", ["type-style"], 2);
+  assert.equal(snapshot.layers[0].geometry.textAlign, "center");
+  assert.equal(snapshot.layers[0].geometry.textBoxWidth, 240);
+  const text = reopened.surfaces[0].layers[0];
+  assert.equal(text.kind, "text");
+  if (text.kind === "text") assert.deepEqual({ id: text.id, font: text.font, size: text.fontSize, bold: text.bold, italic: text.italic, align: text.textAlign, lineHeight: text.lineHeight, spacing: text.letterSpacing, width: text.textBoxWidth, content: text.text }, { id: "type-style", font: "montserrat", size: 42, bold: true, italic: true, align: "center", lineHeight: 1.35, spacing: 36, width: 240, content: "Sweet Oh" });
+  const editor = readFileSync("app/(partner)/partner/canvas/product-editor.tsx", "utf8");
+  assert.match(editor, /case "set_text_style"[\s\S]*?changeSelected\([\s\S]*?record\)/);
+  assert.match(editor, /function changeSelected\([\s\S]*?if \(record\) checkpoint\(\)[\s\S]*?capture\(\)/);
+  assert.match(editor, /new Textbox\(layer\.text[\s\S]*?textBoxWidth/);
+  assert.match(editor, /resolveStudioFontKey\(layer\.font\)/);
 });
 
 test("new shape, image and typography controls stay serializable across save/reopen", () => {

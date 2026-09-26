@@ -1,11 +1,11 @@
 import { z } from "zod";
 import { SHAPE_KINDS } from "@/lib/domains/catalog/studio-layout";
 import { STUDIO_ASSET_IDS, STUDIO_ASSETS } from "./asset-library";
-import { STUDIO_FONT_LABELS, STUDIO_FONT_PROVENANCE } from "./font-provenance";
+import { STUDIO_FONT_LABELS, STUDIO_FONT_PROVENANCE, isStudioFontKey } from "./font-provenance";
 import { canUseCreativeLibraryAsset, creativeLibraryMetadataSchema } from "@/lib/domains/library/model";
 import { regionsFor, type StudioLayout, type StudioLayer } from "@/lib/domains/catalog/studio-layout";
 
-const fontKeySchema = z.string().max(40).refine((key) => Object.hasOwn(STUDIO_FONT_PROVENANCE, key), "Choose an available Studio font.");
+const fontKeySchema = z.string().max(40).refine(isStudioFontKey, "Choose an available Studio font.");
 
 /** Serializable intent boundary shared by buttons now and an AI assistant later. */
 export const studioEditorCommandSchema = z.discriminatedUnion("type", [
@@ -37,7 +37,7 @@ export const studioEditorCommandSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("set_opacity"), opacity: z.number().min(0).max(1) }).strict(),
   z.object({ type: z.literal("set_shape_style"), fill: z.string().regex(/^#[0-9a-f]{6}$/i).optional(), stroke: z.string().regex(/^#[0-9a-f]{6}$/i).nullable().optional(), strokeWidth: z.number().min(0).max(100).optional() }).strict(),
   z.object({ type: z.literal("set_shape_gradient"), from: z.string().regex(/^#[0-9a-f]{6}$/i), to: z.string().regex(/^#[0-9a-f]{6}$/i), direction: z.enum(["horizontal", "vertical", "diagonal"]).default("diagonal") }).strict(),
-  z.object({ type: z.literal("set_text_style"), text: z.string().max(120).optional(), font: fontKeySchema.optional(), fontSize: z.number().min(12).max(120).optional(), color: z.string().regex(/^#[0-9a-f]{6}$/i).optional(), letterSpacing: z.number().min(-100).max(500).optional(), bold: z.boolean().optional(), outline: z.string().regex(/^#[0-9a-f]{6}$/i).nullable().optional(), outlineWidth: z.number().min(0).max(24).optional() }).strict(),
+  z.object({ type: z.literal("set_text_style"), text: z.string().max(120).optional(), font: fontKeySchema.optional(), fontSize: z.number().min(12).max(120).optional(), color: z.string().regex(/^#[0-9a-f]{6}$/i).optional(), letterSpacing: z.number().min(-100).max(500).optional(), bold: z.boolean().optional(), italic: z.boolean().optional(), textAlign: z.enum(["left", "center", "right", "justify"]).optional(), lineHeight: z.number().min(0.8).max(3).optional(), textBoxWidth: z.number().positive().max(1440).optional(), outline: z.string().regex(/^#[0-9a-f]{6}$/i).nullable().optional(), outlineWidth: z.number().min(0).max(24).optional() }).strict(),
   z.object({ type: z.literal("set_image_adjustment"), field: z.enum(["brightness", "contrast", "saturation", "blur"]), value: z.number().min(-1).max(1) }).strict(),
   z.object({ type: z.literal("set_image_mask"), mask: z.enum(["none", "circle", "rounded"]) }).strict(),
   z.object({ type: z.literal("set_shadow"), enabled: z.boolean(), blur: z.number().min(0).max(80).default(18), opacity: z.number().min(0).max(1).default(0.25), offsetX: z.number().min(-100).max(100).default(0), offsetY: z.number().min(-100).max(100).default(8) }).strict(),
@@ -81,7 +81,7 @@ export function buildStudioEditorState(layout: StudioLayout, surfaceId: string, 
     geometry: { x: layer.x, y: layer.y, scaleX: layer.scaleX, scaleY: layer.scaleY, angle: layer.angle, opacity: layer.opacity ?? 1,
       ...(layer.groupId ? { groupId: layer.groupId } : {}),
       ...(layer.kind === "shape" ? { fill: layer.fill, stroke: layer.stroke, strokeWidth: layer.strokeWidth, gradient: layer.gradient } : {}),
-      ...(layer.kind === "text" ? { text: layer.text, font: layer.font, fontSize: layer.fontSize, color: layer.color, bold: layer.bold, letterSpacing: layer.letterSpacing } : {}),
+      ...(layer.kind === "text" ? { text: layer.text, font: layer.font, fontSize: layer.fontSize, color: layer.color, bold: layer.bold, italic: layer.italic, textAlign: layer.textAlign, lineHeight: layer.lineHeight, textBoxWidth: layer.textBoxWidth, letterSpacing: layer.letterSpacing } : {}),
       ...(layer.kind === "image" ? { assetId: layer.assetId, crop: layer.crop, adjustments: layer.adjustments, mask: layer.mask } : {}),
       ...(layer.kind === "graphic" ? { assetKey: layer.assetKey } : {}),
       ...(layer.kind === "pattern" ? { tile: layer.tile, gap: layer.gap, brick: layer.brick } : {}),

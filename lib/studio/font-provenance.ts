@@ -25,3 +25,12 @@ export const STUDIO_FONT_PROVENANCE = {
 export const STUDIO_FONT_LABELS: Record<keyof typeof STUDIO_FONT_PROVENANCE, string> = {
   inter: "Inter", montserrat: "Montserrat", anton: "Anton", bebas: "Bebas Neue", oswald: "Oswald", playfair: "Playfair Display", pacifico: "Pacifico", marker: "Permanent Marker", caveat: "Caveat", lobster: "Lobster", barlow: "Barlow Condensed", space: "Space Grotesk", fraunces: "Fraunces",
 };
+
+export type StudioFontKey = keyof typeof STUDIO_FONT_PROVENANCE;
+export function isStudioFontKey(key: string | undefined): key is StudioFontKey {
+  return Boolean(key && Object.hasOwn(STUDIO_FONT_PROVENANCE, key));
+}
+/** Saved fonts removed from this build fall back to the bundled Inter family. */
+export function resolveStudioFontKey(key: string | undefined): StudioFontKey {
+  return isStudioFontKey(key) ? key : "inter";
+}

@@ -125,6 +125,10 @@ export const layerSchema = z.discriminatedUnion("kind", [
     /** Key into the editor's font list; missing means the default font. */
     font: z.string().max(40).optional(),
     bold: z.boolean().optional(),
+    italic: z.boolean().optional(),
+    textAlign: z.enum(["left", "center", "right", "justify"]).optional(),
+    lineHeight: z.number().min(0.8).max(3).optional(),
+    textBoxWidth: z.number().positive().max(1440).optional(),
     letterSpacing: z.number().min(-100).max(500).optional(),
     outline: hexColor.optional(),
     outlineWidth: z.number().min(0).max(24).optional(),

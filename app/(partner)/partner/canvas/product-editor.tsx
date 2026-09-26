@@ -12,6 +12,7 @@ import {
   Circle,
   Group,
   IText,
+  Textbox,
   PencilBrush,
   Point,
   Rect,
@@ -93,6 +94,7 @@ import type { CatalogSource, VariantOptions } from "@/lib/domains/catalog/varian
 import { analyzePhoto, tintGarment } from "@/lib/studio/tint";
 import { sizedPhoto } from "@/lib/studio/photo";
 import { PRODUCT_FONTS, ensureFont, fontFamily } from "@/lib/studio/fonts";
+import { isStudioFontKey, resolveStudioFontKey } from "@/lib/studio/font-provenance";
 import { studioAsset, studioAssetUrl } from "@/lib/studio/asset-library";
 import { buildStudioEditorState, studioEditorCommandSchema, studioEditorProposalSchema, type StudioEditorCommand } from "@/lib/studio/editor-commands";
 import { reorderLayers } from "@/lib/studio/layer-order";
@@ -198,6 +200,10 @@ type Selected =
       fontSize?: number;
       color?: string;
       bold?: boolean;
+      italic?: boolean;
+      textAlign?: "left" | "center" | "right" | "justify";
+      lineHeight?: number;
+      textBoxWidth?: number;
     };
 type Panel = "files" | "text" | "shapes" | "assets" | "ai" | "inspiration" | "layers" | null;
 type InspirationItem = { id: string; name: string; previewUrl: string };
@@ -413,6 +419,7 @@ export function ProductEditor({
   const [layers, setLayers] = useState<StudioLayer[]>([]);
   const [selected, setSelected] = useState<Selected>(null);
   const [selectedLayerIds, setSelectedLayerIds] = useState<string[]>([]);
+  const [fontFallbackNotice, setFontFallbackNotice] = useState(() => initial.current.surfaces.some((view) => view.layers.some((layer) => layer.kind === "text" && layer.font !== undefined && !isStudioFontKey(layer.font))));
   const [alignRelativeTo, setAlignRelativeTo] = useState<"selection" | "canvas">("selection");
   const revision = useRef(0);
   const batching = useRef(false);
@@ -502,6 +509,10 @@ export function ProductEditor({
                 color: String(o.fill),
                 fontSize: o.fontSize,
                 bold: o.fontWeight === "bold" || o.fontWeight === 700,
+                italic: o.fontStyle === "italic",
+                textAlign: o.textAlign as "left" | "center" | "right" | "justify",
+                lineHeight: o.lineHeight,
+                textBoxWidth: o.width,
                 letterSpacing: o.charSpacing,
                 outline: typeof o.stroke === "string" ? o.stroke : undefined,
                 outlineWidth: o.strokeWidth || undefined,
@@ -614,10 +625,14 @@ export function ProductEditor({
       ...(text
         ? {
             text: (o as IText).text,
-            font: base.kind === "text" ? (base.font ?? "inter") : "inter",
+            font: base.kind === "text" ? resolveStudioFontKey(base.font) : "inter",
             fontSize: (o as IText).fontSize,
             color: String((o as IText).fill),
             bold: (o as IText).fontWeight === "bold" || (o as IText).fontWeight === 700,
+            italic: (o as IText).fontStyle === "italic",
+            textAlign: (o as IText).textAlign as "left" | "center" | "right" | "justify",
+            lineHeight: (o as IText).lineHeight,
+            textBoxWidth: o.width,
             letterSpacing: (o as IText).charSpacing,
             outline: typeof (o as IText).stroke === "string" ? String((o as IText).stroke) : undefined,
             outlineWidth: (o as IText).strokeWidth,
@@ -627,6 +642,7 @@ export function ProductEditor({
   }
 
   async function makeLayer(layer: StudioLayer) {
+    const storedLayer = layer.kind === "text" ? { ...layer, font: resolveStudioFontKey(layer.font) } : layer;
     let obj: FabricObject;
     if (layer.kind === "image") {
       obj = await FabricImage.fromURL(urls.current[layer.assetId], { crossOrigin: "anonymous" });
@@ -658,15 +674,28 @@ export function ProductEditor({
       obj.set({ lockMovementX: true, lockMovementY: true, lockScalingX: true, lockScalingY: true, lockRotation: true, hasControls: false });
     } else {
       const bold = layer.bold ?? true;
-      await ensureFont(layer.font, bold);
-      obj = new IText(layer.text, {
+      const font = resolveStudioFontKey(layer.font);
+      const supportsBold = PRODUCT_FONTS.find((item) => item.key === font)?.bold ?? false;
+      const effectiveBold = bold && supportsBold;
+      await ensureFont(font, effectiveBold);
+      const textOptions = {
         fontSize: layer.fontSize,
         fill: layer.color,
-        fontFamily: fontFamily(layer.font),
-        fontWeight: bold ? "bold" : "normal",
+        fontFamily: fontFamily(font),
+        fontWeight: effectiveBold ? "bold" : "normal",
+        fontStyle: layer.italic ? "italic" : "normal",
+        textAlign: layer.textAlign ?? "left",
+        lineHeight: layer.lineHeight ?? 1.16,
         charSpacing: layer.letterSpacing ?? 0,
         stroke: layer.outline ?? null,
         strokeWidth: layer.outlineWidth ?? 0,
+      };
+      // Preserve the natural single-line width for older IText documents until
+      // a partner explicitly chooses a wrapping width.
+      const naturalWidth = new IText(layer.text, textOptions).width;
+      obj = new Textbox(layer.text, {
+        ...textOptions,
+        width: layer.textBoxWidth ?? Math.min(1440, Math.max(20, naturalWidth)),
       });
     }
     if (layer.kind === "image" && layer.mask === "circle") {
@@ -697,7 +726,7 @@ export function ProductEditor({
       borderScaleFactor: 1.5,
       padding: 4,
     });
-    meta.current.set(obj, layer);
+    meta.current.set(obj, storedLayer);
     return obj;
   }
 
@@ -1226,17 +1255,6 @@ export function ProductEditor({
       }
     });
   }
-  async function setFont(key: string) {
-    const o = editor.current?.getActiveObject();
-    if (!(o instanceof IText)) return;
-    const bold = o.fontWeight === "bold" || o.fontWeight === 700;
-    await ensureFont(key, bold);
-    changeSelected((obj) => {
-      obj.set({ fontFamily: fontFamily(key) });
-      const base = meta.current.get(obj);
-      if (base?.kind === "text") meta.current.set(obj, { ...base, font: key });
-    });
-  }
   async function duplicate() {
     const canvas = editor.current;
     const targets = canvas?.getActiveObjects().filter((object) => meta.current.has(object));
@@ -1416,7 +1434,7 @@ export function ProductEditor({
     bringGuideToTop(); editor.current!.setActiveObject(object);
     capture(); readSelection(); editor.current!.requestRenderAll();
   }
-  async function executeEditorCommand(command: StudioEditorCommand) {
+  async function executeEditorCommand(command: StudioEditorCommand, record = true) {
     // This is the sole validated intent entry point for library actions; a
     // future AI tool can submit the same command without touching Fabric state.
     const action = studioEditorCommandSchema.parse(command);
@@ -1456,13 +1474,17 @@ export function ProductEditor({
       });
       case "set_shape_gradient": return setShapeGradient(action.from, action.to, action.direction);
       case "set_text_style": {
-        if (action.font) await ensureFont(action.font, action.bold ?? selected?.bold ?? false);
+        const currentFont = action.font ?? selected?.font ?? "inter";
+        const supportsBold = PRODUCT_FONTS.find((font) => font.key === currentFont)?.bold ?? false;
+        const effectiveBold = Boolean(action.bold ?? selected?.bold) && supportsBold;
+        if (action.font) { await ensureFont(action.font, effectiveBold); setFontFallbackNotice(false); }
         return changeSelected((o) => {
           if (!(o instanceof IText)) return;
           const base = meta.current.get(o);
-          o.set({ ...(action.text !== undefined ? { text: action.text } : {}), ...(action.font ? { fontFamily: fontFamily(action.font) } : {}), ...(action.fontSize !== undefined ? { fontSize: action.fontSize } : {}), ...(action.color ? { fill: action.color } : {}), ...(action.letterSpacing !== undefined ? { charSpacing: action.letterSpacing } : {}), ...(action.bold !== undefined ? { fontWeight: action.bold ? "bold" : "normal" } : {}), ...(action.outline !== undefined ? { stroke: action.outline ?? undefined } : {}), ...(action.outlineWidth !== undefined ? { strokeWidth: action.outlineWidth } : {}) });
-          if (base?.kind === "text" && action.font) meta.current.set(o, { ...base, font: action.font });
-        });
+          o.set({ ...(action.text !== undefined ? { text: action.text } : {}), ...(action.font ? { fontFamily: fontFamily(action.font) } : {}), ...(action.fontSize !== undefined ? { fontSize: action.fontSize } : {}), ...(action.color ? { fill: action.color } : {}), ...(action.letterSpacing !== undefined ? { charSpacing: action.letterSpacing } : {}), ...(action.bold !== undefined || action.font !== undefined ? { fontWeight: effectiveBold ? "bold" : "normal" } : {}), ...(action.italic !== undefined ? { fontStyle: action.italic ? "italic" : "normal" } : {}), ...(action.textAlign !== undefined ? { textAlign: action.textAlign } : {}), ...(action.lineHeight !== undefined ? { lineHeight: action.lineHeight } : {}), ...(action.textBoxWidth !== undefined ? { width: action.textBoxWidth } : {}), ...(action.outline !== undefined ? { stroke: action.outline ?? undefined } : {}), ...(action.outlineWidth !== undefined ? { strokeWidth: action.outlineWidth } : {}) });
+          if (o instanceof Textbox) o.initDimensions();
+          if (base?.kind === "text") meta.current.set(o, { ...base, ...(action.font ? { font: action.font } : {}), ...(action.bold !== undefined || action.font !== undefined ? { bold: effectiveBold } : {}), ...(action.italic !== undefined ? { italic: action.italic } : {}), ...(action.textAlign !== undefined ? { textAlign: action.textAlign } : {}), ...(action.lineHeight !== undefined ? { lineHeight: action.lineHeight } : {}), ...(action.textBoxWidth !== undefined ? { textBoxWidth: action.textBoxWidth } : {}) });
+        }, record);
       }
       case "set_image_adjustment": return setImageAdjustment(action.field, action.value);
       case "set_image_mask": return setImageMask(action.mask);
@@ -2300,7 +2322,7 @@ export function ProductEditor({
               </div>
             )}
 
-            {panel === "assets" && <AssetLibraryPanel creativeAssets={creativeAssets} disabled={locked} onAddCreativeAsset={(assetId) => void executeEditorCommand({ type: "add_library_asset", assetId })} onAddGraphic={(id) => void executeEditorCommand({ type: "add_graphic", assetKey: id })} onAddFont={(key) => void executeEditorCommand({ type: "add_text", text: "Your text", font: key })} />}
+            {panel === "assets" && <AssetLibraryPanel creativeAssets={creativeAssets} disabled={locked} onAddCreativeAsset={(assetId) => void executeEditorCommand({ type: "add_library_asset", assetId })} onAddGraphic={(id) => void executeEditorCommand({ type: "add_graphic", assetKey: id })} onAddFont={(key) => { if (isStudioFontKey(key)) void executeEditorCommand({ type: "add_text", text: "Your text", font: key }); }} />}
 
             {panel === "inspiration" && (
               <div className="pe-panel-body">
@@ -2594,16 +2616,17 @@ export function ProductEditor({
               <section className="pe-section"><p className="pe-label">Depth and shadow</p><button className="pe-btn pe-btn-ghost pe-block" aria-pressed={Boolean(selected.shadow)} onClick={() => setLayerShadow({ enabled: !selected.shadow })}>{selected.shadow ? "Remove soft shadow" : "Add soft shadow"}</button>{selected.shadow && <><label className="pe-slider"><span>Blur <b>{selected.shadow.blur}px</b></span><input type="range" min={0} max={60} step={1} value={selected.shadow.blur} onPointerDown={() => checkpoint()} onChange={(event) => setLayerShadow({ enabled: true, ...selected.shadow, blur: Number(event.target.value) }, false)}/></label><label className="pe-slider"><span>Strength <b>{Math.round(selected.shadow.opacity * 100)}%</b></span><input type="range" min={0.05} max={0.7} step={0.01} value={selected.shadow.opacity} onPointerDown={() => checkpoint()} onChange={(event) => setLayerShadow({ enabled: true, ...selected.shadow, opacity: Number(event.target.value) }, false)}/></label><label className="pe-slider"><span>Horizontal <b>{selected.shadow.offsetX}px</b></span><input type="range" min={-40} max={40} step={1} value={selected.shadow.offsetX} onPointerDown={() => checkpoint()} onChange={(event) => setLayerShadow({ enabled: true, ...selected.shadow, offsetX: Number(event.target.value) }, false)}/></label><label className="pe-slider"><span>Vertical <b>{selected.shadow.offsetY}px</b></span><input type="range" min={-40} max={40} step={1} value={selected.shadow.offsetY} onPointerDown={() => checkpoint()} onChange={(event) => setLayerShadow({ enabled: true, ...selected.shadow, offsetY: Number(event.target.value) }, false)}/></label></>}</section>
               {selected.kind === "text" && (
                 <section className="pe-section">
+                  {fontFallbackNotice && <p className="pe-muted" role="status">A saved font is unavailable, so Studio is using Inter. Choosing a font here saves the replacement.</p>}
                   <textarea
                     className="pe-textarea"
                     rows={2}
                     value={selected.text}
-                    onChange={(e) => changeSelected((o) => (o as IText).set({ text: e.target.value }), false)}
+                    onChange={(e) => void executeEditorCommand({ type: "set_text_style", text: e.target.value }, false)}
                     onFocus={() => checkpoint()}
                     aria-label="Text"
                   />
                   <div className="pe-row">
-                    <select value={selected.font} onChange={(e) => void setFont(e.target.value)} aria-label="Font" className="pe-select">
+                    <select value={selected.font} onChange={(e) => { if (isStudioFontKey(e.target.value)) void executeEditorCommand({ type: "set_text_style", font: e.target.value }); }} aria-label="Font" className="pe-select">
                       {PRODUCT_FONTS.map((f) => (
                         <option key={f.key} value={f.key}>
                           {f.label}
@@ -2614,20 +2637,26 @@ export function ProductEditor({
                       className="pe-toggle"
                       aria-pressed={selected.bold}
                       aria-label="Bold"
-                      onClick={() => changeSelected((o) => (o as IText).set({ fontWeight: selected.bold ? "normal" : "bold" }))}
+                      title={PRODUCT_FONTS.find((font) => font.key === selected.font)?.bold ? "Bold" : "This font has no bundled bold weight"}
+                      disabled={!PRODUCT_FONTS.find((font) => font.key === selected.font)?.bold}
+                      onClick={() => void executeEditorCommand({ type: "set_text_style", bold: !selected.bold })}
                     >
                       <Bold size={15} />
                     </button>
+                    <button className="pe-toggle" aria-pressed={selected.italic ?? false} aria-label="Italic" onClick={() => void executeEditorCommand({ type: "set_text_style", italic: !selected.italic })}><i>I</i></button>
                   </div>
-                  <label className="pe-num"><span>Pt</span><input type="number" min={12} max={120} step={1} aria-label="Font size" value={selected.fontSize ?? 48} onChange={(e) => { const value = Number(e.target.value); if (value >= 12 && value <= 120) changeSelected((o) => (o as IText).set({ fontSize: value })); }} /></label>
-                  <label className="pe-slider"><span>Letter spacing <b>{selected.letterSpacing ?? 0}</b></span><input type="range" min={-100} max={500} step={10} value={selected.letterSpacing ?? 0} onPointerDown={() => checkpoint()} onChange={(e) => changeSelected((o) => (o as IText).set({ charSpacing: Number(e.target.value) }), false)} /></label>
-                  <div className="pe-row"><label className="pe-color-input" title="Text outline"><input type="color" value={selected.outline ?? "#ffffff"} onChange={(e) => changeSelected((o) => (o as IText).set({ stroke: e.target.value }), false)} /></label><label className="pe-num"><span>Outline</span><input type="number" min={0} max={24} step={1} value={selected.outlineWidth ?? 0} onChange={(e) => changeSelected((o) => (o as IText).set({ stroke: e.target.value ? selected.outline ?? "#ffffff" : null, strokeWidth: Number(e.target.value) }))} /></label></div>
+                  <label className="pe-num"><span>Pt</span><input type="number" min={12} max={120} step={1} aria-label="Font size" value={selected.fontSize ?? 48} onFocus={() => checkpoint()} onChange={(e) => { const value = Number(e.target.value); if (value >= 12 && value <= 120) void executeEditorCommand({ type: "set_text_style", fontSize: value }, false); }} /></label>
+                  <label className="pe-num"><span>Text box width (px)</span><input type="number" min={60} max={1440} step={10} aria-label="Text box width" value={Math.round(selected.textBoxWidth ?? 300)} onFocus={() => checkpoint()} onChange={(e) => { const value = Number(e.target.value); if (value >= 60 && value <= 1440) void executeEditorCommand({ type: "set_text_style", textBoxWidth: value }, false); }} /></label>
+                  <p className="pe-label">Text alignment</p><div className="pe-row">{(["left", "center", "right", "justify"] as const).map((textAlign) => <button key={textAlign} className="pe-btn pe-btn-ghost pe-grow" aria-pressed={(selected.textAlign ?? "left") === textAlign} onClick={() => void executeEditorCommand({ type: "set_text_style", textAlign })}>{textAlign}</button>)}</div>
+                  <label className="pe-slider"><span>Line height <b>{(selected.lineHeight ?? 1.16).toFixed(2)}</b></span><input type="range" min={0.8} max={3} step={0.05} value={selected.lineHeight ?? 1.16} onPointerDown={() => checkpoint()} onChange={(e) => void executeEditorCommand({ type: "set_text_style", lineHeight: Number(e.target.value) }, false)} /></label>
+                  <label className="pe-slider"><span>Letter spacing <b>{selected.letterSpacing ?? 0}</b></span><input type="range" min={-100} max={500} step={10} value={selected.letterSpacing ?? 0} onPointerDown={() => checkpoint()} onChange={(e) => void executeEditorCommand({ type: "set_text_style", letterSpacing: Number(e.target.value) }, false)} /></label>
+                  <div className="pe-row"><label className="pe-color-input" title="Text outline"><input type="color" value={selected.outline ?? "#ffffff"} onPointerDown={() => checkpoint()} onChange={(e) => void executeEditorCommand({ type: "set_text_style", outline: e.target.value }, false)} /></label><label className="pe-num"><span>Outline</span><input type="number" min={0} max={24} step={1} value={selected.outlineWidth ?? 0} onFocus={() => checkpoint()} onChange={(e) => void executeEditorCommand({ type: "set_text_style", outline: e.target.value ? selected.outline ?? "#ffffff" : null, outlineWidth: Number(e.target.value) }, false)} /></label></div>
                   <div className="pe-swatches">
                     {TEXT_COLORS.map((c) => (
-                      <button key={c} aria-label={c} aria-pressed={selected.color?.toLowerCase() === c} style={{ background: c }} onClick={() => changeSelected((o) => (o as IText).set({ fill: c }))} />
+                      <button key={c} aria-label={c} aria-pressed={selected.color?.toLowerCase() === c} style={{ background: c }} onClick={() => void executeEditorCommand({ type: "set_text_style", color: c })} />
                     ))}
                     <label className="pe-color-input" title="Custom color">
-                      <input type="color" value={selected.color?.startsWith("#") ? selected.color : "#101828"} onChange={(e) => changeSelected((o) => (o as IText).set({ fill: e.target.value }), false)} />
+                      <input type="color" value={selected.color?.startsWith("#") ? selected.color : "#101828"} onPointerDown={() => checkpoint()} onChange={(e) => void executeEditorCommand({ type: "set_text_style", color: e.target.value }, false)} />
                     </label>
                   </div>
                 </section>
