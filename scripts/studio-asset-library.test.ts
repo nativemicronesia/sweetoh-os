@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import sharp from "sharp";
 import { studioLayoutSchema } from "../lib/domains/catalog/studio-layout";
+import { prepareStudioTemplateCopy } from "../lib/domains/catalog/studio-template-copy";
 import { STUDIO_ASSETS, studioAsset, studioAssetUrl } from "../lib/studio/asset-library";
 import { STUDIO_FONT_PROVENANCE, resolveStudioFontKey } from "../lib/studio/font-provenance";
 import { buildStudioEditorState, findStudioAssets, studioAssetSearchSchema, studioEditorCommandSchema, studioEditorProposalSchema } from "../lib/studio/editor-commands";
@@ -146,6 +147,49 @@ test("image crop, mask, and nondestructive adjustments remain in the production 
   assert.match(editor, /function capture\(\)[\s\S]*?\.\.\.base,[\s\S]*?scheduleMockups\(\)/);
   const cropDialog = readFileSync("app/(partner)/partner/canvas/crop-dialog.tsx", "utf8");
   assert.match(cropDialog, /initialCroppedAreaPixels=\{initial\}/);
+});
+
+test("saved Studio designs instantiate independent rights-safe copies and preserve production layout", () => {
+  const allowedId = "00000000-0000-4000-8000-000000000001";
+  const revokedId = "00000000-0000-4000-8000-000000000002";
+  const groupId = "00000000-0000-4000-8000-000000000010";
+  const source = studioLayoutSchema.parse({ ...base, surfaces: [{
+    ...base.surfaces[0],
+    assetId: allowedId,
+    imageRole: "production_blank",
+    printRegions: [{ id: "safe-print", name: "Safe print", bounds: { x: .15, y: .2, width: .7, height: .6 }, shape: "rectangle", dimensions: { width: 12, height: 10, unit: "in" } }],
+    layers: [
+      { id: "copy-text", kind: "text", text: "SweetOh", color: "#173e39", font: "retired-font", fontSize: 34, bold: true, textAlign: "center", x: 32, y: 28, scaleX: 1, scaleY: 1, angle: 0, groupId },
+      { id: "approved-image", kind: "image", assetId: allowedId, x: 50, y: 70, scaleX: 1, scaleY: 1, angle: 0, crop: { x: 2, y: 3, width: 40, height: 50 }, adjustments: { brightness: .2, temperature: -.1 } },
+      { id: "revoked-image", kind: "image", assetId: revokedId, x: 80, y: 90, scaleX: .7, scaleY: .7, angle: 12 },
+    ],
+  }] });
+  const prepared = prepareStudioTemplateCopy(source, new Set([allowedId]));
+  assert.equal(prepared.removedAssetCount, 1);
+  assert.equal(prepared.fontFallbackCount, 1);
+  const persistedCopy = studioLayoutSchema.parse(JSON.parse(JSON.stringify(prepared.layout)));
+  assert.deepEqual(persistedCopy.surfaces[0].layers.map((layer) => layer.id), ["copy-text", "approved-image"]);
+  assert.equal(persistedCopy.surfaces[0].imageRole, "production_blank");
+  assert.equal(persistedCopy.surfaces[0].printRegions?.[0].id, "safe-print");
+  const text = persistedCopy.surfaces[0].layers[0];
+  assert.equal(text.kind === "text" && text.font, "inter");
+  assert.equal(text.kind === "text" && text.groupId, groupId);
+  const image = persistedCopy.surfaces[0].layers[1];
+  assert.equal(image.kind === "image" && image.assetId, allowedId);
+  assert.deepEqual(image.kind === "image" && image.crop, { x: 2, y: 3, width: 40, height: 50 });
+  assert.deepEqual(image.kind === "image" && image.adjustments, { brightness: .2, temperature: -.1 });
+  if (persistedCopy.surfaces[0].layers[0].kind === "text") persistedCopy.surfaces[0].layers[0].text = "Independent copy";
+  assert.equal(source.surfaces[0].layers[0].kind === "text" && source.surfaces[0].layers[0].text, "SweetOh");
+
+  const editor = readFileSync("app/(partner)/partner/canvas/product-editor.tsx", "utf8");
+  const page = readFileSync("app/(partner)/partner/canvas/page.tsx", "utf8");
+  const action = readFileSync("app/(partner)/partner/actions/library.ts", "utf8");
+  assert.match(page, /query\.template \?\? query\.composition/);
+  assert.match(editor, /\?template=\$\{d\.id\}/);
+  assert.match(editor, /draftScope/);
+  assert.match(action, /getCreativeLibraryAsset\(\{ ventureId: session\.ventureId, assetId \}\)/);
+  assert.match(action, /canInsertCreativeLibraryAsset\(creativeAsset, session\.ventureId\)/);
+  assert.match(action, /resolveStudioFontKey\(layer\.font\)/);
 });
 
 test("new shape, image and typography controls stay serializable across save/reopen", () => {

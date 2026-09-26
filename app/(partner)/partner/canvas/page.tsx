@@ -9,23 +9,25 @@ import {
 import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
 import { getCreativeLibraryAssets, searchCreativeLibrary } from "@/lib/domains/library/service";
 import { canInsertCreativeLibraryAsset } from "@/lib/domains/library/model";
+import { prepareStudioTemplateCopy } from "@/lib/domains/catalog/studio-template-copy";
 import { ProductEditor } from "./product-editor";
 
 export const maxDuration = 180;
 
 type PageProps = {
-  searchParams: Promise<{ design?: string; blank?: string; composition?: string; error?: string }>;
+  searchParams: Promise<{ design?: string; blank?: string; composition?: string; template?: string; error?: string }>;
 };
 
 export default async function PartnerCanvasPage({ searchParams }: PageProps) {
   const session = await requirePartnerWorkspace();
   const query = await searchParams;
 
+  const compositionId = query.template ?? query.composition;
   const [blanks, designs, savedComposition, creativeAssets] = await Promise.all([
     listPartnerCatalog(session).then(rows => rows.filter(b => Boolean(b.imageUrl))),
     listPartnerLibraryDesigns(session.ventureId),
-    query.composition
-      ? getSavedComposition({ ventureId: session.ventureId, assetId: query.composition })
+    compositionId
+      ? getSavedComposition({ ventureId: session.ventureId, assetId: compositionId })
       : Promise.resolve(null),
     searchCreativeLibrary({ ventureId: session.ventureId, use: "studio_edit", limit: 100 }),
   ]);
@@ -48,13 +50,17 @@ export default async function PartnerCanvasPage({ searchParams }: PageProps) {
   const savedLayerIds = [...new Set(savedComposition?.studio?.surfaces.flatMap(surface => surface.layers.flatMap(layer => layer.kind === "image" || layer.kind === "pattern" ? [layer.assetId] : [])) ?? [])];
   const savedLayerAssets = await getCreativeLibraryAssets({ ventureId: session.ventureId, assetIds: savedLayerIds });
   const allowedSavedLayerIds = new Set(savedLayerAssets.filter(asset => canInsertCreativeLibraryAsset(asset, session.ventureId)).map(asset => asset.assetId));
-  const safeSavedStudio = savedComposition?.studio ? {
-    ...savedComposition.studio,
-    surfaces: savedComposition.studio.surfaces.map(surface => ({
-      ...surface,
-      layers: surface.layers.filter(layer => (layer.kind !== "image" && layer.kind !== "pattern") || allowedSavedLayerIds.has(layer.assetId)),
-    })),
-  } : undefined;
+  const preparedCopy = savedComposition?.studio
+    ? prepareStudioTemplateCopy(savedComposition.studio, allowedSavedLayerIds)
+    : null;
+  const safeSavedStudio = preparedCopy?.layout;
+  const sourceDesign = query.template ? designs.find((design) => design.id === query.template) : null;
+  const fallbackNotice = preparedCopy && (preparedCopy.removedAssetCount || preparedCopy.fontFallbackCount)
+    ? [
+        preparedCopy.removedAssetCount ? `${preparedCopy.removedAssetCount} image${preparedCopy.removedAssetCount === 1 ? " was" : "s were"} removed because current rights do not allow Studio use.` : "",
+        preparedCopy.fontFallbackCount ? `${preparedCopy.fontFallbackCount} unavailable font${preparedCopy.fontFallbackCount === 1 ? " now uses" : "s now use"} Inter.` : "",
+      ].filter(Boolean).join(" ")
+    : null;
 
   const savedDesigns = designs
     .filter((item) => item.isComposition)
@@ -93,6 +99,9 @@ export default async function PartnerCanvasPage({ searchParams }: PageProps) {
           designs={designOptions}
           creativeAssets={reusableAssets}
           savedDesigns={savedDesigns}
+          initialName={sourceDesign ? `Copy of ${sourceDesign.name}` : null}
+          draftScope={query.template ? `template-${query.template}` : query.composition ? `composition-${query.composition}` : "fresh"}
+          rightsFallbackNotice={fallbackNotice}
           initialDesignId={savedComposition?.designAssetId ?? query.design ?? null}
           initialBlankId={savedComposition?.blankProductId ?? query.blank ?? null}
           initialTransform={

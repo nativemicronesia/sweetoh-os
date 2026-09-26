@@ -152,6 +152,10 @@ type Props = {
   mode?: "partner" | "creator";
   /** Name of a reopened saved design. */
   initialName?: string | null;
+  /** Distinguishes an original, a template copy, and a fresh local draft. */
+  draftScope?: string;
+  /** Rights fallback notice for resources removed while opening a saved design. */
+  rightsFallbackNotice?: string | null;
   PublishPanel?: React.ComponentType<{ api: EditorPublishApi }>;
   blanks: CanvasBlankOption[];
   designs: CanvasDesignOption[];
@@ -332,12 +336,14 @@ export function ProductEditor({
   creativeAssets = [],
   mode = "partner",
   initialName = null,
+  draftScope = "fresh",
+  rightsFallbackNotice = null,
   PublishPanel,
 }: Props) {
   const base = mode === "creator" ? { catalog: "/studio/catalog", canvas: "/studio/design" } : { catalog: "/partner/catalog", canvas: "/partner/canvas" };
   const [publishOpen, setPublishOpen] = useState(false);
   /** Local autosave, so a closed tab or a crash never costs someone their work. */
-  const draftKey = `sweetoh:draft:${initialBlankId ?? blanks[0]?.id ?? "new"}:${initialStudio ? "open" : "fresh"}`;
+  const draftKey = `sweetoh:draft:${initialBlankId ?? blanks[0]?.id ?? "new"}:${draftScope}`;
   const draftTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [recovered, setRecovered] = useState<{ at: number; layers: number } | null>(null);
   const blank = blanks.find((b) => b.id === initialBlankId) ?? blanks[0];
@@ -2173,7 +2179,7 @@ export function ProductEditor({
           </button>
           <button className="pe-icon-btn" onClick={() => void redo()} disabled={!redoCount || locked} aria-label="Redo" title="Redo"><Redo2 size={17}/></button>
           <button className="pe-btn pe-btn-ghost" onClick={() => void save(false)} disabled={!hasDesign || locked}>
-            {mode === "creator" ? "Save design" : "Save to My files"}
+            {mode === "creator" ? "Save design" : "Save reusable design"}
           </button>
           <button className="pe-btn pe-btn-ghost" onClick={() => void openPreview()} disabled={!hasDesign || locked}>
             <Eye size={16} /> Preview
@@ -2191,6 +2197,7 @@ export function ProductEditor({
       </header>
 
       <div className="pe-body">
+        {rightsFallbackNotice && <p className="pe-production-boundary" role="status" style={{ gridColumn: "1 / -1", margin: "8px 12px 0", padding: "10px 12px", border: "1px solid #e8c887", borderRadius: 8, background: "#fff9e9", color: "#72551d", fontSize: 12 }}>{rightsFallbackNotice}</p>}
         <nav className="pe-rail" aria-label="Design tools">
           {(
             [
@@ -2259,14 +2266,16 @@ export function ProductEditor({
                 {savedDesigns.length > 0 && (
                   <>
                     <p className="pe-label pe-mt">
-                      Saved designs <span>open to keep editing</span>
+                      Saved designs <span>open or use as a template</span>
                     </p>
                     <div className="pe-files">
                       {savedDesigns.map((d) => (
-                        <Link key={d.id} href={`${base.canvas}?composition=${d.id}`} title={`Open ${d.name}`} className="pe-saved">
+                        <div key={d.id} className="pe-saved">
                           {d.previewUrl ? <img src={d.previewUrl} alt="" loading="lazy" /> : <FolderOpen size={20} />}
                           <span>{d.name}</span>
-                        </Link>
+                          <Link href={`${base.canvas}?composition=${d.id}`} title={`Open ${d.name} to keep editing`}>Open</Link>
+                          <Link href={`${base.canvas}?template=${d.id}`} title={`Create a new composition from ${d.name}`}>Use as template</Link>
+                        </div>
                       ))}
                     </div>
                   </>

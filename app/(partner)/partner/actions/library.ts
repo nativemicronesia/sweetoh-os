@@ -19,6 +19,7 @@ import { getActionErrorMessage } from "@/lib/shared/action-errors";
 import { plainCatalogDescription } from "@/lib/integrations/printify/catalog";
 import { canInsertCreativeLibraryAsset } from "@/lib/domains/library/model";
 import { getCreativeLibraryAsset } from "@/lib/domains/library/service";
+import { resolveStudioFontKey } from "@/lib/studio/font-provenance";
 
 export async function resolveStudioCreativeAssetAction(assetId: string) {
   const session = await requirePartnerWorkspace();
@@ -159,11 +160,27 @@ export async function saveCanvasCompositionAction(formData: FormData): Promise<{
     const blankProductId = String(formData.get("blankProductId") ?? "").trim();
     let designAssetId = String(formData.get("designAssetId") ?? "").trim();
     const studioInput = formData.get("studioLayout");
-    const studio = studioInput ? studioLayoutSchema.parse(JSON.parse(String(studioInput))) : undefined;
+    const parsedStudio = studioInput ? studioLayoutSchema.parse(JSON.parse(String(studioInput))) : undefined;
+    const studio = parsedStudio ? {
+      ...parsedStudio,
+      surfaces: parsedStudio.surfaces.map((surface) => ({
+        ...surface,
+        layers: surface.layers.map((layer) => layer.kind === "text" && layer.font
+          ? { ...layer, font: resolveStudioFontKey(layer.font) }
+          : layer),
+      })),
+    } : undefined;
     const surfaceFiles = formData.getAll("surfaceFiles").filter((f): f is File => f instanceof File && f.size > 0);
     if (studio) {
       if (!studio.surfaces.some(s => s.layers.length)) throw new ValidationError("Add artwork or text before saving.");
       if (surfaceFiles.length !== studio.surfaces.length - 1) throw new ValidationError("Preview every surface before saving.");
+      const creativeLayerIds = new Set(studio.surfaces.flatMap((surface) => surface.layers.flatMap((layer) => layer.kind === "image" || layer.kind === "pattern" ? [layer.assetId] : [])));
+      for (const assetId of creativeLayerIds) {
+        const creativeAsset = await getCreativeLibraryAsset({ ventureId: session.ventureId, assetId });
+        if (!creativeAsset || !canInsertCreativeLibraryAsset(creativeAsset, session.ventureId)) {
+          throw new ValidationError("A saved image is no longer cleared for Studio use. Remove it, or replace it with an available library asset, then save again.");
+        }
+      }
       const ids = new Set(studio.surfaces.flatMap(s => [s.assetId, s.referenceAssetId, ...s.layers.flatMap(l => (l.kind === "image" || l.kind === "pattern") ? [l.assetId] : [])]).filter((id): id is string => Boolean(id)));
       const referencedAssets = new Map<string, Awaited<ReturnType<typeof getAssetById>>>();
       for (const id of ids) {
