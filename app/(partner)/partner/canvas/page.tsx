@@ -83,7 +83,13 @@ export default async function PartnerCanvasPage({ searchParams }: PageProps) {
   const designGeometry = safeSavedStudio ?? (sourceBlank?.printArea?.surfaces?.length
     ? { version: 1 as const, surfaces: sourceBlank.printArea.surfaces.map((surface) => ({ ...surface, layers: [] })) }
     : undefined);
-  const compatibleProductDrafts = privateProductDrafts.filter((draft) => designGeometry && studioMatchesProductPrintArea(designGeometry, draft.printArea));
+  // Keep an explicitly requested draft selectable even when the saved design's
+  // geometry has drifted. The editor can correct its existing surfaces; the
+  // save action still refuses to apply until exact geometry and verified
+  // production blanks match again.
+  const compatibleProductDrafts = privateProductDrafts.filter((draft) =>
+    draft.id === query.targetDraft || Boolean(designGeometry && studioMatchesProductPrintArea(designGeometry, draft.printArea))
+  );
   const sourceDesign = query.template ? designs.find((design) => design.id === query.template) : null;
   const fallbackNotice = preparedCopy && (preparedCopy.removedAssetCount || preparedCopy.fontFallbackCount)
     ? [
@@ -113,7 +119,7 @@ export default async function PartnerCanvasPage({ searchParams }: PageProps) {
     <div className="space-y-4">
       <FlashBanner message={query.error} variant="error" />
 
-      {blanks.length === 0 ? (
+      {editorBlanks.length === 0 ? (
         <p className="text-sm" style={{ color: "var(--so-cream-dim)" }}>
           Start by preparing a reusable blank.{" "}
           <Link href="/partner/catalog" className="underline" style={{ color: "var(--so-cream)" }}>

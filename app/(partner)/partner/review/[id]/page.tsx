@@ -154,6 +154,10 @@ export default async function PartnerReviewDetailPage({
     : null;
 
   const isPending = !product.active && product.draftStatus === "pending_review";
+  const failedReadinessChecks = readiness.checks.filter((check) => !check.passed);
+  const studioHref = product.sourceAssetId && productionAsset?.asset.compositionLayout
+    ? `/partner/canvas?composition=${product.sourceAssetId}&targetDraft=${product.id}`
+    : `/partner/canvas?targetDraft=${product.id}`;
 
   async function saveListing(formData: FormData) {
     "use server";
@@ -206,8 +210,57 @@ export default async function PartnerReviewDetailPage({
         {productionAsset?.asset.compositionLayout && product.sourceAssetId && <Link className="so-link" href={`/partner/canvas?composition=${product.sourceAssetId}&targetDraft=${product.id}`}>Edit product artwork</Link>}
       </div>
 
+      <section aria-labelledby="product-workspace-title" className="rounded-xl border p-5" style={{ borderColor: "var(--so-border)", background: "var(--so-black)" }}>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 id="product-workspace-title" className="text-xl font-semibold" style={{ color: "var(--so-cream)" }}>Product workspace</h1>
+            <p className="mt-1 text-sm" style={{ color: "var(--so-cream-dim)" }}>Customer listing, saved Studio artwork, real production surface and publish readiness for this product draft.</p>
+          </div>
+          <DraftStatusBadge draftStatus={product.draftStatus} active={product.active} />
+        </div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <article className="rounded-lg border p-4" style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}>
+            <h2 className="text-sm font-semibold" style={{ color: "var(--so-cream)" }}>Customer listing</h2>
+            <div className="mt-3 flex items-center gap-3">
+              {imageUrl ? <img src={imageUrl} alt={`${product.name} customer listing image`} className="h-14 w-14 rounded object-cover" /> : <div className="flex h-14 w-14 items-center justify-center rounded border text-xs" style={{ borderColor: "var(--so-border)", color: "var(--so-cream-dim)" }}>No photo</div>}
+              <div className="min-w-0 text-sm"><p className="truncate font-medium" style={{ color: "var(--so-cream)" }}>{product.name}</p><p style={{ color: "var(--so-cream-dim)" }}>{formatPrice(product.priceCents)} · {product.category}</p><p className="truncate text-xs" style={{ color: "var(--so-cream-dim)" }}>/{product.slug}</p></div>
+            </div>
+            {canEdit && <a href="#listing-settings" className="so-link mt-3 inline-block text-sm">Edit listing details</a>}
+          </article>
+
+          <article className="rounded-lg border p-4" style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}>
+            <h2 className="text-sm font-semibold" style={{ color: "var(--so-cream)" }}>Associated Studio design</h2>
+            <div className="mt-3 flex items-center gap-3">
+              {productionAsset?.url ? <img src={productionAsset.url} alt="Saved Studio design artwork" className="h-14 w-14 rounded border object-contain" style={{ borderColor: "var(--so-border)" }} /> : <div className="flex h-14 w-14 items-center justify-center rounded border text-xs" style={{ borderColor: "var(--so-border)", color: "var(--so-cream-dim)" }}>No design</div>}
+              <div className="min-w-0 text-sm"><p className="truncate font-medium" style={{ color: "var(--so-cream)" }}>{productionAsset?.asset.name ?? "No design linked"}</p><p style={{ color: "var(--so-cream-dim)" }}>{associatedStudio?.success ? `${associatedStudio.data.surfaces.reduce((count, surface) => count + surface.layers.length, 0)} artwork layers · ${productionAsset?.asset.status}` : "Open Studio to add or repair artwork"}</p></div>
+            </div>
+            {canEdit && <Link href={studioHref} className="so-link mt-3 inline-block text-sm">{productionAsset?.asset.compositionLayout ? "Reopen this design in Studio" : "Open Studio for this product"}</Link>}
+          </article>
+
+          <article className="rounded-lg border p-4" style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}>
+            <h2 className="text-sm font-semibold" style={{ color: "var(--so-cream)" }}>Production surface &amp; placement</h2>
+            {productionSurfaces[0] ? <div className="mt-3 flex items-center gap-3">
+              {productionSurfaces[0].previewUrl ? <img src={productionSurfaces[0].previewUrl} alt={`${productionSurfaces[0].name} production blank`} className="h-14 w-14 rounded border object-contain" style={{ borderColor: "var(--so-border)" }} /> : <div className="flex h-14 w-14 items-center justify-center rounded border text-xs text-center" style={{ borderColor: "var(--so-border)", color: "#dc2626" }}>Blank<br/>invalid</div>}
+              <div className="min-w-0 text-sm"><p className="truncate font-medium" style={{ color: "var(--so-cream)" }}>{productionSurfaces[0].name}{productionSurfaces[0].position ? ` · ${productionSurfaces[0].position}` : ""}</p><p style={{ color: productionSurfaces[0].isVerifiedBlank ? "var(--so-cream-dim)" : "#dc2626" }}>{productionSurfaces[0].isVerifiedBlank ? "Verified production blank" : "Production blank invalid"}</p><p className="text-xs" style={{ color: "var(--so-cream-dim)" }}>Print bounds {Math.round(productionSurfaces[0].area.x * 100)}%, {Math.round(productionSurfaces[0].area.y * 100)}%, {Math.round(productionSurfaces[0].area.width * 100)}% × {Math.round(productionSurfaces[0].area.height * 100)}%</p></div>
+            </div> : <p className="mt-3 text-sm" style={{ color: "#dc2626" }}>No saved production surface or print placement.</p>}
+            <a href="#production-overview" className="so-link mt-3 inline-block text-sm">Review all surfaces &amp; print regions</a>
+          </article>
+
+          <article className="rounded-lg border p-4" style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}>
+            <h2 className="text-sm font-semibold" style={{ color: "var(--so-cream)" }}>Readiness &amp; publishing</h2>
+            <p className="mt-3 text-sm font-medium" style={{ color: failedReadinessChecks.length ? "#dc2626" : "var(--so-gold)" }}>{failedReadinessChecks.length ? `${failedReadinessChecks.length} requirement${failedReadinessChecks.length === 1 ? "" : "s"} need attention` : readiness.canPublish ? product.draftStatus === "approved" ? "Ready to publish" : "Passed checks · still private" : "Readiness check needed"}</p>
+            <p className="mt-1 text-xs" style={{ color: "var(--so-cream-dim)" }}>{readiness.checks.filter((check) => check.passed).length} of {readiness.checks.length} checks passed. <a href="#readiness-details" className="underline">Read the full checklist</a>.</p>
+            {canEdit && canModerate && !product.active && <div className="mt-3 flex flex-wrap gap-2">
+              {readiness.canPublish && product.draftStatus === "approved" ? <form action={publishNow}><SubmitButton pendingLabel="Publishing…">Publish product</SubmitButton></form> : <form action={markReady}><SubmitButton pendingLabel="Checking…" variant="outline">{readiness.canPublish ? "Mark ready" : "Check readiness"}</SubmitButton></form>}
+            </div>}
+            {canEdit && failedReadinessChecks.length > 0 && productionAsset?.asset.compositionLayout && <Link href={studioHref} className="so-link mt-3 inline-block text-sm">Correct the associated Studio design</Link>}
+          </article>
+        </div>
+      </section>
+
       {/* Photo beside the AI-written copy — the whole point of this screen. */}
       <section
+        id="customer-listing"
         className="grid gap-5 rounded-xl border p-6 md:grid-cols-[minmax(0,14rem)_1fr]"
         style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}
       >
@@ -334,7 +387,7 @@ export default async function PartnerReviewDetailPage({
         </div>
       </section>
 
-      <section className="grid gap-5 rounded-xl border p-6 lg:grid-cols-2" style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}>
+      <section id="production-overview" className="grid gap-5 rounded-xl border p-6 lg:grid-cols-2" style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}>
         <div className="space-y-3">
           <h2 className="font-medium" style={{ color: "var(--so-cream)" }}>Storefront preview</h2>
           <p className="text-sm" style={{ color: "var(--so-cream-dim)" }}>{product.active ? "This product is live. Open the customer listing above to inspect the exact storefront experience." : "This is the saved customer-facing copy and photo set. Product remains private until published."}</p>
@@ -379,7 +432,7 @@ export default async function PartnerReviewDetailPage({
       </section>
 
       {canEdit ? (
-        <section
+        <section id="listing-settings"
           className="rounded-xl border p-6"
           style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}
         >
@@ -573,7 +626,7 @@ export default async function PartnerReviewDetailPage({
         </section>
       ) : null}
       {isOwn && canModerate ? (
-        <section
+        <section id="readiness-details"
           className="rounded-xl border p-6"
           style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}
         >
@@ -598,19 +651,7 @@ export default async function PartnerReviewDetailPage({
               </li>
             ))}
           </ul>
-          {!product.active ? (
-            <div className="mt-4 flex flex-wrap gap-2">
-
-              {canEdit ? <form action={markReady}>
-                <SubmitButton pendingLabel="Checking…" variant="outline">
-                  {readiness.canPublish ? product.draftStatus === "approved" ? "Recheck readiness" : "Mark ready for publication (stays private)" : "Check readiness"}
-                </SubmitButton>
-              </form> : null}
-              {canEdit && product.draftStatus === "approved" && readiness.canPublish ? <form action={publishNow}>
-                <SubmitButton pendingLabel="Publishing…">Publish this approved product</SubmitButton>
-              </form> : null}
-            </div>
-          ) : (
+          {!product.active ? null : (
             <p className="mt-4 text-sm" style={{ color: "var(--so-gold)" }}>
               Live — manage from{" "}
               <Link href="/partner/products" className="underline">

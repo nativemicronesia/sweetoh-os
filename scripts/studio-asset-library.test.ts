@@ -216,6 +216,8 @@ test("product draft artwork links to the editable composition and persists exact
   assert.equal(studio.surfaces[0].layers.length, 1, "linking a product does not flatten or mutate the source composition");
 
   const action = readFileSync("app/(partner)/partner/actions/library.ts", "utf8");
+  const draftActions = readFileSync("app/(partner)/partner/actions/drafts.ts", "utf8");
+  const canvasPage = readFileSync("app/(partner)/partner/canvas/page.tsx", "utf8");
   const review = readFileSync("app/(partner)/partner/review/[id]/page.tsx", "utf8");
   const editor = readFileSync("app/(partner)/partner/canvas/product-editor.tsx", "utf8");
   const readiness = readFileSync("lib/domains/catalog/service.ts", "utf8");
@@ -225,6 +227,14 @@ test("product draft artwork links to the editable composition and persists exact
   assert.match(action, /sourceAssetId: composition\.id/);
   assert.match(action, /productPrintAreaFromStudio\(studio\)/);
   assert.match(action, /markProductDraftReviewed\(\{ ventureId: session\.ventureId, productId: target\.id/);
+  assert.match(action, /redirect\(`\/partner\/review\/\$\{target\.id\}\?success=/);
+  assert.match(draftActions, /updatePartnerDraftAction[\s\S]*?reviewDetailPath\(productId, \{[\s\S]*?success:/);
+  assert.match(draftActions, /markPartnerDraftReadyAction[\s\S]*?reviewDetailPath\(productId, \{/);
+  assert.match(action, /studioMatchesProductPrintArea\(studio, applyTarget\.product\.printArea\)/);
+  assert.match(canvasPage, /draft\.id === query\.targetDraft/);
+  assert.match(canvasPage, /editorBlanks\.length === 0/);
+  assert.match(canvasPage, /initialApplyTargetId=\{compatibleProductDrafts\.some\(\(draft\) => draft\.id === query\.targetDraft\)/);
+  assert.match(action, /return \{ error: getActionErrorMessage\(error\) \}/);
   assert.match(editor, /applyToProductDraftId/);
   assert.match(review, /compositionLayout\?\.studio/);
   assert.match(readiness, /isSweetohPathValid[\s\S]*?isApprovedAssetStatus\(sourceAsset\.status\)/);
@@ -267,6 +277,13 @@ test("Studio product readiness rechecks current design rights, verified blanks, 
   assert.match(review, /verified production blank/);
   assert.match(review, /Reopen the associated Studio design to correct it/);
   assert.match(review, /composition=\$\{product\.sourceAssetId\}&targetDraft=\$\{product\.id\}/);
+  assert.match(review, /Product workspace/);
+  assert.match(review, /Customer listing/);
+  assert.match(review, /Production surface &amp; placement/);
+  assert.match(review, /id="listing-settings"/);
+  assert.match(review, /id="production-overview"/);
+  assert.match(review, /id="readiness-details"/);
+  assert.match(review, /publishNow/);
   const readinessTransition = service.slice(service.indexOf("export async function markProductDraftReviewed"));
   assert.match(readinessTransition, /const readiness = await evaluateProductPublishReadiness\(input\)/);
   assert.match(readinessTransition, /readiness\.canPublish\s*\?\s*"approved"\s*:\s*"needs_work"/);
