@@ -95,6 +95,7 @@ import { sizedPhoto } from "@/lib/studio/photo";
 import { PRODUCT_FONTS, ensureFont, fontFamily } from "@/lib/studio/fonts";
 import { studioAsset, studioAssetUrl } from "@/lib/studio/asset-library";
 import { buildStudioEditorState, studioEditorCommandSchema, studioEditorProposalSchema, type StudioEditorCommand } from "@/lib/studio/editor-commands";
+import { reorderLayers } from "@/lib/studio/layer-order";
 import { SHAPES, makeShape, type ShapeKind } from "@/lib/studio/shapes";
 import { makePatternRect } from "@/lib/studio/pattern";
 import { getMockupRenderer } from "@/lib/studio/mockup";
@@ -412,6 +413,7 @@ export function ProductEditor({
   const [layers, setLayers] = useState<StudioLayer[]>([]);
   const [selected, setSelected] = useState<Selected>(null);
   const [selectedLayerIds, setSelectedLayerIds] = useState<string[]>([]);
+  const [alignRelativeTo, setAlignRelativeTo] = useState<"selection" | "canvas">("selection");
   const revision = useRef(0);
   const batching = useRef(false);
   const [editorAsk, setEditorAsk] = useState("");
@@ -1438,9 +1440,12 @@ export function ProductEditor({
       case "make_pattern": return makePattern(action.assetId);
       case "set_layer_flags": return setLayerFlags(action.layerId, { hidden: action.hidden, locked: action.locked });
       case "set_layer_order": return setLayerOrder(action.layerId, action.direction);
+      case "set_selection_flags": return setLayersFlags(action.layerIds, { hidden: action.hidden, locked: action.locked });
+      case "set_selection_order": return setLayersOrder(action.layerIds, action.direction);
       case "group_selection": return groupLayers(action.layerIds);
       case "ungroup_selection": return ungroupLayers(action.layerIds);
       case "align_selection": return alignLayers(action.layerIds, action.edge);
+      case "align_canvas": return alignCanvas(action.layerIds, action.edge);
       case "distribute_selection": return distributeLayers(action.layerIds, action.axis);
       case "set_opacity": return changeSelected((o) => o.set({ opacity: action.opacity }));
       case "set_shape_style": return changeSelected((o) => {
@@ -1735,13 +1740,6 @@ export function ProductEditor({
     readSelection();
     editor.current!.requestRenderAll();
   }
-  function reorder(dir: "up" | "down") {
-    changeSelected((o) => {
-      if (dir === "up") editor.current!.bringObjectForward(o);
-      else editor.current!.sendObjectBackwards(o);
-      bringGuideToTop();
-    });
-  }
   function selectLayer(id: string) {
     const layer = surface().layers.find((item) => item.id === id);
     if (!layer) return;
@@ -1796,6 +1794,20 @@ export function ProductEditor({
     }
     capture(); readSelection(); canvas.requestRenderAll();
   }
+  function alignCanvas(ids: string[], edge: "left" | "hcenter" | "right" | "top" | "vcenter" | "bottom") {
+    const canvas = editor.current;
+    if (!canvas) return;
+    const targets = canvas.getObjects().filter((object) => ids.includes(meta.current.get(object)?.id ?? "") && !meta.current.get(object)?.locked && !meta.current.get(object)?.hidden);
+    if (!targets.length) return;
+    checkpoint(); canvas.discardActiveObject();
+    for (const object of targets) {
+      const rect = object.getBoundingRect();
+      const dx = edge === "left" ? -rect.left : edge === "right" ? SIZE - (rect.left + rect.width) : edge === "hcenter" ? SIZE / 2 - (rect.left + rect.width / 2) : 0;
+      const dy = edge === "top" ? -rect.top : edge === "bottom" ? SIZE - (rect.top + rect.height) : edge === "vcenter" ? SIZE / 2 - (rect.top + rect.height / 2) : 0;
+      object.set({ left: object.left + dx, top: object.top + dy }); object.setCoords();
+    }
+    capture(); readSelection(); canvas.requestRenderAll();
+  }
   function distributeLayers(ids: string[], axis: "horizontal" | "vertical") {
     const canvas = editor.current;
     if (!canvas || ids.length < 3) return;
@@ -1832,35 +1844,36 @@ export function ProductEditor({
     await loadSurface(next.surfaces.some(s => s.id === currentId.current) ? currentId.current : next.surfaces[0].id);
     const last = surface().layers.filter(l => !l.hidden && !l.locked).at(-1); if (last) selectLayer(last.id);
   }
-  function toggleLayer(id: string, key: "hidden" | "locked") {
-    checkpoint();
-    const layer = surface().layers.find(l => l.id === id)!;
-    const object = editor.current!.getObjects().find(o => meta.current.get(o)?.id === id)!;
-    const next = { ...layer, [key]: !layer[key] };
-    meta.current.set(object, next);
-    object.set({ visible: !next.hidden, selectable: !next.locked, evented: !next.locked });
-    editor.current!.discardActiveObject(); editor.current!.requestRenderAll(); capture(); readSelection();
-  }
   function setLayerFlags(id: string, patch: { hidden?: boolean; locked?: boolean }) {
-    const object = editor.current?.getObjects().find((candidate) => meta.current.get(candidate)?.id === id);
-    const layer = object && meta.current.get(object);
-    if (!object || !layer || (patch.hidden === undefined && patch.locked === undefined)) return;
+    setLayersFlags([id], patch);
+  }
+  function setLayersFlags(ids: string[], patch: { hidden?: boolean; locked?: boolean }) {
+    const canvas = editor.current;
+    if (!canvas || (patch.hidden === undefined && patch.locked === undefined)) return;
+    const targets = canvas.getObjects().filter((object) => ids.includes(meta.current.get(object)?.id ?? "") && meta.current.has(object));
+    if (!targets.length) return;
     checkpoint();
-    const next = { ...layer, ...(patch.hidden !== undefined ? { hidden: patch.hidden } : {}), ...(patch.locked !== undefined ? { locked: patch.locked } : {}) };
-    meta.current.set(object, next);
-    object.set({ visible: !next.hidden, selectable: !next.locked, evented: !next.locked });
-    if (next.hidden || next.locked) editor.current!.discardActiveObject();
-    capture(); readSelection(); editor.current!.requestRenderAll();
+    for (const object of targets) {
+      const layer = meta.current.get(object)!;
+      const next = { ...layer, ...(patch.hidden !== undefined ? { hidden: patch.hidden } : {}), ...(patch.locked !== undefined ? { locked: patch.locked } : {}) };
+      meta.current.set(object, next);
+      object.set({ visible: !next.hidden, selectable: !next.locked, evented: !next.locked });
+    }
+    if (targets.some((object) => { const l = meta.current.get(object)!; return l.hidden || l.locked; })) canvas.discardActiveObject();
+    capture(); readSelection(); canvas.requestRenderAll();
   }
   function setLayerOrder(id: string, direction: "forward" | "backward" | "front" | "back") {
+    setLayersOrder([id], direction);
+  }
+  function setLayersOrder(ids: string[], direction: "forward" | "backward" | "front" | "back") {
     const canvas = editor.current;
-    const object = canvas?.getObjects().find((candidate) => meta.current.get(candidate)?.id === id);
-    if (!canvas || !object || meta.current.get(object)?.locked) return;
+    if (!canvas) return;
+    const layers = canvas.getObjects().filter((object) => meta.current.has(object));
+    const selected = new Set(layers.filter((object) => ids.includes(meta.current.get(object)?.id ?? "") && !meta.current.get(object)?.locked).map((object) => object));
+    if (!selected.size) return;
     checkpoint();
-    if (direction === "forward") canvas.bringObjectForward(object);
-    else if (direction === "backward") canvas.sendObjectBackwards(object);
-    else if (direction === "front") canvas.bringObjectToFront(object);
-    else canvas.sendObjectToBack(object);
+    const order = reorderLayers(layers, selected, direction);
+    order.forEach((object, index) => canvas.moveObjectTo(object, index));
     bringGuideToTop(); capture(); readSelection(); canvas.requestRenderAll();
   }
   function pickColor(c: { name: string; hex: string }) {
@@ -2417,8 +2430,8 @@ export function ProductEditor({
                                   : l.kind === "drawing" ? "Freehand stroke" : `${library.find((d) => d.id === l.assetId)?.name ?? "Artwork"}${l.kind === "pattern" ? " (pattern)" : ""}`}{l.groupId ? " · Grouped" : ""}
                           </span>
                         </button>
-                        <button className="pe-icon-btn" aria-label={`${l.hidden ? "Show" : "Hide"} layer`} onClick={() => toggleLayer(l.id, "hidden")}>{l.hidden ? <EyeOff size={14}/> : <Eye size={14}/>}</button>
-                        <button className="pe-icon-btn" aria-label={`${l.locked ? "Unlock" : "Lock"} layer`} onClick={() => toggleLayer(l.id, "locked")}>{l.locked ? <LockKeyhole size={14}/> : <UnlockKeyhole size={14}/>}</button>
+                        <button className="pe-icon-btn" aria-label={`${l.hidden ? "Show" : "Hide"} layer`} onClick={() => void executeEditorCommand({ type: "set_layer_flags", layerId: l.id, hidden: !l.hidden })}>{l.hidden ? <EyeOff size={14}/> : <Eye size={14}/>}</button>
+                        <button className="pe-icon-btn" aria-label={`${l.locked ? "Unlock" : "Lock"} layer`} onClick={() => void executeEditorCommand({ type: "set_layer_flags", layerId: l.id, locked: !l.locked })}>{l.locked ? <LockKeyhole size={14}/> : <UnlockKeyhole size={14}/>}</button>
                       </li>
                     ))}
                   </ul>
@@ -2545,11 +2558,15 @@ export function ProductEditor({
               <div className="pe-props-head"><h2>{selectedLayerIds.length} objects</h2><button className="pe-icon-btn pe-danger" onClick={removeSelected} aria-label="Delete selected objects"><Trash2 size={16}/></button></div>
               <section className="pe-section">
                 <p className="pe-label">Arrange together</p>
-                <div className="pe-row"><button className="pe-btn pe-btn-ghost pe-grow" onClick={() => groupLayers(selectedLayerIds)}>Group</button><button className="pe-btn pe-btn-ghost pe-grow" onClick={() => ungroupLayers(selectedLayerIds)}>Ungroup</button></div>
-                <p className="pe-label">Align edges</p>
-                <div className="pe-align">{(["left", "hcenter", "right", "top", "vcenter", "bottom"] as const).map((edge) => <button key={edge} aria-label={`Align selected ${edge}`} title={`Align ${edge}`} onClick={() => alignLayers(selectedLayerIds, edge)}>{edge.slice(0,1).toUpperCase()}</button>)}</div>
+                <div className="pe-row"><button className="pe-btn pe-btn-ghost pe-grow" onClick={() => void executeEditorCommand({ type: "group_selection", layerIds: selectedLayerIds })}>Group</button><button className="pe-btn pe-btn-ghost pe-grow" onClick={() => void executeEditorCommand({ type: "ungroup_selection", layerIds: selectedLayerIds })}>Ungroup</button><button className="pe-btn pe-btn-ghost pe-grow" onClick={() => void executeEditorCommand({ type: "duplicate" })}>Duplicate</button></div>
+                <div className="pe-row"><button className="pe-btn pe-btn-ghost pe-grow" onClick={() => void executeEditorCommand({ type: "set_selection_order", layerIds: selectedLayerIds, direction: "front" })}>To front</button><button className="pe-btn pe-btn-ghost pe-grow" onClick={() => void executeEditorCommand({ type: "set_selection_order", layerIds: selectedLayerIds, direction: "forward" })}>Forward</button></div>
+                <div className="pe-row"><button className="pe-btn pe-btn-ghost pe-grow" onClick={() => void executeEditorCommand({ type: "set_selection_order", layerIds: selectedLayerIds, direction: "backward" })}>Backward</button><button className="pe-btn pe-btn-ghost pe-grow" onClick={() => void executeEditorCommand({ type: "set_selection_order", layerIds: selectedLayerIds, direction: "back" })}>To back</button></div>
+                <div className="pe-row"><button className="pe-btn pe-btn-ghost pe-grow" onClick={() => void executeEditorCommand({ type: "set_selection_flags", layerIds: selectedLayerIds, hidden: true })}>Hide selection</button><button className="pe-btn pe-btn-ghost pe-grow" onClick={() => void executeEditorCommand({ type: "set_selection_flags", layerIds: selectedLayerIds, locked: true })}>Lock selection</button></div>
+                <p className="pe-label">Align relative to</p>
+                <div className="pe-row"><button className="pe-btn pe-btn-ghost pe-grow" aria-pressed={alignRelativeTo === "selection"} onClick={() => setAlignRelativeTo("selection")}>Selection</button><button className="pe-btn pe-btn-ghost pe-grow" aria-pressed={alignRelativeTo === "canvas"} onClick={() => setAlignRelativeTo("canvas")}>Canvas</button></div>
+                <div className="pe-align">{(["left", "hcenter", "right", "top", "vcenter", "bottom"] as const).map((edge) => <button key={edge} aria-label={`Align selected ${edge} to ${alignRelativeTo}`} title={`Align ${edge} to ${alignRelativeTo}`} onClick={() => void executeEditorCommand(alignRelativeTo === "canvas" ? { type: "align_canvas", layerIds: selectedLayerIds, edge } : { type: "align_selection", layerIds: selectedLayerIds, edge })}>{edge.slice(0,1).toUpperCase()}</button>)}</div>
                 <p className="pe-label">Distribute evenly</p>
-                <div className="pe-row"><button className="pe-btn pe-btn-ghost pe-grow" disabled={selectedLayerIds.length < 3} onClick={() => distributeLayers(selectedLayerIds, "horizontal")}>Horizontal</button><button className="pe-btn pe-btn-ghost pe-grow" disabled={selectedLayerIds.length < 3} onClick={() => distributeLayers(selectedLayerIds, "vertical")}>Vertical</button></div>
+                <div className="pe-row"><button className="pe-btn pe-btn-ghost pe-grow" disabled={selectedLayerIds.length < 3} onClick={() => void executeEditorCommand({ type: "distribute_selection", layerIds: selectedLayerIds, axis: "horizontal" })}>Horizontal</button><button className="pe-btn pe-btn-ghost pe-grow" disabled={selectedLayerIds.length < 3} onClick={() => void executeEditorCommand({ type: "distribute_selection", layerIds: selectedLayerIds, axis: "vertical" })}>Vertical</button></div>
                 <p className="pe-muted pe-small">Drag the selection together on the canvas. Group keeps these layers together when selecting from Layers.</p>
                 <p className="pe-label">Shared effect</p><button className="pe-btn pe-btn-ghost pe-block" onClick={() => setLayerShadow({ enabled: true })}>Add soft shadow to selection</button>
               </section>
@@ -2741,13 +2758,24 @@ export function ProductEditor({
                     </button>
                   ))}
                 </div>
+                <p className="pe-label">Align to canvas</p>
+                <div className="pe-align">
+                  {(["left", "hcenter", "right", "top", "vcenter", "bottom"] as const).map((edge, index) => {
+                    const Icon = [AlignStartVertical, AlignCenterVertical, AlignEndVertical, AlignStartHorizontal, AlignCenterHorizontal, AlignEndHorizontal][index];
+                    return <button key={edge} onClick={() => void executeEditorCommand({ type: "align_canvas", layerIds: selectedLayerIds.slice(0, 1), edge })} aria-label={`Align ${edge} to canvas`} title={`Align ${edge} to canvas`}><Icon size={16}/></button>;
+                  })}
+                </div>
                 <div className="pe-row">
-                  <button className="pe-btn pe-btn-ghost pe-grow" onClick={() => reorder("up")}>
+                  <button className="pe-btn pe-btn-ghost pe-grow" onClick={() => void executeEditorCommand({ type: "set_layer_order", layerId: selectedLayerIds[0], direction: "forward" })}>
                     <ArrowUp size={14} /> Forward
                   </button>
-                  <button className="pe-btn pe-btn-ghost pe-grow" onClick={() => reorder("down")}>
+                  <button className="pe-btn pe-btn-ghost pe-grow" onClick={() => void executeEditorCommand({ type: "set_layer_order", layerId: selectedLayerIds[0], direction: "backward" })}>
                     <ArrowDown size={14} /> Backward
                   </button>
+                </div>
+                <div className="pe-row">
+                  <button className="pe-btn pe-btn-ghost pe-grow" onClick={() => void executeEditorCommand({ type: "set_layer_order", layerId: selectedLayerIds[0], direction: "front" })}>To front</button>
+                  <button className="pe-btn pe-btn-ghost pe-grow" onClick={() => void executeEditorCommand({ type: "set_layer_order", layerId: selectedLayerIds[0], direction: "back" })}>To back</button>
                 </div>
                 <div className="pe-row">
                   <button className="pe-btn pe-btn-ghost pe-grow" aria-pressed={selected.flipX} onClick={() => flip("x")}>

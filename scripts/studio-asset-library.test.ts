@@ -6,6 +6,7 @@ import { studioLayoutSchema } from "../lib/domains/catalog/studio-layout";
 import { STUDIO_ASSETS, studioAsset, studioAssetUrl } from "../lib/studio/asset-library";
 import { STUDIO_FONT_PROVENANCE } from "../lib/studio/font-provenance";
 import { buildStudioEditorState, findStudioAssets, studioAssetSearchSchema, studioEditorCommandSchema, studioEditorProposalSchema } from "../lib/studio/editor-commands";
+import { reorderLayers } from "../lib/studio/layer-order";
 import { mockupTemplateSchema } from "../lib/studio/mockup/templates";
 import { CONFIRMED_SHOP_METHODS, KNOWLEDGE_ONLY_METHODS } from "../lib/domains/production/methods";
 import { drawingDashPattern, STUDIO_DRAW_BRUSHES } from "../lib/studio/drawing-brushes";
@@ -53,6 +54,42 @@ test("logical group identity persists across layout validation and exposes real 
   assert.equal(studioEditorCommandSchema.safeParse({ type: "distribute_selection", layerIds: ["a", "b"], axis: "horizontal" }).success, false);
   assert.deepEqual(CONFIRMED_SHOP_METHODS, ["sublimation", "engraving"]);
   assert.ok(KNOWLEDGE_ONLY_METHODS.includes("embroidery"));
+});
+
+test("composition commands validate and multi-layer state survives save/reopen", () => {
+  const ids = ["text-1", "asset-1"];
+  for (const direction of ["forward", "backward", "front", "back"] as const) {
+    assert.equal(studioEditorCommandSchema.safeParse({ type: "set_selection_order", layerIds: ids, direction }).success, true);
+  }
+  for (const edge of ["left", "hcenter", "right", "top", "vcenter", "bottom"] as const) {
+    assert.equal(studioEditorCommandSchema.safeParse({ type: "align_canvas", layerIds: ids, edge }).success, true);
+    assert.equal(studioEditorCommandSchema.safeParse({ type: "align_selection", layerIds: ids, edge }).success, true);
+  }
+  assert.equal(studioEditorCommandSchema.safeParse({ type: "set_selection_flags", layerIds: ids, hidden: true }).success, true);
+  assert.equal(studioEditorCommandSchema.safeParse({ type: "set_selection_flags", layerIds: ids }).success, false);
+  const groupId = "00000000-0000-4000-8000-000000000011";
+  const source = studioLayoutSchema.parse({ ...base, surfaces: [{ ...base.surfaces[0], layers: [
+    { id: ids[0], kind: "text", text: "PLAY", color: "#173e39", fontSize: 36, x: 40, y: 50, scaleX: 1, scaleY: 1, angle: 0, groupId },
+    { id: ids[1], kind: "image", assetId: "00000000-0000-4000-8000-000000000001", x: 80, y: 70, scaleX: 1, scaleY: 1, angle: 0, groupId, locked: true },
+  ] }] });
+  const reopened = studioLayoutSchema.parse(JSON.parse(JSON.stringify(source)));
+  assert.deepEqual(reopened.surfaces[0].layers.map((layer) => layer.id), ids);
+  assert.deepEqual(reopened.surfaces[0].layers.map((layer) => layer.groupId), [groupId, groupId]);
+  assert.equal(reopened.surfaces[0].layers[1].kind === "image" && reopened.surfaces[0].layers[1].locked, true);
+  const editor = readFileSync("app/(partner)/partner/canvas/product-editor.tsx", "utf8");
+  assert.match(editor, /case "set_selection_order": return setLayersOrder/);
+  assert.match(editor, /case "align_canvas": return alignCanvas/);
+  assert.match(editor, /function setLayersOrder[\s\S]*?checkpoint\(\)[\s\S]*?capture\(\)/);
+  assert.match(editor, /function setLayersFlags[\s\S]*?checkpoint\(\)[\s\S]*?capture\(\)/);
+});
+
+test("multi-layer z-order moves selected objects as a stable block or one step", () => {
+  const layers = ["a", "b", "c", "d", "e"];
+  const selected = new Set(["b", "d"]);
+  assert.deepEqual(reorderLayers(layers, selected, "front"), ["a", "c", "e", "b", "d"]);
+  assert.deepEqual(reorderLayers(layers, selected, "back"), ["b", "d", "a", "c", "e"]);
+  assert.deepEqual(reorderLayers(layers, selected, "forward"), ["a", "c", "b", "e", "d"]);
+  assert.deepEqual(reorderLayers(layers, selected, "backward"), ["b", "a", "d", "c", "e"]);
 });
 
 test("new shape, image and typography controls stay serializable across save/reopen", () => {

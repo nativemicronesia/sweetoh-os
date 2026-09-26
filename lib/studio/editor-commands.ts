@@ -19,6 +19,7 @@ export const studioEditorCommandSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("undo") }).strict(),
   z.object({ type: z.literal("redo") }).strict(),
   z.object({ type: z.literal("align"), edge: z.enum(["left", "hcenter", "right", "top", "vcenter", "bottom"]) }).strict(),
+  z.object({ type: z.literal("align_canvas"), layerIds: z.array(z.string().min(1).max(80)).min(1).max(30), edge: z.enum(["left", "hcenter", "right", "top", "vcenter", "bottom"]) }).strict(),
   z.object({ type: z.literal("move"), dx: z.number().finite().min(-720).max(720), dy: z.number().finite().min(-720).max(720) }).strict(),
   z.object({ type: z.literal("resize"), width: z.number().positive().max(2000), height: z.number().positive().max(2000), keepRatio: z.boolean().default(true) }).strict(),
   z.object({ type: z.literal("rotate"), degrees: z.number().finite().min(-360).max(360) }).strict(),
@@ -27,6 +28,8 @@ export const studioEditorCommandSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("make_pattern"), assetId: z.string().uuid().optional() }).strict(),
   z.object({ type: z.literal("set_layer_flags"), layerId: z.string().min(1).max(80), hidden: z.boolean().optional(), locked: z.boolean().optional() }).strict(),
   z.object({ type: z.literal("set_layer_order"), layerId: z.string().min(1).max(80), direction: z.enum(["forward", "backward", "front", "back"]) }).strict(),
+  z.object({ type: z.literal("set_selection_order"), layerIds: z.array(z.string().min(1).max(80)).min(1).max(30), direction: z.enum(["forward", "backward", "front", "back"]) }).strict(),
+  z.object({ type: z.literal("set_selection_flags"), layerIds: z.array(z.string().min(1).max(80)).min(1).max(30), hidden: z.boolean().optional(), locked: z.boolean().optional() }).strict(),
   z.object({ type: z.literal("group_selection"), layerIds: z.array(z.string().min(1).max(80)).min(2).max(30) }).strict(),
   z.object({ type: z.literal("ungroup_selection"), layerIds: z.array(z.string().min(1).max(80)).min(1).max(30) }).strict(),
   z.object({ type: z.literal("align_selection"), layerIds: z.array(z.string().min(1).max(80)).min(2).max(30), edge: z.enum(["left", "hcenter", "right", "top", "vcenter", "bottom"]) }).strict(),
@@ -40,6 +43,7 @@ export const studioEditorCommandSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("set_shadow"), enabled: z.boolean(), blur: z.number().min(0).max(80).default(18), opacity: z.number().min(0).max(1).default(0.25), offsetX: z.number().min(-100).max(100).default(0), offsetY: z.number().min(-100).max(100).default(8) }).strict(),
   z.object({ type: z.literal("prepare_artwork"), regionId: z.string().min(1).max(80), fit: z.enum(["contain", "cover"]).default("contain") }).strict(),
 ]).superRefine((action, ctx) => {
+  if (action.type === "set_selection_flags" && action.hidden === undefined && action.locked === undefined) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Choose at least one layer flag." });
   if (action.type === "set_image_adjustment" && action.field === "blur" && (action.value < 0 || action.value > 0.2)) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Blur must be between zero and 0.2." });
 });
 export type StudioEditorCommand = z.infer<typeof studioEditorCommandSchema>;
