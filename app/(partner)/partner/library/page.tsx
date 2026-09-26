@@ -127,6 +127,12 @@ export default async function PartnerLibraryPage({ searchParams }: PageProps) {
                   <p className="text-sm font-medium" style={{ color: "var(--so-cream)" }}>
                     {design.name}
                   </p>
+                  {design.libraryMetadata && (
+                    <p className="text-xs" style={{ color: "var(--so-cream-dim)" }}>
+                      {design.libraryMetadata.category} · {design.libraryMetadata.sourceName ?? "Source not recorded"}
+                      {design.libraryMetadata.licenseId ? ` · ${design.libraryMetadata.licenseId}` : " · Rights details not recorded"}
+                    </p>
+                  )}
                   <p className="flex items-center gap-2 text-xs" style={{ color: "var(--so-cream-dim)" }}>
                     <Badge variant={design.status === "draft" ? "secondary" : "default"}>
                       {design.isComposition ? "Design" : design.status === "draft" ? "Draft" : "Ready"}

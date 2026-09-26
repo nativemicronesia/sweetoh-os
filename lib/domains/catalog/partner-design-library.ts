@@ -8,6 +8,9 @@ import {
 } from "@/lib/domains/assets/service";
 import { getDb } from "@/lib/db/client";
 import { asset } from "@/lib/db/schema";
+import { creativeLibraryEntry } from "@/lib/db/schema";
+import { canUseCreativeLibraryAsset, type CreativeLibraryMetadata } from "@/lib/domains/library/model";
+import { normalizeCreativeLibraryAsset, registerCreativeLibraryEntry } from "@/lib/domains/library/service";
 
 export type { AssetCompositionLayout };
 
@@ -20,6 +23,7 @@ export type PartnerLibraryDesign = {
   previewUrl: string | null;
   /** Saved from the partner Canvas with its placement — reopenable for editing. */
   isComposition: boolean;
+  libraryMetadata: CreativeLibraryMetadata | null;
 };
 
 export async function listPartnerLibraryDesigns(
@@ -27,8 +31,9 @@ export async function listPartnerLibraryDesigns(
 ): Promise<PartnerLibraryDesign[]> {
   const db = getDb();
   const rows = await db
-    .select()
+    .select({ asset, entry: creativeLibraryEntry })
     .from(asset)
+    .leftJoin(creativeLibraryEntry, eq(creativeLibraryEntry.assetId, asset.id))
     .where(
       and(
         eq(asset.ventureId, ventureId),
@@ -39,12 +44,13 @@ export async function listPartnerLibraryDesigns(
     .orderBy(desc(asset.updatedAt));
 
   return Promise.all(
-    rows.map(async (row) => ({
+    rows.filter(row => canUseCreativeLibraryAsset(normalizeCreativeLibraryAsset(row.asset, row.entry), { ventureId, use: "studio_edit" })).map(async ({ asset: row, entry }) => ({
       id: row.id,
       name: row.name,
       status: row.status,
       notes: row.notes,
       isComposition: row.compositionLayout != null,
+      libraryMetadata: normalizeCreativeLibraryAsset(row, entry).metadata,
       createdAt: row.createdAt,
       previewUrl: await getAssetSignedUrl({
         ventureId,
@@ -79,6 +85,19 @@ export async function uploadPartnerDesign(input: {
     mimeType: input.mimeType,
     notes: input.notes,
     compositionLayout: input.compositionLayout ?? null,
+  });
+
+  await registerCreativeLibraryEntry({
+    ventureId: input.ventureId,
+    assetId: created.id,
+    metadata: {
+      kind: input.mimeType === "image/svg+xml" ? "vector" : "illustration",
+      category: "Artwork", tags: [], productionMethods: [], sourceKind: "partner_upload",
+      sourceName: "Partner workspace upload", sourceUrl: null, evidenceUrl: null,
+      licenseId: null, licenseUrl: null, commercialUse: false, modificationAllowed: false,
+      redistributionAllowed: false, attributionRequired: false, attributionText: null,
+      rightsVerifiedAt: null, rightsVerifiedById: null,
+    },
   });
 
   if (input.autoApprove) {

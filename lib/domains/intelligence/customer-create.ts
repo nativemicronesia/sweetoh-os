@@ -13,6 +13,8 @@ import { aiCustomerAuditFields } from "@/lib/domains/audit/user";
 import { recordAuditEvent } from "@/lib/domains/audit/service";
 import { isMockAiEnabled, isOpenAiConfigured } from "@/lib/config/env";
 import { ValidationError } from "@/lib/shared/errors";
+import { canUseCreativeLibraryAsset } from "@/lib/domains/library/model";
+import { getCreativeLibraryAsset } from "@/lib/domains/library/service";
 import { downloadFromBucket } from "@/lib/storage/client";
 import { generateProductDraft } from "./product-builder";
 import {
@@ -136,7 +138,8 @@ export async function submitCustomerCustomizationRequest(input: {
       ventureId: input.ventureId,
       assetId: input.libraryAssetId,
     });
-    if (libraryAsset.assetType !== "sweetoh_design" || libraryAsset.status !== "approved") {
+    const libraryRecord = await getCreativeLibraryAsset({ ventureId: input.ventureId, assetId: input.libraryAssetId });
+    if (libraryAsset.assetType !== "sweetoh_design" || libraryAsset.status !== "approved" || !libraryRecord || !canUseCreativeLibraryAsset(libraryRecord, { ventureId: input.ventureId, use: "commercial_product" })) {
       throw new ValidationError("That library design isn't available.");
     }
     const bytes = await downloadFromBucket({

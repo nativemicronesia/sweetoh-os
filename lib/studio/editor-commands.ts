@@ -2,6 +2,7 @@ import { z } from "zod";
 import { SHAPE_KINDS } from "@/lib/domains/catalog/studio-layout";
 import { STUDIO_ASSET_IDS, STUDIO_ASSETS } from "./asset-library";
 import { STUDIO_FONT_LABELS, STUDIO_FONT_PROVENANCE } from "./font-provenance";
+import { canUseCreativeLibraryAsset, creativeLibraryMetadataSchema } from "@/lib/domains/library/model";
 import { regionsFor, type StudioLayout, type StudioLayer } from "@/lib/domains/catalog/studio-layout";
 
 const fontKeySchema = z.string().max(40).refine((key) => Object.hasOwn(STUDIO_FONT_PROVENANCE, key), "Choose an available Studio font.");
@@ -47,9 +48,12 @@ export function findStudioAssets(input: z.input<typeof studioAssetSearchSchema>)
   const query = studioAssetSearchSchema.parse(input);
   const needle = query.query.toLowerCase();
   const entries = [
-    ...STUDIO_ASSETS.map((asset) => ({ id: asset.id, kind: asset.kind, name: asset.name, category: asset.category, tags: asset.tags, license: asset.license, source: asset.source })),
-    ...Object.entries(STUDIO_FONT_PROVENANCE).map(([key, provenance]) => ({ id: `font:${key}`, kind: "font" as const, name: STUDIO_FONT_LABELS[key as keyof typeof STUDIO_FONT_LABELS], category: "Fonts", tags: ["type", "lettering", "typography"], license: provenance.license, source: provenance.source })),
-  ];
+    ...STUDIO_ASSETS.map((asset) => ({ id: asset.id, kind: asset.kind, name: asset.name, category: asset.category, tags: asset.tags, license: asset.license, source: asset.source, libraryKind: asset.kind === "pattern" ? "pattern" as const : "element" as const })),
+    ...Object.entries(STUDIO_FONT_PROVENANCE).map(([key, provenance]) => ({ id: `font:${key}`, kind: "font" as const, name: STUDIO_FONT_LABELS[key as keyof typeof STUDIO_FONT_LABELS], category: "Fonts", tags: ["type", "lettering", "typography"], license: provenance.license, source: provenance.source, libraryKind: "font" as const })),
+  ].filter((entry) => {
+    const metadata = creativeLibraryMetadataSchema.parse({ kind: entry.libraryKind, category: entry.category, tags: entry.tags, productionMethods: [], sourceKind: "sweetoh_original", sourceName: entry.source, licenseId: entry.license, commercialUse: true, modificationAllowed: true, redistributionAllowed: false, attributionRequired: false, attributionText: null, sourceUrl: null, evidenceUrl: null, licenseUrl: null, rightsVerifiedAt: null, rightsVerifiedById: null });
+    return canUseCreativeLibraryAsset({ assetId: entry.id, ventureId: "sweetoh-builtins", ownerId: null, assetType: "sweetoh_design", status: "approved", authorityLevel: "canonical", name: entry.name, notes: null, metadata }, { ventureId: "sweetoh-builtins", use: "studio_edit" });
+  });
   return entries.filter((entry) => (query.kind === "any" || entry.kind === query.kind) && (!needle || `${entry.name} ${entry.category} ${entry.tags.join(" ")}`.toLowerCase().includes(needle))).slice(0, query.limit);
 }
 
