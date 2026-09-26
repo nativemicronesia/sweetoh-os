@@ -23,6 +23,9 @@ import { aiTimestampAuditFields } from "@/lib/domains/audit/timestamp";
 import { resolveAiUserAuditFields } from "@/lib/domains/audit/user";
 import { getAssetById } from "@/lib/domains/assets/service";
 import { isApprovedAssetStatus } from "@/lib/domains/assets/types";
+import { getCreativeLibraryAsset, getCreativeLibraryAssets } from "@/lib/domains/library/service";
+import { studioLayoutSchema } from "./studio-layout";
+import { studioProductArtworkIssue } from "./studio-product-artwork";
 import {
   archivePilForProduct,
   compoundPilOnProductPublish,
@@ -191,6 +194,33 @@ async function isSweetohPathValid(input: {
   }
 }
 
+async function validateProductStudioArtwork(input: Product): Promise<{ associated: boolean; issue: string | null }> {
+  if (!input.sourceAssetId) return { associated: false, issue: null };
+  const source = await getAssetById({ ventureId: input.ventureId, assetId: input.sourceAssetId }).catch(() => null);
+  if (!source?.compositionLayout) return { associated: false, issue: null };
+  if (source.assetType !== "sweetoh_design") return { associated: true, issue: "The associated Studio design asset is unavailable." };
+  const layout = studioLayoutSchema.safeParse(source.compositionLayout.studio);
+  if (!layout.success) return { associated: true, issue: "The associated Studio design layout is invalid. Reopen it in Studio and save a corrected design." };
+  const productionIds = new Set([
+    ...layout.data.surfaces.flatMap((surface) => surface.assetId ? [surface.assetId] : []),
+    ...(input.printArea?.surfaces?.flatMap((surface) => surface.assetId ? [surface.assetId] : []) ?? []),
+  ]);
+  const productionRows = await Promise.all([...productionIds].map(async (assetId) => {
+    const asset = await getAssetById({ ventureId: input.ventureId, assetId }).catch(() => null);
+    return asset ? [assetId, { id: asset.id, assetType: asset.assetType, status: asset.status, notes: asset.notes }] as const : null;
+  }));
+  const productionAssets = new Map(productionRows.filter((row): row is NonNullable<typeof row> => Boolean(row)));
+  const layerIds = [...new Set(layout.data.surfaces.flatMap((surface) => surface.layers.flatMap((layer) => layer.kind === "image" || layer.kind === "pattern" ? [layer.assetId] : [])))];
+  const layerRows = await getCreativeLibraryAssets({ ventureId: input.ventureId, assetIds: layerIds });
+  const layerAssets = new Map(layerRows.map((asset) => [asset.assetId, asset]));
+  const design = await getCreativeLibraryAsset({ ventureId: input.ventureId, assetId: source.id });
+  if (!design) return { associated: true, issue: "Current usage rights for the associated Studio design could not be verified." };
+  return {
+    associated: true,
+    issue: studioProductArtworkIssue({ ventureId: input.ventureId, studio: layout.data, printArea: input.printArea, design, productionAssets, layerAssets }),
+  };
+}
+
 export async function createProduct(input: {
   ventureId: string;
   slug: string;
@@ -269,8 +299,8 @@ export async function evaluateProductPublishReadiness(input: {
     ventureId: input.ventureId,
     sourceAssetId: existing.sourceAssetId,
   });
-
-  return getPublishReadiness({
+  const studioArtwork = await validateProductStudioArtwork(existing);
+  const readiness = getPublishReadiness({
     category: existing.category as ProductCategory,
     fulfillmentType: existing.fulfillmentType as FulfillmentType,
     supplierSku: existing.supplierSku,
@@ -278,6 +308,14 @@ export async function evaluateProductPublishReadiness(input: {
     hasMedia: mediaCount > 0,
     sweetohPathValid,
   });
+  if (!studioArtwork.associated) return readiness;
+  const message = studioArtwork.issue ?? "Linked Studio design, current artwork rights, production blank, and print geometry are verified.";
+  return {
+    ...readiness,
+    canPublish: readiness.canPublish && !studioArtwork.issue,
+    blockingReason: studioArtwork.issue ?? readiness.blockingReason,
+    checks: [...readiness.checks, { label: "Studio design and production setup", passed: !studioArtwork.issue, message }],
+  };
 }
 
 export async function updateProduct(input: {
@@ -662,6 +700,8 @@ export async function publishProduct(input: {
     ventureId: input.ventureId,
     sourceAssetId: existing.sourceAssetId,
   });
+  const studioArtwork = await validateProductStudioArtwork(existing);
+  if (studioArtwork.issue) throw new ValidationError(studioArtwork.issue);
 
   const gate = canPublishProduct({
     category: existing.category as ProductCategory,

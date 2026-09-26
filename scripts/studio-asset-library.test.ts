@@ -3,6 +3,8 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import sharp from "sharp";
 import { productPrintAreaFromStudio, studioLayoutSchema, studioMatchesProductPrintArea } from "../lib/domains/catalog/studio-layout";
+import { studioProductArtworkIssue } from "../lib/domains/catalog/studio-product-artwork";
+import type { CreativeLibraryAsset } from "../lib/domains/library/model";
 import { prepareStudioTemplateCopy } from "../lib/domains/catalog/studio-template-copy";
 import { STUDIO_ASSETS, studioAsset, studioAssetUrl } from "../lib/studio/asset-library";
 import { STUDIO_FONT_PROVENANCE, resolveStudioFontKey } from "../lib/studio/font-provenance";
@@ -226,6 +228,51 @@ test("product draft artwork links to the editable composition and persists exact
   assert.match(editor, /applyToProductDraftId/);
   assert.match(review, /compositionLayout\?\.studio/);
   assert.match(readiness, /isSweetohPathValid[\s\S]*?isApprovedAssetStatus\(sourceAsset\.status\)/);
+});
+
+test("Studio product readiness rechecks current design rights, verified blanks, and exact geometry", () => {
+  const blankId = "00000000-0000-4000-8000-000000000001";
+  const layerId = "00000000-0000-4000-8000-000000000003";
+  const sourceId = "00000000-0000-4000-8000-000000000004";
+  const studio = studioLayoutSchema.parse({ ...base, surfaces: [{
+    ...base.surfaces[0], id: "front", assetId: blankId, imageRole: "production_blank",
+    layers: [{ id: "product-art", kind: "image", assetId: layerId, x: 30, y: 40, scaleX: 1, scaleY: 1, angle: 0 }],
+  }] });
+  const metadata = {
+    kind: "illustration" as const, category: "Artwork", tags: [], productionMethods: [], sourceKind: "partner_upload" as const,
+    sourceName: "Partner upload", sourceUrl: null, evidenceUrl: null, licenseId: null, licenseUrl: null,
+    commercialUse: false, modificationAllowed: false, redistributionAllowed: false,
+    attributionRequired: false, attributionText: null, rightsVerifiedAt: null, rightsVerifiedById: null,
+  };
+  const creative = (assetId: string): CreativeLibraryAsset => ({
+    assetId, ventureId: "venture", ownerId: "owner", assetType: "sweetoh_design", status: "approved",
+    authorityLevel: "canonical", name: "Artwork", notes: null, mimeType: "image/png", metadata,
+  });
+  const design = creative(sourceId);
+  const layer = creative(layerId);
+  const productSurface = productPrintAreaFromStudio(studio);
+  const production = new Map([[blankId, { id: blankId, assetType: "product_asset", status: "approved", notes: "Background removed; reusable blank view." }]]);
+  assert.equal(studioProductArtworkIssue({ ventureId: "venture", studio, printArea: productSurface, design, productionAssets: production, layerAssets: new Map([[layerId, layer]]) }), null);
+  const revokedLayer = { ...layer, metadata: { ...metadata, sourceKind: "licensed_external" as const, sourceName: "External", sourceUrl: "https://example.com/art", evidenceUrl: "https://example.com/license", licenseId: "revoked", rightsVerifiedAt: null, rightsVerifiedById: null } };
+  assert.match(studioProductArtworkIssue({ ventureId: "venture", studio, printArea: productSurface, design, productionAssets: production, layerAssets: new Map([[layerId, revokedLayer]]) }) ?? "", /commercial product use/);
+  assert.match(studioProductArtworkIssue({ ventureId: "venture", studio, printArea: productSurface, design, productionAssets: new Map([[blankId, { ...production.get(blankId)!, status: "draft" }]]), layerAssets: new Map([[layerId, layer]]) }) ?? "", /production blank/);
+  const wrongGeometry = { ...productSurface, surfaces: productSurface.surfaces.map((surface) => ({ ...surface, area: { ...surface.area, x: .01 } })) };
+  assert.match(studioProductArtworkIssue({ ventureId: "venture", studio, printArea: wrongGeometry, design, productionAssets: production, layerAssets: new Map([[layerId, layer]]) }) ?? "", /print area/);
+
+  const service = readFileSync("lib/domains/catalog/service.ts", "utf8");
+  const review = readFileSync("app/(partner)/partner/review/[id]/page.tsx", "utf8");
+  assert.match(service, /evaluateProductPublishReadiness[\s\S]*?validateProductStudioArtwork\(existing\)/);
+  assert.match(service, /publishProduct[\s\S]*?validateProductStudioArtwork\(existing\)[\s\S]*?throw new ValidationError\(studioArtwork\.issue\)/);
+  assert.match(review, /Associated Studio design/);
+  assert.match(review, /verified production blank/);
+  assert.match(review, /Reopen the associated Studio design to correct it/);
+  assert.match(review, /composition=\$\{product\.sourceAssetId\}&targetDraft=\$\{product\.id\}/);
+  const readinessTransition = service.slice(service.indexOf("export async function markProductDraftReviewed"));
+  assert.match(readinessTransition, /const readiness = await evaluateProductPublishReadiness\(input\)/);
+  assert.match(readinessTransition, /readiness\.canPublish\s*\?\s*"approved"\s*:\s*"needs_work"/);
+  const unpublish = service.slice(service.indexOf("export async function unpublishProduct"), service.indexOf("export async function", service.indexOf("export async function unpublishProduct") + 20));
+  assert.match(unpublish, /active: false,\s*draftStatus: nextDraftStatus/);
+  assert.doesNotMatch(unpublish, /sourceAssetId\s*:/);
 });
 
 test("new shape, image and typography controls stay serializable across save/reopen", () => {

@@ -27,6 +27,7 @@ import {
 import { formatPrice } from "@/lib/shared/format";
 import { NotFoundError } from "@/lib/shared/errors";
 import { listPartnerLibraryDesigns } from "@/lib/domains/catalog/partner-design-library";
+import { inferSurfaceImageRole, PRODUCTION_BLANK_ASSET_NOTES, studioLayoutSchema } from "@/lib/domains/catalog/studio-layout";
 import {
   approvePendingListingAction,
   rejectPendingListingAction,
@@ -126,6 +127,20 @@ export default async function PartnerReviewDetailPage({
           .catch(() => null)
       : Promise.resolve(null),
   ]);
+  const productionSurfaces = await Promise.all((product.printArea?.surfaces ?? []).map(async (surface) => {
+    const asset = surface.assetId ? await getAssetById({ ventureId: session.ventureId, assetId: surface.assetId }).catch(() => null) : null;
+    const isVerifiedBlank = inferSurfaceImageRole({ ...surface, assetNotes: asset?.notes }) === "production_blank"
+      && asset?.assetType === "product_asset" && asset.notes === PRODUCTION_BLANK_ASSET_NOTES
+      && isApprovedAssetStatus(asset.status as import("@/lib/domains/assets/types").AssetStatus);
+    return {
+      ...surface,
+      isVerifiedBlank,
+      previewUrl: isVerifiedBlank && surface.assetId ? await getAssetSignedUrl({ ventureId: session.ventureId, assetId: surface.assetId }).catch(() => null) : null,
+    };
+  }));
+  const associatedStudio = productionAsset?.asset.compositionLayout?.studio
+    ? studioLayoutSchema.safeParse(productionAsset.asset.compositionLayout.studio)
+    : null;
   const designAssets = canEdit
     ? (await listPartnerLibraryDesigns(session.ventureId)).filter((item) => item.status === "approved" || item.status === "licensed")
     : [];
@@ -188,7 +203,7 @@ export default async function PartnerReviewDetailPage({
 
       <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
         <Link href="/partner/products" className="so-link">← My products</Link>
-        {productionAsset?.asset.compositionLayout?.studio && product.sourceAssetId && <Link className="so-link" href={`/partner/canvas?composition=${product.sourceAssetId}&targetDraft=${product.id}`}>Edit product artwork</Link>}
+        {productionAsset?.asset.compositionLayout && product.sourceAssetId && <Link className="so-link" href={`/partner/canvas?composition=${product.sourceAssetId}&targetDraft=${product.id}`}>Edit product artwork</Link>}
       </div>
 
       {/* Photo beside the AI-written copy — the whole point of this screen. */}
@@ -347,18 +362,18 @@ export default async function PartnerReviewDetailPage({
             {product.catalogSource && <div className="sm:col-span-2"><dt style={{ color: "var(--so-cream-dim)" }}>Catalog source</dt><dd style={{ color: "var(--so-cream)" }}>{[product.catalogSource.provider, product.catalogSource.brand, product.catalogSource.model].filter(Boolean).join(" · ")}</dd></div>}
           </dl>
           <div>
-            <h3 className="text-sm font-medium" style={{ color: "var(--so-cream)" }}>Linked source / artwork</h3>
+            <h3 className="text-sm font-medium" style={{ color: "var(--so-cream)" }}>{productionAsset?.asset.compositionLayout?.studio ? "Associated Studio design" : "Linked source / artwork"}</h3>
             {productionAsset ? <div className="mt-2 flex items-center gap-3 text-sm">
               {productionAsset.url && <div className="h-14 w-14 overflow-hidden rounded border" style={{ borderColor: "var(--so-border)" }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={productionAsset.url} alt="Linked production asset" className="h-full w-full object-contain" />
               </div>}
-              <div style={{ color: "var(--so-cream-dim)" }}><p>{productionAsset.asset.name}</p><p>{productionAsset.asset.assetType} · {productionAsset.asset.status}{isApprovedAssetStatus(productionAsset.asset.status as import("@/lib/domains/assets/types").AssetStatus) ? " · approved for production" : " · approval required"}</p></div>
+              <div style={{ color: "var(--so-cream-dim)" }}><p>{productionAsset.asset.name}</p><p>{productionAsset.asset.assetType} · {productionAsset.asset.status}{isApprovedAssetStatus(productionAsset.asset.status as import("@/lib/domains/assets/types").AssetStatus) ? " · approved for production" : " · approval required"}</p>{associatedStudio?.success && <p>Editable Studio composition · {associatedStudio.data.surfaces.reduce((count, surface) => count + surface.layers.length, 0)} artwork layers</p>}</div>
             </div> : <p className="mt-1 text-sm" style={{ color: "var(--so-cream-dim)" }}>No linked production asset.</p>}
           </div>
           <div>
             <h3 className="text-sm font-medium" style={{ color: "var(--so-cream)" }}>Print areas</h3>
-            {product.printArea?.surfaces?.length ? <ul className="mt-1 space-y-2 text-sm" style={{ color: "var(--so-cream-dim)" }}>{product.printArea.surfaces.map((surface) => <li key={surface.id}>{surface.name}{surface.position ? ` (${surface.position})` : ""} · artwork bounds {Math.round(surface.area.x * 100)}%, {Math.round(surface.area.y * 100)}%, {Math.round(surface.area.width * 100)}% × {Math.round(surface.area.height * 100)}%{surface.printRegions?.map((region) => ` · ${region.name} (${region.shape}${region.dimensions ? `, ${region.dimensions.width}×${region.dimensions.height}${region.dimensions.unit}` : ""})`).join("")}</li>)}</ul> : <p className="mt-1 text-sm" style={{ color: "var(--so-cream-dim)" }}>No print-area geometry is saved on this product.</p>}
+            {productionSurfaces.length ? <ul className="mt-2 space-y-3 text-sm" style={{ color: "var(--so-cream-dim)" }}>{productionSurfaces.map((surface) => <li key={surface.id} className="flex items-start gap-3">{surface.previewUrl && <img src={surface.previewUrl} alt={`${surface.name} verified production blank`} className="h-14 w-14 rounded border object-contain" style={{ borderColor: "var(--so-border)" }} />}<span><strong style={{ color: surface.isVerifiedBlank ? "var(--so-cream)" : "#dc2626" }}>{surface.name}{surface.position ? ` (${surface.position})` : ""} · {surface.isVerifiedBlank ? "verified production blank" : "production blank invalid"}</strong><br/>Artwork bounds {Math.round(surface.area.x * 100)}%, {Math.round(surface.area.y * 100)}%, {Math.round(surface.area.width * 100)}% × {Math.round(surface.area.height * 100)}%{surface.printRegions?.map((region) => ` · ${region.name} (${region.shape}${region.dimensions ? `, ${region.dimensions.width}×${region.dimensions.height}${region.dimensions.unit}` : ""})`).join("")}</span></li>)}</ul> : <p className="mt-1 text-sm" style={{ color: "var(--so-cream-dim)" }}>No print-area geometry is saved on this product.</p>}
           </div>
         </div>
       </section>
@@ -567,6 +582,7 @@ export default async function PartnerReviewDetailPage({
           </h2>
           {product.draftStatus === "approved" && !product.active ? <p className="mt-2 text-sm" style={{ color: "var(--so-gold)" }}>Approved and ready to publish. This listing is still private.</p> : null}
           {!readiness.canPublish ? <p className="mt-2 text-sm" style={{ color: "var(--so-cream-dim)" }}>Complete the failed requirements below, save your changes, then check readiness again.</p> : null}
+          {!readiness.canPublish && productionAsset?.asset.compositionLayout && product.sourceAssetId && canEdit ? <Link className="so-link mt-2 inline-block" href={`/partner/canvas?composition=${product.sourceAssetId}&targetDraft=${product.id}`}>Reopen the associated Studio design to correct it</Link> : null}
           <ul className="mt-4 space-y-2">
             {readiness.checks.map((check) => (
               <li key={check.label} className="flex items-start gap-2 text-sm">
