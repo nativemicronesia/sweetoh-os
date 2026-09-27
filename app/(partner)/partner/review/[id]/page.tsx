@@ -1,5 +1,6 @@
 import { SubmitButton } from "../../components/submit-button";
 import { DeleteProductButton } from "../../components/delete-product-button";
+import { ProductionBlankForm } from "./production-blank-form";
 import { VariantPricing } from "../../components/variant-pricing";
 import Link from "next/link";
 import { CreationSteps } from "../../components/creation-steps";
@@ -244,6 +245,7 @@ export default async function PartnerReviewDetailPage({
               <div className="min-w-0 text-sm"><p className="truncate font-medium" style={{ color: "var(--so-cream)" }}>{productionSurfaces[0].name}{productionSurfaces[0].position ? ` · ${productionSurfaces[0].position}` : ""}</p><p style={{ color: productionSurfaces[0].isVerifiedBlank ? "var(--so-cream-dim)" : "#dc2626" }}>{productionSurfaces[0].isVerifiedBlank ? "Verified production blank" : "Production blank invalid"}</p><p className="text-xs" style={{ color: "var(--so-cream-dim)" }}>Print bounds {Math.round(productionSurfaces[0].area.x * 100)}%, {Math.round(productionSurfaces[0].area.y * 100)}%, {Math.round(productionSurfaces[0].area.width * 100)}% × {Math.round(productionSurfaces[0].area.height * 100)}%</p></div>
             </div> : <p className="mt-3 text-sm" style={{ color: "#dc2626" }}>No saved production surface or print placement.</p>}
             <a href="#production-overview" className="so-link mt-3 inline-block text-sm">Review all surfaces &amp; print regions</a>
+            {canEdit && productionSurfaces.some((surface) => surface.isVerifiedBlank) && <Link href={studioHref} className="so-link mt-2 inline-block text-sm">Open verified surface in Studio</Link>}
           </article>
 
           <article className="rounded-lg border p-4" style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}>
@@ -427,6 +429,8 @@ export default async function PartnerReviewDetailPage({
           <div>
             <h3 className="text-sm font-medium" style={{ color: "var(--so-cream)" }}>Print areas</h3>
             {productionSurfaces.length ? <ul className="mt-2 space-y-3 text-sm" style={{ color: "var(--so-cream-dim)" }}>{productionSurfaces.map((surface) => <li key={surface.id} className="flex items-start gap-3">{surface.previewUrl && <img src={surface.previewUrl} alt={`${surface.name} verified production blank`} className="h-14 w-14 rounded border object-contain" style={{ borderColor: "var(--so-border)" }} />}<span><strong style={{ color: surface.isVerifiedBlank ? "var(--so-cream)" : "#dc2626" }}>{surface.name}{surface.position ? ` (${surface.position})` : ""} · {surface.isVerifiedBlank ? "verified production blank" : "production blank invalid"}</strong><br/>Artwork bounds {Math.round(surface.area.x * 100)}%, {Math.round(surface.area.y * 100)}%, {Math.round(surface.area.width * 100)}% × {Math.round(surface.area.height * 100)}%{surface.printRegions?.map((region) => ` · ${region.name} (${region.shape}${region.dimensions ? `, ${region.dimensions.width}×${region.dimensions.height}${region.dimensions.unit}` : ""})`).join("")}</span></li>)}</ul> : <p className="mt-1 text-sm" style={{ color: "var(--so-cream-dim)" }}>No print-area geometry is saved on this product.</p>}
+            {canEdit && !productionSurfaces.some((surface) => surface.isVerifiedBlank) && <ProductionBlankForm productId={product.id} productName={product.name} positions={productionSurfaces.map((surface) => surface.position).filter((position): position is string => Boolean(position))} />}
+            {canEdit && productionSurfaces.some((surface) => surface.isVerifiedBlank) && <Link href={studioHref} className="so-link mt-3 inline-block text-sm">Open this saved production surface in Studio</Link>}
           </div>
         </div>
       </section>
