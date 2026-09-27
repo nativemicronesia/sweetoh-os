@@ -106,7 +106,7 @@ export function AssetLibraryPanel({ disabled, creativeAssets = [], onAddCreative
           <span>{entry.name}</span>
         </button>
         <button type="button" className="pe-asset-favorite" onClick={() => favorite(entry.id)} aria-label={`${favorites.includes(entry.id) ? "Remove" : "Add"} ${entry.name} ${favorites.includes(entry.id) ? "from" : "to"} favorites`} aria-pressed={favorites.includes(entry.id)}>★</button>
-        <small title={`${entry.source}\n${entry.license}\nSource: ${entry.sourceUrl}\nEvidence: ${entry.evidenceUrl}\n${entry.attributionText}`}>{studioAssetOriginLabel(entry)}</small>
+        <small tabIndex={0} aria-label={`${entry.source}. License: ${entry.license}. ${entry.attributionText}`} title={`${entry.source}\n${entry.license}\nSource: ${entry.sourceUrl}\nEvidence: ${entry.evidenceUrl}\n${entry.attributionText}`}>{studioAssetOriginLabel(entry)}</small>
       </div>)}</div>
       {visibleEntries.length < visible.length && <button type="button" className="pe-btn pe-btn-ghost" onClick={() => setVisibleLimit((count) => count + PAGE_SIZE)}>Show more ({visible.length - visibleEntries.length} remaining)</button>}
       </> : <p className="pe-muted">No matching assets.</p>}
