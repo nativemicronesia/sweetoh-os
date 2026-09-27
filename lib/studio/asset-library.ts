@@ -1,4 +1,6 @@
 import { TABLER_STUDIO_ASSETS } from "./tabler-assets";
+import { PATTERNFILLS_STUDIO_ASSETS } from "./patternfills-assets";
+import { OPEN_CROP_STUDIO_ASSETS } from "./open-crop-assets";
 
 /**
  * Studio-owned, versioned design resources. IDs are persisted in layouts:
@@ -55,7 +57,12 @@ const SWEETOH_STUDIO_ASSETS: readonly StudioAsset[] = [
 ] as const;
 
 /** SweetOh originals and separately documented, rights-cleared open-license resources. */
-export const STUDIO_ASSETS: readonly StudioAsset[] = [...SWEETOH_STUDIO_ASSETS, ...TABLER_STUDIO_ASSETS];
+export const STUDIO_ASSETS: readonly StudioAsset[] = [
+  ...SWEETOH_STUDIO_ASSETS,
+  ...TABLER_STUDIO_ASSETS,
+  ...PATTERNFILLS_STUDIO_ASSETS,
+  ...OPEN_CROP_STUDIO_ASSETS,
+];
 
 export const STUDIO_ASSET_IDS = new Set(STUDIO_ASSETS.map((asset) => asset.id));
 export function studioAsset(id: string) { return STUDIO_ASSETS.find((asset) => asset.id === id); }

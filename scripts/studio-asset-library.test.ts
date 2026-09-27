@@ -60,10 +60,53 @@ test("curated Tabler assets keep upstream provenance and commercial-use evidence
   assert.ok(findStudioAssets({ query: "occupation", kind: "any", limit: 50 }).some((asset) => asset.id === "tabler-stethoscope-v1"));
 });
 
+test("diverse open collections retain exact provenance, evidence, rights, search tags, and Studio insertion", () => {
+  const patterns = STUDIO_ASSETS.filter((asset) => asset.id.startsWith("patternfills-"));
+  const crops = STUDIO_ASSETS.filter((asset) => asset.id.startsWith("open-crop-"));
+  assert.equal(patterns.length, 15);
+  assert.equal(crops.length, 16);
+  for (const asset of patterns) {
+    assert.equal(asset.licenseId, "MIT");
+    assert.equal(asset.commercialUse, true);
+    assert.equal(asset.modificationAllowed, true);
+    assert.equal(asset.redistributionAllowed, true);
+    assert.equal(asset.attributionRequired, true);
+    assert.match(asset.sourceUrl ?? "", /iros\/patternfills\/blob\/cfd578c3a967982eaf545d0293491ef6828ec2c8\/src\/patterns\//);
+    assert.match(asset.evidenceUrl ?? "", /iros\/patternfills\/blob\/cfd578c3a967982eaf545d0293491ef6828ec2c8\/README\.md/);
+    assert.equal(studioEditorCommandSchema.safeParse({ type: "add_graphic", assetKey: asset.id }).success, true);
+  }
+  for (const asset of crops) {
+    assert.equal(asset.licenseId, "CC0-1.0");
+    assert.equal(asset.commercialUse, true);
+    assert.equal(asset.modificationAllowed, true);
+    assert.equal(asset.redistributionAllowed, true);
+    assert.equal(asset.attributionRequired, false);
+    assert.equal(asset.attributionText, null);
+    assert.match(asset.sourceUrl ?? "", /openfarmcc\/open-crop-icons\/blob\/d41f1197a14bb82f12037dc47585152ae1e3074f\/icons\//);
+    assert.match(asset.evidenceUrl ?? "", /openfarmcc\/open-crop-icons\/blob\/d41f1197a14bb82f12037dc47585152ae1e3074f\/README\.md/);
+    assert.equal(studioEditorCommandSchema.safeParse({ type: "add_graphic", assetKey: asset.id }).success, true);
+  }
+  assert.ok(findStudioAssets({ query: "engraving", kind: "pattern", limit: 50 }).some((asset) => asset.id === "patternfills-crosshatch-v1"));
+  assert.ok(findStudioAssets({ query: "Halloween", kind: "element", limit: 50 }).some((asset) => asset.id === "open-crop-pumpkin-v1"));
+  assert.ok(findStudioAssets({ query: "tropical", kind: "element", limit: 50 }).some((asset) => asset.id === "open-crop-watermelon-v1"));
+  assert.ok(findStudioAssets({ query: "botanical", kind: "element", limit: 50 }).some((asset) => asset.id === "open-crop-lavender-v1"));
+  assert.ok(findStudioAssets({ query: "harvest", kind: "element", limit: 50 }).some((asset) => asset.id === "open-crop-acorn-squash-v1"));
+  const patternEvidence = readFileSync("docs/licenses/third-party/patternfills/MIT-LICENSE.txt", "utf8");
+  assert.match(patternEvidence, /Copyright \(c\) 2014 Irene Ros/);
+  assert.match(readFileSync("docs/licenses/third-party/patternfills/CONTRIBUTORS.md", "utf8"), /gnarf/);
+  assert.match(readFileSync("docs/licenses/third-party/open-crop-icons/CC0-LICENSE-EVIDENCE.md", "utf8"), /CC0/);
+  assert.equal(readFileSync("docs/licenses/third-party/patternfills/source/circles-3.svg", "utf8").includes("<svg"), true);
+  assert.equal(readFileSync("docs/licenses/third-party/open-crop-icons/source/pumpkin.svg", "utf8").includes("<svg"), true);
+});
+
 test("every bundled vector renders as printable pixels", async () => {
   for (const asset of STUDIO_ASSETS) {
-    const result = await sharp(Buffer.from(asset.svg)).resize(600, 600).png().toBuffer();
-    assert.ok(result.byteLength > 100, asset.id);
+    try {
+      const result = await sharp(Buffer.from(asset.svg)).resize(600, 600).png().toBuffer();
+      assert.ok(result.byteLength > 100, asset.id);
+    } catch (error) {
+      throw new Error(`${asset.id}: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 });
 
