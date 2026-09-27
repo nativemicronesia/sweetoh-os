@@ -101,7 +101,7 @@ test("diverse open collections retain exact provenance, evidence, rights, search
 
 test("Openclipart frame, banner, badge, and background primitives are CC0 and findable by real design briefs", () => {
   const assets = STUDIO_ASSETS.filter((asset) => asset.id.startsWith("openclipart-"));
-  assert.equal(assets.length, 9);
+  assert.equal(assets.length, 14);
   for (const asset of assets) {
     assert.equal(asset.licenseId, "CC0-1.0");
     assert.equal(asset.licenseUrl, "https://creativecommons.org/publicdomain/zero/1.0/");
@@ -126,6 +126,30 @@ test("Openclipart frame, banner, badge, and background primitives are CC0 and fi
   assert.match(readFileSync("docs/licenses/third-party/openclipart/CC0-1.0-LEGALCODE.txt", "utf8"), /Creative Commons Legal Code/);
   assert.match(readFileSync("docs/licenses/third-party/openclipart/SOURCE.md", "utf8"), /mia_marianne/);
   assert.ok(readFileSync("docs/licenses/third-party/openclipart/source/230538-christmas-frame.svg", "utf8").includes("<svg"));
+});
+
+test("composition primitives surface for typography-adjacent design searches and keep originals distinct", () => {
+  const briefs: [string, string][] = [
+    ["sale badge", "so-sale-seal-v1"],
+    ["cute label", "so-cute-label-v1"],
+    ["speech bubble", "openclipart-298989-v1"],
+    ["curved arrow", "openclipart-161695-v1"],
+    ["retro burst", "so-retro-burst-v1"],
+    ["divider", "openclipart-308072-v1"],
+    ["tropical flourish", "so-tropical-flourish-v1"],
+    ["organic shape", "so-organic-blob-v1"],
+  ];
+  for (const [query, id] of briefs) {
+    assert.ok(findStudioAssets({ query, kind: "any", limit: 50 }).some((asset) => asset.id === id), query);
+    assert.equal(studioEditorCommandSchema.safeParse({ type: "add_graphic", assetKey: id }).success, true);
+  }
+  const originals = STUDIO_ASSETS.filter((asset) => asset.id.startsWith("so-") && ["so-sale-seal-v1", "so-cute-label-v1", "so-organic-blob-v1", "so-tropical-flourish-v1", "so-retro-burst-v1"].includes(asset.id));
+  assert.equal(originals.length, 5);
+  assert.ok(originals.every((asset) => asset.source === "SweetOh OS" && asset.sourceUrl === undefined));
+  const external = STUDIO_ASSETS.find((asset) => asset.id === "openclipart-298989-v1");
+  assert.match(external?.source ?? "", /AdamStanislav.*298981/);
+  assert.match(readFileSync("docs/licenses/third-party/openclipart-composition/SOURCE.md", "utf8"), /SHA-256/);
+  assert.match(readFileSync("docs/licenses/third-party/openclipart-composition/CC0-1.0-LEGALCODE.txt", "utf8"), /Creative Commons Legal Code/);
 });
 
 test("every bundled vector renders as printable pixels", async () => {

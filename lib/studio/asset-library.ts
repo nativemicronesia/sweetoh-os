@@ -2,6 +2,7 @@ import { TABLER_STUDIO_ASSETS } from "./tabler-assets";
 import { PATTERNFILLS_STUDIO_ASSETS } from "./patternfills-assets";
 import { OPEN_CROP_STUDIO_ASSETS } from "./open-crop-assets";
 import { OPENCLIPART_STUDIO_ASSETS } from "./openclipart-assets";
+import { OPENCLIPART_COMPOSITION_ASSETS } from "./openclipart-composition-assets";
 
 /**
  * Studio-owned, versioned design resources. IDs are persisted in layouts:
@@ -55,6 +56,11 @@ const SWEETOH_STUDIO_ASSETS: readonly StudioAsset[] = [
   { id: "so-scallop-border-v2", name: "Open scallop border", kind: "pattern", category: "Backgrounds", tags: ["border", "scallop", "coastal", "frame", "repeat"], license: "SweetOh original — free for SweetOh customer designs", source: "SweetOh OS", svg: svg(`<g ${outline}><path d="M0 46q25-42 50 0t50 0 50 0 50 0M0 58q25-42 50 0t50 0 50 0 50 0M0 142q25-42 50 0t50 0 50 0 50 0M0 154q25-42 50 0t50 0 50 0 50 0"/></g>` ) },
   { id: "so-double-oval-frame-v1", name: "Double oval frame", kind: "element", category: "Frames", tags: ["oval", "frame", "border", "label", "engraving"], license: "SweetOh original — free for SweetOh customer designs", source: "SweetOh OS", svg: svg(`<g ${outline}><ellipse cx="100" cy="100" rx="87" ry="66"/><ellipse cx="100" cy="100" rx="76" ry="55"/></g>` ) },
   { id: "so-sunray-corner-frame-v1", name: "Sunray corner frame", kind: "element", category: "Frames", tags: ["sunray", "frame", "border", "corner", "engraving"], license: "SweetOh original — free for SweetOh customer designs", source: "SweetOh OS", svg: svg(`<g ${outline}><path d="M24 86V24h62m90 62V24h-62M24 114v62h62m90-62v62h-62M25 50h28m9 0h18m-56 9v18m0 97h28m9 0h18m-55-9v-18m97-97h28m9 0h18m-55 9v18m0 97h28m9 0h18m-55-9v-18"/></g>` ) },
+  { id: "so-sale-seal-v1", name: "Rosette sale seal", kind: "element", category: "Accents", tags: ["sale badge", "badge", "seal", "sticker", "discount", "price", "award", "shopping"], license: "SweetOh original — free for SweetOh customer designs", source: "SweetOh OS", svg: svg(`<path d="m100 12 17 15 22-5 10 21 22 6 3 23 20 13-8 22 12 18-16 17 4 23-22 9-7 22-23-1-15 17-19-12-21 9-13-20-23-2-5-23-21-11 6-22-14-18 15-18-5-23 21-10 5-23 23 0 14-18 20 11 21-8Z" ${outline}/><circle cx="100" cy="100" r="54" ${outline}/><path d="m100 63 10 23 25 2-19 16 6 25-22-13-22 13 6-25-19-16 25-2Z" ${outline}/>` ) },
+  { id: "so-cute-label-v1", name: "Cute scallop label", kind: "element", category: "Accents", tags: ["cute label", "label", "tag", "sticker", "kids", "baby", "gift", "heart", "sweet"], license: "SweetOh original — free for SweetOh customer designs", source: "SweetOh OS", svg: svg(`<path d="M42 30q8-17 21-6 11-20 25-5 12-18 25-3 16-15 25 4 19-9 25 8 17 0 16 18 18 9 9 24 14 14-2 26 7 18-8 27 0 18-17 19-9 18-28 12-17 13-27-4-16 10-25-6-17 14-27-3-16 10-25-7-20 7-25-11-19 1-18-19-18-8-8-25-15-12 1-25-9-18 7-27 0-18 18-18Z" ${outline}/><path d="M100 143c-20-14-30-24-30-36 0-14 18-19 30-4 12-15 30-10 30 4 0 12-10 22-30 36Z" ${outline}/>` ) },
+  { id: "so-organic-blob-v1", name: "Organic blob outline", kind: "element", category: "Accents", tags: ["organic shape", "blob", "abstract", "shape", "botanical", "background", "evergreen"], license: "SweetOh original — free for SweetOh customer designs", source: "SweetOh OS", svg: svg(`<path d="M39 36c18-19 42-8 57-15 24-11 39-7 50 8 12 16 31 13 40 34 9 21-7 34 1 53 9 22-8 43-29 48-17 4-25 20-48 21-22 1-32-13-51-8-22 5-45-5-49-26-3-17-20-28-15-51 4-21 30-27 44-64Z" ${outline}/>` ) },
+  { id: "so-tropical-flourish-v1", name: "Tropical leaf flourish", kind: "element", category: "Nature", tags: ["tropical flourish", "flourish", "leaf", "palm", "island", "botanical", "divider", "summer"], license: "SweetOh original — free for SweetOh customer designs", source: "SweetOh OS", svg: svg(`<path d="M24 167c48-18 91-64 132-133M63 133c-21-3-39-15-49-36 24-1 42 10 49 36Zm19-18c-7-22-4-43 10-62 11 22 7 43-10 62Zm18-22c-1-23 7-42 25-57 5 23-4 42-25 57Zm18-23c7-21 22-35 45-42-3 24-18 39-45 42Zm-45 78c-17-14-26-33-26-57 21 12 30 31 26 57Zm-22 14c-22 5-43 0-62-14 20-12 42-7 62 14Zm71-66c20-9 42-9 64 2-19 14-41 14-64-2Z" ${outline}/>` ) },
+  { id: "so-retro-burst-v1", name: "Retro radial burst", kind: "element", category: "Accents", tags: ["retro burst", "burst", "starburst", "sunburst", "celebration", "birthday", "sticker", "comic"], license: "SweetOh original — free for SweetOh customer designs", source: "SweetOh OS", svg: svg(`<path d="m100 8 12 59 35-49-13 59 53-30-34 51 62-5-50 37 59 18-61 10 42 46-57-25 22 58-45-42-1 63-24-58-25 58-1-63-45 42 22-58-57 25 42-46-61-10 59-18-50-37 62 5-34-51 53 30-13-59 35 49Z" ${outline}/>` ) },
 ] as const;
 
 /** SweetOh originals and separately documented, rights-cleared open-license resources. */
@@ -64,6 +70,7 @@ export const STUDIO_ASSETS: readonly StudioAsset[] = [
   ...PATTERNFILLS_STUDIO_ASSETS,
   ...OPEN_CROP_STUDIO_ASSETS,
   ...OPENCLIPART_STUDIO_ASSETS,
+  ...OPENCLIPART_COMPOSITION_ASSETS,
 ];
 
 export const STUDIO_ASSET_IDS = new Set(STUDIO_ASSETS.map((asset) => asset.id));
