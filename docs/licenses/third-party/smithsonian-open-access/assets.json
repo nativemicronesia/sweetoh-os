@@ -76,6 +76,20 @@
       "crop": { "left": 170, "top": 3470, "width": 1700, "height": 1010 }
     },
     {
+      "id": "smithsonian-chndm-slate-flower-clusters-v1",
+      "recordFile": "records/chndm-1968-107-60.json",
+      "originalFile": "originals/chndm-1968-107-60.jpg",
+      "sourceMediaUrl": "https://ids.si.edu/ids/download?id=CHSDM-09EB24AA74522-000001.jpg",
+      "outputFile": "studio-assets/smithsonian/smithsonian-chndm-slate-flower-clusters-v1.webp",
+      "name": "Painted flower clusters on slate",
+      "kind": "element",
+      "category": "Illustrations",
+      "tags": ["flower", "flowers", "floral", "flower clusters", "botanical", "wallpaper design", "textile design", "painted", "artwork", "19th century", "vintage", "France", "slate gray", "dark blue gray", "pink", "white", "green", "spring", "garden", "wedding", "greeting card", "stationery", "background", "decorative", "sublimation", "print"],
+      "sourceName": "Smithsonian Open Access — Cooper Hewitt, Smithsonian Design Museum (creator not identified in record)",
+      "useCredit": "Smithsonian Open Access; Cooper Hewitt, Smithsonian Design Museum. Creator not identified in the collection record.",
+      "crop": { "left": 1030, "top": 900, "width": 3100, "height": 2550 }
+    },
+    {
       "id": "smithsonian-chndm-floral-frieze-v1",
       "recordFile": "records/chndm-1914-21-54.json",
       "originalFile": "originals/chndm-1914-21-54.jpg",

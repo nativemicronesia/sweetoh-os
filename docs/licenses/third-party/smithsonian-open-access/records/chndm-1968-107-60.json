@@ -1,0 +1,171 @@
+{
+  "id": "ld1-1643399887910-1643399940095-0",
+  "title": "Design for Wallpaper and Textiles: Flowers",
+  "unitCode": "CHNDM",
+  "type": "edanmdm",
+  "url": "edanmdm:chndm_1968-107-60",
+  "content": {
+    "freetext": {
+      "date": [
+        {
+          "label": "Date",
+          "content": "19th century"
+        }
+      ],
+      "notes": [
+        {
+          "label": "Catalogue Status",
+          "content": "Research in Progress"
+        },
+        {
+          "label": "Description",
+          "content": "Five groups of flowers on dark blue-gray background. Four groupings at each corner with one in the center. Center: six white flowers with foliage and blades of green grass behind. Top left: one stem with two white flowers and foliage with brown foliage behind, tops of flowers facing right. Top right: four white flowers and one blossom on one stem with foliage with tops of flowers facing left. Bottom right: one branch with foliage and pink flowers and blossoms, facing right. Bottom left: two stems with foliage and one pink flower on each facing downward."
+        }
+      ],
+      "place": [
+        {
+          "label": "made in",
+          "content": "France"
+        }
+      ],
+      "setName": [
+        {
+          "label": "See more items in",
+          "content": "Cooper Hewitt, Smithsonian Design Museum Collection"
+        },
+        {
+          "label": "See more items in",
+          "content": "Drawings, Prints, and Graphic Design Department"
+        }
+      ],
+      "creditLine": [
+        {
+          "label": "Credit Line",
+          "content": "Gift of Harvey Smith"
+        }
+      ],
+      "dataSource": [
+        {
+          "label": "Data Source",
+          "content": "Cooper Hewitt, Smithsonian Design Museum"
+        }
+      ],
+      "identifier": [
+        {
+          "label": "Accession Number",
+          "content": "1968-107-60"
+        }
+      ],
+      "objectType": [
+        {
+          "label": "Type",
+          "content": "wallpaper designs"
+        },
+        {
+          "label": "Object Name",
+          "content": "Drawing"
+        },
+        {
+          "label": "Type",
+          "content": "Drawing"
+        }
+      ],
+      "objectRights": [
+        {
+          "label": "Restrictions & Rights",
+          "content": "CC0"
+        }
+      ],
+      "physicalDescription": [
+        {
+          "label": "Medium",
+          "content": "Brush and gouache on blue paper"
+        },
+        {
+          "label": "Dimensions",
+          "content": "37.8 x 45.5 cm (14 7/8 x 17 15/16 in.), irregular"
+        }
+      ]
+    },
+    "indexedStructured": {
+      "date": [
+        "1800s",
+        "1900s"
+      ],
+      "place": [
+        "France"
+      ],
+      "geoLocation": [
+        {
+          "L2": {
+            "type": "Country",
+            "content": "France"
+          }
+        }
+      ],
+      "object_type": [
+        "Design drawings",
+        "Wallpapers",
+        "Drawings"
+      ],
+      "online_media_type": [
+        "Images"
+      ]
+    },
+    "descriptiveNonRepeating": {
+      "guid": "http://n2t.net/ark:/65665/kq4bc21bbbc-0d4c-47da-8a04-6d391174570a",
+      "title": {
+        "label": "Title",
+        "content": "Design for Wallpaper and Textiles: Flowers"
+      },
+      "record_ID": "chndm_1968-107-60",
+      "unit_code": "CHNDM",
+      "title_sort": "DESIGN FOR WALLPAPER AND TEXTILES: FLOWERS",
+      "data_source": "Cooper Hewitt, Smithsonian Design Museum",
+      "record_link": "https://collection.cooperhewitt.org/view/objects/asitem/id/141188",
+      "online_media": {
+        "media": [
+          {
+            "id": "media:CHSDM-09EB24AA74522-000001",
+            "guid": "http://n2t.net/ark:/65665/vc97a628818-5ede-4cf0-865c-d79892a6e07b",
+            "type": "Images",
+            "idsId": "CHSDM-09EB24AA74522-000001",
+            "usage": {
+              "access": "CC0"
+            },
+            "content": "https://ids.si.edu/ids/deliveryService?id=CHSDM-09EB24AA74522-000001",
+            "thumbnail": "https://ids.si.edu/ids/deliveryService?id=CHSDM-09EB24AA74522-000001",
+            "altTextAccessibility": "DESIGN FOR WALLPAPER AND TEXTILES: FLOWERS",
+            "extDescrAccessibility": "Five groups of flowers on dark blue-gray background. Four groupings at each corner with one in the center. Center: six white flowers with foliage and blades of green grass behind. Top left: one stem with two white flowers and foliage with brown foliage behind, tops of flowers facing right. Top right: four white flowers and one blossom on one stem with foliage with tops of flowers facing left. Bottom right: one branch with foliage and pink flowers and blossoms, facing right. Bottom left: two stems with foliage and one pink flower on each facing downward.",
+            "resources": [
+              {
+                "label": "High-resolution JPEG",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-09EB24AA74522-000001.jpg",
+                "width": 5397,
+                "height": 4428,
+                "dimensions": "5397x4428"
+              },
+              {
+                "label": "Screen Image",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-09EB24AA74522-000001_screen"
+              },
+              {
+                "label": "Thumbnail Image",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-09EB24AA74522-000001_thumb"
+              }
+            ]
+          }
+        ],
+        "mediaCount": 1
+      },
+      "metadata_usage": {
+        "access": "CC0"
+      }
+    }
+  },
+  "hash": "d6cd2f60f79ec942f45f27115c24435c686daeee",
+  "docSignature": "c227e3f6d0dfac02ddb4e84531d5deba",
+  "timestamp": "1663784558",
+  "lastTimeUpdated": "1769540882",
+  "version": "1769538334"
+}

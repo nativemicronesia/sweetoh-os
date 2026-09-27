@@ -177,6 +177,41 @@
       }
     },
     {
+      "id": "smithsonian-chndm-slate-flower-clusters-v1",
+      "title": "Design for Wallpaper and Textiles: Flowers",
+      "recordId": "chndm_1968-107-60",
+      "sourceRecordUrl": "https://collection.cooperhewitt.org/view/objects/asitem/id/141188",
+      "sourceMediaUrl": "https://ids.si.edu/ids/download?id=CHSDM-09EB24AA74522-000001.jpg",
+      "metadataAccess": "CC0",
+      "objectAccess": "CC0",
+      "recordRightsNotice": "CC0",
+      "license": "CC0 1.0 Universal",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "recommendedCredit": "Smithsonian Open Access; Cooper Hewitt, Smithsonian Design Museum. Creator not identified in the collection record.",
+      "creatorCredits": [],
+      "date": "19th century",
+      "place": "France",
+      "originalFile": "originals/chndm-1968-107-60.jpg",
+      "originalSha256": "502138d52fd3c9813025cc60ff2d4ec70ee5a902e8276e4ed6afa28cc3e1934d",
+      "sourceDimensions": {
+        "width": 5397,
+        "height": 4428
+      },
+      "crop": {
+        "left": 1030,
+        "top": 900,
+        "width": 3100,
+        "height": 2550
+      },
+      "derivativeFile": "studio-assets/smithsonian/smithsonian-chndm-slate-flower-clusters-v1.webp",
+      "derivativeSha256": "6ed0dc566c34b6ad3f4de6ea1c1d6312c62959d8bbc1b1526f38edaaf8c551c6",
+      "derivativeDimensions": {
+        "width": 2400,
+        "height": 1974
+      }
+    },
+    {
       "id": "smithsonian-chndm-floral-frieze-v1",
       "title": "Design for a wallpaper frieze",
       "recordId": "chndm_1914-21-54",
