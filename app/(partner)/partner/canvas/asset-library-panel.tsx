@@ -4,13 +4,13 @@ import { useEffect, useMemo, useState } from "react";
 import { PRODUCT_FONTS } from "@/lib/studio/fonts";
 import { STUDIO_FONT_PROVENANCE } from "@/lib/studio/font-provenance";
 import { STUDIO_ASSET_MANIFEST } from "@/lib/studio/asset-manifest";
-import { matchesStudioAssetQuery, studioAssetOriginLabel, studioAssetQueryScore, studioAssetUrl } from "@/lib/studio/asset-library-client";
+import { matchesStudioAssetQuery, studioAssetCategories, studioAssetOriginLabel, studioAssetQueryScore, studioAssetUrl } from "@/lib/studio/asset-library-client";
 import { filterStudioCreativeAssets, type StudioCreativeAssetOption } from "@/lib/studio/creative-library-browser";
 
 const FAVORITES_KEY = "sweetoh:studio:favorites:v1";
 const RECENTS_KEY = "sweetoh:studio:recent:v1";
 const PAGE_SIZE = 48;
-const STUDIO_ASSET_CATEGORIES = [...new Set([...STUDIO_ASSET_MANIFEST.filter((asset) => asset.studioUseApproved).map((asset) => asset.category), "Fonts"])].sort((a, b) => a.localeCompare(b));
+const STUDIO_ASSET_CATEGORIES = studioAssetCategories();
 
 function readIds(key: string): string[] {
   try {

@@ -11,7 +11,7 @@ import type { CreativeLibraryAsset } from "../lib/domains/library/model";
 import { prepareStudioTemplateCopy } from "../lib/domains/catalog/studio-template-copy";
 import { STUDIO_ASSETS, studioAsset, studioAssetUrl } from "../lib/studio/asset-library";
 import { STUDIO_ASSET_MANIFEST } from "../lib/studio/asset-manifest";
-import { STUDIO_ASSET_IDS, studioAssetMetadata, studioAssetOriginLabel } from "../lib/studio/asset-library-client";
+import { STUDIO_ASSET_IDS, studioAssetCategories, studioAssetMetadata, studioAssetOriginLabel } from "../lib/studio/asset-library-client";
 import { canSurfaceStudioAsset, findStudioAssets, studioAssetSearchSchema } from "../lib/studio/asset-library-search";
 import { STUDIO_FONT_PROVENANCE, resolveStudioFontKey } from "../lib/studio/font-provenance";
 import { filterStudioCreativeAssets } from "../lib/studio/creative-library-browser";
@@ -332,7 +332,7 @@ test("Open Peeps adds Pablo Stanley's CC0 people illustrations to a searchable p
   for (const query of ["people portrait", "people invitation", "people standing", "people sitting", "wheelchair accessible"]) {
     assert.ok(findStudioAssets({ query, kind: "element", limit: 50 }).some((asset) => asset.id.startsWith("open-peeps-")), query);
   }
-  assert.match(readFileSync("app/(partner)/partner/canvas/asset-library-panel.tsx", "utf8"), /"People"/);
+  assert.ok(studioAssetCategories().includes("People"));
   assert.match(readFileSync("docs/licenses/third-party/open-peeps/CC0-LICENSE-EVIDENCE.md", "utf8"), /Pablo Stanley/);
   assert.match(readFileSync("docs/licenses/third-party/open-peeps/CC0-1.0-LEGALCODE.txt", "utf8"), /CC0 1\.0 Universal/);
 });

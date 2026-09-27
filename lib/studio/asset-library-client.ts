@@ -54,6 +54,9 @@ const STUDIO_ASSETS_BY_ID = new Map(STUDIO_ASSET_MANIFEST.map((asset) => [asset.
 export function studioAssetMetadata(id: string) {
   return STUDIO_ASSETS_BY_ID.get(id);
 }
+export function studioAssetCategories() {
+  return [...new Set([...STUDIO_ASSET_MANIFEST.filter((asset) => asset.studioUseApproved).map((asset) => asset.category), "Fonts"])].sort((a, b) => a.localeCompare(b));
+}
 export function studioAssetUrl(id: string) {
   return `/api/studio/assets/${encodeURIComponent(id)}`;
 }
