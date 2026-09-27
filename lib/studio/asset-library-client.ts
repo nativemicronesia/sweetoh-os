@@ -42,6 +42,15 @@ export function studioAssetQueryScore(asset: StudioAssetSearchFields, query: str
   return searchTerms(query).reduce((score, term) => score + (name.includes(term) ? 4 : 0) + (tags.includes(term) ? 2 : 0) + (category.includes(term) ? 1 : 0), 0);
 }
 
+export function saveStudioLibraryIds(storage: Pick<Storage, "setItem">, key: string, ids: readonly string[]) {
+  try {
+    storage.setItem(key, JSON.stringify(ids));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function studioAssetOriginLabel(asset: Pick<StudioAssetMetadata, "source" | "license" | "licenseId">) {
   if (asset.source === "SweetOh OS") return "SweetOh original";
   const source = asset.source.split(" — ", 1)[0];

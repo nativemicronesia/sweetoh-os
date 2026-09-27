@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { PRODUCT_FONTS } from "@/lib/studio/fonts";
 import { STUDIO_FONT_PROVENANCE } from "@/lib/studio/font-provenance";
 import { STUDIO_ASSET_MANIFEST } from "@/lib/studio/asset-manifest";
-import { matchesStudioAssetQuery, studioAssetCategories, studioAssetOriginLabel, studioAssetQueryScore, studioAssetUrl } from "@/lib/studio/asset-library-client";
+import { matchesStudioAssetQuery, saveStudioLibraryIds, studioAssetCategories, studioAssetOriginLabel, studioAssetQueryScore, studioAssetUrl } from "@/lib/studio/asset-library-client";
 import { filterStudioCreativeAssets, type StudioCreativeAssetOption } from "@/lib/studio/creative-library-browser";
 
 const FAVORITES_KEY = "sweetoh:studio:favorites:v1";
@@ -17,6 +17,10 @@ function readIds(key: string): string[] {
     const value: unknown = JSON.parse(localStorage.getItem(key) ?? "[]");
     return Array.isArray(value) ? value.filter((id): id is string => typeof id === "string").slice(0, 50) : [];
   } catch { return []; }
+}
+
+function writeIds(key: string, ids: string[]) {
+  try { saveStudioLibraryIds(window.localStorage, key, ids); } catch {}
 }
 
 export function AssetLibraryPanel({ disabled, creativeAssets = [], onAddCreativeAsset, onAddGraphic, onAddFont }: {
@@ -58,7 +62,7 @@ export function AssetLibraryPanel({ disabled, creativeAssets = [], onAddCreative
   function use(id: string, creative = false) {
     const next = [id, ...recent.filter((value) => value !== id)].slice(0, 24);
     setRecent(next);
-    localStorage.setItem(RECENTS_KEY, JSON.stringify(next));
+    writeIds(RECENTS_KEY, next);
     if (creative) onAddCreativeAsset(id);
     else if (id.startsWith("font:")) onAddFont(id.slice(5));
     else onAddGraphic(id);
@@ -66,7 +70,7 @@ export function AssetLibraryPanel({ disabled, creativeAssets = [], onAddCreative
   function favorite(id: string) {
     const next = favorites.includes(id) ? favorites.filter((value) => value !== id) : [...favorites, id];
     setFavorites(next);
-    localStorage.setItem(FAVORITES_KEY, JSON.stringify(next));
+    writeIds(FAVORITES_KEY, next);
   }
 
   const creativeKinds = [...new Set(creativeAssets.map((asset) => asset.kind))].sort();
@@ -75,7 +79,10 @@ export function AssetLibraryPanel({ disabled, creativeAssets = [], onAddCreative
   const productionMethods = [...new Set(creativeAssets.flatMap((asset) => asset.productionMethods))].sort();
   const visibleCreative = filterStudioCreativeAssets(creativeAssets, {
     query, kind: creativeKind, category: creativeCategory, tag: creativeTag, productionMethod,
-  }).sort((a, b) => a.name.localeCompare(b.name));
+  }).sort((a, b) => {
+    const score = (asset: StudioCreativeAssetOption) => studioAssetQueryScore({ name: asset.name, category: asset.category, tags: [asset.kind, ...asset.tags, ...asset.productionMethods, asset.sourceName ?? ""] }, query);
+    return score(b) - score(a) || a.name.localeCompare(b.name);
+  });
   const visibleEntries = visible.slice(0, visibleLimit);
   const visibleCreativeEntries = visibleCreative.slice(0, visibleLimit);
 
