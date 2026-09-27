@@ -1,0 +1,196 @@
+{
+  "id": "ld1-1643399887910-1643399972038-1",
+  "title": "Border",
+  "unitCode": "CHNDM",
+  "type": "edanmdm",
+  "url": "edanmdm:chndm_1998-75-122",
+  "content": {
+    "freetext": {
+      "date": [
+        {
+          "label": "Date",
+          "content": "1820–50"
+        }
+      ],
+      "notes": [
+        {
+          "label": "Catalogue Status",
+          "content": "Research in Progress"
+        },
+        {
+          "label": "Description",
+          "content": "Eight swatches of wallpaper borders, including architectural moldings, floral motifs, ribbon twist, beading"
+        }
+      ],
+      "place": [
+        {
+          "label": "made in",
+          "content": "France"
+        }
+      ],
+      "setName": [
+        {
+          "label": "See more items in",
+          "content": "Cooper Hewitt, Smithsonian Design Museum Collection"
+        },
+        {
+          "label": "See more items in",
+          "content": "Wallcoverings Department"
+        }
+      ],
+      "creditLine": [
+        {
+          "label": "Credit Line",
+          "content": "Gift of The Museum at The Fashion Institute of Technology"
+        }
+      ],
+      "dataSource": [
+        {
+          "label": "Data Source",
+          "content": "Cooper Hewitt, Smithsonian Design Museum"
+        }
+      ],
+      "identifier": [
+        {
+          "label": "Accession Number",
+          "content": "1998-75-122"
+        }
+      ],
+      "objectType": [
+        {
+          "label": "Type",
+          "content": "Wallcoverings"
+        },
+        {
+          "label": "Type",
+          "content": "Border"
+        }
+      ],
+      "objectRights": [
+        {
+          "label": "Restrictions & Rights",
+          "content": "CC0"
+        }
+      ],
+      "physicalDescription": [
+        {
+          "label": "Medium",
+          "content": "Block-printed on paper"
+        },
+        {
+          "label": "Dimensions",
+          "content": "Overall: 56 x 38 cm (22 1/16 x 14 15/16 in.)"
+        }
+      ]
+    },
+    "indexedStructured": {
+      "date": [
+        "1820s",
+        "1850s"
+      ],
+      "place": [
+        "France"
+      ],
+      "geoLocation": [
+        {
+          "L2": {
+            "type": "Country",
+            "content": "France"
+          }
+        }
+      ],
+      "object_type": [
+        "Wall coverings",
+        "Borders (ornament areas)"
+      ],
+      "online_media_type": [
+        "Images"
+      ]
+    },
+    "descriptiveNonRepeating": {
+      "guid": "http://n2t.net/ark:/65665/kq4a7dc2b47-5b6a-4aa4-90cf-aedecca632c0",
+      "title": {
+        "label": "Title",
+        "content": "Border"
+      },
+      "record_ID": "chndm_1998-75-122",
+      "unit_code": "CHNDM",
+      "title_sort": "BORDER",
+      "data_source": "Cooper Hewitt, Smithsonian Design Museum",
+      "record_link": "https://collection.cooperhewitt.org/view/objects/asitem/id/213707",
+      "online_media": {
+        "media": [
+          {
+            "id": "media:CHSDM-A2508E8543632-000001",
+            "guid": "http://n2t.net/ark:/65665/vc96c364d19-0665-454d-84e2-ab486a37e404",
+            "type": "Images",
+            "idsId": "CHSDM-A2508E8543632-000001",
+            "usage": {
+              "access": "CC0"
+            },
+            "content": "https://ids.si.edu/ids/deliveryService?id=CHSDM-A2508E8543632-000001",
+            "thumbnail": "https://ids.si.edu/ids/deliveryService?id=CHSDM-A2508E8543632-000001",
+            "altTextAccessibility": "",
+            "extDescrAccessibility": "Eight swatches of wallpaper borders, including architectural moldings, floral motifs, ribbon twist, beading",
+            "resources": [
+              {
+                "label": "High-resolution JPEG",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-A2508E8543632-000001.jpg",
+                "width": 4098,
+                "height": 5806,
+                "dimensions": "4098x5806"
+              },
+              {
+                "label": "Screen Image",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-A2508E8543632-000001_screen"
+              },
+              {
+                "label": "Thumbnail Image",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-A2508E8543632-000001_thumb"
+              }
+            ]
+          },
+          {
+            "id": "media:CHSDM-CH3160",
+            "guid": "http://n2t.net/ark:/65665/vc9393916cf-5d0b-419e-8649-01e148ff60d4",
+            "type": "Images",
+            "idsId": "CHSDM-CH3160",
+            "usage": {
+              "access": "CC0"
+            },
+            "content": "https://ids.si.edu/ids/deliveryService?id=CHSDM-CH3160",
+            "thumbnail": "https://ids.si.edu/ids/deliveryService?id=CHSDM-CH3160",
+            "altTextAccessibility": "",
+            "extDescrAccessibility": "Eight swatches of wallpaper borders, including architectural moldings, floral motifs, ribbon twist, beading",
+            "resources": [
+              {
+                "label": "High-resolution JPEG",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-CH3160.jpg",
+                "width": 872,
+                "height": 1250,
+                "dimensions": "872x1250"
+              },
+              {
+                "label": "Screen Image",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-CH3160_screen"
+              },
+              {
+                "label": "Thumbnail Image",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-CH3160_thumb"
+              }
+            ]
+          }
+        ],
+        "mediaCount": 2
+      },
+      "metadata_usage": {
+        "access": "CC0"
+      }
+    }
+  },
+  "hash": "0b08cf495d6da7bb53aeb327910aaef330df7382",
+  "docSignature": "7cf2008350551b44e1482595416bfa22",
+  "timestamp": "1663784559",
+  "lastTimeUpdated": "1769540882",
+  "version": "1769538334"
+}

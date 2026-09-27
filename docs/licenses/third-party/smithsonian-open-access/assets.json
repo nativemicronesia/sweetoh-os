@@ -34,6 +34,48 @@
       "crop": { "left": 560, "top": 950, "width": 3040, "height": 3750 }
     },
     {
+      "id": "smithsonian-chndm-antique-floral-border-v1",
+      "recordFile": "records/chndm-1998-75-122.json",
+      "originalFile": "originals/chndm-1998-75-122.jpg",
+      "sourceMediaUrl": "https://ids.si.edu/ids/download?id=CHSDM-A2508E8543632-000001.jpg",
+      "outputFile": "studio-assets/smithsonian/smithsonian-chndm-antique-floral-border-v1.webp",
+      "name": "Antique floral wallpaper border",
+      "kind": "element",
+      "category": "Frames",
+      "tags": ["floral", "flower", "border", "frame", "wallpaper", "wallpaper border", "garden", "vintage", "antique", "aged", "ornamental", "romantic", "wedding", "invitation", "gift tag", "print decoration", "sublimation", "ochre", "green", "rust"],
+      "sourceName": "Smithsonian Open Access — Cooper Hewitt, Smithsonian Design Museum (creator not identified in record)",
+      "useCredit": "Smithsonian Open Access; Cooper Hewitt, Smithsonian Design Museum. Creator not identified in the collection record.",
+      "crop": { "left": 185, "top": 132, "width": 1675, "height": 1778 }
+    },
+    {
+      "id": "smithsonian-chndm-antique-acanthus-border-v1",
+      "recordFile": "records/chndm-1998-75-122.json",
+      "originalFile": "originals/chndm-1998-75-122.jpg",
+      "sourceMediaUrl": "https://ids.si.edu/ids/download?id=CHSDM-A2508E8543632-000001.jpg",
+      "outputFile": "studio-assets/smithsonian/smithsonian-chndm-antique-acanthus-border-v1.webp",
+      "name": "Antique acanthus scroll border",
+      "kind": "element",
+      "category": "Frames",
+      "tags": ["acanthus", "scroll", "ornament", "ornamental", "floral", "foliage", "border", "frame", "wallpaper", "architectural", "vintage", "antique", "aged", "classic", "wedding", "invitation", "engraving style", "print decoration", "sublimation", "copper", "ochre"],
+      "sourceName": "Smithsonian Open Access — Cooper Hewitt, Smithsonian Design Museum (creator not identified in record)",
+      "useCredit": "Smithsonian Open Access; Cooper Hewitt, Smithsonian Design Museum. Creator not identified in the collection record.",
+      "crop": { "left": 2190, "top": 118, "width": 1440, "height": 1368 }
+    },
+    {
+      "id": "smithsonian-chndm-antique-key-border-v1",
+      "recordFile": "records/chndm-1998-75-122.json",
+      "originalFile": "originals/chndm-1998-75-122.jpg",
+      "sourceMediaUrl": "https://ids.si.edu/ids/download?id=CHSDM-A2508E8543632-000001.jpg",
+      "outputFile": "studio-assets/smithsonian/smithsonian-chndm-antique-key-border-v1.webp",
+      "name": "Antique Greek key and bead border",
+      "kind": "element",
+      "category": "Frames",
+      "tags": ["greek key", "key pattern", "geometric", "beaded", "border", "frame", "wallpaper", "architectural", "vintage", "antique", "aged", "classical", "wedding", "invitation", "print decoration", "sublimation", "cream", "black", "ochre"],
+      "sourceName": "Smithsonian Open Access — Cooper Hewitt, Smithsonian Design Museum (creator not identified in record)",
+      "useCredit": "Smithsonian Open Access; Cooper Hewitt, Smithsonian Design Museum. Creator not identified in the collection record.",
+      "crop": { "left": 170, "top": 3470, "width": 1700, "height": 1010 }
+    },
+    {
       "id": "smithsonian-chndm-floral-frieze-v1",
       "recordFile": "records/chndm-1914-21-54.json",
       "originalFile": "originals/chndm-1914-21-54.jpg",

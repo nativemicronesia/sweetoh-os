@@ -72,6 +72,111 @@
       }
     },
     {
+      "id": "smithsonian-chndm-antique-floral-border-v1",
+      "title": "Border",
+      "recordId": "chndm_1998-75-122",
+      "sourceRecordUrl": "https://collection.cooperhewitt.org/view/objects/asitem/id/213707",
+      "sourceMediaUrl": "https://ids.si.edu/ids/download?id=CHSDM-A2508E8543632-000001.jpg",
+      "metadataAccess": "CC0",
+      "objectAccess": "CC0",
+      "recordRightsNotice": "CC0",
+      "license": "CC0 1.0 Universal",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "recommendedCredit": "Smithsonian Open Access; Cooper Hewitt, Smithsonian Design Museum. Creator not identified in the collection record.",
+      "creatorCredits": [],
+      "date": "1820–50",
+      "place": "France",
+      "originalFile": "originals/chndm-1998-75-122.jpg",
+      "originalSha256": "acd02cf6d60f8e01c07d0d7a111df319d0dab2b75472f6a18c1255ae80042a77",
+      "sourceDimensions": {
+        "width": 4098,
+        "height": 5806
+      },
+      "crop": {
+        "left": 185,
+        "top": 132,
+        "width": 1675,
+        "height": 1778
+      },
+      "derivativeFile": "studio-assets/smithsonian/smithsonian-chndm-antique-floral-border-v1.webp",
+      "derivativeSha256": "255b5b8741614719139e2cba408a088b0217f7d5583b006b6d3ae33727d434d3",
+      "derivativeDimensions": {
+        "width": 1675,
+        "height": 1778
+      }
+    },
+    {
+      "id": "smithsonian-chndm-antique-acanthus-border-v1",
+      "title": "Border",
+      "recordId": "chndm_1998-75-122",
+      "sourceRecordUrl": "https://collection.cooperhewitt.org/view/objects/asitem/id/213707",
+      "sourceMediaUrl": "https://ids.si.edu/ids/download?id=CHSDM-A2508E8543632-000001.jpg",
+      "metadataAccess": "CC0",
+      "objectAccess": "CC0",
+      "recordRightsNotice": "CC0",
+      "license": "CC0 1.0 Universal",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "recommendedCredit": "Smithsonian Open Access; Cooper Hewitt, Smithsonian Design Museum. Creator not identified in the collection record.",
+      "creatorCredits": [],
+      "date": "1820–50",
+      "place": "France",
+      "originalFile": "originals/chndm-1998-75-122.jpg",
+      "originalSha256": "acd02cf6d60f8e01c07d0d7a111df319d0dab2b75472f6a18c1255ae80042a77",
+      "sourceDimensions": {
+        "width": 4098,
+        "height": 5806
+      },
+      "crop": {
+        "left": 2190,
+        "top": 118,
+        "width": 1440,
+        "height": 1368
+      },
+      "derivativeFile": "studio-assets/smithsonian/smithsonian-chndm-antique-acanthus-border-v1.webp",
+      "derivativeSha256": "432f9c7445dc18453bf678bcd674c7a5094db71631e2b0ff37fbc923cdf41571",
+      "derivativeDimensions": {
+        "width": 1440,
+        "height": 1368
+      }
+    },
+    {
+      "id": "smithsonian-chndm-antique-key-border-v1",
+      "title": "Border",
+      "recordId": "chndm_1998-75-122",
+      "sourceRecordUrl": "https://collection.cooperhewitt.org/view/objects/asitem/id/213707",
+      "sourceMediaUrl": "https://ids.si.edu/ids/download?id=CHSDM-A2508E8543632-000001.jpg",
+      "metadataAccess": "CC0",
+      "objectAccess": "CC0",
+      "recordRightsNotice": "CC0",
+      "license": "CC0 1.0 Universal",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "recommendedCredit": "Smithsonian Open Access; Cooper Hewitt, Smithsonian Design Museum. Creator not identified in the collection record.",
+      "creatorCredits": [],
+      "date": "1820–50",
+      "place": "France",
+      "originalFile": "originals/chndm-1998-75-122.jpg",
+      "originalSha256": "acd02cf6d60f8e01c07d0d7a111df319d0dab2b75472f6a18c1255ae80042a77",
+      "sourceDimensions": {
+        "width": 4098,
+        "height": 5806
+      },
+      "crop": {
+        "left": 170,
+        "top": 3470,
+        "width": 1700,
+        "height": 1010
+      },
+      "derivativeFile": "studio-assets/smithsonian/smithsonian-chndm-antique-key-border-v1.webp",
+      "derivativeSha256": "bfea5863747960eb414d74ccd089f848971afb248d47b6250c0aae71d29e12d9",
+      "derivativeDimensions": {
+        "width": 1700,
+        "height": 1010
+      }
+    },
+    {
       "id": "smithsonian-chndm-floral-frieze-v1",
       "title": "Design for a wallpaper frieze",
       "recordId": "chndm_1914-21-54",
