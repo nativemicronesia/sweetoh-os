@@ -21,7 +21,8 @@ test("seed graphics have stable unique identities and explicit provenance", () =
   assert.equal(new Set(STUDIO_ASSETS.map((asset) => asset.id)).size, STUDIO_ASSETS.length);
   for (const asset of STUDIO_ASSETS) {
     assert.ok(asset.name && asset.category && asset.license && asset.source);
-    assert.ok(asset.svg.startsWith('<svg xmlns="http://www.w3.org/2000/svg"'));
+    assert.match(asset.svg, /^<svg(?:\s|>)/);
+    assert.match(asset.svg, /xmlns="http:\/\/www\.w3\.org\/2000\/svg"/);
     assert.equal(studioAsset(asset.id), asset);
     assert.ok(studioAssetUrl(asset).startsWith("data:image/svg+xml"));
   }
@@ -150,6 +151,39 @@ test("composition primitives surface for typography-adjacent design searches and
   assert.match(external?.source ?? "", /AdamStanislav.*298981/);
   assert.match(readFileSync("docs/licenses/third-party/openclipart-composition/SOURCE.md", "utf8"), /SHA-256/);
   assert.match(readFileSync("docs/licenses/third-party/openclipart-composition/CC0-1.0-LEGALCODE.txt", "utf8"), /Creative Commons Legal Code/);
+});
+
+test("OpenMoji adds a broad pinned CC BY-SA illustration collection with original SVGs and searchable themes", () => {
+  const assets = STUDIO_ASSETS.filter((asset) => asset.id.startsWith("openmoji-"));
+  assert.equal(assets.length, 527);
+  for (const asset of assets) {
+    assert.equal(asset.licenseId, "CC-BY-SA-4.0");
+    assert.equal(asset.commercialUse, true);
+    assert.equal(asset.modificationAllowed, true);
+    assert.equal(asset.redistributionAllowed, true);
+    assert.equal(asset.attributionRequired, true);
+    assert.match(asset.attributionText ?? "", /OpenMoji.*CC BY-SA 4\.0/);
+    assert.match(asset.sourceUrl ?? "", /openmoji\/blob\/aeb8bb3a59e2de39c754ac79180c8131c906acea\/color\/svg\//);
+    assert.match(asset.evidenceUrl ?? "", /openmoji\/blob\/aeb8bb3a59e2de39c754ac79180c8131c906acea\/LICENSE\.txt$/);
+    assert.match(asset.svg, /^<svg(?:\s|>)/);
+    assert.equal(studioEditorCommandSchema.safeParse({ type: "add_graphic", assetKey: asset.id }).success, true);
+  }
+  for (const [query, categories] of [
+    ["tropical ocean", ["Animals", "Nature & Botanicals", "Travel & Places"]],
+    ["birthday party", ["Celebrations & Hobbies", "Celebrations & Expressions"]],
+    ["graduation school", ["Objects & Crafts", "People & Occupations", "Celebrations & Hobbies"]],
+    ["faith religion", ["Symbols & Faith", "Travel & Places"]],
+    ["wedding floral", ["Nature & Botanicals", "Family & Life"]],
+    ["sports hobby", ["Sports & Hobbies", "Celebrations & Hobbies"]],
+  ] as const) {
+    const results = findStudioAssets({ query, kind: "any", limit: 50 });
+    assert.ok(results.some((asset) => asset.id.startsWith("openmoji-")), query);
+    assert.ok(results.some((asset) => categories.includes(asset.category)), query);
+  }
+  assert.match(readFileSync("docs/licenses/third-party/openmoji/CC-BY-SA-4.0-LICENSE.txt", "utf8"), /Attribution-ShareAlike 4\.0 International Public License/);
+  assert.match(readFileSync("docs/licenses/third-party/openmoji/UPSTREAM-FAQ.md", "utf8"), /commercial/);
+  assert.match(readFileSync("docs/licenses/third-party/openmoji/SOURCE.md", "utf8"), /aeb8bb3a59e2de39c754ac79180c8131c906acea/);
+  assert.match(readFileSync("docs/licenses/third-party/openmoji/source/1F332.svg", "utf8"), /^<svg/);
 });
 
 test("every bundled vector renders as printable pixels", async () => {
