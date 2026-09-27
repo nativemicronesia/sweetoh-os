@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import path from "node:path";
 import { test } from "node:test";
 import sharp from "sharp";
 import { productPrintAreaFromStudio, studioLayoutSchema, studioMatchesProductPrintArea } from "../lib/domains/catalog/studio-layout";
@@ -157,6 +159,58 @@ test("Open Doodles adds authored lifestyle illustrations with CC0 rights and use
   }
   assert.match(readFileSync("docs/licenses/third-party/open-doodles/CC0-LICENSE-EVIDENCE.md", "utf8"), /Pablo Stanley/);
   assert.equal(readFileSync("docs/licenses/third-party/open-doodles/source/running.svg", "utf8").includes("<svg"), true);
+});
+
+test("Kitbitz adds a curated cross-theme CC0 object collection with source hashes, safe SVGs, and useful search", () => {
+  const manifest = JSON.parse(readFileSync("docs/licenses/third-party/kitbitz/asset-manifest.json", "utf8")) as {
+    upstreamRevision: string;
+    upstreamCatalogGeneratedAt: string;
+    selectedAssets: { sweetohId: string; originalSourcePath: string; originalFileSha256: string; upstreamKit: string }[];
+  };
+  const assets = STUDIO_ASSETS.filter((asset) => asset.id.startsWith("kitbitz-"));
+  assert.equal(assets.length, 372);
+  assert.equal(manifest.selectedAssets.length, assets.length);
+  assert.equal(new Set(manifest.selectedAssets.map((asset) => asset.originalSourcePath)).size, assets.length);
+  assert.equal(new Set(manifest.selectedAssets.map((asset) => asset.originalFileSha256)).size, assets.length);
+  assert.match(manifest.upstreamRevision, /^[a-f0-9]{40}$/);
+  assert.ok(manifest.upstreamCatalogGeneratedAt);
+  assert.deepEqual(new Set(manifest.selectedAssets.map((asset) => asset.upstreamKit)).size, 12);
+  for (const record of manifest.selectedAssets) {
+    const source = readFileSync(path.join("docs/licenses/third-party/kitbitz/source", record.originalSourcePath));
+    assert.equal(createHash("sha256").update(source).digest("hex"), record.originalFileSha256, record.originalSourcePath);
+    const asset = studioAsset(record.sweetohId);
+    assert.ok(asset);
+    assert.equal(asset.licenseId, "CC0-1.0");
+    assert.equal(asset.licenseUrl, "https://creativecommons.org/publicdomain/zero/1.0/");
+    assert.equal(asset.commercialUse, true);
+    assert.equal(asset.modificationAllowed, true);
+    assert.equal(asset.redistributionAllowed, true);
+    assert.equal(asset.attributionRequired, false);
+    assert.equal(asset.attributionText, null);
+    assert.match(asset.source, /individual illustrator is not named on this catalog record/);
+    assert.match(asset.sourceUrl ?? "", new RegExp(`/blob/${manifest.upstreamRevision}/kits/`));
+    assert.equal(asset.svg, source.toString("utf8"));
+    assert.doesNotMatch(asset.svg, /<script\b|<foreignObject\b|<iframe\b|javascript:/i);
+    assert.doesNotMatch(asset.svg, /(?:href|url\()\s*[=:(]\s*["']?https?:/i);
+    assert.equal(studioEditorCommandSchema.safeParse({ type: "add_graphic", assetKey: asset.id }).success, true);
+  }
+  for (const [query, kit] of [
+    ["garden botanical flower", "nature-kit"],
+    ["halloween friendly ghost", "halloween-kit"],
+    ["winter snow penguin", "winter-kit"],
+    ["space planet", "space-kit"],
+    ["cyberpunk neon flamingo", "cyberpunk-kit"],
+    ["home decor books", "interior-kit"],
+    ["medieval castle wall", "medieval-kit"],
+    ["western lucky horseshoe", "western-kit"],
+    ["city architecture building", "city-kit"],
+  ] as const) {
+    assert.ok(findStudioAssets({ query, kind: "any", limit: 50 }).some((asset) => manifest.selectedAssets.find((record) => record.sweetohId === asset.id)?.upstreamKit === kit), query);
+  }
+  assert.equal(assets.some((asset) => /barbie/i.test(`${asset.name} ${asset.tags.join(" ")}`)), false);
+  assert.equal(assets.some((asset) => /\b(weapon|firearm|gun|sword|spear|shield|armor|axe|dagger|rifle|cannon|bullet)\b/i.test(`${asset.name} ${asset.tags.join(" ")}`)), false);
+  assert.match(readFileSync("docs/licenses/third-party/kitbitz/UPSTREAM-LICENSE.md", "utf8"), /including for commercial\s+purposes/);
+  assert.match(readFileSync("docs/licenses/third-party/kitbitz/UPSTREAM-LICENSE.md", "utf8"), /does not grant patent, trademark, publicity, or privacy rights/);
 });
 
 test("Openclipart frame, banner, badge, and background primitives are CC0 and findable by real design briefs", () => {
