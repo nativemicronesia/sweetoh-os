@@ -252,6 +252,75 @@ test("Open Peeps adds Pablo Stanley's CC0 people illustrations to a searchable p
   assert.match(readFileSync("docs/licenses/third-party/open-peeps/CC0-1.0-LEGALCODE.txt", "utf8"), /CC0 1\.0 Universal/);
 });
 
+test("PhyloPic contributes diverse per-image verified CC0 nature silhouettes with preserved originals", async () => {
+  const manifest = JSON.parse(readFileSync("docs/licenses/third-party/phylopic-cc0/asset-manifest.json", "utf8")) as {
+    source: string;
+    apiBuild: number;
+    assets: {
+      id: string; name: string; scientificName: string; category: string; tags: string[]; author: string;
+      sourceUrl: string; evidenceUrl: string; licenseUrl: string; licenseId: string; attributionRequired: boolean;
+      commercialUse: boolean; modificationAllowed: boolean; redistributionAllowed: boolean;
+      originalFile: string; originalSha256: string; studioSvgSha256: string; searchAliases: string[];
+    }[];
+  };
+  const assets = STUDIO_ASSETS.filter((asset) => asset.id.startsWith("phylopic-"));
+  assert.equal(manifest.source, "PhyloPic");
+  assert.equal(manifest.apiBuild, 558);
+  assert.equal(assets.length, 367);
+  assert.equal(manifest.assets.length, assets.length);
+  assert.equal(new Set(manifest.assets.map((asset) => asset.scientificName)).size, assets.length);
+  assert.ok(new Set(manifest.assets.map((asset) => asset.author)).size >= 40);
+  assert.ok(manifest.assets.some((asset) => asset.category === "Animals"));
+  assert.ok(manifest.assets.some((asset) => asset.category === "Nature"));
+  assert.ok(manifest.assets.some((asset) => asset.category === "People"));
+  const sha256 = (value: Buffer | string) => createHash("sha256").update(value).digest("hex");
+
+  for (const record of manifest.assets) {
+    const source = readFileSync(path.join("docs/licenses/third-party/phylopic-cc0", record.originalFile));
+    const original = source.toString("utf8");
+    const root = original.match(/<svg\b[^>]*>/)?.[0];
+    assert.ok(root, record.id);
+    const normalizedRoot = root.replace(/\s+(?:width|height)\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/g, "").replace(/>$/, ' width="200" height="200">');
+    const expectedSvg = original.replace(root, normalizedRoot);
+    const asset = studioAsset(record.id);
+    assert.ok(asset, record.id);
+    assert.equal(sha256(source), record.originalSha256, record.id);
+    assert.equal(sha256(asset.svg), record.studioSvgSha256, record.id);
+    assert.equal(asset.svg, expectedSvg, record.id);
+    assert.match(asset.svg, /width="200" height="200"/);
+    assert.match(asset.svg, /viewBox=/i);
+    assert.equal(asset.category, record.category);
+    assert.equal(asset.licenseId, "CC0 1.0");
+    assert.equal(asset.licenseUrl, "https://creativecommons.org/publicdomain/zero/1.0/");
+    assert.equal(asset.commercialUse, true);
+    assert.equal(asset.modificationAllowed, true);
+    assert.equal(asset.redistributionAllowed, true);
+    assert.equal(asset.attributionRequired, false);
+    assert.match(asset.source, new RegExp(record.author.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+    assert.match(asset.sourceUrl ?? "", new RegExp(`/images/${record.id.replace(/^phylopic-/, "").replace(/-v1$/, "")}/source\\.svg$`));
+    assert.match(asset.evidenceUrl ?? "", /api\.phylopic\.org\/images\/.+\?build=558$/);
+    assert.equal(studioEditorCommandSchema.safeParse({ type: "add_graphic", assetKey: asset.id }).success, true);
+    assert.doesNotMatch(asset.svg, /<image\b|<!DOCTYPE|<script\b|<foreignObject\b|<iframe\b|javascript:/i, record.id);
+    assert.doesNotMatch(asset.svg, /(?:href|src)\s*=\s*["']https?:/i, record.id);
+    const pixels = await sharp(Buffer.from(asset.svg)).resize(128, 128, { fit: "contain" }).png().toBuffer();
+    assert.ok(pixels.length > 100, record.id);
+  }
+
+  const searches = [
+    ["Atlantic bottlenose dolphin", "Tursiops truncatus"],
+    ["red-tailed hawk", "Buteo jamaicensis"],
+    ["annual bluegrass", "Poa annua"],
+    ["Cambrian fossil sponge", "Vauxia gracilenta"],
+  ] as const;
+  for (const [query, scientificName] of searches) {
+    const expected = manifest.assets.find((asset) => asset.scientificName === scientificName);
+    assert.ok(expected, scientificName);
+    assert.ok(findStudioAssets({ query, kind: "element", limit: 50 }).some((asset) => asset.id === expected.id), query);
+  }
+  assert.match(readFileSync("docs/licenses/third-party/phylopic-cc0/CC0-1.0-LEGALCODE.txt", "utf8"), /CC0 1\.0 Universal/);
+  assert.match(readFileSync("docs/licenses/third-party/phylopic-cc0/SOURCE.md", "utf8"), /Public Domain Mark records.*excluded/);
+});
+
 test("Openclipart frame, banner, badge, and background primitives are CC0 and findable by real design briefs", () => {
   const assets = STUDIO_ASSETS.filter((asset) => asset.id.startsWith("openclipart-"));
   assert.equal(assets.length, 14);

@@ -10,6 +10,7 @@ import { LIBRECLIPART_STUDIO_ASSETS } from "./libreclipart-assets";
 import { OPEN_DOODLES_STUDIO_ASSETS } from "./open-doodles-assets";
 import { KITBITZ_STUDIO_ASSETS } from "./kitbitz-assets";
 import { OPEN_PEEPS_STUDIO_ASSETS } from "./open-peeps-assets";
+import { PHYLOPIC_STUDIO_ASSETS } from "./phylopic-assets";
 
 /**
  * Studio-owned, versioned design resources. IDs are persisted in layouts:
@@ -85,6 +86,7 @@ export const STUDIO_ASSETS: readonly StudioAsset[] = [
   ...OPEN_DOODLES_STUDIO_ASSETS,
   ...KITBITZ_STUDIO_ASSETS,
   ...OPEN_PEEPS_STUDIO_ASSETS,
+  ...PHYLOPIC_STUDIO_ASSETS,
 ];
 
 export const STUDIO_ASSET_IDS = new Set(STUDIO_ASSETS.map((asset) => asset.id));
