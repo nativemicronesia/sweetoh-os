@@ -11,7 +11,7 @@ import type { CreativeLibraryAsset } from "../lib/domains/library/model";
 import { prepareStudioTemplateCopy } from "../lib/domains/catalog/studio-template-copy";
 import { STUDIO_ASSETS, studioAsset, studioAssetUrl } from "../lib/studio/asset-library";
 import { STUDIO_ASSET_MANIFEST } from "../lib/studio/asset-manifest";
-import { STUDIO_ASSET_IDS, studioAssetMetadata } from "../lib/studio/asset-library-client";
+import { STUDIO_ASSET_IDS, studioAssetMetadata, studioAssetOriginLabel } from "../lib/studio/asset-library-client";
 import { canSurfaceStudioAsset, findStudioAssets, studioAssetSearchSchema } from "../lib/studio/asset-library-search";
 import { STUDIO_FONT_PROVENANCE, resolveStudioFontKey } from "../lib/studio/font-provenance";
 import { buildStudioEditorState, studioEditorCommandSchema, studioEditorProposalSchema } from "../lib/studio/editor-commands";
@@ -47,6 +47,9 @@ test("Studio client index preserves all asset identity while keeping SVG bodies 
     assert.equal(studioAssetMetadata(metadata.id)?.name, metadata.name);
   }
   assert.equal(studioAssetUrl("phylopic-d529a97f-a912-4c74-ace8-d18f6eddf203-v1"), "/api/studio/assets/phylopic-d529a97f-a912-4c74-ace8-d18f6eddf203-v1");
+  assert.equal(studioAssetOriginLabel({ source: "SweetOh OS", license: "SweetOh original", licenseId: undefined }), "SweetOh original");
+  assert.equal(studioAssetOriginLabel({ source: "Smithsonian Open Access — Cooper Hewitt, Smithsonian Design Museum", license: "CC0 1.0 Universal", licenseId: "CC0-1.0" }), "Smithsonian Open Access · CC0-1.0");
+  assert.equal(studioAssetOriginLabel({ source: "OpenMoji", license: "CC BY-SA 4.0", licenseId: "CC-BY-SA-4.0" }), "OpenMoji · CC-BY-SA-4.0");
 });
 
 test("built-in Studio SVG endpoint serves the exact registered vector and rejects unknown IDs", async () => {

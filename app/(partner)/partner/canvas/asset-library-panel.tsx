@@ -4,14 +4,13 @@ import { useEffect, useMemo, useState } from "react";
 import { PRODUCT_FONTS } from "@/lib/studio/fonts";
 import { STUDIO_FONT_PROVENANCE } from "@/lib/studio/font-provenance";
 import { STUDIO_ASSET_MANIFEST } from "@/lib/studio/asset-manifest";
-import { studioAssetUrl } from "@/lib/studio/asset-library-client";
+import { studioAssetOriginLabel, studioAssetUrl } from "@/lib/studio/asset-library-client";
 import { filterStudioCreativeAssets, type StudioCreativeAssetOption } from "@/lib/studio/creative-library-browser";
 
 const FAVORITES_KEY = "sweetoh:studio:favorites:v1";
 const RECENTS_KEY = "sweetoh:studio:recent:v1";
-type Filter = "All" | "Nature" | "Ocean & Travel" | "Outdoors" | "People" | "Celestial" | "Celebration" | "Holidays" | "Wedding & Baby" | "Education" | "Sports" | "Faith" | "Food & Drink" | "Animals" | "Hobbies" | "Occupations" | "Travel" | "Accents" | "Frames" | "Patterns" | "Textures" | "Backgrounds" | "Fonts" | "Favorites" | "Recent";
-const FILTERS: Filter[] = ["All", "Nature", "Ocean & Travel", "Outdoors", "People", "Celestial", "Celebration", "Holidays", "Wedding & Baby", "Education", "Sports", "Faith", "Food & Drink", "Animals", "Hobbies", "Occupations", "Travel", "Accents", "Frames", "Patterns", "Textures", "Backgrounds", "Fonts", "Favorites", "Recent"];
 const PAGE_SIZE = 48;
+const STUDIO_ASSET_CATEGORIES = [...new Set([...STUDIO_ASSET_MANIFEST.filter((asset) => asset.studioUseApproved).map((asset) => asset.category), "Fonts"])].sort((a, b) => a.localeCompare(b));
 
 function readIds(key: string): string[] {
   try {
@@ -28,7 +27,7 @@ export function AssetLibraryPanel({ disabled, creativeAssets = [], onAddCreative
   onAddFont: (key: string) => void;
 }) {
   const [collection, setCollection] = useState<"originals" | "workspace">("originals");
-  const [filter, setFilter] = useState<Filter>("All");
+  const [filter, setFilter] = useState("All");
   const [query, setQuery] = useState("");
   const [creativeKind, setCreativeKind] = useState("");
   const [creativeCategory, setCreativeCategory] = useState("");
@@ -89,8 +88,13 @@ export function AssetLibraryPanel({ disabled, creativeAssets = [], onAddCreative
     {collection === "originals" ? <>
       <label className="sr-only" htmlFor="studio-asset-search">Search Studio assets</label>
       <input id="studio-asset-search" className="pe-search" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search elements and fonts" />
-      <div className="pe-asset-filters" aria-label="Asset categories">{FILTERS.map((item) => <button key={item} type="button" aria-pressed={filter === item} onClick={() => setFilter(item)}>{item}</button>)}</div>
-      <p className="pe-muted pe-small">SweetOh originals, curated open-license SVGs and fonts. Add, then resize, rotate, layer and print.</p>
+      <label className="pe-small">Category<select className="pe-search" aria-label="Studio asset category" value={filter} onChange={(event) => setFilter(event.target.value)}>
+        <option value="All">All assets ({entries.length})</option>
+        <option value="Favorites">Favorites</option>
+        <option value="Recent">Recent</option>
+        <optgroup label="Categories">{STUDIO_ASSET_CATEGORIES.map((category) => <option key={category} value={category}>{category}</option>)}</optgroup>
+      </select></label>
+      <p className="pe-muted pe-small">SweetOh originals, rights-cleared open artwork, and fonts. Add a graphic, then resize, rotate, layer, and print.</p>
       {visible.length ? <>
       <p className="pe-muted pe-small">Showing {visibleEntries.length} of {visible.length} matches.</p>
       <div className="pe-asset-grid">{visibleEntries.map((entry) => <div key={entry.id} className="pe-asset-card">
@@ -102,7 +106,7 @@ export function AssetLibraryPanel({ disabled, creativeAssets = [], onAddCreative
           <span>{entry.name}</span>
         </button>
         <button type="button" className="pe-asset-favorite" onClick={() => favorite(entry.id)} aria-label={`${favorites.includes(entry.id) ? "Remove" : "Add"} ${entry.name} ${favorites.includes(entry.id) ? "from" : "to"} favorites`} aria-pressed={favorites.includes(entry.id)}>★</button>
-        <small title={`${entry.source}\n${entry.license}\nSource: ${entry.sourceUrl}\nEvidence: ${entry.evidenceUrl}\n${entry.attributionText}`}>{entry.source.includes("Tabler") ? `${entry.source} · ${entry.licenseId}` : entry.kind === "font" ? entry.licenseId : "SweetOh original"}</small>
+        <small title={`${entry.source}\n${entry.license}\nSource: ${entry.sourceUrl}\nEvidence: ${entry.evidenceUrl}\n${entry.attributionText}`}>{studioAssetOriginLabel(entry)}</small>
       </div>)}</div>
       {visibleEntries.length < visible.length && <button type="button" className="pe-btn pe-btn-ghost" onClick={() => setVisibleLimit((count) => count + PAGE_SIZE)}>Show more ({visible.length - visibleEntries.length} remaining)</button>}
       </> : <p className="pe-muted">No matching assets.</p>}

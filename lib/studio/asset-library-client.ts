@@ -23,6 +23,12 @@ export type StudioAssetMetadata = {
   height?: number;
 };
 
+export function studioAssetOriginLabel(asset: Pick<StudioAssetMetadata, "source" | "license" | "licenseId">) {
+  if (asset.source === "SweetOh OS") return "SweetOh original";
+  const source = asset.source.split(" — ", 1)[0];
+  return `${source} · ${asset.licenseId ?? asset.license}`;
+}
+
 /** Small client-safe index. The large SVG bodies stay in server-only asset packs. */
 export const STUDIO_ASSET_IDS = new Set<string>(STUDIO_ASSET_MANIFEST.map((asset) => asset.id));
 const STUDIO_ASSETS_BY_ID = new Map(STUDIO_ASSET_MANIFEST.map((asset) => [asset.id, asset]));
