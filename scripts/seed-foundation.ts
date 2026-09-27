@@ -2,7 +2,8 @@ import { config as loadEnv } from "dotenv";
 import { createAdminClient } from "@/lib/auth/supabase/admin";
 import { getSeedEnv, getServerEnv } from "@/lib/config/env";
 import { getDb } from "@/lib/db/client";
-import { venture } from "@/lib/db/schema";
+import { appUser, venture } from "@/lib/db/schema";
+import { and, eq, sql } from "drizzle-orm";
 import { upsertAppUserFromSeed } from "@/lib/domains/identity/service";
 import type { AppRole } from "@/lib/domains/identity/types";
 import { logger } from "@/lib/shared/logger";
@@ -15,18 +16,17 @@ const SWEETOH_NAME = "Sweet'Oh Creations";
 
 async function ensureAuthUser(email: string, password: string): Promise<string> {
   const admin = createAdminClient();
-  const { data: listData, error: listError } = await admin.auth.admin.listUsers({
-    page: 1,
-    perPage: 1000,
-  });
-
-  if (listError) {
-    throw listError;
+  const normalizedEmail = email.trim().toLowerCase();
+  const perPage = 1000;
+  let page = 1;
+  let existing: { id: string } | undefined;
+  while (!existing) {
+    const { data, error } = await admin.auth.admin.listUsers({ page, perPage });
+    if (error) throw error;
+    existing = data.users.find((user) => user.email?.toLowerCase() === normalizedEmail);
+    if (data.users.length < perPage) break;
+    page += 1;
   }
-
-  const existing = listData.users.find(
-    (user) => user.email?.toLowerCase() === email.toLowerCase(),
-  );
 
   if (existing) {
     logger.info("seed_auth_user_exists", { email, authUserId: existing.id });
@@ -51,13 +51,79 @@ async function ensureAuthUser(email: string, password: string): Promise<string> 
   return data.user.id;
 }
 
+async function assertSeedIdentitySafe(input: {
+  ventureId: string;
+  authUserId: string;
+  email: string;
+  role: AppRole;
+}) {
+  const db = getDb();
+  const normalizedEmail = input.email.trim().toLowerCase();
+  const [emailMatch] = await db.select({ authUserId: appUser.authUserId })
+    .from(appUser)
+    .where(sql`lower(${appUser.email}) = ${normalizedEmail}`)
+    .limit(1);
+  if (emailMatch && emailMatch.authUserId !== input.authUserId) {
+    throw new Error("Seed email belongs to a different existing app user; refusing to create a parallel identity.");
+  }
+
+  if (input.role === "partner") {
+    const partners = await db.select({ authUserId: appUser.authUserId })
+      .from(appUser)
+      .where(and(eq(appUser.ventureId, input.ventureId), eq(appUser.role, "partner"), eq(appUser.active, true)));
+    if (partners.some((partner) => partner.authUserId !== input.authUserId)) {
+      throw new Error("A different active partner is already assigned to this venture; refusing to create a second partner identity.");
+    }
+  }
+}
+
+async function findExistingSeedAuthUser(input: {
+  ventureId: string;
+  email: string;
+  role: AppRole;
+}): Promise<string | null> {
+  const db = getDb();
+  const normalizedEmail = input.email.trim().toLowerCase();
+  const emailMatches = await db.select({ authUserId: appUser.authUserId })
+    .from(appUser)
+    .where(sql`lower(${appUser.email}) = ${normalizedEmail}`)
+    .limit(2);
+  if (emailMatches.length > 1) {
+    throw new Error("Seed email maps to multiple app users; refusing to choose or create an identity.");
+  }
+
+  const emailMatch = emailMatches[0];
+  if (input.role === "partner") {
+    const partners = await db.select({ authUserId: appUser.authUserId })
+      .from(appUser)
+      .where(and(eq(appUser.ventureId, input.ventureId), eq(appUser.role, "partner"), eq(appUser.active, true)));
+    if (partners.some((partner) => partner.authUserId !== emailMatch?.authUserId)) {
+      throw new Error("A different active partner is already assigned to this venture; refusing to create a second partner identity.");
+    }
+  }
+
+  if (!emailMatch) return null;
+  const { data, error } = await createAdminClient().auth.admin.getUserById(emailMatch.authUserId);
+  if (error || data.user?.email?.toLowerCase() !== normalizedEmail) {
+    throw new Error("Seed email has an existing app-user mapping that does not match Supabase Auth; refusing to create a parallel identity.");
+  }
+  return emailMatch.authUserId;
+}
+
 async function seedAppUser(input: {
   ventureId: string;
   email: string;
   password: string;
   role: AppRole;
 }) {
-  const authUserId = await ensureAuthUser(input.email, input.password);
+  const authUserId = await findExistingSeedAuthUser(input)
+    ?? await ensureAuthUser(input.email, input.password);
+  await assertSeedIdentitySafe({
+    ventureId: input.ventureId,
+    authUserId,
+    email: input.email,
+    role: input.role,
+  });
   const appUserRow = await upsertAppUserFromSeed({
     ventureId: input.ventureId,
     authUserId,

@@ -143,27 +143,56 @@ try {
   if (new URL(page.url()).pathname !== "/partner/products") throw new Error(`Partner products navigation landed on ${new URL(page.url()).pathname}.`);
   await page.getByRole("textbox", { name: "Search your products" }).waitFor({ state: "visible", timeout: 10_000 });
 
-  await page.goto(`${origin}/partner/canvas`, { waitUntil: "domcontentloaded", timeout: 90_000 });
-  const assetLibraryButton = page.getByRole("button", { name: "Asset library", exact: true });
-  await assetLibraryButton.waitFor({ state: "visible", timeout: 45_000 });
-  await assetLibraryButton.click();
-  await page.getByPlaceholder("Search elements and fonts").fill("butterfly");
-  await page.getByRole("button", { name: "Add Butterfly" }).click();
-  await page.getByRole("button", { name: "Layers", exact: true }).click();
-  await page.locator(".pe-layers").getByText("Butterfly", { exact: true }).waitFor({ state: "visible", timeout: 15_000 });
+  await page.reload({ waitUntil: "domcontentloaded", timeout: 90_000 });
+  await page.getByRole("heading", { name: "My products" }).waitFor({ state: "visible", timeout: 20_000 });
+  await page.locator('summary[aria-label="Account menu"]').click();
+  const signedOut = page.waitForURL((url) => url.pathname === "/partner/login", { timeout: 30_000 });
+  await page.getByRole("button", { name: "Sign out" }).click();
+  await signedOut;
+  await page.getByLabel("Email").fill(email);
+  await page.getByLabel("Password").fill(password);
+  const signedBackIn = page.waitForURL((url) => url.pathname === "/partner", { timeout: 45_000 });
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await signedBackIn;
+  await page.locator('a[href="/partner/products"]').first().click();
+  await page.getByRole("heading", { name: "My products" }).waitFor({ state: "visible", timeout: 20_000 });
+  await page.getByRole("textbox", { name: "Search your products" }).waitFor({ state: "visible", timeout: 10_000 });
 
-  console.log(JSON.stringify({
-    browser: browser.version(),
-    partnerLogin: "passed",
-    partnerHome: "passed",
-    myProductsNavigation: "passed",
-    productsHeading: "My products",
-    productsSearchControl: "visible",
-    creativeLibrarySearch: "found Butterfly",
-    studioCanvasInsertion: "Butterfly layer visible",
-    pageErrors: browserErrors,
-  }));
-  await context.close();
+  if (process.env.PARTNER_BROWSER_SESSION_ONLY === "1") {
+    console.log(JSON.stringify({
+      browser: browser.version(),
+      partnerLogin: "passed",
+      productsNavigation: "passed",
+      refreshRestoredSession: "passed",
+      signOut: "passed",
+      signBackIn: "passed",
+      workspaceReopen: "passed",
+      pageErrors: browserErrors,
+    }));
+    await context.close();
+  } else {
+    await page.goto(`${origin}/partner/canvas`, { waitUntil: "domcontentloaded", timeout: 90_000 });
+    const assetLibraryButton = page.getByRole("button", { name: "Asset library", exact: true });
+    await assetLibraryButton.waitFor({ state: "visible", timeout: 45_000 });
+    await assetLibraryButton.click();
+    await page.getByPlaceholder("Search elements and fonts").fill("butterfly");
+    await page.getByRole("button", { name: "Add Butterfly" }).click();
+    await page.getByRole("button", { name: "Layers", exact: true }).click();
+    await page.locator(".pe-layers").getByText("Butterfly", { exact: true }).waitFor({ state: "visible", timeout: 15_000 });
+
+    console.log(JSON.stringify({
+      browser: browser.version(),
+      partnerLogin: "passed",
+      partnerHome: "passed",
+      myProductsNavigation: "passed",
+      productsHeading: "My products",
+      productsSearchControl: "visible",
+      creativeLibrarySearch: "found Butterfly",
+      studioCanvasInsertion: "Butterfly layer visible",
+      pageErrors: browserErrors,
+    }));
+    await context.close();
+  }
 } catch (error) {
   console.error(`Partner browser smoke failed: ${error instanceof Error ? error.message : String(error)}`);
   if (appLogs) console.error(`Next.js output: ${appLogs.slice(-2500)}`);
