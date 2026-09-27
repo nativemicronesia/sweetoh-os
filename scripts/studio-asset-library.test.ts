@@ -64,8 +64,13 @@ test("Studio search matches multiword creative briefs in any word order across b
   assert.equal(filterStudioCreativeAssets(assets, { query: "wedding floral" }).length, 1);
   assert.equal(filterStudioCreativeAssets(assets, { query: "floral wedding" }).length, 1);
   assert.equal(filterStudioCreativeAssets(assets, { query: "beach chicken" }).length, 0);
+  assert.equal(filterStudioCreativeAssets([{ ...assets[0], name: "Japanese badger silhouette", category: "Animals", tags: ["badger"] }], { query: "badge" }).length, 0);
   assert.ok(findStudioAssets({ query: "wedding floral", kind: "any", limit: 50 }).some((asset) => asset.id === "smithsonian-chndm-floral-frieze-v1"));
   assert.ok(findStudioAssets({ query: "floral wedding", kind: "any", limit: 50 }).some((asset) => asset.id === "smithsonian-chndm-floral-frieze-v1"));
+  const halloweenBadge = findStudioAssets({ query: "Halloween badge", kind: "any", limit: 50 });
+  assert.ok(halloweenBadge.some((asset) => asset.tags.includes("halloween")));
+  assert.ok(halloweenBadge.some((asset) => asset.tags.includes("badge") || asset.name.toLowerCase().includes("badge")));
+  assert.ok(halloweenBadge.slice(0, 5).some((asset) => asset.name.toLowerCase().includes("badge")));
 });
 
 test("built-in Studio SVG endpoint serves the exact registered vector and rejects unknown IDs", async () => {

@@ -29,17 +29,36 @@ function searchTerms(query: string) {
   return query.toLocaleLowerCase().trim().split(/\s+/).filter(Boolean);
 }
 
+function searchTokenForms(token: string) {
+  const word = token.toLocaleLowerCase();
+  const forms = new Set([word]);
+  if (word.length > 4 && word.endsWith("ies")) forms.add(`${word.slice(0, -3)}y`);
+  if (word.length > 3 && word.endsWith("s")) forms.add(word.slice(0, -1));
+  if (word.length > 5 && word.endsWith("es")) forms.add(word.slice(0, -2));
+  if (word.length > 5 && word.endsWith("ves")) {
+    forms.add(`${word.slice(0, -3)}f`);
+    forms.add(`${word.slice(0, -3)}fe`);
+  }
+  return forms;
+}
+
+function tokenMatches(words: readonly string[], term: string) {
+  const termForms = searchTokenForms(term);
+  return words.some((word) => [...searchTokenForms(word)].some((form) => termForms.has(form)));
+}
+
 export function matchesStudioAssetQuery(asset: StudioAssetSearchFields, query: string) {
   const tags = typeof asset.tags === "string" ? asset.tags : asset.tags.join(" ");
-  const text = `${asset.name} ${asset.category} ${tags}`.toLocaleLowerCase();
-  return searchTerms(query).every((term) => text.includes(term));
+  const words = `${asset.name} ${asset.category} ${tags}`.toLocaleLowerCase().match(/[\p{L}\p{N}]+/gu) ?? [];
+  const terms = searchTerms(query);
+  return terms.length === 0 || terms.some((term) => tokenMatches(words, term));
 }
 
 export function studioAssetQueryScore(asset: StudioAssetSearchFields, query: string) {
-  const name = asset.name.toLocaleLowerCase();
-  const category = asset.category.toLocaleLowerCase();
-  const tags = (typeof asset.tags === "string" ? asset.tags : asset.tags.join(" ")).toLocaleLowerCase();
-  return searchTerms(query).reduce((score, term) => score + (name.includes(term) ? 4 : 0) + (tags.includes(term) ? 2 : 0) + (category.includes(term) ? 1 : 0), 0);
+  const name = asset.name.toLocaleLowerCase().match(/[\p{L}\p{N}]+/gu) ?? [];
+  const category = asset.category.toLocaleLowerCase().match(/[\p{L}\p{N}]+/gu) ?? [];
+  const tags = (typeof asset.tags === "string" ? asset.tags : asset.tags.join(" ")).toLocaleLowerCase().match(/[\p{L}\p{N}]+/gu) ?? [];
+  return searchTerms(query).reduce((score, term) => score + (tokenMatches(name, term) ? 4 : 0) + (tokenMatches(tags, term) ? 2 : 0) + (tokenMatches(category, term) ? 1 : 0), 0);
 }
 
 export function saveStudioLibraryIds(storage: Pick<Storage, "setItem">, key: string, ids: readonly string[]) {
