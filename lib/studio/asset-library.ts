@@ -11,6 +11,7 @@ import { OPEN_DOODLES_STUDIO_ASSETS } from "./open-doodles-assets";
 import { KITBITZ_STUDIO_ASSETS } from "./kitbitz-assets";
 import { OPEN_PEEPS_STUDIO_ASSETS } from "./open-peeps-assets";
 import { PHYLOPIC_STUDIO_ASSETS } from "./phylopic-assets";
+import { STUDIO_ASSET_IDS, studioAssetUrl } from "./asset-library-client";
 
 /**
  * Studio-owned, versioned design resources. IDs are persisted in layouts:
@@ -89,8 +90,5 @@ export const STUDIO_ASSETS: readonly StudioAsset[] = [
   ...PHYLOPIC_STUDIO_ASSETS,
 ];
 
-export const STUDIO_ASSET_IDS = new Set(STUDIO_ASSETS.map((asset) => asset.id));
 export function studioAsset(id: string) { return STUDIO_ASSETS.find((asset) => asset.id === id); }
-export function studioAssetUrl(asset: StudioAsset): string {
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(asset.svg)}`;
-}
+export { STUDIO_ASSET_IDS, studioAssetUrl };

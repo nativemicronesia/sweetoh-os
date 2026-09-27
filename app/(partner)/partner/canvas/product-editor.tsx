@@ -95,7 +95,7 @@ import { analyzePhoto, tintGarment } from "@/lib/studio/tint";
 import { sizedPhoto } from "@/lib/studio/photo";
 import { PRODUCT_FONTS, ensureFont, fontFamily } from "@/lib/studio/fonts";
 import { isStudioFontKey, resolveStudioFontKey } from "@/lib/studio/font-provenance";
-import { studioAsset, studioAssetUrl } from "@/lib/studio/asset-library";
+import { studioAssetMetadata, studioAssetUrl } from "@/lib/studio/asset-library-client";
 import { buildStudioEditorState, studioEditorCommandSchema, studioEditorProposalSchema, type StudioEditorCommand } from "@/lib/studio/editor-commands";
 import { reorderLayers } from "@/lib/studio/layer-order";
 import { SHAPES, makeShape, type ShapeKind } from "@/lib/studio/shapes";
@@ -623,7 +623,7 @@ export function ProductEditor({
     const assetId = base.kind === "image" || base.kind === "pattern" ? base.assetId : undefined;
     setSelected({
       kind: base.kind,
-      name: text ? (o as IText).text.slice(0, 40) : base.kind === "graphic" ? (studioAsset(base.assetKey)?.name ?? "Graphic") : (library.find((d) => d.id === assetId)?.name ?? (base.kind === "shape" ? "Shape" : "Artwork")),
+      name: text ? (o as IText).text.slice(0, 40) : base.kind === "graphic" ? (studioAssetMetadata(base.assetKey)?.name ?? "Graphic") : (library.find((d) => d.id === assetId)?.name ?? (base.kind === "shape" ? "Shape" : "Artwork")),
       opacity: o.opacity,
       flipX: o.flipX,
       flipY: o.flipY,
@@ -677,9 +677,9 @@ export function ProductEditor({
       image.filters = imageFiltersFor(layer.adjustments);
       if (image.filters.length) image.applyFilters();
     } else if (layer.kind === "graphic") {
-      const asset = studioAsset(layer.assetKey);
+      const asset = studioAssetMetadata(layer.assetKey);
       if (!asset) throw new Error(`Studio graphic is unavailable: ${layer.assetKey}`);
-      obj = await FabricImage.fromURL(studioAssetUrl(asset));
+      obj = await FabricImage.fromURL(studioAssetUrl(layer.assetKey));
     } else if (layer.kind === "drawing") {
       const brush = studioDrawBrush(layer.brushPreset?.baseBrush ?? layer.brush);
       obj = layer.pressurePoints?.length ? makePressureDrawingGroup(layer.pressurePoints, layer.strokeWidth, layer.stroke, brush, layer.brushPreset ?? null) : new Path(layer.pathData, { fill: "", stroke: layer.stroke, strokeWidth: layer.strokeWidth, strokeDashArray: drawingDashPattern(brush, layer.strokeWidth), strokeLineCap: brush === "marker" ? "butt" : "round", strokeLineJoin: "round", objectCaching: false });
@@ -1420,7 +1420,7 @@ export function ProductEditor({
     editor.current!.requestRenderAll();
   }
   async function addGraphic(assetKey: string) {
-    const asset = studioAsset(assetKey);
+    const asset = studioAssetMetadata(assetKey);
     if (!asset || !canDesign() || locked) return;
     checkpoint();
     const a = surface().area;
@@ -2448,7 +2448,7 @@ export function ProductEditor({
                           ) : l.kind === "shape" ? (
                             <Shapes size={16} />
                           ) : l.kind === "graphic" ? (
-                            <img src={studioAssetUrl(studioAsset(l.assetKey)!)} alt="" />
+                            <img src={studioAssetUrl(l.assetKey)} alt="" />
                           ) : l.kind === "drawing" ? <PenLine size={16} />
                             : (l.kind === "image" || l.kind === "pattern") && urls.current[l.assetId] ? <img src={urls.current[l.assetId]} alt="" />
                               : <ImageIcon size={16} />}
@@ -2458,7 +2458,7 @@ export function ProductEditor({
                               : l.kind === "shape"
                                 ? `${l.shape[0].toUpperCase()}${l.shape.slice(1)}`
                                 : l.kind === "graphic"
-                                  ? studioAsset(l.assetKey)?.name ?? "Graphic"
+                                  ? studioAssetMetadata(l.assetKey)?.name ?? "Graphic"
                                   : l.kind === "drawing" ? "Freehand stroke" : `${library.find((d) => d.id === l.assetId)?.name ?? "Artwork"}${l.kind === "pattern" ? " (pattern)" : ""}`}{l.groupId ? " · Grouped" : ""}
                           </span>
                         </button>

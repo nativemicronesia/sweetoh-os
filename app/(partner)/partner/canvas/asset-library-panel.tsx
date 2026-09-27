@@ -3,13 +3,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { PRODUCT_FONTS } from "@/lib/studio/fonts";
 import { STUDIO_FONT_PROVENANCE } from "@/lib/studio/font-provenance";
-import { STUDIO_ASSETS, studioAssetUrl } from "@/lib/studio/asset-library";
+import { STUDIO_ASSET_MANIFEST } from "@/lib/studio/asset-manifest";
+import { studioAssetUrl } from "@/lib/studio/asset-library-client";
 import { filterStudioCreativeAssets, type StudioCreativeAssetOption } from "@/lib/studio/creative-library-browser";
 
 const FAVORITES_KEY = "sweetoh:studio:favorites:v1";
 const RECENTS_KEY = "sweetoh:studio:recent:v1";
 type Filter = "All" | "Nature" | "Ocean & Travel" | "Outdoors" | "People" | "Celestial" | "Celebration" | "Holidays" | "Wedding & Baby" | "Education" | "Sports" | "Faith" | "Food & Drink" | "Animals" | "Hobbies" | "Occupations" | "Travel" | "Accents" | "Frames" | "Patterns" | "Textures" | "Backgrounds" | "Fonts" | "Favorites" | "Recent";
 const FILTERS: Filter[] = ["All", "Nature", "Ocean & Travel", "Outdoors", "People", "Celestial", "Celebration", "Holidays", "Wedding & Baby", "Education", "Sports", "Faith", "Food & Drink", "Animals", "Hobbies", "Occupations", "Travel", "Accents", "Frames", "Patterns", "Textures", "Backgrounds", "Fonts", "Favorites", "Recent"];
+const PAGE_SIZE = 48;
 
 function readIds(key: string): string[] {
   try {
@@ -32,6 +34,7 @@ export function AssetLibraryPanel({ disabled, creativeAssets = [], onAddCreative
   const [creativeCategory, setCreativeCategory] = useState("");
   const [creativeTag, setCreativeTag] = useState("");
   const [productionMethod, setProductionMethod] = useState("");
+  const [visibleLimit, setVisibleLimit] = useState(PAGE_SIZE);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [recent, setRecent] = useState<string[]>([]);
   useEffect(() => {
@@ -40,9 +43,10 @@ export function AssetLibraryPanel({ disabled, creativeAssets = [], onAddCreative
     window.addEventListener("storage", sync);
     return () => window.removeEventListener("storage", sync);
   }, []);
+  useEffect(() => setVisibleLimit(PAGE_SIZE), [collection, filter, query, creativeKind, creativeCategory, creativeTag, productionMethod]);
 
   const entries = useMemo(() => [
-    ...STUDIO_ASSETS.map((asset) => ({ id: asset.id, name: asset.name, category: asset.category, tags: asset.tags.join(" "), kind: asset.kind, preview: studioAssetUrl(asset), font: null as string | null, license: asset.license, source: asset.source, licenseId: asset.licenseId ?? "SweetOh original", sourceUrl: asset.sourceUrl ?? "", evidenceUrl: asset.evidenceUrl ?? "", attributionText: asset.attributionText ?? "" })),
+    ...STUDIO_ASSET_MANIFEST.filter((asset) => asset.studioUseApproved).map((asset) => ({ id: asset.id, name: asset.name, category: asset.category, tags: asset.tags.join(" "), kind: asset.kind, preview: studioAssetUrl(asset.id), font: null as string | null, license: asset.license, source: asset.source, licenseId: asset.licenseId ?? "SweetOh original", sourceUrl: asset.sourceUrl ?? "", evidenceUrl: asset.evidenceUrl ?? "", attributionText: asset.attributionText ?? "" })),
     ...PRODUCT_FONTS.map((font) => ({ id: `font:${font.key}`, name: font.label, category: "Fonts", tags: "text typography lettering", kind: "font", preview: "", font: font.family as string | null, license: STUDIO_FONT_PROVENANCE[font.key].license, source: STUDIO_FONT_PROVENANCE[font.key].source, licenseId: STUDIO_FONT_PROVENANCE[font.key].license.includes("Apache") ? "Apache 2.0" : "OFL 1.1", sourceUrl: STUDIO_FONT_PROVENANCE[font.key].source, evidenceUrl: STUDIO_FONT_PROVENANCE[font.key].notice, attributionText: "" })),
   ], []);
   const visible = entries.filter((entry) => {
@@ -74,6 +78,8 @@ export function AssetLibraryPanel({ disabled, creativeAssets = [], onAddCreative
   const visibleCreative = filterStudioCreativeAssets(creativeAssets, {
     query, kind: creativeKind, category: creativeCategory, tag: creativeTag, productionMethod,
   }).sort((a, b) => a.name.localeCompare(b.name));
+  const visibleEntries = visible.slice(0, visibleLimit);
+  const visibleCreativeEntries = visibleCreative.slice(0, visibleLimit);
 
   return <div className="pe-panel-body pe-asset-library">
     <div className="pe-asset-filters" aria-label="Library source">
@@ -85,18 +91,21 @@ export function AssetLibraryPanel({ disabled, creativeAssets = [], onAddCreative
       <input id="studio-asset-search" className="pe-search" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search elements and fonts" />
       <div className="pe-asset-filters" aria-label="Asset categories">{FILTERS.map((item) => <button key={item} type="button" aria-pressed={filter === item} onClick={() => setFilter(item)}>{item}</button>)}</div>
       <p className="pe-muted pe-small">SweetOh originals, curated open-license SVGs and fonts. Add, then resize, rotate, layer and print.</p>
-      {visible.length ? <div className="pe-asset-grid">{visible.map((entry) => <div key={entry.id} className="pe-asset-card">
+      {visible.length ? <>
+      <p className="pe-muted pe-small">Showing {visibleEntries.length} of {visible.length} matches.</p>
+      <div className="pe-asset-grid">{visibleEntries.map((entry) => <div key={entry.id} className="pe-asset-card">
         <button type="button" disabled={disabled} onClick={() => use(entry.id)} aria-label={`Add ${entry.name}`}>
           {entry.font ? <span className="pe-asset-font" style={{ fontFamily: entry.font }}>Aa</span> : (
-            // The preview is a tiny inlined SVG generated by this registry.
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={entry.preview} alt="" />
+            <img src={entry.preview} alt="" loading="lazy" />
           )}
           <span>{entry.name}</span>
         </button>
         <button type="button" className="pe-asset-favorite" onClick={() => favorite(entry.id)} aria-label={`${favorites.includes(entry.id) ? "Remove" : "Add"} ${entry.name} ${favorites.includes(entry.id) ? "from" : "to"} favorites`} aria-pressed={favorites.includes(entry.id)}>★</button>
         <small title={`${entry.source}\n${entry.license}\nSource: ${entry.sourceUrl}\nEvidence: ${entry.evidenceUrl}\n${entry.attributionText}`}>{entry.source.includes("Tabler") ? `${entry.source} · ${entry.licenseId}` : entry.kind === "font" ? entry.licenseId : "SweetOh original"}</small>
-      </div>)}</div> : <p className="pe-muted">No matching assets.</p>}
+      </div>)}</div>
+      {visibleEntries.length < visible.length && <button type="button" className="pe-btn pe-btn-ghost" onClick={() => setVisibleLimit((count) => count + PAGE_SIZE)}>Show more ({visible.length - visibleEntries.length} remaining)</button>}
+      </> : <p className="pe-muted">No matching assets.</p>}
     </> : <>
       <label className="sr-only" htmlFor="studio-creative-search">Search reusable assets</label>
       <input id="studio-creative-search" className="pe-search" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search names, tags, source or method" />
@@ -107,7 +116,9 @@ export function AssetLibraryPanel({ disabled, creativeAssets = [], onAddCreative
         <label className="pe-small">Useful for<select className="pe-search" value={productionMethod} onChange={(event) => setProductionMethod(event.target.value)}><option value="">Any method</option>{productionMethods.map((method) => <option key={method} value={method}>{method.replaceAll("_", " ")}</option>)}</select></label>
       </div>
       <p className="pe-muted pe-small">Only assets cleared for Studio use appear here. Adding one references its existing file; changes stay editable and undoable.</p>
-      {visibleCreative.length ? <div className="pe-asset-grid">{visibleCreative.map((entry) => <div key={entry.id} className="pe-asset-card">
+      {visibleCreative.length ? <>
+      <p className="pe-muted pe-small">Showing {visibleCreativeEntries.length} of {visibleCreative.length} matches.</p>
+      <div className="pe-asset-grid">{visibleCreativeEntries.map((entry) => <div key={entry.id} className="pe-asset-card">
         <button type="button" disabled={disabled} onClick={() => use(entry.id, true)} aria-label={`Add ${entry.name}`}>
           {/* Existing venture asset, served through its signed preview URL. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -117,7 +128,9 @@ export function AssetLibraryPanel({ disabled, creativeAssets = [], onAddCreative
         <button type="button" className="pe-asset-favorite" onClick={() => favorite(entry.id)} aria-label={`${favorites.includes(entry.id) ? "Remove" : "Add"} ${entry.name} ${favorites.includes(entry.id) ? "from" : "to"} favorites`} aria-pressed={favorites.includes(entry.id)}>★</button>
         <small>{entry.category} · {entry.productionMethods.length ? entry.productionMethods.join(", ") : entry.kind.replaceAll("_", " ")}</small>
         <small title={entry.licenseId ?? "No license ID recorded"}>{entry.sourceName ?? "Source not recorded"} · {entry.licenseId ?? "Rights cleared for Studio"}</small>
-      </div>)}</div> : <p className="pe-muted">No rights-approved assets match these filters.</p>}
+      </div>)}</div>
+      {visibleCreativeEntries.length < visibleCreative.length && <button type="button" className="pe-btn pe-btn-ghost" onClick={() => setVisibleLimit((count) => count + PAGE_SIZE)}>Show more ({visibleCreative.length - visibleCreativeEntries.length} remaining)</button>}
+      </> : <p className="pe-muted">No rights-approved assets match these filters.</p>}
     </>}
   </div>;
 }

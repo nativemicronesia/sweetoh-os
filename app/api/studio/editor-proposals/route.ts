@@ -3,7 +3,8 @@ import { z } from "zod";
 import { getSessionUserFast } from "@/lib/domains/identity/service";
 import { creditSnapshot, getCreatorProfile, spendCredits } from "@/lib/domains/creator/credits";
 import { creditsForUsage, isAiConfigured, resolveModel, tokenLimit } from "@/lib/ai/router";
-import { findStudioAssets, studioEditorProposalSchema, studioEditorStateSchema } from "@/lib/studio/editor-commands";
+import { studioEditorProposalSchema, studioEditorStateSchema } from "@/lib/studio/editor-commands";
+import { findStudioAssets } from "@/lib/studio/asset-library-search";
 import { CONFIRMED_SHOP_METHODS, KNOWLEDGE_ONLY_METHODS } from "@/lib/domains/production/methods";
 
 const requestSchema = z.object({

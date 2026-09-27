@@ -70,7 +70,7 @@ function mockedGoogleFontResponses() {
 async function portAvailable(candidate) {
   const server = createServer();
   return new Promise((resolve) => {
-    server.once("error", () => resolve(false));
+    server.once("error", (error) => resolve(error.code ?? String(error)));
     server.listen(candidate, "127.0.0.1", () => server.close(() => resolve(true)));
   });
 }
@@ -119,7 +119,8 @@ const browserErrors = [];
 
 try {
   const executablePath = chromeExecutable();
-  if (!await portAvailable(port)) throw new Error(`Port ${port} is already in use. Set PARTNER_BROWSER_PORT to an unused local port.`);
+  const portCheck = await portAvailable(port);
+  if (portCheck !== true) throw new Error(`Port ${port} is unavailable (${portCheck}). Set PARTNER_BROWSER_PORT to an unused local port.`);
   tempDir = await mkdtemp(path.join(os.tmpdir(), "sweetoh-partner-browser-"));
   const fontMocksPath = path.join(tempDir, "google-fonts.cjs");
   await writeFile(fontMocksPath, `module.exports = ${JSON.stringify(mockedGoogleFontResponses())};\n`);
@@ -158,6 +159,45 @@ try {
     throw new Error(loginError ? `Partner login was rejected: ${loginError}` : `Partner login did not reach /partner (current path ${new URL(page.url()).pathname}).`);
   }
 
+  if (process.env.PARTNER_BROWSER_STUDIO_ONLY === "1") {
+    // Exercise Studio directly. The home page performs several unrelated
+    // operational queries and can be slow in a cold local browser session.
+    // This read-only path adds one asset to the in-memory canvas, checks it in
+    // Layers, then undoes it before leaving; it never saves partner data.
+    await page.goto(`${origin}/partner/canvas`, { waitUntil: "domcontentloaded", timeout: 90_000 });
+    const assetLibraryButton = page.getByRole("button", { name: "Asset library", exact: true });
+    await assetLibraryButton.waitFor({ state: "visible", timeout: 90_000 });
+    await assetLibraryButton.click();
+    const search = page.getByPlaceholder("Search elements and fonts");
+    await search.fill("tropical leaf");
+    const assetButton = page.getByRole("button", { name: "Add Tropical leaf", exact: true });
+    await assetButton.waitFor({ state: "visible", timeout: 30_000 });
+    await assetButton.click();
+    await page.getByRole("button", { name: "Layers", exact: true }).click();
+    const layers = page.locator(".pe-layers");
+    await layers.getByText("Tropical leaf", { exact: true }).waitFor({ state: "visible", timeout: 15_000 });
+    const undo = page.getByRole("button", { name: /undo/i });
+    await undo.waitFor({ state: "visible", timeout: 10_000 });
+    await undo.click();
+    await layers.getByText("Tropical leaf", { exact: true }).waitFor({ state: "detached", timeout: 15_000 });
+    const inspection = await page.evaluate(() => ({
+      viewport: { width: innerWidth, height: innerHeight },
+      assetCards: document.querySelectorAll(".pe-asset-card").length,
+      libraryGridScrollHeight: document.querySelector(".pe-asset-grid")?.scrollHeight ?? null,
+      documentHeight: document.documentElement.scrollHeight,
+    }));
+    console.log(JSON.stringify({
+      browser: browser.version(),
+      partnerLogin: "passed",
+      studio: "opened directly without changing product data",
+      creativeLibrarySearch: "found Tropical leaf",
+      studioInsertion: "layer appeared",
+      history: "undo removed the inserted layer",
+      inspection,
+      pageErrors: browserErrors,
+    }));
+    await context.close();
+  } else {
   const productsLink = page.locator('a[href="/partner/products"]').first();
   await productsLink.waitFor({ state: "visible", timeout: 20_000 });
   await productsLink.click();
@@ -265,6 +305,7 @@ try {
       pageErrors: browserErrors,
     }));
     await context.close();
+  }
   }
 } catch (error) {
   console.error(`Partner browser smoke failed: ${error instanceof Error ? error.message : String(error)}`);

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { STUDIO_ASSET_IDS } from "@/lib/studio/asset-library";
+import { STUDIO_ASSET_IDS } from "@/lib/studio/asset-library-client";
 import { studioBrushPresetSchema } from "@/lib/studio/drawing-brushes";
 
 export const areaSchema = z

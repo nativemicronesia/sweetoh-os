@@ -4,13 +4,17 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import sharp from "sharp";
+import { GET as getStudioAssetResponse } from "../app/api/studio/assets/[id]/route";
 import { productPrintAreaFromStudio, studioLayoutSchema, studioMatchesProductPrintArea } from "../lib/domains/catalog/studio-layout";
 import { studioProductArtworkIssue } from "../lib/domains/catalog/studio-product-artwork";
 import type { CreativeLibraryAsset } from "../lib/domains/library/model";
 import { prepareStudioTemplateCopy } from "../lib/domains/catalog/studio-template-copy";
 import { STUDIO_ASSETS, studioAsset, studioAssetUrl } from "../lib/studio/asset-library";
+import { STUDIO_ASSET_MANIFEST } from "../lib/studio/asset-manifest";
+import { STUDIO_ASSET_IDS, studioAssetMetadata } from "../lib/studio/asset-library-client";
+import { canSurfaceStudioAsset, findStudioAssets, studioAssetSearchSchema } from "../lib/studio/asset-library-search";
 import { STUDIO_FONT_PROVENANCE, resolveStudioFontKey } from "../lib/studio/font-provenance";
-import { buildStudioEditorState, findStudioAssets, studioAssetSearchSchema, studioEditorCommandSchema, studioEditorProposalSchema } from "../lib/studio/editor-commands";
+import { buildStudioEditorState, studioEditorCommandSchema, studioEditorProposalSchema } from "../lib/studio/editor-commands";
 import { reorderLayers } from "../lib/studio/layer-order";
 import { mockupTemplateSchema } from "../lib/studio/mockup/templates";
 import { CONFIRMED_SHOP_METHODS, KNOWLEDGE_ONLY_METHODS } from "../lib/domains/production/methods";
@@ -23,11 +27,35 @@ test("seed graphics have stable unique identities and explicit provenance", () =
   assert.equal(new Set(STUDIO_ASSETS.map((asset) => asset.id)).size, STUDIO_ASSETS.length);
   for (const asset of STUDIO_ASSETS) {
     assert.ok(asset.name && asset.category && asset.license && asset.source);
-    assert.match(asset.svg, /^(?:<\?xml[^>]*>\s*)?<svg(?:\s|>)/);
+    assert.match(asset.svg, /^(?:<\?xml[^>]*>\s*)?(?:<!--[^]*?-->\s*)*<svg(?:\s|>)/);
     assert.match(asset.svg, /xmlns="http:\/\/www\.w3\.org\/2000\/svg"/);
     assert.equal(studioAsset(asset.id), asset);
-    assert.ok(studioAssetUrl(asset).startsWith("data:image/svg+xml"));
+    assert.equal(studioAssetUrl(asset.id), `/api/studio/assets/${asset.id}`);
   }
+});
+
+test("Studio client index preserves all asset identity while keeping SVG bodies server-side", () => {
+  assert.equal(STUDIO_ASSET_MANIFEST.length, STUDIO_ASSETS.length);
+  assert.deepEqual(STUDIO_ASSET_MANIFEST, STUDIO_ASSETS.map(({ svg: _svg, ...asset }) => ({ ...asset, studioUseApproved: canSurfaceStudioAsset(STUDIO_ASSETS.find((candidate) => candidate.id === asset.id)!) })));
+  assert.deepEqual(new Set(STUDIO_ASSET_MANIFEST.map((asset) => asset.id)), STUDIO_ASSET_IDS);
+  for (const metadata of STUDIO_ASSET_MANIFEST) {
+    assert.equal("svg" in metadata, false);
+    assert.equal(studioAssetMetadata(metadata.id)?.name, metadata.name);
+  }
+  assert.equal(studioAssetUrl("phylopic-d529a97f-a912-4c74-ace8-d18f6eddf203-v1"), "/api/studio/assets/phylopic-d529a97f-a912-4c74-ace8-d18f6eddf203-v1");
+});
+
+test("built-in Studio SVG endpoint serves the exact registered vector and rejects unknown IDs", async () => {
+  const asset = STUDIO_ASSETS.find((candidate) => candidate.id === "phylopic-d529a97f-a912-4c74-ace8-d18f6eddf203-v1");
+  assert.ok(asset);
+  assert.equal(canSurfaceStudioAsset(asset), true);
+  assert.equal(canSurfaceStudioAsset({ ...asset, commercialUse: false }), false);
+  const response = await getStudioAssetResponse(new Request(`https://sweetoh.test${studioAssetUrl(asset.id)}`), { params: Promise.resolve({ id: asset.id }) });
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("Content-Type") ?? "", /^image\/svg\+xml/);
+  assert.equal(await response.text(), asset.svg);
+  const missing = await getStudioAssetResponse(new Request("https://sweetoh.test/api/studio/assets/not-a-studio-asset"), { params: Promise.resolve({ id: "not-a-studio-asset" }) });
+  assert.equal(missing.status, 404);
 });
 
 test("curated Tabler assets keep upstream provenance and commercial-use evidence searchable", () => {
@@ -92,7 +120,7 @@ test("diverse open collections retain exact provenance, evidence, rights, search
   assert.ok(findStudioAssets({ query: "engraving", kind: "pattern", limit: 50 }).some((asset) => asset.id === "patternfills-crosshatch-v1"));
   assert.ok(findStudioAssets({ query: "Halloween", kind: "element", limit: 50 }).some((asset) => asset.id === "open-crop-pumpkin-v1"));
   assert.ok(findStudioAssets({ query: "tropical", kind: "element", limit: 50 }).some((asset) => asset.id === "open-crop-watermelon-v1"));
-  assert.ok(findStudioAssets({ query: "botanical", kind: "element", limit: 50 }).some((asset) => asset.id === "open-crop-lavender-v1"));
+  assert.ok(findStudioAssets({ query: "lavender", kind: "element", limit: 50 }).some((asset) => asset.id === "open-crop-lavender-v1"));
   assert.ok(findStudioAssets({ query: "harvest", kind: "element", limit: 50 }).some((asset) => asset.id === "open-crop-acorn-squash-v1"));
   const patternEvidence = readFileSync("docs/licenses/third-party/patternfills/MIT-LICENSE.txt", "utf8");
   assert.match(patternEvidence, /Copyright \(c\) 2014 Irene Ros/);
@@ -399,7 +427,7 @@ test("OpenMoji adds a broad pinned CC BY-SA illustration collection with origina
   ] as const) {
     const results = findStudioAssets({ query, kind: "any", limit: 50 });
     assert.ok(results.some((asset) => asset.id.startsWith("openmoji-")), query);
-    assert.ok(results.some((asset) => categories.includes(asset.category)), query);
+    assert.ok(results.some((asset) => new Set<string>(categories).has(asset.category)), query);
   }
   assert.match(readFileSync("docs/licenses/third-party/openmoji/CC-BY-SA-4.0-LICENSE.txt", "utf8"), /Attribution-ShareAlike 4\.0 International Public License/);
   assert.match(readFileSync("docs/licenses/third-party/openmoji/UPSTREAM-FAQ.md", "utf8"), /commercial/);
