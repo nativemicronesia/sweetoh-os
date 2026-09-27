@@ -134,7 +134,7 @@ export async function addInspirationAction(form: FormData): Promise<Result<{ ite
   try {
     const file = form.get("photo");
     if (!(file instanceof File) || !file.size) throw new ValidationError("Choose an image.");
-    const saved = await addInspiration(session, { bytes: Buffer.from(await file.arrayBuffer()), name: file.name, mimeType: file.type });
+    const saved = await addInspiration(session, { bytes: Buffer.from(await file.arrayBuffer()), name: file.name, mimeType: file.type, note: String(form.get("note") ?? "") });
     return { ok: true, item: { id: saved.assetId, name: saved.name, previewUrl: saved.previewUrl } };
   } catch (error) {
     return failure(error);

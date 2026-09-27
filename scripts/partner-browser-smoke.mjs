@@ -157,6 +157,17 @@ try {
   await page.locator('a[href="/partner/products"]').first().click();
   await page.getByRole("heading", { name: "My products" }).waitFor({ state: "visible", timeout: 20_000 });
   await page.getByRole("textbox", { name: "Search your products" }).waitFor({ state: "visible", timeout: 10_000 });
+  await page.goto(`${origin}/partner/inspiration`, { waitUntil: "domcontentloaded", timeout: 90_000 });
+  await page.getByRole("heading", { name: "Inspiration" }).waitFor({ state: "visible", timeout: 20_000 });
+  await page.getByLabel("Image or screenshot").waitFor({ state: "visible", timeout: 10_000 });
+  const feedbackTrigger = page.locator('summary[aria-label="Send feedback"]').first();
+  await feedbackTrigger.click();
+  if (!(await page.locator(".pf-feedback-details").evaluate((details) => details.open))) throw new Error("Feedback trigger did not open its panel.");
+  const feedbackPopover = page.locator(".pf-feedback-popover");
+  await feedbackPopover.waitFor({ state: "visible", timeout: 10_000 });
+  await feedbackPopover.locator("#partner-feedback-note").waitFor({ state: "visible", timeout: 10_000 });
+  if (!(await feedbackPopover.innerText()).includes(new URL(page.url()).pathname)) throw new Error("Feedback did not capture the current page context.");
+  await feedbackTrigger.click();
 
   if (process.env.PARTNER_BROWSER_SESSION_ONLY === "1") {
     console.log(JSON.stringify({
@@ -167,6 +178,8 @@ try {
       signOut: "passed",
       signBackIn: "passed",
       workspaceReopen: "passed",
+      inspirationCaptureSurface: "loaded without uploading test data",
+      feedbackCaptureSurface: "opened with page context",
       pageErrors: browserErrors,
     }));
     await context.close();

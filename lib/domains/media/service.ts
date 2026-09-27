@@ -1,4 +1,4 @@
-import { and, desc, eq, ilike } from "drizzle-orm";
+import { and, desc, eq, ilike, isNull, notLike, or } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import { asset, product, productMedia } from "@/lib/db/schema";
 import { getAssetById } from "@/lib/domains/assets/service";
@@ -99,7 +99,7 @@ export async function listMediaLibrary(input: {
   const db = getDb();
 
   if (kind === "all" || kind === "design_library") {
-    const conditions = [eq(asset.ventureId, input.ventureId)];
+    const conditions = [eq(asset.ventureId, input.ventureId), or(isNull(asset.notes), notLike(asset.notes, "inspiration:%"))!];
 
     if (filters.status) {
       conditions.push(eq(asset.status, filters.status));

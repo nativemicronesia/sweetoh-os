@@ -467,7 +467,7 @@ export function ProductEditor({
   const [previewPick, setPreviewPick] = useState<{ kind: "view" | "color"; index: number }>({ kind: "view", index: 0 });
   const [viewThumbs, setViewThumbs] = useState<Record<string, string>>({});
   const [inspiration, setInspiration] = useState<InspirationItem[] | null>(null);
-  const [reference, setReference] = useState<InspirationItem | null>(null);
+  const [inspirationNote, setInspirationNote] = useState("");
   const [aiMode, setAiMode] = useState<"design" | "pattern">("design");
   const [editPrompt, setEditPrompt] = useState("");
   const [cropping, setCropping] = useState<{ src: string; initial?: CropPixels } | null>(null);
@@ -1734,9 +1734,11 @@ export function ProductEditor({
     try {
       const form = new FormData();
       form.set("photo", file);
+      form.set("note", inspirationNote);
       const r = await addInspirationAction(form);
       if (!r.ok) throw new Error(r.error);
       setInspiration((items) => [r.item, ...(items ?? [])]);
+      setInspirationNote("");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Couldn’t save this image.");
     } finally {
@@ -1747,7 +1749,7 @@ export function ProductEditor({
     setBusy(aiMode === "pattern" ? "Creating a seamless pattern…" : "Creating your design…");
     setError("");
     try {
-      const r = await generateDesignAction({ brief, seamless: aiMode === "pattern", referenceAssetId: reference?.id ?? null });
+      const r = await generateDesignAction({ brief, seamless: aiMode === "pattern", referenceAssetId: null });
       if (!r.ok) throw new Error(r.error);
       urls.current[r.assetId] = r.previewUrl;
       setLibrary((items) => [{ id: r.assetId, name: r.name, previewUrl: r.previewUrl }, ...items]);
@@ -2349,7 +2351,8 @@ export function ProductEditor({
 
             {panel === "inspiration" && (
               <div className="pe-panel-body">
-                <p className="pe-muted">Save photos, screenshots and ideas here. They’re never printed; use one as a starting point for AI.</p>
+                <p className="pe-muted">Private references only. They are not approved reusable artwork and are never printed or sent to AI.</p>
+                <label className="pe-muted">Optional note<input value={inspirationNote} maxLength={1000} onChange={(e) => setInspirationNote(e.target.value)} placeholder="What do you like or want to make?" /></label>
                 <input ref={inspirationInput} type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" aria-label="Add inspiration image" onChange={(e) => { void addInspirationPhoto(e.target.files?.[0]); e.target.value = ""; }} />
                 <button className="pe-drop" disabled={locked} onClick={() => inspirationInput.current?.click()}>
                   <Lightbulb size={22} />
@@ -2361,17 +2364,12 @@ export function ProductEditor({
                 ) : (
                   <div className="pe-files">
                     {inspiration.map((it) => (
-                      <button key={it.id} title={it.name} aria-pressed={reference?.id === it.id} onClick={() => { setReference(reference?.id === it.id ? null : it); }}>
+                      <div key={it.id} title={it.name}>
                         <img src={it.previewUrl} alt="" loading="lazy" />
-                        <span>{reference?.id === it.id ? "✓ Using for AI" : it.name}</span>
-                      </button>
+                        <span>{it.name}</span>
+                      </div>
                     ))}
                   </div>
-                )}
-                {reference && (
-                  <button className="pe-btn pe-btn-primary pe-block" onClick={() => setPanel("ai")}>
-                    <Sparkles size={16} /> Create from this idea
-                  </button>
                 )}
               </div>
             )}
@@ -2420,15 +2418,6 @@ export function ProductEditor({
                     ? "Describe the artwork. It’s added to your product and saved to your files."
                     : "Describe a repeating pattern. It fills the print area as a seamless all-over print."}
                 </p>
-                {reference && (
-                  <div className="pe-ref">
-                    <img src={reference.previewUrl} alt="" />
-                    <span>Inspired by <b>{reference.name}</b></span>
-                    <button className="pe-icon-btn" aria-label="Stop using this idea" onClick={() => setReference(null)}>
-                      <X size={14} />
-                    </button>
-                  </div>
-                )}
                 <textarea
                   className="pe-textarea"
                   rows={5}
@@ -2439,11 +2428,9 @@ export function ProductEditor({
                 <button className="pe-btn pe-btn-primary pe-block" disabled={locked || brief.trim().length < 8} onClick={() => void createWithAi()}>
                   <Sparkles size={16} /> {aiMode === "design" ? "Create design" : "Create pattern"}
                 </button>
-                {!reference && (
-                  <button className="pe-link-btn" onClick={() => { setPanel("inspiration"); void loadInspiration(); }}>
-                    <Lightbulb size={14} /> Start from an inspiration photo
-                  </button>
-                )}
+                <button className="pe-link-btn" onClick={() => { setPanel("inspiration"); void loadInspiration(); }}>
+                  <Lightbulb size={14} /> Save or view private inspiration
+                </button>
                 <p className="pe-muted pe-small">Uses AI only when you click Create.</p>
               </div>
             )}

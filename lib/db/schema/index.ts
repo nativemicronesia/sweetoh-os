@@ -15,3 +15,4 @@ export * from "./listing-outbox";
 export * from "./creator";
 export * from "./inbox";
 export * from "./creative-library";
+export * from "./partner-captures";

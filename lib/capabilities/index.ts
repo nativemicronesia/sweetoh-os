@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import sharp from "sharp";
 import { and, desc, eq, like } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
+import { listPartnerInspiration, savePartnerInspiration } from "@/lib/domains/partner-captures/service";
 import { asset } from "@/lib/db/schema";
 import type { SessionUser } from "@/lib/domains/identity/types";
 import {
@@ -391,29 +392,12 @@ export async function generateDesign(
 
 /* ---------- Inspiration board ---------- */
 
-const INSPIRATION_NOTE = "inspiration:";
-
-export async function addInspiration(session: SessionUser, file: { bytes: Buffer; name: string; mimeType: string }) {
+export async function addInspiration(session: SessionUser, file: { bytes: Buffer; name: string; mimeType: string; note?: string }) {
   assertBuilderRole(session);
-  validateImageUpload({ mimeType: file.mimeType, sizeBytes: file.bytes.length });
-  const image = await sharp(file.bytes, { limitInputPixels: 40_000_000 }).rotate().resize(1600, 1600, { fit: "inside", withoutEnlargement: true }).jpeg({ quality: 86 }).toBuffer();
-  const created = await createAssetWithUpload({
-    ventureId: session.ventureId, ventureSlug: session.ventureSlug, uploadedById: session.appUser.id,
-    name: file.name.replace(/\.[^.]+$/, "").slice(0, 100) || "Inspiration", assetType: "media",
-    file: image, filename: "inspiration.jpg", mimeType: "image/jpeg",
-    notes: `${INSPIRATION_NOTE} reference only, never printed`,
-  });
-  return { assetId: created.id, name: created.name, previewUrl: await signed(session, created.id) };
+  const item = await savePartnerInspiration(session, file);
+  return { assetId: item.id, name: item.name, previewUrl: item.previewUrl };
 }
 
 export async function listInspiration(session: SessionUser) {
-  const rows = await getDb()
-    .select()
-    .from(asset)
-    .where(and(eq(asset.ventureId, session.ventureId), eq(asset.assetType, "media"), like(asset.notes, `${INSPIRATION_NOTE}%`)))
-    .orderBy(desc(asset.createdAt))
-    .limit(60);
-  return Promise.all(
-    rows.filter((r) => r.status !== "archived").map(async (r) => ({ id: r.id, name: r.name, previewUrl: await signed(session, r.id) })),
-  );
+  return (await listPartnerInspiration(session)).map(({ id, name, previewUrl }) => ({ id, name, previewUrl }));
 }

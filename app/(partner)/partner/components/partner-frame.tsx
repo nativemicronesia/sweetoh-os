@@ -25,6 +25,7 @@ import {
   type WorkspacePack,
 } from "@/lib/domains/workspace/packs";
 import { StudioChat } from "./studio-chat";
+import { FeedbackCapture } from "./feedback-capture";
 
 type NavItem = {
   href: string;
@@ -78,6 +79,7 @@ const PARTNER_NAV: NavItem[] = [
     icon: ImageIcon,
     match: (p) => p.startsWith("/partner/library"),
   },
+  { href: "/partner/inspiration", label: "Inspiration", icon: Sparkles, match: (p) => p.startsWith("/partner/inspiration") },
 ];
 
 const SETTINGS_NAV: NavItem = {
@@ -155,7 +157,7 @@ export function PartnerFrame({
   useEffect(() => setMenuOpen(false), [path]);
 
   // The product editor is full screen with its own top bar, like Printify's.
-  if (editor) return <div className="sweetoh-studio pf-root pf-editor-root">{children}</div>;
+  if (editor) return <div className="sweetoh-studio pf-root pf-editor-root"><div className="pf-editor-feedback"><FeedbackCapture /></div>{children}</div>;
 
   const link = (item: NavItem) => {
     const Icon = item.icon;
@@ -208,6 +210,7 @@ export function PartnerFrame({
             <Sparkles size={15} />
             <span className="pf-hide-sm">Sweet&apos;Oh AI</span>
           </button>
+          <FeedbackCapture />
           <details className="pf-account">
             <summary aria-label="Account menu" className="pf-avatar">
               {initials(displayName)}
