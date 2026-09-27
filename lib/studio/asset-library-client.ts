@@ -32,6 +32,13 @@ function searchTerms(query: string) {
 function searchTokenForms(token: string) {
   const word = token.toLocaleLowerCase();
   const forms = new Set([word]);
+  if (word.length > 5 && word.endsWith("ing")) {
+    const base = word.slice(0, -3);
+    forms.add(base);
+    forms.add(`${base}e`);
+    if (/([b-df-hj-np-tv-z])\1$/.test(base)) forms.add(base.slice(0, -1));
+    if (base.endsWith("i")) forms.add(`${base.slice(0, -1)}y`);
+  }
   if (word.length > 4 && word.endsWith("ies")) forms.add(`${word.slice(0, -3)}y`);
   if (word.length > 3 && word.endsWith("s")) forms.add(word.slice(0, -1));
   if (word.length > 5 && word.endsWith("es")) forms.add(word.slice(0, -2));
