@@ -334,7 +334,21 @@ test("product draft artwork links to the editable composition and persists exact
   }] });
   const productArea = productPrintAreaFromStudio(studio);
   assert.equal(studioMatchesProductPrintArea(studio, productArea), true);
+  const reorderedProductArea = {
+    ...productArea,
+    surfaces: productArea.surfaces.map((surface) => ({
+      ...surface,
+      area: { height: surface.area.height, width: surface.area.width, y: surface.area.y, x: surface.area.x },
+      printRegions: surface.printRegions?.map((region) => ({
+        ...region,
+        bounds: { height: region.bounds.height, width: region.bounds.width, y: region.bounds.y, x: region.bounds.x },
+        dimensions: region.dimensions ? { unit: region.dimensions.unit, height: region.dimensions.height, width: region.dimensions.width } : undefined,
+      })),
+    })),
+  };
+  assert.equal(studioMatchesProductPrintArea(studio, reorderedProductArea), true, "database-style key ordering does not change validated geometry");
   assert.equal(studioMatchesProductPrintArea(studio, { ...productArea, surfaces: productArea.surfaces.map((surface) => ({ ...surface, area: { ...surface.area, x: .01 } })) }), false);
+  assert.equal(studioMatchesProductPrintArea(studio, { ...productArea, surfaces: productArea.surfaces.map((surface) => ({ ...surface, printRegions: surface.printRegions?.map((region) => ({ ...region, dimensions: region.dimensions ? { ...region.dimensions, width: region.dimensions.width + 1 } : undefined })) })) }), false, "changed physical print dimensions remain incompatible");
   const serializedDesign = JSON.parse(JSON.stringify({ blankProductId: draftId, studio }));
   const reopenedDesign = studioLayoutSchema.parse(serializedDesign.studio);
   assert.equal(serializedDesign.blankProductId, draftId);

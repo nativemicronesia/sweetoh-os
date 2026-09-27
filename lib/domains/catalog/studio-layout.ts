@@ -164,6 +164,15 @@ export type StudioLayout = z.infer<typeof studioLayoutSchema>;
 export type StudioLayer = z.infer<typeof layerSchema>;
 export type StudioSurface = z.infer<typeof surfaceSchema>;
 
+function stableSerialize(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(stableSerialize).join(",")}]`;
+  if (value && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    return `{${Object.keys(record).sort().map((key) => `${JSON.stringify(key)}:${stableSerialize(record[key])}`).join(",")}}`;
+  }
+  return JSON.stringify(value) ?? "undefined";
+}
+
 /** Product drafts store production geometry while the linked design asset keeps editable layers. */
 export function productPrintAreaFromStudio(studio: StudioLayout) {
   const { area } = studio.surfaces[0];
@@ -178,13 +187,19 @@ export function studioMatchesProductPrintArea(studio: StudioLayout, printArea: {
   surfaces?: StudioSurface[];
 } | null | undefined): boolean {
   const target = printArea?.surfaces;
-  if (!target?.length || target.length !== studio.surfaces.length) return false;
-  return studio.surfaces.every((surface, index) => {
-    const other = target[index];
-    return Boolean(other && surface.id === other.id && (surface.position ?? surface.id) === (other.position ?? other.id)
-      && surface.assetId === other.assetId && JSON.stringify(surface.area) === JSON.stringify(other.area)
-      && JSON.stringify(surface.printRegions ?? []) === JSON.stringify(other.printRegions ?? []));
+  const parsedStudio = studioLayoutSchema.safeParse(studio);
+  const parsedTarget = z.array(surfaceSchema).min(1).max(12).safeParse(target);
+  if (!parsedStudio.success || !parsedTarget.success || parsedTarget.data.length !== parsedStudio.data.surfaces.length) return false;
+  const geometry = (surface: StudioSurface) => ({
+    id: surface.id,
+    position: surface.position ?? surface.id,
+    assetId: surface.assetId,
+    area: surface.area,
+    printRegions: surface.printRegions ?? [],
   });
+  return parsedStudio.data.surfaces.every((surface, index) =>
+    stableSerialize(geometry(surface)) === stableSerialize(geometry(parsedTarget.data[index])),
+  );
 }
 
 export type SurfaceImageRole = NonNullable<StudioSurface["imageRole"]>;
