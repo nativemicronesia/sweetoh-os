@@ -15,7 +15,8 @@ const require = createRequire(import.meta.url);
 dotenv.config({ path: path.join(root, ".env.local"), quiet: true });
 
 const port = Number(process.env.PARTNER_BROWSER_PORT ?? 3025);
-const origin = `http://127.0.0.1:${port}`;
+// Match Next's advertised dev origin so webpack HMR and client resources stay same-origin.
+const origin = `http://localhost:${port}`;
 const email = process.env.FOUNDATION_PARTNER_EMAIL;
 const password = process.env.FOUNDATION_PARTNER_PASSWORD;
 if (!email || !password) {
@@ -42,12 +43,26 @@ function mockedGoogleFontResponses() {
   const { getFontAxes } = require(path.join(root, "node_modules/next/dist/compiled/@next/font/dist/google/get-font-axes.js"));
   const { getGoogleFontsUrl } = require(path.join(root, "node_modules/next/dist/compiled/@next/font/dist/google/get-google-fonts-url.js"));
   const fonts = [
-    { name: "Outfit", axes: undefined },
-    { name: "Fraunces", axes: ["SOFT", "opsz"] },
+    { name: "Outfit", weights: ["variable"], axes: undefined },
+    { name: "Fraunces", weights: ["variable"], axes: ["SOFT", "opsz"] },
+    { name: "Inter", weights: ["400", "700"] },
+    { name: "Montserrat", weights: ["400", "800"] },
+    { name: "Anton", weights: ["400"] },
+    { name: "Bebas Neue", weights: ["400"] },
+    { name: "Oswald", weights: ["400", "700"] },
+    { name: "Playfair Display", weights: ["400", "800"] },
+    { name: "Pacifico", weights: ["400"] },
+    { name: "Permanent Marker", weights: ["400"] },
+    { name: "Caveat", weights: ["400", "700"] },
+    { name: "Lobster", weights: ["400"] },
+    { name: "Barlow Condensed", weights: ["400", "700"] },
+    { name: "Space Grotesk", weights: ["400", "700"] },
+    { name: "Fraunces", weights: ["400", "700"] },
   ];
-  return Object.fromEntries(fonts.map(({ name, axes }) => {
-    const url = getGoogleFontsUrl(name, getFontAxes(name, ["variable"], ["normal"], axes), "swap");
-    const css = `@font-face { font-family: '${name}'; font-style: normal; font-weight: 100 900; font-display: swap; src: url(https://fonts.gstatic.com/s/sweetoh-browser-smoke-${name.toLowerCase()}.woff2) format('woff2'); unicode-range: U+0000-00FF; }`;
+  return Object.fromEntries(fonts.map(({ name, weights, axes }) => {
+    const url = getGoogleFontsUrl(name, getFontAxes(name, weights, ["normal"], axes), "swap");
+    const fontWeight = weights[0] === "variable" ? "100 900" : weights.join(" ");
+    const css = `@font-face { font-family: '${name}'; font-style: normal; font-weight: ${fontWeight}; font-display: swap; src: local('Arial'); unicode-range: U+0000-00FF; }`;
     return [url, css];
   }));
 }
