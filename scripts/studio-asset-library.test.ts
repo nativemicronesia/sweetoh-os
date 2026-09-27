@@ -213,6 +213,45 @@ test("Kitbitz adds a curated cross-theme CC0 object collection with source hashe
   assert.match(readFileSync("docs/licenses/third-party/kitbitz/UPSTREAM-LICENSE.md", "utf8"), /does not grant patent, trademark, publicity, or privacy rights/);
 });
 
+test("Open Peeps adds Pablo Stanley's CC0 people illustrations to a searchable people filter", () => {
+  const manifest = JSON.parse(readFileSync("docs/licenses/third-party/open-peeps/asset-manifest.json", "utf8")) as {
+    author: string;
+    sourceVersion: string;
+    selectedAssets: { id: string; originalSourcePath: string; originalSha256: string; pose: string }[];
+  };
+  const assets = STUDIO_ASSETS.filter((asset) => asset.id.startsWith("open-peeps-"));
+  assert.equal(assets.length, 80);
+  assert.equal(manifest.author, "Pablo Stanley");
+  assert.equal(manifest.sourceVersion, "1.0");
+  assert.equal(manifest.selectedAssets.length, assets.length);
+  assert.deepEqual(Object.fromEntries(["Busts", "Standing", "Sitting"].map((pose) => [pose, manifest.selectedAssets.filter((asset) => asset.pose === pose).length])), { Busts: 44, Standing: 23, Sitting: 13 });
+  assert.equal(new Set(manifest.selectedAssets.map((asset) => asset.originalSha256)).size, assets.length);
+  for (const record of manifest.selectedAssets) {
+    const source = readFileSync(path.join("docs/licenses/third-party/open-peeps/source", record.originalSourcePath));
+    assert.equal(createHash("sha256").update(source).digest("hex"), record.originalSha256, record.originalSourcePath);
+    const asset = studioAsset(record.id);
+    assert.ok(asset);
+    assert.equal(asset.category, "People");
+    assert.equal(asset.licenseId, "CC0-1.0");
+    assert.equal(asset.commercialUse, true);
+    assert.equal(asset.modificationAllowed, true);
+    assert.equal(asset.redistributionAllowed, true);
+    assert.equal(asset.attributionRequired, false);
+    assert.match(asset.source, /Open Peeps by Pablo Stanley/);
+    assert.match(asset.sourceUrl ?? "", /cdn\.prod\.website-files\.com\/.*_peep/);
+    assert.equal(asset.svg, source.toString("utf8"));
+    assert.doesNotMatch(asset.svg, /<script\b|<foreignObject\b|<iframe\b|javascript:/i);
+    assert.doesNotMatch(asset.svg, /(?:href|url\()\s*[=:(]\s*["']?https?:/i);
+    assert.equal(studioEditorCommandSchema.safeParse({ type: "add_graphic", assetKey: asset.id }).success, true);
+  }
+  for (const query of ["people portrait", "people invitation", "people standing", "people sitting", "wheelchair accessible"]) {
+    assert.ok(findStudioAssets({ query, kind: "element", limit: 50 }).some((asset) => asset.id.startsWith("open-peeps-")), query);
+  }
+  assert.match(readFileSync("app/(partner)/partner/canvas/asset-library-panel.tsx", "utf8"), /"People"/);
+  assert.match(readFileSync("docs/licenses/third-party/open-peeps/CC0-LICENSE-EVIDENCE.md", "utf8"), /Pablo Stanley/);
+  assert.match(readFileSync("docs/licenses/third-party/open-peeps/CC0-1.0-LEGALCODE.txt", "utf8"), /CC0 1\.0 Universal/);
+});
+
 test("Openclipart frame, banner, badge, and background primitives are CC0 and findable by real design briefs", () => {
   const assets = STUDIO_ASSETS.filter((asset) => asset.id.startsWith("openclipart-"));
   assert.equal(assets.length, 14);
