@@ -139,9 +139,18 @@ try {
   const productsLink = page.locator('a[href="/partner/products"]').first();
   await productsLink.waitFor({ state: "visible", timeout: 20_000 });
   await productsLink.click();
-  await page.waitForURL((url) => url.pathname === "/partner/products", { timeout: 30_000 });
   await page.getByRole("heading", { name: "My products" }).waitFor({ state: "visible", timeout: 20_000 });
+  if (new URL(page.url()).pathname !== "/partner/products") throw new Error(`Partner products navigation landed on ${new URL(page.url()).pathname}.`);
   await page.getByRole("textbox", { name: "Search your products" }).waitFor({ state: "visible", timeout: 10_000 });
+
+  await page.goto(`${origin}/partner/canvas`, { waitUntil: "domcontentloaded", timeout: 90_000 });
+  const assetLibraryButton = page.getByRole("button", { name: "Asset library", exact: true });
+  await assetLibraryButton.waitFor({ state: "visible", timeout: 45_000 });
+  await assetLibraryButton.click();
+  await page.getByPlaceholder("Search elements and fonts").fill("butterfly");
+  await page.getByRole("button", { name: "Add Butterfly" }).click();
+  await page.getByRole("button", { name: "Layers", exact: true }).click();
+  await page.locator(".pe-layers").getByText("Butterfly", { exact: true }).waitFor({ state: "visible", timeout: 15_000 });
 
   console.log(JSON.stringify({
     browser: browser.version(),
@@ -150,6 +159,8 @@ try {
     myProductsNavigation: "passed",
     productsHeading: "My products",
     productsSearchControl: "visible",
+    creativeLibrarySearch: "found Butterfly",
+    studioCanvasInsertion: "Butterfly layer visible",
     pageErrors: browserErrors,
   }));
   await context.close();

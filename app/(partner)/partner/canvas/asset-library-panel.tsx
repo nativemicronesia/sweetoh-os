@@ -8,8 +8,8 @@ import { filterStudioCreativeAssets, type StudioCreativeAssetOption } from "@/li
 
 const FAVORITES_KEY = "sweetoh:studio:favorites:v1";
 const RECENTS_KEY = "sweetoh:studio:recent:v1";
-type Filter = "All" | "Nature" | "Accents" | "Frames" | "Patterns" | "Textures" | "Backgrounds" | "Fonts" | "Favorites" | "Recent";
-const FILTERS: Filter[] = ["All", "Nature", "Accents", "Frames", "Patterns", "Textures", "Backgrounds", "Fonts", "Favorites", "Recent"];
+type Filter = "All" | "Nature" | "Ocean & Travel" | "Celestial" | "Accents" | "Frames" | "Patterns" | "Textures" | "Backgrounds" | "Fonts" | "Favorites" | "Recent";
+const FILTERS: Filter[] = ["All", "Nature", "Ocean & Travel", "Celestial", "Accents", "Frames", "Patterns", "Textures", "Backgrounds", "Fonts", "Favorites", "Recent"];
 
 function readIds(key: string): string[] {
   try {
@@ -42,8 +42,8 @@ export function AssetLibraryPanel({ disabled, creativeAssets = [], onAddCreative
   }, []);
 
   const entries = useMemo(() => [
-    ...STUDIO_ASSETS.map((asset) => ({ id: asset.id, name: asset.name, category: asset.category, tags: asset.tags.join(" "), kind: asset.kind, preview: studioAssetUrl(asset), font: null as string | null, license: asset.license })),
-    ...PRODUCT_FONTS.map((font) => ({ id: `font:${font.key}`, name: font.label, category: "Fonts", tags: "text typography lettering", kind: "font", preview: "", font: font.family as string | null, license: STUDIO_FONT_PROVENANCE[font.key].license })),
+    ...STUDIO_ASSETS.map((asset) => ({ id: asset.id, name: asset.name, category: asset.category, tags: asset.tags.join(" "), kind: asset.kind, preview: studioAssetUrl(asset), font: null as string | null, license: asset.license, source: asset.source, licenseId: asset.licenseId ?? "SweetOh original", sourceUrl: asset.sourceUrl ?? "", evidenceUrl: asset.evidenceUrl ?? "", attributionText: asset.attributionText ?? "" })),
+    ...PRODUCT_FONTS.map((font) => ({ id: `font:${font.key}`, name: font.label, category: "Fonts", tags: "text typography lettering", kind: "font", preview: "", font: font.family as string | null, license: STUDIO_FONT_PROVENANCE[font.key].license, source: STUDIO_FONT_PROVENANCE[font.key].source, licenseId: STUDIO_FONT_PROVENANCE[font.key].license.includes("Apache") ? "Apache 2.0" : "OFL 1.1", sourceUrl: STUDIO_FONT_PROVENANCE[font.key].source, evidenceUrl: STUDIO_FONT_PROVENANCE[font.key].notice, attributionText: "" })),
   ], []);
   const visible = entries.filter((entry) => {
     if (filter === "Favorites" && !favorites.includes(entry.id)) return false;
@@ -84,7 +84,7 @@ export function AssetLibraryPanel({ disabled, creativeAssets = [], onAddCreative
       <label className="sr-only" htmlFor="studio-asset-search">Search Studio assets</label>
       <input id="studio-asset-search" className="pe-search" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search elements and fonts" />
       <div className="pe-asset-filters" aria-label="Asset categories">{FILTERS.map((item) => <button key={item} type="button" aria-pressed={filter === item} onClick={() => setFilter(item)}>{item}</button>)}</div>
-      <p className="pe-muted pe-small">Original SweetOh graphics and open-license fonts. Add, then resize, rotate, layer and print.</p>
+      <p className="pe-muted pe-small">SweetOh originals, curated open-license SVGs and fonts. Add, then resize, rotate, layer and print.</p>
       {visible.length ? <div className="pe-asset-grid">{visible.map((entry) => <div key={entry.id} className="pe-asset-card">
         <button type="button" disabled={disabled} onClick={() => use(entry.id)} aria-label={`Add ${entry.name}`}>
           {entry.font ? <span className="pe-asset-font" style={{ fontFamily: entry.font }}>Aa</span> : (
@@ -95,7 +95,7 @@ export function AssetLibraryPanel({ disabled, creativeAssets = [], onAddCreative
           <span>{entry.name}</span>
         </button>
         <button type="button" className="pe-asset-favorite" onClick={() => favorite(entry.id)} aria-label={`${favorites.includes(entry.id) ? "Remove" : "Add"} ${entry.name} ${favorites.includes(entry.id) ? "from" : "to"} favorites`} aria-pressed={favorites.includes(entry.id)}>★</button>
-        <small title={entry.license}>{entry.kind === "font" ? entry.license.startsWith("Apache") ? "Apache 2.0" : "OFL" : "Original"}</small>
+        <small title={`${entry.source}\n${entry.license}\nSource: ${entry.sourceUrl}\nEvidence: ${entry.evidenceUrl}\n${entry.attributionText}`}>{entry.source.includes("Tabler") ? `${entry.source} · ${entry.licenseId}` : entry.kind === "font" ? entry.licenseId : "SweetOh original"}</small>
       </div>)}</div> : <p className="pe-muted">No matching assets.</p>}
     </> : <>
       <label className="sr-only" htmlFor="studio-creative-search">Search reusable assets</label>

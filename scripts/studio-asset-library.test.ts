@@ -27,6 +27,27 @@ test("seed graphics have stable unique identities and explicit provenance", () =
   }
 });
 
+test("curated Tabler assets keep upstream provenance and commercial-use evidence searchable", () => {
+  const tabler = STUDIO_ASSETS.filter((asset) => asset.id.startsWith("tabler-"));
+  assert.equal(tabler.length, 13);
+  for (const asset of tabler) {
+    assert.equal(asset.licenseId, "MIT");
+    assert.match(asset.sourceUrl ?? "", /github\.com\/tabler\/tabler-icons\/blob\/[0-9a-f]{40}\/icons\/outline\//);
+    assert.match(asset.evidenceUrl ?? "", /github\.com\/tabler\/tabler-icons\/blob\/[0-9a-f]{40}\/LICENSE/);
+    assert.equal(asset.commercialUse, true);
+    assert.equal(asset.modificationAllowed, true);
+    assert.equal(asset.redistributionAllowed, true);
+    assert.equal(asset.attributionRequired, true);
+    assert.match(asset.attributionText ?? "", /Copyright \(c\) 2020-2026 Paweł Kuna/);
+    assert.equal(studioEditorCommandSchema.safeParse({ type: "add_graphic", assetKey: asset.id }).success, true);
+  }
+  const result = findStudioAssets({ query: "butterfly", kind: "element", limit: 10 });
+  assert.equal(result[0]?.id, "tabler-butterfly-v1");
+  assert.equal(result[0]?.sourceKind, "approved_internal");
+  assert.equal(result[0]?.licenseId, "MIT");
+  assert.equal(result[0]?.commercialUse, true);
+});
+
 test("every bundled vector renders as printable pixels", async () => {
   for (const asset of STUDIO_ASSETS) {
     const result = await sharp(Buffer.from(asset.svg)).resize(600, 600).png().toBuffer();

@@ -1,3 +1,5 @@
+import { TABLER_STUDIO_ASSETS } from "./tabler-assets";
+
 /**
  * Studio-owned, versioned design resources. IDs are persisted in layouts:
  * never rename an ID or remove its SVG while a saved design may refer to it.
@@ -12,6 +14,15 @@ export type StudioAsset = {
   tags: readonly string[];
   license: string;
   source: string;
+  sourceUrl?: string;
+  evidenceUrl?: string;
+  licenseId?: string;
+  licenseUrl?: string;
+  attributionRequired?: boolean;
+  attributionText?: string | null;
+  commercialUse?: boolean;
+  modificationAllowed?: boolean;
+  redistributionAllowed?: boolean;
   svg: string;
 };
 
@@ -19,7 +30,7 @@ const outline = 'fill="none" stroke="#173e39" stroke-width="9" stroke-linecap="r
 const fill = 'fill="#173e39"';
 const svg = (body: string) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">${body}</svg>`;
 
-export const STUDIO_ASSETS: readonly StudioAsset[] = [
+const SWEETOH_STUDIO_ASSETS: readonly StudioAsset[] = [
   { id: "so-sunburst-v1", name: "Sunburst", kind: "element", category: "Nature", tags: ["sun", "light", "summer"], license: "SweetOh original — free for SweetOh customer designs", source: "SweetOh OS", svg: svg(`<circle cx="100" cy="100" r="34" ${outline}/><path d="M100 8v35m0 114v35M8 100h35m114 0h35M35 35l25 25m80 80 25 25M165 35l-25 25M60 140l-25 25" ${outline}/>` ) },
   { id: "so-wave-v1", name: "Ocean wave", kind: "element", category: "Nature", tags: ["water", "sea", "island"], license: "SweetOh original — free for SweetOh customer designs", source: "SweetOh OS", svg: svg(`<path d="M8 104c25 0 25-30 50-30s25 30 50 30 25-30 50-30 25 30 34 30M8 145c25 0 25-30 50-30s25 30 50 30 25-30 50-30 25 30 34 30" ${outline}/>` ) },
   { id: "so-leaf-v1", name: "Tropical leaf", kind: "element", category: "Nature", tags: ["leaf", "plant", "botanical"], license: "SweetOh original — free for SweetOh customer designs", source: "SweetOh OS", svg: svg(`<path d="M36 170C45 85 82 36 166 22c12 82-23 134-115 150M61 150c31-39 57-62 95-106M87 118l-22-44m47 16-11-52m38 29 38-15m-65 66 54-8" ${outline}/>` ) },
@@ -35,6 +46,9 @@ export const STUDIO_ASSETS: readonly StudioAsset[] = [
   { id: "so-rainbow-v1", name: "Rainbow arch", kind: "element", category: "Frames", tags: ["rainbow", "arch", "frame", "joy"], license: "SweetOh original — free for SweetOh customer designs", source: "SweetOh OS", svg: svg(`<path d="M25 175v-66a75 75 0 0 1 150 0v66M48 175v-66a52 52 0 0 1 104 0v66M72 175v-66a28 28 0 0 1 56 0v66" ${outline}/>` ) },
   { id: "so-sunshine-v1", name: "Sunshine face", kind: "element", category: "Nature", tags: ["sun", "face", "summer", "happy"], license: "SweetOh original — free for SweetOh customer designs", source: "SweetOh OS", svg: svg(`<circle cx="100" cy="104" r="47" ${outline}/><path d="M100 9v27m0 136v23M9 104h27m128 0h27M35 39l19 19m92 92 19 19m0-130-19 19M54 150l-19 19" ${outline}/><circle cx="83" cy="96" r="3" ${fill}/><circle cx="117" cy="96" r="3" ${fill}/><path d="M80 119q20 20 40 0" ${outline}/>` ) },
 ] as const;
+
+/** SweetOh originals and separately documented, rights-cleared open-license resources. */
+export const STUDIO_ASSETS: readonly StudioAsset[] = [...SWEETOH_STUDIO_ASSETS, ...TABLER_STUDIO_ASSETS];
 
 export const STUDIO_ASSET_IDS = new Set(STUDIO_ASSETS.map((asset) => asset.id));
 export function studioAsset(id: string) { return STUDIO_ASSETS.find((asset) => asset.id === id); }
