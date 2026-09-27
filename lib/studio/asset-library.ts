@@ -1,6 +1,7 @@
 import { TABLER_STUDIO_ASSETS } from "./tabler-assets";
 import { PATTERNFILLS_STUDIO_ASSETS } from "./patternfills-assets";
 import { OPEN_CROP_STUDIO_ASSETS } from "./open-crop-assets";
+import { OPENCLIPART_STUDIO_ASSETS } from "./openclipart-assets";
 
 /**
  * Studio-owned, versioned design resources. IDs are persisted in layouts:
@@ -62,6 +63,7 @@ export const STUDIO_ASSETS: readonly StudioAsset[] = [
   ...TABLER_STUDIO_ASSETS,
   ...PATTERNFILLS_STUDIO_ASSETS,
   ...OPEN_CROP_STUDIO_ASSETS,
+  ...OPENCLIPART_STUDIO_ASSETS,
 ];
 
 export const STUDIO_ASSET_IDS = new Set(STUDIO_ASSETS.map((asset) => asset.id));

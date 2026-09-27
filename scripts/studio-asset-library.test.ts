@@ -99,6 +99,35 @@ test("diverse open collections retain exact provenance, evidence, rights, search
   assert.equal(readFileSync("docs/licenses/third-party/open-crop-icons/source/pumpkin.svg", "utf8").includes("<svg"), true);
 });
 
+test("Openclipart frame, banner, badge, and background primitives are CC0 and findable by real design briefs", () => {
+  const assets = STUDIO_ASSETS.filter((asset) => asset.id.startsWith("openclipart-"));
+  assert.equal(assets.length, 9);
+  for (const asset of assets) {
+    assert.equal(asset.licenseId, "CC0-1.0");
+    assert.equal(asset.licenseUrl, "https://creativecommons.org/publicdomain/zero/1.0/");
+    assert.equal(asset.commercialUse, true);
+    assert.equal(asset.modificationAllowed, true);
+    assert.equal(asset.redistributionAllowed, true);
+    assert.equal(asset.attributionRequired, false);
+    assert.match(asset.sourceUrl ?? "", /^https:\/\/openclipart\.org\/detail\/\d+$/);
+    assert.equal(asset.evidenceUrl, asset.sourceUrl);
+    assert.equal(studioEditorCommandSchema.safeParse({ type: "add_graphic", assetKey: asset.id }).success, true);
+  }
+  for (const [query, expectedId] of [
+    ["christmas frame", "openclipart-230538-v1"],
+    ["graduation badge", "openclipart-189876-v1"],
+    ["tropical pattern", "openclipart-289745-v1"],
+    ["birthday banner", "openclipart-238238-v1"],
+    ["baby background", "openclipart-284817-v1"],
+    ["sports border", "openclipart-204165-v1"],
+  ]) {
+    assert.ok(findStudioAssets({ query, kind: "any", limit: 50 }).some((asset) => asset.id === expectedId), query);
+  }
+  assert.match(readFileSync("docs/licenses/third-party/openclipart/CC0-1.0-LEGALCODE.txt", "utf8"), /Creative Commons Legal Code/);
+  assert.match(readFileSync("docs/licenses/third-party/openclipart/SOURCE.md", "utf8"), /mia_marianne/);
+  assert.ok(readFileSync("docs/licenses/third-party/openclipart/source/230538-christmas-frame.svg", "utf8").includes("<svg"));
+});
+
 test("every bundled vector renders as printable pixels", async () => {
   for (const asset of STUDIO_ASSETS) {
     try {
