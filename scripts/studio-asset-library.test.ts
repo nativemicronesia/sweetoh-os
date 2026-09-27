@@ -130,6 +130,35 @@ test("Libreclipart illustration batch keeps CC0 evidence, originals, designer ta
   assert.equal(readFileSync("docs/licenses/third-party/libreclipart/source/860.svg", "utf8").includes("<svg"), true);
 });
 
+test("Open Doodles adds authored lifestyle illustrations with CC0 rights and useful design retrieval", () => {
+  const assets = STUDIO_ASSETS.filter((asset) => asset.id.startsWith("open-doodles-"));
+  assert.equal(assets.length, 27);
+  for (const asset of assets) {
+    assert.equal(asset.licenseId, "CC0-1.0");
+    assert.equal(asset.commercialUse, true);
+    assert.equal(asset.modificationAllowed, true);
+    assert.equal(asset.redistributionAllowed, true);
+    assert.equal(asset.attributionRequired, false);
+    assert.equal(asset.attributionText, null);
+    assert.match(asset.source ?? "", /Pablo Stanley/);
+    assert.match(asset.sourceUrl ?? "", /opendoodles\.s3-us-west-1\.amazonaws\.com\/.*\.svg$/);
+    assert.equal(studioEditorCommandSchema.safeParse({ type: "add_graphic", assetKey: asset.id }).success, true);
+  }
+  for (const [query,id] of [
+    ["dog mom", "open-doodles-doggie-v1"],
+    ["christmas gift tag", "open-doodles-unboxing-v1"],
+    ["halloween", "open-doodles-zombieing-v1"],
+    ["summer body positivity", "open-doodles-bikini-v1"],
+    ["school reading", "open-doodles-reading-side-v1"],
+    ["garden botanical", "open-doodles-plant-v1"],
+    ["retro roller skating", "open-doodles-roller-skating-v1"],
+  ] as const) {
+    assert.ok(findStudioAssets({ query, kind: "element", limit: 50 }).some((asset) => asset.id === id), query);
+  }
+  assert.match(readFileSync("docs/licenses/third-party/open-doodles/CC0-LICENSE-EVIDENCE.md", "utf8"), /Pablo Stanley/);
+  assert.equal(readFileSync("docs/licenses/third-party/open-doodles/source/running.svg", "utf8").includes("<svg"), true);
+});
+
 test("Openclipart frame, banner, badge, and background primitives are CC0 and findable by real design briefs", () => {
   const assets = STUDIO_ASSETS.filter((asset) => asset.id.startsWith("openclipart-"));
   assert.equal(assets.length, 14);

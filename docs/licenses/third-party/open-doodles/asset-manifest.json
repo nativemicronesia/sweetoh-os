@@ -1,0 +1,732 @@
+[
+  {
+    "file": "running",
+    "name": "Windblown runner",
+    "category": "Sports & Fitness",
+    "tags": [
+      "running",
+      "fitness",
+      "sports",
+      "activewear",
+      "summer",
+      "marathon",
+      "race day",
+      "energy",
+      "doodle",
+      "people"
+    ],
+    "creator": "Pablo Stanley",
+    "license": {
+      "name": "Creative Commons Zero 1.0 Universal",
+      "id": "CC0-1.0",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true
+    },
+    "sourceUrl": "https://opendoodles.s3-us-west-1.amazonaws.com/running.svg",
+    "evidenceUrl": "https://www.opendoodles.com/about"
+  },
+  {
+    "file": "ice-cream",
+    "name": "Person with giant ice cream",
+    "category": "Food & Summer",
+    "tags": [
+      "ice cream",
+      "dessert",
+      "food",
+      "summer",
+      "kids",
+      "birthday",
+      "party",
+      "cute",
+      "people"
+    ],
+    "creator": "Pablo Stanley",
+    "license": {
+      "name": "Creative Commons Zero 1.0 Universal",
+      "id": "CC0-1.0",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true
+    },
+    "sourceUrl": "https://opendoodles.s3-us-west-1.amazonaws.com/ice-cream.svg",
+    "evidenceUrl": "https://www.opendoodles.com/about"
+  },
+  {
+    "file": "sleek",
+    "name": "Sleek walking figure",
+    "category": "People & Lifestyle",
+    "tags": [
+      "walking",
+      "fashion",
+      "style",
+      "lifestyle",
+      "confidence",
+      "people",
+      "doodle"
+    ],
+    "creator": "Pablo Stanley",
+    "license": {
+      "name": "Creative Commons Zero 1.0 Universal",
+      "id": "CC0-1.0",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true
+    },
+    "sourceUrl": "https://opendoodles.s3-us-west-1.amazonaws.com/sleek.svg",
+    "evidenceUrl": "https://www.opendoodles.com/about"
+  },
+  {
+    "file": "Doggie",
+    "name": "Person and dog",
+    "category": "Pets & Animals",
+    "tags": [
+      "dog",
+      "pet",
+      "pet parent",
+      "dog mom",
+      "dog dad",
+      "animal",
+      "friendship",
+      "children",
+      "people"
+    ],
+    "creator": "Pablo Stanley",
+    "license": {
+      "name": "Creative Commons Zero 1.0 Universal",
+      "id": "CC0-1.0",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true
+    },
+    "sourceUrl": "https://opendoodles.s3-us-west-1.amazonaws.com/Doggie.svg",
+    "evidenceUrl": "https://www.opendoodles.com/about"
+  },
+  {
+    "file": "selfie",
+    "name": "Selfie and peace sign",
+    "category": "Travel & Lifestyle",
+    "tags": [
+      "selfie",
+      "travel",
+      "photo",
+      "social",
+      "friendship",
+      "teen",
+      "summer",
+      "people"
+    ],
+    "creator": "Pablo Stanley",
+    "license": {
+      "name": "Creative Commons Zero 1.0 Universal",
+      "id": "CC0-1.0",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true
+    },
+    "sourceUrl": "https://opendoodles.s3-us-west-1.amazonaws.com/selfie.svg",
+    "evidenceUrl": "https://www.opendoodles.com/about"
+  },
+  {
+    "file": "dancing",
+    "name": "Free dancing figure",
+    "category": "Music & Celebration",
+    "tags": [
+      "dance",
+      "dancing",
+      "music",
+      "party",
+      "celebration",
+      "festival",
+      "joy",
+      "people"
+    ],
+    "creator": "Pablo Stanley",
+    "license": {
+      "name": "Creative Commons Zero 1.0 Universal",
+      "id": "CC0-1.0",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true
+    },
+    "sourceUrl": "https://opendoodles.s3-us-west-1.amazonaws.com/dancing.svg",
+    "evidenceUrl": "https://www.opendoodles.com/about"
+  },
+  {
+    "file": "reading-side",
+    "name": "Person reading on the floor",
+    "category": "Books & Learning",
+    "tags": [
+      "reading",
+      "books",
+      "education",
+      "school",
+      "quiet time",
+      "study",
+      "cozy",
+      "people"
+    ],
+    "creator": "Pablo Stanley",
+    "license": {
+      "name": "Creative Commons Zero 1.0 Universal",
+      "id": "CC0-1.0",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true
+    },
+    "sourceUrl": "https://opendoodles.s3-us-west-1.amazonaws.com/reading-side.svg",
+    "evidenceUrl": "https://www.opendoodles.com/about"
+  },
+  {
+    "file": "zombieing",
+    "name": "Zombie walk",
+    "category": "Halloween & Seasonal",
+    "tags": [
+      "zombie",
+      "halloween",
+      "spooky",
+      "costume",
+      "october",
+      "party",
+      "people"
+    ],
+    "creator": "Pablo Stanley",
+    "license": {
+      "name": "Creative Commons Zero 1.0 Universal",
+      "id": "CC0-1.0",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true
+    },
+    "sourceUrl": "https://opendoodles.s3-us-west-1.amazonaws.com/zombieing.svg",
+    "evidenceUrl": "https://www.opendoodles.com/about"
+  },
+  {
+    "file": "unboxing",
+    "name": "Person opening a gift box",
+    "category": "Gifts & Celebration",
+    "tags": [
+      "gift",
+      "unboxing",
+      "present",
+      "christmas",
+      "birthday",
+      "holiday",
+      "celebration",
+      "surprise",
+      "people",
+      "gift tag",
+      "holiday gift tag"
+    ],
+    "creator": "Pablo Stanley",
+    "license": {
+      "name": "Creative Commons Zero 1.0 Universal",
+      "id": "CC0-1.0",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true
+    },
+    "sourceUrl": "https://opendoodles.s3-us-west-1.amazonaws.com/unboxing.svg",
+    "evidenceUrl": "https://www.opendoodles.com/about"
+  },
+  {
+    "file": "chilling",
+    "name": "Relaxing in a chair",
+    "category": "Summer & Lifestyle",
+    "tags": [
+      "relax",
+      "leisure",
+      "summer",
+      "vacation",
+      "rest",
+      "cozy",
+      "lifestyle",
+      "people"
+    ],
+    "creator": "Pablo Stanley",
+    "license": {
+      "name": "Creative Commons Zero 1.0 Universal",
+      "id": "CC0-1.0",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true
+    },
+    "sourceUrl": "https://opendoodles.s3-us-west-1.amazonaws.com/chilling.svg",
+    "evidenceUrl": "https://www.opendoodles.com/about"
+  },
+  {
+    "file": "bikini",
+    "name": "Beachwear figure",
+    "category": "Beach & Body Positivity",
+    "tags": [
+      "beach",
+      "swimwear",
+      "summer",
+      "body positivity",
+      "confidence",
+      "self love",
+      "vacation",
+      "people"
+    ],
+    "creator": "Pablo Stanley",
+    "license": {
+      "name": "Creative Commons Zero 1.0 Universal",
+      "id": "CC0-1.0",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true
+    },
+    "sourceUrl": "https://opendoodles.s3-us-west-1.amazonaws.com/bikini.svg",
+    "evidenceUrl": "https://www.opendoodles.com/about"
+  },
+  {
+    "file": "jumping",
+    "name": "Jumping for joy",
+    "category": "Celebration & Movement",
+    "tags": [
+      "jump",
+      "joy",
+      "celebration",
+      "birthday",
+      "graduation",
+      "achievement",
+      "party",
+      "people"
+    ],
+    "creator": "Pablo Stanley",
+    "license": {
+      "name": "Creative Commons Zero 1.0 Universal",
+      "id": "CC0-1.0",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true
+    },
+    "sourceUrl": "https://opendoodles.s3-us-west-1.amazonaws.com/jumping.svg",
+    "evidenceUrl": "https://www.opendoodles.com/about"
+  },
+  {
+    "file": "clumsy",
+    "name": "Playful falling figure",
+    "category": "Playful & Everyday",
+    "tags": [
+      "funny",
+      "playful",
+      "clumsy",
+      "comedy",
+      "everyday",
+      "humor",
+      "people"
+    ],
+    "creator": "Pablo Stanley",
+    "license": {
+      "name": "Creative Commons Zero 1.0 Universal",
+      "id": "CC0-1.0",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true
+    },
+    "sourceUrl": "https://opendoodles.s3-us-west-1.amazonaws.com/clumsy.svg",
+    "evidenceUrl": "https://www.opendoodles.com/about"
+  },
+  {
+    "file": "levitate",
+    "name": "Levitating figure",
+    "category": "Dreamy & Whimsical",
+    "tags": [
+      "dream",
+      "whimsical",
+      "magic",
+      "imagination",
+      "playful",
+      "abstract",
+      "people"
+    ],
+    "creator": "Pablo Stanley",
+    "license": {
+      "name": "Creative Commons Zero 1.0 Universal",
+      "id": "CC0-1.0",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true
+    },
+    "sourceUrl": "https://opendoodles.s3-us-west-1.amazonaws.com/levitate.svg",
+    "evidenceUrl": "https://www.opendoodles.com/about"
+  },
+  {
+    "file": "loving",
+    "name": "Holding a heart",
+    "category": "Love & Wedding",
+    "tags": [
+      "heart",
+      "love",
+      "valentines",
+      "wedding",
+      "anniversary",
+      "mothers day",
+      "romance",
+      "kindness",
+      "people"
+    ],
+    "creator": "Pablo Stanley",
+    "license": {
+      "name": "Creative Commons Zero 1.0 Universal",
+      "id": "CC0-1.0",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true
+    },
+    "sourceUrl": "https://opendoodles.s3-us-west-1.amazonaws.com/loving.svg",
+    "evidenceUrl": "https://www.opendoodles.com/about"
+  },
+  {
+    "file": "sitting",
+    "name": "Casual seated figure",
+    "category": "People & Lifestyle",
+    "tags": [
+      "sitting",
+      "casual",
+      "lifestyle",
+      "rest",
+      "people",
+      "character",
+      "apparel design"
+    ],
+    "creator": "Pablo Stanley",
+    "license": {
+      "name": "Creative Commons Zero 1.0 Universal",
+      "id": "CC0-1.0",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true
+    },
+    "sourceUrl": "https://opendoodles.s3-us-west-1.amazonaws.com/sitting.svg",
+    "evidenceUrl": "https://www.opendoodles.com/about"
+  },
+  {
+    "file": "float",
+    "name": "Floating figure",
+    "category": "Dreamy & Whimsical",
+    "tags": [
+      "float",
+      "summer",
+      "daydream",
+      "whimsical",
+      "freedom",
+      "playful",
+      "people"
+    ],
+    "creator": "Pablo Stanley",
+    "license": {
+      "name": "Creative Commons Zero 1.0 Universal",
+      "id": "CC0-1.0",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true
+    },
+    "sourceUrl": "https://opendoodles.s3-us-west-1.amazonaws.com/float.svg",
+    "evidenceUrl": "https://www.opendoodles.com/about"
+  },
+  {
+    "file": "moshing",
+    "name": "Dancing at a music show",
+    "category": "Music & Hobbies",
+    "tags": [
+      "music",
+      "concert",
+      "rock",
+      "festival",
+      "hobby",
+      "dance",
+      "alternative",
+      "people"
+    ],
+    "creator": "Pablo Stanley",
+    "license": {
+      "name": "Creative Commons Zero 1.0 Universal",
+      "id": "CC0-1.0",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true
+    },
+    "sourceUrl": "https://opendoodles.s3-us-west-1.amazonaws.com/moshing.svg",
+    "evidenceUrl": "https://www.opendoodles.com/about"
+  },
+  {
+    "file": "roller-skating",
+    "name": "Roller skating figure",
+    "category": "Sports & Hobbies",
+    "tags": [
+      "roller skating",
+      "skating",
+      "sports",
+      "hobby",
+      "retro",
+      "1980s",
+      "summer",
+      "people"
+    ],
+    "creator": "Pablo Stanley",
+    "license": {
+      "name": "Creative Commons Zero 1.0 Universal",
+      "id": "CC0-1.0",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true
+    },
+    "sourceUrl": "https://opendoodles.s3-us-west-1.amazonaws.com/roller-skating.svg",
+    "evidenceUrl": "https://www.opendoodles.com/about"
+  },
+  {
+    "file": "dog-jump",
+    "name": "Person jumping with a dog",
+    "category": "Pets & Animals",
+    "tags": [
+      "dog",
+      "pet",
+      "pet parent",
+      "dog mom",
+      "dog dad",
+      "animal",
+      "play",
+      "friendship",
+      "people"
+    ],
+    "creator": "Pablo Stanley",
+    "license": {
+      "name": "Creative Commons Zero 1.0 Universal",
+      "id": "CC0-1.0",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true
+    },
+    "sourceUrl": "https://opendoodles.s3-us-west-1.amazonaws.com/dog-jump.svg",
+    "evidenceUrl": "https://www.opendoodles.com/about"
+  },
+  {
+    "file": "groovy",
+    "name": "Groovy strolling figure",
+    "category": "Vintage & Lifestyle",
+    "tags": [
+      "groovy",
+      "retro",
+      "vintage",
+      "1970s",
+      "style",
+      "fashion",
+      "people"
+    ],
+    "creator": "Pablo Stanley",
+    "license": {
+      "name": "Creative Commons Zero 1.0 Universal",
+      "id": "CC0-1.0",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true
+    },
+    "sourceUrl": "https://opendoodles.s3-us-west-1.amazonaws.com/groovy.svg",
+    "evidenceUrl": "https://www.opendoodles.com/about"
+  },
+  {
+    "file": "swinging",
+    "name": "Swinging figure",
+    "category": "Kids & Play",
+    "tags": [
+      "swing",
+      "playground",
+      "kids",
+      "children",
+      "summer",
+      "play",
+      "school",
+      "people"
+    ],
+    "creator": "Pablo Stanley",
+    "license": {
+      "name": "Creative Commons Zero 1.0 Universal",
+      "id": "CC0-1.0",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true
+    },
+    "sourceUrl": "https://opendoodles.s3-us-west-1.amazonaws.com/swinging.svg",
+    "evidenceUrl": "https://www.opendoodles.com/about"
+  },
+  {
+    "file": "plant",
+    "name": "Person holding a plant",
+    "category": "Botanical & Gardening",
+    "tags": [
+      "plant",
+      "gardening",
+      "botanical",
+      "nature",
+      "houseplant",
+      "earth day",
+      "spring",
+      "people"
+    ],
+    "creator": "Pablo Stanley",
+    "license": {
+      "name": "Creative Commons Zero 1.0 Universal",
+      "id": "CC0-1.0",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true
+    },
+    "sourceUrl": "https://opendoodles.s3-us-west-1.amazonaws.com/plant.svg",
+    "evidenceUrl": "https://www.opendoodles.com/about"
+  },
+  {
+    "file": "coffee",
+    "name": "Hugging a coffee cup",
+    "category": "Food & Lifestyle",
+    "tags": [
+      "coffee",
+      "cafe",
+      "drink",
+      "cozy",
+      "morning",
+      "food",
+      "comfort",
+      "people"
+    ],
+    "creator": "Pablo Stanley",
+    "license": {
+      "name": "Creative Commons Zero 1.0 Universal",
+      "id": "CC0-1.0",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true
+    },
+    "sourceUrl": "https://opendoodles.s3-us-west-1.amazonaws.com/coffee.svg",
+    "evidenceUrl": "https://www.opendoodles.com/about"
+  },
+  {
+    "file": "sitting-reading",
+    "name": "Seated reader with a book",
+    "category": "Books & Learning",
+    "tags": [
+      "reading",
+      "books",
+      "education",
+      "school",
+      "study",
+      "quiet time",
+      "cozy",
+      "people"
+    ],
+    "creator": "Pablo Stanley",
+    "license": {
+      "name": "Creative Commons Zero 1.0 Universal",
+      "id": "CC0-1.0",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true
+    },
+    "sourceUrl": "https://opendoodles.s3-us-west-1.amazonaws.com/sitting-reading.svg",
+    "evidenceUrl": "https://www.opendoodles.com/about"
+  },
+  {
+    "file": "meditating",
+    "name": "Meditating figure",
+    "category": "Wellness & Lifestyle",
+    "tags": [
+      "meditation",
+      "wellness",
+      "self care",
+      "calm",
+      "mindfulness",
+      "relaxation",
+      "people"
+    ],
+    "creator": "Pablo Stanley",
+    "license": {
+      "name": "Creative Commons Zero 1.0 Universal",
+      "id": "CC0-1.0",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true
+    },
+    "sourceUrl": "https://opendoodles.s3-us-west-1.amazonaws.com/meditating.svg",
+    "evidenceUrl": "https://www.opendoodles.com/about"
+  },
+  {
+    "file": "ballet",
+    "name": "Ballet leap",
+    "category": "Dance & Hobbies",
+    "tags": [
+      "ballet",
+      "dance",
+      "dancer",
+      "hobby",
+      "arts",
+      "performance",
+      "graduation",
+      "people"
+    ],
+    "creator": "Pablo Stanley",
+    "license": {
+      "name": "Creative Commons Zero 1.0 Universal",
+      "id": "CC0-1.0",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true
+    },
+    "sourceUrl": "https://opendoodles.s3-us-west-1.amazonaws.com/ballet.svg",
+    "evidenceUrl": "https://www.opendoodles.com/about"
+  }
+]
