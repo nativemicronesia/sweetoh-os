@@ -1,0 +1,203 @@
+{
+  "id": "ld1-1643399887910-1643399906223-0",
+  "title": "Sidewall",
+  "unitCode": "CHNDM",
+  "type": "edanmdm",
+  "url": "edanmdm:chndm_1938-50-9",
+  "content": {
+    "freetext": {
+      "date": [
+        {
+          "label": "Date",
+          "content": "1825–30"
+        }
+      ],
+      "notes": [
+        {
+          "label": "Catalogue Status",
+          "content": "Research in Progress"
+        },
+        {
+          "label": "Description",
+          "content": "Shaped squarish figures form a checker board or diamond trellis pattern, enclosing a simple floral form on dotted ground, which alternates with floral sprays. At left, original margin of paper. Original colors appear along edges, where paper has been folded. Paper is gray and coarse; green colors have high gloss. This wallpaper was formerly used as a book cover."
+        }
+      ],
+      "place": [
+        {
+          "label": "made in",
+          "content": "USA"
+        }
+      ],
+      "setName": [
+        {
+          "label": "See more items in",
+          "content": "Cooper Hewitt, Smithsonian Design Museum Collection"
+        },
+        {
+          "label": "See more items in",
+          "content": "Wallcoverings Department"
+        }
+      ],
+      "creditLine": [
+        {
+          "label": "Credit Line",
+          "content": "Gift of Paul F. Franco"
+        }
+      ],
+      "dataSource": [
+        {
+          "label": "Data Source",
+          "content": "Cooper Hewitt, Smithsonian Design Museum"
+        }
+      ],
+      "identifier": [
+        {
+          "label": "Accession Number",
+          "content": "1938-50-9"
+        }
+      ],
+      "objectType": [
+        {
+          "label": "Type",
+          "content": "Wallcoverings"
+        },
+        {
+          "label": "Type",
+          "content": "Sidewall"
+        }
+      ],
+      "objectRights": [
+        {
+          "label": "Restrictions & Rights",
+          "content": "CC0"
+        }
+      ],
+      "physicalDescription": [
+        {
+          "label": "Medium",
+          "content": "Block-printed on handmade paper"
+        },
+        {
+          "label": "Dimensions",
+          "content": "30 x 21 cm (11 13/16 x 8 1/4 in.)"
+        }
+      ]
+    },
+    "indexedStructured": {
+      "date": [
+        "1820s",
+        "1830s"
+      ],
+      "place": [
+        "USA"
+      ],
+      "geoLocation": [
+        {
+          "L2": {
+            "type": "Country",
+            "content": "USA"
+          }
+        }
+      ],
+      "object_type": [
+        "Fill papers",
+        "Wall coverings"
+      ],
+      "online_media_type": [
+        "Images"
+      ]
+    },
+    "descriptiveNonRepeating": {
+      "guid": "http://n2t.net/ark:/65665/kq45169709a-30b3-4cb5-811b-8de2a69d0735",
+      "title": {
+        "label": "Title",
+        "content": "Sidewall"
+      },
+      "record_ID": "chndm_1938-50-9",
+      "unit_code": "CHNDM",
+      "title_sort": "SIDEWALL",
+      "data_source": "Cooper Hewitt, Smithsonian Design Museum",
+      "record_link": "https://collection.cooperhewitt.org/view/objects/asitem/id/57076",
+      "online_media": {
+        "media": [
+          {
+            "id": "media:CHSDM-1938-50-9MFlynn",
+            "guid": "http://n2t.net/ark:/65665/vc9cec419d4-f76f-4c0d-9c66-d316d0aca792",
+            "type": "Images",
+            "idsId": "CHSDM-1938-50-9MFlynn",
+            "usage": {
+              "access": "CC0"
+            },
+            "content": "https://ids.si.edu/ids/deliveryService?id=CHSDM-1938-50-9MFlynn",
+            "thumbnail": "https://ids.si.edu/ids/deliveryService?id=CHSDM-1938-50-9MFlynn",
+            "altTextAccessibility": "",
+            "extDescrAccessibility": "Shaped squarish figures form a checker board or diamond trellis pattern, enclosing a simple floral form on dotted ground, which alternates with floral sprays. At left, original margin of paper. Original colors appear along edges, where paper has been folded. Paper is gray and coarse; green colors have high gloss. This wallpaper was formerly used as a book cover.",
+            "resources": [
+              {
+                "label": "High-resolution TIFF",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-1938-50-9MFlynn.tif",
+                "width": 3000,
+                "height": 2999,
+                "dimensions": "3000x2999"
+              },
+              {
+                "label": "High-resolution JPEG",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-1938-50-9MFlynn.jpg",
+                "width": 3000,
+                "height": 2999,
+                "dimensions": "3000x2999"
+              },
+              {
+                "label": "Screen Image",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-1938-50-9MFlynn_screen"
+              },
+              {
+                "label": "Thumbnail Image",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-1938-50-9MFlynn_thumb"
+              }
+            ]
+          },
+          {
+            "id": "media:CHSDM-DBCD9CA2C7C42-000001",
+            "guid": "http://n2t.net/ark:/65665/vc98825bc8a-51c5-42b0-bc80-098f952d7a56",
+            "type": "Images",
+            "idsId": "CHSDM-DBCD9CA2C7C42-000001",
+            "usage": {
+              "access": "CC0"
+            },
+            "content": "https://ids.si.edu/ids/deliveryService?id=CHSDM-DBCD9CA2C7C42-000001",
+            "thumbnail": "https://ids.si.edu/ids/deliveryService?id=CHSDM-DBCD9CA2C7C42-000001",
+            "altTextAccessibility": "",
+            "extDescrAccessibility": "Shaped squarish figures form a checker board or diamond trellis pattern, enclosing a simple floral form on dotted ground, which alternates with floral sprays. At left, original margin of paper. Original colors appear along edges, where paper has been folded. Paper is gray and coarse; green colors have high gloss. This wallpaper was formerly used as a book cover.",
+            "resources": [
+              {
+                "label": "High-resolution JPEG",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-DBCD9CA2C7C42-000001.jpg",
+                "width": 3994,
+                "height": 5482,
+                "dimensions": "3994x5482"
+              },
+              {
+                "label": "Screen Image",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-DBCD9CA2C7C42-000001_screen"
+              },
+              {
+                "label": "Thumbnail Image",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-DBCD9CA2C7C42-000001_thumb"
+              }
+            ]
+          }
+        ],
+        "mediaCount": 2
+      },
+      "metadata_usage": {
+        "access": "CC0"
+      }
+    }
+  },
+  "hash": "6de25b24b9d021f529e0d1d9a72a5ce6a7d0ec6e",
+  "docSignature": "26459c16b21160286f01879bb5ab7e47",
+  "timestamp": "1663784056",
+  "lastTimeUpdated": "1769540882",
+  "version": "1769538334"
+}

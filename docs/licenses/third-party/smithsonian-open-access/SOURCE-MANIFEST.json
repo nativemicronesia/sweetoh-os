@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "reproducible from bundled originals and records",
+  "assets": [
+    {
+      "id": "smithsonian-chndm-birds-wallpaper-v1",
+      "title": "Design for Wallpaper and Textiles: Birds",
+      "recordId": "chndm_1968-107-20",
+      "sourceRecordUrl": "https://collection.cooperhewitt.org/view/objects/asitem/id/141144",
+      "sourceMediaUrl": "https://ids.si.edu/ids/download?id=CHSDM-50886F1E20F42-000001.jpg",
+      "metadataAccess": "CC0",
+      "objectAccess": "CC0",
+      "recordRightsNotice": "CC0",
+      "license": "CC0 1.0 Universal",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "recommendedCredit": "Smithsonian Open Access; Cooper Hewitt, Smithsonian Design Museum. Creator not identified in the collection record.",
+      "creators": [],
+      "date": "19th century",
+      "place": "France",
+      "originalFile": "originals/chndm-1968-107-20.jpg",
+      "originalSha256": "2713bd52a26ffca3eafb49b7f9a58448266c650e689cba2713a1fa73bd716e38",
+      "sourceDimensions": {
+        "width": 4613,
+        "height": 5024
+      },
+      "crop": null,
+      "derivativeFile": "studio-assets/smithsonian/smithsonian-chndm-birds-wallpaper-v1.webp",
+      "derivativeSha256": "be72ade6bf50ce95324493f0daf8ab7b9f1b3c463da760fd5fd326e30acc5315",
+      "derivativeDimensions": {
+        "width": 2204,
+        "height": 2400
+      }
+    },
+    {
+      "id": "smithsonian-chndm-floral-frieze-v1",
+      "title": "Design for a wallpaper frieze",
+      "recordId": "chndm_1914-21-54",
+      "sourceRecordUrl": "https://collection.cooperhewitt.org/view/objects/asitem/id/19947",
+      "sourceMediaUrl": "https://ids.si.edu/ids/download?id=CHSDM-1914-21-54MattFlynn.jpg",
+      "metadataAccess": "CC0",
+      "objectAccess": "CC0",
+      "recordRightsNotice": "CC0",
+      "license": "CC0 1.0 Universal",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "recommendedCredit": "Smithsonian Open Access; Cooper Hewitt, Smithsonian Design Museum. Creator not identified in the collection record.",
+      "creators": [],
+      "date": "1810–30",
+      "place": "France",
+      "originalFile": "originals/chndm-1914-21-54.jpg",
+      "originalSha256": "4c77c32c425267d3be2d1fc63457e5883f35ddd114641eb90a89603fb7abd28d",
+      "sourceDimensions": {
+        "width": 3000,
+        "height": 1727
+      },
+      "crop": null,
+      "derivativeFile": "studio-assets/smithsonian/smithsonian-chndm-floral-frieze-v1.webp",
+      "derivativeSha256": "9e167ac065ffe4381eb635efa33c9b04ac7f1446fb5d3035244503dd3b60dea0",
+      "derivativeDimensions": {
+        "width": 2400,
+        "height": 1382
+      }
+    },
+    {
+      "id": "smithsonian-chndm-floral-sidewall-strip-v1",
+      "title": "Sidewall",
+      "recordId": "chndm_1938-50-9",
+      "sourceRecordUrl": "https://collection.cooperhewitt.org/view/objects/asitem/id/57076",
+      "sourceMediaUrl": "https://ids.si.edu/ids/download?id=CHSDM-1938-50-9MFlynn.jpg",
+      "metadataAccess": "CC0",
+      "objectAccess": "CC0",
+      "recordRightsNotice": "CC0",
+      "license": "CC0 1.0 Universal",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "recommendedCredit": "Smithsonian Open Access; Cooper Hewitt, Smithsonian Design Museum. Creator not identified in the collection record.",
+      "creators": [],
+      "date": "1825–30",
+      "place": "USA",
+      "originalFile": "originals/chndm-1938-50-9.jpg",
+      "originalSha256": "bf1c5b4e85c701abed9f89be51e2354c8d947c813a74297e40d8fe4cff53c89e",
+      "sourceDimensions": {
+        "width": 3000,
+        "height": 2999
+      },
+      "crop": {
+        "left": 435,
+        "top": 110,
+        "width": 2540,
+        "height": 480
+      },
+      "derivativeFile": "studio-assets/smithsonian/smithsonian-chndm-floral-sidewall-strip-v1.webp",
+      "derivativeSha256": "91a147b440f14764d73255ed6ba3e64edb29ac40b75526ea8aec82aab028ab86",
+      "derivativeDimensions": {
+        "width": 2400,
+        "height": 454
+      }
+    }
+  ]
+}

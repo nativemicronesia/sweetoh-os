@@ -1424,13 +1424,17 @@ export function ProductEditor({
     if (!asset || !canDesign() || locked) return;
     checkpoint();
     const a = surface().area;
-    const size = Math.min(a.width * SIZE * 0.55, 220);
+    const intrinsicWidth = asset.width ?? 200;
+    const intrinsicHeight = asset.height ?? 200;
+    const displayScale = Math.min(Math.min(a.width * SIZE * 0.55, 220) / intrinsicWidth, 220 / intrinsicHeight);
+    const displayWidth = intrinsicWidth * displayScale;
+    const displayHeight = intrinsicHeight * displayScale;
     const layer: StudioLayer = {
       id: crypto.randomUUID(), kind: "graphic", assetKey,
       printRegionId: surface().printRegions ? activeRegionId ?? surface().printRegions?.[0]?.id : undefined,
-      x: a.x * SIZE + (a.width * SIZE - size) / 2,
-      y: a.y * SIZE + (a.height * SIZE - size) / 2,
-      scaleX: size / 200, scaleY: size / 200, angle: 0,
+      x: a.x * SIZE + (a.width * SIZE - displayWidth) / 2,
+      y: a.y * SIZE + (a.height * SIZE - displayHeight) / 2,
+      scaleX: displayScale, scaleY: displayScale, angle: 0,
     };
     const object = await makeLayer(layer);
     editor.current!.add(object);

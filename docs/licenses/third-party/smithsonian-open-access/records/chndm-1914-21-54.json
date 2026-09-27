@@ -1,0 +1,208 @@
+{
+  "id": "ld1-1643399887910-1643399893228-0",
+  "title": "Design for a wallpaper frieze",
+  "unitCode": "CHNDM",
+  "type": "edanmdm",
+  "url": "edanmdm:chndm_1914-21-54",
+  "content": {
+    "freetext": {
+      "date": [
+        {
+          "label": "Date",
+          "content": "1810–30"
+        }
+      ],
+      "notes": [
+        {
+          "label": "Catalogue Status",
+          "content": "Research in Progress"
+        },
+        {
+          "label": "Description",
+          "content": "Rinceau formed by boughs with leaves and thorns in the shape of horizontal S, with blossoms in the hollows, over two bands. The upper one shows rosettes, the lower one fantastical floral motif."
+        }
+      ],
+      "place": [
+        {
+          "label": "made in",
+          "content": "France"
+        }
+      ],
+      "setName": [
+        {
+          "label": "See more items in",
+          "content": "Cooper Hewitt, Smithsonian Design Museum Collection"
+        },
+        {
+          "label": "See more items in",
+          "content": "Drawings, Prints, and Graphic Design Department"
+        }
+      ],
+      "creditLine": [
+        {
+          "label": "Credit Line",
+          "content": "Gift of Eleanor and Sarah Hewitt"
+        }
+      ],
+      "dataSource": [
+        {
+          "label": "Data Source",
+          "content": "Cooper Hewitt, Smithsonian Design Museum"
+        }
+      ],
+      "identifier": [
+        {
+          "label": "Accession Number",
+          "content": "1914-21-54"
+        }
+      ],
+      "objectType": [
+        {
+          "label": "Type",
+          "content": "wallpaper designs"
+        },
+        {
+          "label": "Object Name",
+          "content": "Drawing"
+        },
+        {
+          "label": "Type",
+          "content": "Drawing"
+        }
+      ],
+      "objectRights": [
+        {
+          "label": "Restrictions & Rights",
+          "content": "CC0"
+        }
+      ],
+      "physicalDescription": [
+        {
+          "label": "Medium",
+          "content": "Brush and orange, greenish-black gouache on paper"
+        },
+        {
+          "label": "Dimensions",
+          "content": "14.3 x 16.3 cm (5 5/8 x 6 7/16 in.)"
+        }
+      ]
+    },
+    "indexedStructured": {
+      "date": [
+        "1810s",
+        "1830s"
+      ],
+      "place": [
+        "France"
+      ],
+      "geoLocation": [
+        {
+          "L2": {
+            "type": "Country",
+            "content": "France"
+          }
+        }
+      ],
+      "object_type": [
+        "Design drawings",
+        "Wallpapers",
+        "Drawings"
+      ],
+      "online_media_type": [
+        "Images"
+      ]
+    },
+    "descriptiveNonRepeating": {
+      "guid": "http://n2t.net/ark:/65665/kq4ade21d94-3fa8-4776-86be-43a3e74f3e64",
+      "title": {
+        "label": "Title",
+        "content": "Design for a wallpaper frieze"
+      },
+      "record_ID": "chndm_1914-21-54",
+      "unit_code": "CHNDM",
+      "title_sort": "DESIGN FOR A WALLPAPER FRIEZE",
+      "data_source": "Cooper Hewitt, Smithsonian Design Museum",
+      "record_link": "https://collection.cooperhewitt.org/view/objects/asitem/id/19947",
+      "online_media": {
+        "media": [
+          {
+            "id": "media:CHSDM-1914-21-54MattFlynn",
+            "guid": "http://n2t.net/ark:/65665/vc911079f7b-f169-4760-962f-eddfc6a39841",
+            "type": "Images",
+            "idsId": "CHSDM-1914-21-54MattFlynn",
+            "usage": {
+              "access": "CC0"
+            },
+            "content": "https://ids.si.edu/ids/deliveryService?id=CHSDM-1914-21-54MattFlynn",
+            "thumbnail": "https://ids.si.edu/ids/deliveryService?id=CHSDM-1914-21-54MattFlynn",
+            "altTextAccessibility": "DESIGN FOR A WALLPAPER FRIEZE",
+            "extDescrAccessibility": "Rinceau formed by boughs with leaves and thorns in the shape of horizontal S, with blossoms in the hollows, over two bands. The upper one shows rosettes, the lower one fantastical floral motif.",
+            "resources": [
+              {
+                "label": "High-resolution TIFF",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-1914-21-54MattFlynn.tif",
+                "width": 3000,
+                "height": 1727,
+                "dimensions": "3000x1727"
+              },
+              {
+                "label": "High-resolution JPEG",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-1914-21-54MattFlynn.jpg",
+                "width": 3000,
+                "height": 1727,
+                "dimensions": "3000x1727"
+              },
+              {
+                "label": "Screen Image",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-1914-21-54MattFlynn_screen"
+              },
+              {
+                "label": "Thumbnail Image",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-1914-21-54MattFlynn_thumb"
+              }
+            ]
+          },
+          {
+            "id": "media:CHSDM-CF7F23F58CDC2-000001",
+            "guid": "http://n2t.net/ark:/65665/vc9479af64b-cf7b-4797-96c2-2c88f4ff0eab",
+            "type": "Images",
+            "idsId": "CHSDM-CF7F23F58CDC2-000001",
+            "usage": {
+              "access": "CC0"
+            },
+            "content": "https://ids.si.edu/ids/deliveryService?id=CHSDM-CF7F23F58CDC2-000001",
+            "thumbnail": "https://ids.si.edu/ids/deliveryService?id=CHSDM-CF7F23F58CDC2-000001",
+            "altTextAccessibility": "DESIGN FOR A WALLPAPER FRIEZE",
+            "extDescrAccessibility": "Rinceau formed by boughs with leaves and thorns in the shape of horizontal S, with blossoms in the hollows, over two bands. The upper one shows rosettes, the lower one fantastical floral motif.",
+            "resources": [
+              {
+                "label": "High-resolution JPEG",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-CF7F23F58CDC2-000001.jpg",
+                "width": 5692,
+                "height": 3371,
+                "dimensions": "5692x3371"
+              },
+              {
+                "label": "Screen Image",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-CF7F23F58CDC2-000001_screen"
+              },
+              {
+                "label": "Thumbnail Image",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-CF7F23F58CDC2-000001_thumb"
+              }
+            ]
+          }
+        ],
+        "mediaCount": 2
+      },
+      "metadata_usage": {
+        "access": "CC0"
+      }
+    }
+  },
+  "hash": "2787445f71d4e7ae43f5cf297886ad788dd88f9e",
+  "docSignature": "369393717150ae251f1cf36d6a6c31d0",
+  "timestamp": "1663784056",
+  "lastTimeUpdated": "1769540882",
+  "version": "1769538334"
+}

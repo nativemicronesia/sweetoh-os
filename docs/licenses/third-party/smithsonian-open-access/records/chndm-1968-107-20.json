@@ -1,0 +1,171 @@
+{
+  "id": "ld1-1643399887910-1643399940071-0",
+  "title": "Design for Wallpaper and Textiles: Birds",
+  "unitCode": "CHNDM",
+  "type": "edanmdm",
+  "url": "edanmdm:chndm_1968-107-20",
+  "content": {
+    "freetext": {
+      "date": [
+        {
+          "label": "Date",
+          "content": "19th century"
+        }
+      ],
+      "notes": [
+        {
+          "label": "Catalogue Status",
+          "content": "Research in Progress"
+        },
+        {
+          "label": "Description",
+          "content": "Grouping of seven birds in flight, all flying different directions. Clockwise from top: brown bird facing downward and right, light blue bird facing right, green bird with long tailfeathers facing right, green with brown wing and tailfeathers bird facing left, white bird with pink head facing right, red bird with white wing and tailfeathers facing left, and gray bird facing left."
+        }
+      ],
+      "place": [
+        {
+          "label": "made in",
+          "content": "France"
+        }
+      ],
+      "setName": [
+        {
+          "label": "See more items in",
+          "content": "Cooper Hewitt, Smithsonian Design Museum Collection"
+        },
+        {
+          "label": "See more items in",
+          "content": "Drawings, Prints, and Graphic Design Department"
+        }
+      ],
+      "creditLine": [
+        {
+          "label": "Credit Line",
+          "content": "Gift of Harvey Smith"
+        }
+      ],
+      "dataSource": [
+        {
+          "label": "Data Source",
+          "content": "Cooper Hewitt, Smithsonian Design Museum"
+        }
+      ],
+      "identifier": [
+        {
+          "label": "Accession Number",
+          "content": "1968-107-20"
+        }
+      ],
+      "objectType": [
+        {
+          "label": "Type",
+          "content": "wallpaper designs"
+        },
+        {
+          "label": "Object Name",
+          "content": "Drawing"
+        },
+        {
+          "label": "Type",
+          "content": "Drawing"
+        }
+      ],
+      "objectRights": [
+        {
+          "label": "Restrictions & Rights",
+          "content": "CC0"
+        }
+      ],
+      "physicalDescription": [
+        {
+          "label": "Medium",
+          "content": "Brush and gouache, graphite on cream paper"
+        },
+        {
+          "label": "Dimensions",
+          "content": "41.8 x 38.3 cm (16 7/16 x 15 1/16 in.)"
+        }
+      ]
+    },
+    "indexedStructured": {
+      "date": [
+        "1800s",
+        "1900s"
+      ],
+      "place": [
+        "France"
+      ],
+      "geoLocation": [
+        {
+          "L2": {
+            "type": "Country",
+            "content": "France"
+          }
+        }
+      ],
+      "object_type": [
+        "Design drawings",
+        "Wallpapers",
+        "Drawings"
+      ],
+      "online_media_type": [
+        "Images"
+      ]
+    },
+    "descriptiveNonRepeating": {
+      "guid": "http://n2t.net/ark:/65665/kq4c99e1d9e-295e-48c7-9dae-e601d3f9be97",
+      "title": {
+        "label": "Title",
+        "content": "Design for Wallpaper and Textiles: Birds"
+      },
+      "record_ID": "chndm_1968-107-20",
+      "unit_code": "CHNDM",
+      "title_sort": "DESIGN FOR WALLPAPER AND TEXTILES: BIRDS",
+      "data_source": "Cooper Hewitt, Smithsonian Design Museum",
+      "record_link": "https://collection.cooperhewitt.org/view/objects/asitem/id/141144",
+      "online_media": {
+        "media": [
+          {
+            "id": "media:CHSDM-50886F1E20F42-000001",
+            "guid": "http://n2t.net/ark:/65665/vc93ae50413-d53f-47c3-ad4b-c8fed89fca77",
+            "type": "Images",
+            "idsId": "CHSDM-50886F1E20F42-000001",
+            "usage": {
+              "access": "CC0"
+            },
+            "content": "https://ids.si.edu/ids/deliveryService?id=CHSDM-50886F1E20F42-000001",
+            "thumbnail": "https://ids.si.edu/ids/deliveryService?id=CHSDM-50886F1E20F42-000001",
+            "altTextAccessibility": "DESIGN FOR WALLPAPER AND TEXTILES: BIRDS",
+            "extDescrAccessibility": "Grouping of seven birds in flight, all flying different directions. Clockwise from top: brown bird facing downward and right, light blue bird facing right, green bird with long tailfeathers facing right, green with brown wing and tailfeathers bird facing left, white bird with pink head facing right, red bird with white wing and tailfeathers facing left, and gray bird facing left.",
+            "resources": [
+              {
+                "label": "High-resolution JPEG",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-50886F1E20F42-000001.jpg",
+                "width": 4613,
+                "height": 5024,
+                "dimensions": "4613x5024"
+              },
+              {
+                "label": "Screen Image",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-50886F1E20F42-000001_screen"
+              },
+              {
+                "label": "Thumbnail Image",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-50886F1E20F42-000001_thumb"
+              }
+            ]
+          }
+        ],
+        "mediaCount": 1
+      },
+      "metadata_usage": {
+        "access": "CC0"
+      }
+    }
+  },
+  "hash": "c0a3c1c73a0ee080256cf1d8e0f6582ff7f7439f",
+  "docSignature": "d136b37adcda6882684b9a04c1796ea7",
+  "timestamp": "1663784558",
+  "lastTimeUpdated": "1769540882",
+  "version": "1769538334"
+}

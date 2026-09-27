@@ -1,0 +1,12 @@
+# Smithsonian Open Access artwork
+
+The Smithsonian’s official Open Access program identifies CC0 assets and states they may be reused, modified, and used commercially. Its policy also warns that CC0 does not grant third-party trademark, privacy, or publicity rights. This collection therefore contains only individually checked public-domain decorative-design records with no people depicted.
+
+- [Smithsonian Open Access FAQ](https://www.si.edu/openaccess/faq): confirms CC0 items may be used commercially and modified; recommends keeping source and artist credit context.
+- [Smithsonian Terms of Use](https://www.si.edu/termsofuse): explains the limits of CC0 for third-party rights.
+- [Creative Commons CC0 1.0 legal code](https://creativecommons.org/publicdomain/zero/1.0/), bundled as [CC0-1.0-LEGALCODE.txt](./CC0-1.0-LEGALCODE.txt).
+- [Smithsonian Open Access public repository](https://github.com/Smithsonian/OpenAccess) and [open data bucket registry entry](https://registry.opendata.aws/smithsonian-open-access/).
+
+Every selected object has a preserved source-record JSON snapshot in `records/`. The ingestion script requires both the record’s `descriptiveNonRepeating.metadata_usage.access` and its selected image’s `usage.access` to equal the exact string `CC0`, and confirms the original media URL before processing. The record’s `objectRights` CC0 notice is retained as an additional check where supplied. Exact media URLs, collection records, accession IDs, titles, dates, places, creators when present, source-image hashes, and normalized derivative hashes are recorded in `SOURCE-MANIFEST.json`.
+
+Creator names remain “not identified in record” where that is what the collection provides. The images are photographs/scans of historical wallpaper and design sheets, not editable vector artwork; the partner can still crop, resize, layer, and adjust them through the existing Studio image layer. The floral trellis strip is a documented crop from a visibly worn wallpaper fragment. It is tagged as distressed vintage material and is not described as a seamless repeat.

@@ -11,6 +11,7 @@ import { OPEN_DOODLES_STUDIO_ASSETS } from "./open-doodles-assets";
 import { KITBITZ_STUDIO_ASSETS } from "./kitbitz-assets";
 import { OPEN_PEEPS_STUDIO_ASSETS } from "./open-peeps-assets";
 import { PHYLOPIC_STUDIO_ASSETS } from "./phylopic-assets";
+import { SMITHSONIAN_STUDIO_ASSETS } from "./smithsonian-assets";
 import { STUDIO_ASSET_IDS, studioAssetUrl } from "./asset-library-client";
 
 /**
@@ -36,7 +37,11 @@ export type StudioAsset = {
   commercialUse?: boolean;
   modificationAllowed?: boolean;
   redistributionAllowed?: boolean;
-  svg: string;
+  svg?: string;
+  /** Bundled same-origin bitmap resource for source art that is not vector. */
+  imageUrl?: string;
+  width?: number;
+  height?: number;
 };
 
 const outline = 'fill="none" stroke="#173e39" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"';
@@ -88,6 +93,7 @@ export const STUDIO_ASSETS: readonly StudioAsset[] = [
   ...KITBITZ_STUDIO_ASSETS,
   ...OPEN_PEEPS_STUDIO_ASSETS,
   ...PHYLOPIC_STUDIO_ASSETS,
+  ...SMITHSONIAN_STUDIO_ASSETS,
 ];
 
 export function studioAsset(id: string) { return STUDIO_ASSETS.find((asset) => asset.id === id); }

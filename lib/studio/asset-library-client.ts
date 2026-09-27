@@ -18,6 +18,9 @@ export type StudioAssetMetadata = {
   modificationAllowed?: boolean;
   redistributionAllowed?: boolean;
   studioUseApproved: boolean;
+  imageUrl?: string;
+  width?: number;
+  height?: number;
 };
 
 /** Small client-safe index. The large SVG bodies stay in server-only asset packs. */

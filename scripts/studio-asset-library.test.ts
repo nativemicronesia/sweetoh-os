@@ -27,8 +27,12 @@ test("seed graphics have stable unique identities and explicit provenance", () =
   assert.equal(new Set(STUDIO_ASSETS.map((asset) => asset.id)).size, STUDIO_ASSETS.length);
   for (const asset of STUDIO_ASSETS) {
     assert.ok(asset.name && asset.category && asset.license && asset.source);
-    assert.match(asset.svg, /^(?:<\?xml[^>]*>\s*)?(?:<!--[^]*?-->\s*)*<svg(?:\s|>)/);
-    assert.match(asset.svg, /xmlns="http:\/\/www\.w3\.org\/2000\/svg"/);
+    if (asset.svg) {
+      assert.match(asset.svg, /^(?:<\?xml[^>]*>\s*)?(?:<!--[^]*?-->\s*)*<svg(?:\s|>)/);
+      assert.match(asset.svg, /xmlns="http:\/\/www\.w3\.org\/2000\/svg"/);
+    } else {
+      assert.ok(asset.imageUrl && asset.width && asset.height, `${asset.id} has no renderable payload`);
+    }
     assert.equal(studioAsset(asset.id), asset);
     assert.equal(studioAssetUrl(asset.id), `/api/studio/assets/${asset.id}`);
   }
@@ -56,6 +60,36 @@ test("built-in Studio SVG endpoint serves the exact registered vector and reject
   assert.equal(await response.text(), asset.svg);
   const missing = await getStudioAssetResponse(new Request("https://sweetoh.test/api/studio/assets/not-a-studio-asset"), { params: Promise.resolve({ id: "not-a-studio-asset" }) });
   assert.equal(missing.status, 404);
+});
+
+test("Smithsonian CC0 artwork retains checked rights, source records, searchable themes, and raster delivery", async () => {
+  const { assets } = JSON.parse(readFileSync("docs/licenses/third-party/smithsonian-open-access/SOURCE-MANIFEST.json", "utf8")) as { assets: Array<{ id: string; originalSha256: string; derivativeSha256: string; sourceMediaUrl: string; metadataAccess: string; objectAccess: string; recordRightsNotice: string; originalFile: string; derivativeFile: string }> };
+  assert.equal(assets.length, 3);
+  for (const record of assets) {
+    const asset = studioAsset(record.id);
+    assert.ok(asset && record.sourceMediaUrl.startsWith("https://ids.si.edu/"));
+    assert.equal(record.metadataAccess, "CC0");
+    assert.equal(record.objectAccess, "CC0");
+    assert.equal(record.recordRightsNotice, "CC0");
+    assert.equal(asset.licenseId, "CC0-1.0");
+    assert.equal(asset.attributionRequired, false);
+    assert.equal(asset.commercialUse, true);
+    assert.equal(asset.modificationAllowed, true);
+    assert.equal(asset.redistributionAllowed, true);
+    assert.equal(createHash("sha256").update(readFileSync(`docs/licenses/third-party/smithsonian-open-access/${record.originalFile}`)).digest("hex"), record.originalSha256);
+    assert.equal(createHash("sha256").update(readFileSync(`public/${record.derivativeFile}`)).digest("hex"), record.derivativeSha256);
+  }
+  assert.ok(findStudioAssets({ query: "vintage birds flight wallpaper", kind: "any", limit: 50 }).some((asset) => asset.id === "smithsonian-chndm-birds-wallpaper-v1"));
+  assert.ok(findStudioAssets({ query: "floral wedding border frieze", kind: "any", limit: 50 }).some((asset) => asset.id === "smithsonian-chndm-floral-frieze-v1"));
+  assert.ok(findStudioAssets({ query: "distressed floral trellis", kind: "pattern", limit: 50 }).some((asset) => asset.id === "smithsonian-chndm-floral-sidewall-strip-v1"));
+  const asset = studioAsset("smithsonian-chndm-floral-frieze-v1")!;
+  const response = await getStudioAssetResponse(new Request(`https://sweetoh.test${studioAssetUrl(asset.id)}`), { params: Promise.resolve({ id: asset.id }) });
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("Content-Type") ?? "", /^image\/webp/);
+  const body = Buffer.from(await response.arrayBuffer());
+  assert.equal(createHash("sha256").update(body).digest("hex"), assets.find((record) => record.id === asset.id)!.derivativeSha256);
+  assert.ok((await sharp(body).resize(480, 480).raw().toBuffer()).some((channel) => channel > 0));
+  assert.equal(canSurfaceStudioAsset({ ...asset, modificationAllowed: false }), false);
 });
 
 test("curated Tabler assets keep upstream provenance and commercial-use evidence searchable", () => {
@@ -313,10 +347,10 @@ test("PhyloPic contributes diverse per-image verified CC0 nature silhouettes wit
     const asset = studioAsset(record.id);
     assert.ok(asset, record.id);
     assert.equal(sha256(source), record.originalSha256, record.id);
-    assert.equal(sha256(asset.svg), record.studioSvgSha256, record.id);
+    assert.equal(sha256(asset.svg!), record.studioSvgSha256, record.id);
     assert.equal(asset.svg, expectedSvg, record.id);
-    assert.match(asset.svg, /width="200" height="200"/);
-    assert.match(asset.svg, /viewBox=/i);
+    assert.match(asset.svg!, /width="200" height="200"/);
+    assert.match(asset.svg!, /viewBox=/i);
     assert.equal(asset.category, record.category);
     assert.equal(asset.licenseId, "CC0 1.0");
     assert.equal(asset.licenseUrl, "https://creativecommons.org/publicdomain/zero/1.0/");
@@ -414,7 +448,7 @@ test("OpenMoji adds a broad pinned CC BY-SA illustration collection with origina
     assert.match(asset.attributionText ?? "", /OpenMoji.*CC BY-SA 4\.0/);
     assert.match(asset.sourceUrl ?? "", /openmoji\/blob\/aeb8bb3a59e2de39c754ac79180c8131c906acea\/color\/svg\//);
     assert.match(asset.evidenceUrl ?? "", /openmoji\/blob\/aeb8bb3a59e2de39c754ac79180c8131c906acea\/LICENSE\.txt$/);
-    assert.match(asset.svg, /^<svg(?:\s|>)/);
+    assert.match(asset.svg!, /^<svg(?:\s|>)/);
     assert.equal(studioEditorCommandSchema.safeParse({ type: "add_graphic", assetKey: asset.id }).success, true);
   }
   for (const [query, categories] of [
@@ -458,7 +492,7 @@ test("Hero Patterns and OpenGameArt add attributed vector patterns and CC0 reusa
     assert.equal(asset.redistributionAllowed, true);
     assert.equal(asset.attributionRequired, false);
     assert.match(asset.source, /uploader n4/);
-    assert.equal(asset.svg.includes("data:image/webp;base64,"), true);
+    assert.equal(asset.svg!.includes("data:image/webp;base64,"), true);
     assert.equal(studioEditorCommandSchema.safeParse({ type: "add_graphic", assetKey: asset.id }).success, true);
   }
   assert.ok(findStudioAssets({ query: "formal invitation wedding pattern", kind: "pattern", limit: 50 }).some((asset) => asset.id === "hero-pattern-formal-invitation-v1"));
@@ -477,7 +511,8 @@ test("Hero Patterns and OpenGameArt add attributed vector patterns and CC0 reusa
 test("every bundled vector renders as printable pixels", async () => {
   for (const asset of STUDIO_ASSETS) {
     try {
-      const result = await sharp(Buffer.from(asset.svg)).resize(600, 600).png().toBuffer();
+      const source = asset.svg ? Buffer.from(asset.svg) : readFileSync(path.join("public", asset.imageUrl!));
+      const result = await sharp(source).resize(600, 600).png().toBuffer();
       assert.ok(result.byteLength > 100, asset.id);
     } catch (error) {
       throw new Error(`${asset.id}: ${error instanceof Error ? error.message : String(error)}`);
