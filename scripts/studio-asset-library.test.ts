@@ -100,6 +100,36 @@ test("diverse open collections retain exact provenance, evidence, rights, search
   assert.equal(readFileSync("docs/licenses/third-party/open-crop-icons/source/pumpkin.svg", "utf8").includes("<svg"), true);
 });
 
+test("Libreclipart illustration batch keeps CC0 evidence, originals, designer tags, and Studio insertion", () => {
+  const assets = STUDIO_ASSETS.filter((asset) => asset.id.startsWith("libreclipart-"));
+  assert.equal(assets.length, 68);
+  assert.equal(new Set(assets.map((asset) => asset.id)).size, assets.length);
+  for (const asset of assets) {
+    assert.equal(asset.licenseId, "CC0-1.0");
+    assert.equal(asset.commercialUse, true);
+    assert.equal(asset.modificationAllowed, true);
+    assert.equal(asset.redistributionAllowed, true);
+    assert.equal(asset.attributionRequired, false);
+    assert.equal(asset.attributionText, null);
+    assert.match(asset.sourceUrl ?? "", /libreclipart\.org\/en\/vectors\/.*\/\d+$/);
+    assert.match(asset.evidenceUrl ?? "", /libreclipart\.org\/en\/vectors\/.*\/\d+$/);
+    assert.match(asset.source, /SVG metadata credits Libreclipart.org; individual artist not stated/);
+    assert.equal(studioEditorCommandSchema.safeParse({ type: "add_graphic", assetKey: asset.id }).success, true);
+    assert.ok(readFileSync(`docs/licenses/third-party/libreclipart/source/${asset.id.match(/libreclipart-(\d+)-v1/)?.[1]}.svg`, "utf8").includes("<svg"));
+  }
+  for (const [query, id] of [
+    ["floral wedding invitation", "libreclipart-860-v1"],
+    ["tropical baby shower", "libreclipart-319-v1"],
+    ["kids birthday", "libreclipart-13-v1"],
+    ["island summer", "libreclipart-319-v1"],
+    ["christmas gift tag", "libreclipart-245-v1"],
+  ] as const) {
+    assert.ok(findStudioAssets({ query, kind: "element", limit: 50 }).some((asset) => asset.id === id), query);
+  }
+  assert.match(readFileSync("docs/licenses/third-party/libreclipart/CC0-LICENSE-EVIDENCE.md", "utf8"), /all free vector images are under CC0/);
+  assert.equal(readFileSync("docs/licenses/third-party/libreclipart/source/860.svg", "utf8").includes("<svg"), true);
+});
+
 test("Openclipart frame, banner, badge, and background primitives are CC0 and findable by real design briefs", () => {
   const assets = STUDIO_ASSETS.filter((asset) => asset.id.startsWith("openclipart-"));
   assert.equal(assets.length, 14);
