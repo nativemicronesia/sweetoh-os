@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { canUseCreativeLibraryAsset, creativeLibraryMetadataSchema, type CreativeLibraryAsset } from "../lib/domains/library/model";
+import { normalizeCreativeLibraryAsset } from "../lib/domains/library/service";
 
 const external = creativeLibraryMetadataSchema.parse({
   kind: "vector", category: "Nature", tags: ["leaf"], productionMethods: ["sublimation"],
@@ -62,4 +63,36 @@ test("partner uploads retain draft Studio editing while customer use still requi
   const draft = { ...record, authorityLevel: "canonical" as const, status: "draft" as const, metadata };
   assert.equal(canUseCreativeLibraryAsset(draft, { ventureId: "venture-1", use: "studio_edit" }), true);
   assert.equal(canUseCreativeLibraryAsset(draft, { ventureId: "venture-1", use: "commercial_product" }), false);
+});
+
+test("persisted metadata round-trips through the Studio mapper and tenant-mismatched evidence fails closed", () => {
+  const at = new Date().toISOString();
+  const persistedMetadata = {
+    kind: external.kind, category: external.category, tags: external.tags,
+    productionMethods: external.productionMethods, sourceKind: external.sourceKind,
+    sourceName: external.sourceName, sourceUrl: external.sourceUrl, evidenceUrl: external.evidenceUrl,
+    licenseId: external.licenseId, licenseUrl: external.licenseUrl,
+    commercialUse: external.commercialUse, modificationAllowed: external.modificationAllowed,
+    redistributionAllowed: external.redistributionAllowed, attributionRequired: external.attributionRequired,
+    attributionText: external.attributionText, rightsVerifiedAt: at,
+    rightsVerifiedById: "11111111-1111-4111-8111-111111111111",
+  };
+  const assetRow = {
+    id: "asset-1", ventureId: "venture-1", uploadedById: "user-1", assetType: "sweetoh_design",
+    status: "approved", mimeType: "image/svg+xml", authorityLevel: "licensed", name: "Leaf", notes: null,
+  } as unknown as Parameters<typeof normalizeCreativeLibraryAsset>[0];
+  const metadataRow = {
+    assetId: "asset-1", ventureId: "venture-1", ...persistedMetadata,
+    rightsVerifiedAt: new Date(at), createdAt: new Date(at), updatedAt: new Date(at),
+  } as unknown as NonNullable<Parameters<typeof normalizeCreativeLibraryAsset>[1]>;
+
+  const loaded = normalizeCreativeLibraryAsset(assetRow, metadataRow);
+  assert.equal(loaded.metadataInvalid, false);
+  assert.equal(loaded.metadata?.licenseId, external.licenseId);
+  assert.equal(loaded.metadata?.rightsVerifiedById, persistedMetadata.rightsVerifiedById);
+  assert.equal(canUseCreativeLibraryAsset(loaded, { ventureId: "venture-1", use: "studio_edit" }), true);
+
+  const mismatched = normalizeCreativeLibraryAsset(assetRow, { ...metadataRow, ventureId: "venture-2" });
+  assert.equal(mismatched.metadataInvalid, true);
+  assert.equal(canUseCreativeLibraryAsset(mismatched, { ventureId: "venture-1", use: "studio_edit" }), false);
 });

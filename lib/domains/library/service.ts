@@ -19,7 +19,8 @@ function toMetadata(row: typeof creativeLibraryEntry.$inferSelect | null): Creat
 }
 
 export function normalizeCreativeLibraryAsset(row: typeof asset.$inferSelect, metadataRow: typeof creativeLibraryEntry.$inferSelect | null): CreativeLibraryAsset {
-  const metadata = toMetadata(metadataRow);
+  const metadataTenantMismatch = Boolean(metadataRow && metadataRow.ventureId !== row.ventureId);
+  const metadata = metadataTenantMismatch ? null : toMetadata(metadataRow);
   return {
     assetId: row.id, ventureId: row.ventureId, ownerId: row.uploadedById, assetType: row.assetType,
     status: row.status, mimeType: row.mimeType, authorityLevel: row.authorityLevel, name: row.name, notes: row.notes,
@@ -29,7 +30,7 @@ export function normalizeCreativeLibraryAsset(row: typeof asset.$inferSelect, me
       sourceUrl: null, evidenceUrl: null, licenseId: null, licenseUrl: null, commercialUse: false, modificationAllowed: false,
       redistributionAllowed: false, attributionRequired: false, attributionText: null, rightsVerifiedAt: null, rightsVerifiedById: null,
     }),
-    metadataInvalid: Boolean(metadataRow && !metadata),
+    metadataInvalid: Boolean(metadataRow && (!metadata || metadataTenantMismatch)),
   };
 }
 

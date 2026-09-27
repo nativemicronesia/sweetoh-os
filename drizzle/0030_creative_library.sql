@@ -21,9 +21,13 @@ CREATE TABLE creative_library_entry (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+--> statement-breakpoint
 CREATE INDEX creative_library_entry_venture_kind_idx ON creative_library_entry(venture_id, kind);
+--> statement-breakpoint
 CREATE INDEX creative_library_entry_tags_idx ON creative_library_entry USING gin(tags);
+--> statement-breakpoint
 ALTER TABLE creative_library_entry ENABLE ROW LEVEL SECURITY;
+--> statement-breakpoint
 CREATE POLICY creative_library_entry_select_owner_venture ON creative_library_entry
   FOR SELECT TO authenticated
   USING (is_owner() AND venture_id = (SELECT venture_id FROM app_user WHERE auth_user_id = auth.uid() AND active = true LIMIT 1));
