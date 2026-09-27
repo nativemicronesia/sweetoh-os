@@ -6,7 +6,7 @@ import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
 import { savePartnerInspiration, submitPartnerFeedback } from "@/lib/domains/partner-captures/service";
 import { ValidationError } from "@/lib/shared/errors";
 
-export type CaptureResult = { ok: true } | { ok: false; error: string };
+export type CaptureResult = { ok: true; item: { id: string; name: string; note: string | null; createdAt: Date; previewUrl: string } } | { ok: false; error: string };
 function fail(error: unknown): CaptureResult {
   console.error("partner_capture_failed", error instanceof Error ? error.message : error);
   return { ok: false, error: error instanceof ValidationError ? error.message : "Couldn’t save that. Please try again." };
@@ -17,12 +17,12 @@ export async function addPartnerInspirationAction(form: FormData): Promise<Captu
   try {
     const file = form.get("photo");
     if (!(file instanceof File) || !file.size) throw new ValidationError("Choose an image first.");
-    await savePartnerInspiration(session, {
+    const item = await savePartnerInspiration(session, {
       bytes: Buffer.from(await file.arrayBuffer()), name: file.name, mimeType: file.type,
       note: String(form.get("note") ?? ""),
     });
     revalidatePath("/partner/inspiration");
-    return { ok: true };
+    return { ok: true, item };
   } catch (error) { return fail(error); }
 }
 

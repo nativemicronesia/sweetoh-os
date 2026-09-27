@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { addPartnerInspirationAction } from "../actions/captures";
 
 type Item = { id: string; name: string; note: string | null; previewUrl: string; createdAt: Date };
@@ -9,21 +9,29 @@ export function InspirationWorkspace({ initialItems, initialError }: { initialIt
   const [items, setItems] = useState(initialItems);
   const [message, setMessage] = useState(initialError ?? "");
   const [busy, setBusy] = useState(false);
-  async function submit(form: FormData) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget;
     setBusy(true); setMessage("");
-    const result = await addPartnerInspirationAction(form);
-    setBusy(false);
-    if (!result.ok) { setMessage(result.error); return; }
-    setMessage("Saved privately as inspiration. It is not a Studio asset or approved artwork.");
-    window.location.reload();
+    try {
+      const result = await addPartnerInspirationAction(new FormData(form));
+      if (!result.ok) { setMessage(result.error); return; }
+      setItems(current => [result.item, ...current.filter(item => item.id !== result.item.id)]);
+      form.reset();
+      setMessage("Saved privately as inspiration. It is not a Studio asset or approved artwork.");
+    } catch {
+      setMessage("Couldn’t save that image. Please try again.");
+    } finally {
+      setBusy(false);
+    }
   }
   return <section>
     <header className="studio-page-heading"><div><p className="studio-kicker">PRIVATE WORKSPACE</p><h1>Inspiration</h1><p>Keep screenshots and images that help explain what you like or want to make. References stay private and are never published or added to your reusable asset library.</p></div></header>
-    <form action={submit} className="pf-card" style={{ maxWidth: 720, display: "grid", gap: 12, padding: 20 }}>
+    <form method="post" onSubmit={submit} className="pf-card" style={{ maxWidth: 720, display: "grid", gap: 12, padding: 20 }}>
       <label>Image or screenshot<input name="photo" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif" required /></label>
       <label>Optional note<textarea name="note" maxLength={1000} rows={3} placeholder="What do you like, want to learn from, or hope to create?" /></label>
-      <button className="pf-btn pf-btn-primary" disabled={busy}>{busy ? "Saving…" : "Save inspiration"}</button>
-      {message && <p role="status">{message}</p>}
+      <button type="submit" className="pf-btn pf-btn-primary" disabled={busy}>{busy ? "Saving…" : "Save inspiration"}</button>
+      {message && <p role="status" aria-live="polite">{message}</p>}
       <small>Private reference only · not approved Creative Library material · not used as artwork automatically</small>
     </form>
     <h2 style={{ marginTop: 28 }}>Saved references</h2>
