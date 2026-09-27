@@ -8,8 +8,8 @@ import { filterStudioCreativeAssets, type StudioCreativeAssetOption } from "@/li
 
 const FAVORITES_KEY = "sweetoh:studio:favorites:v1";
 const RECENTS_KEY = "sweetoh:studio:recent:v1";
-type Filter = "All" | "Nature" | "Ocean & Travel" | "Celestial" | "Accents" | "Frames" | "Patterns" | "Textures" | "Backgrounds" | "Fonts" | "Favorites" | "Recent";
-const FILTERS: Filter[] = ["All", "Nature", "Ocean & Travel", "Celestial", "Accents", "Frames", "Patterns", "Textures", "Backgrounds", "Fonts", "Favorites", "Recent"];
+type Filter = "All" | "Nature" | "Ocean & Travel" | "Outdoors" | "Celestial" | "Celebration" | "Accents" | "Frames" | "Patterns" | "Textures" | "Backgrounds" | "Fonts" | "Favorites" | "Recent";
+const FILTERS: Filter[] = ["All", "Nature", "Ocean & Travel", "Outdoors", "Celestial", "Celebration", "Accents", "Frames", "Patterns", "Textures", "Backgrounds", "Fonts", "Favorites", "Recent"];
 
 function readIds(key: string): string[] {
   try {

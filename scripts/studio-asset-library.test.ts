@@ -29,7 +29,7 @@ test("seed graphics have stable unique identities and explicit provenance", () =
 
 test("curated Tabler assets keep upstream provenance and commercial-use evidence searchable", () => {
   const tabler = STUDIO_ASSETS.filter((asset) => asset.id.startsWith("tabler-"));
-  assert.equal(tabler.length, 13);
+  assert.equal(tabler.length, 37);
   for (const asset of tabler) {
     assert.equal(asset.licenseId, "MIT");
     assert.match(asset.sourceUrl ?? "", /github\.com\/tabler\/tabler-icons\/blob\/[0-9a-f]{40}\/icons\/outline\//);
@@ -46,6 +46,9 @@ test("curated Tabler assets keep upstream provenance and commercial-use evidence
   assert.equal(result[0]?.sourceKind, "approved_internal");
   assert.equal(result[0]?.licenseId, "MIT");
   assert.equal(result[0]?.commercialUse, true);
+  assert.ok(findStudioAssets({ query: "ocean", kind: "element", limit: 50 }).some((asset) => asset.id === "tabler-beach-v1"));
+  assert.ok(findStudioAssets({ query: "engraving", kind: "pattern", limit: 50 }).some((asset) => asset.id === "so-engraver-hatch-v1"));
+  assert.ok(findStudioAssets({ query: "frame", kind: "element", limit: 50 }).some((asset) => asset.id === "so-double-oval-frame-v1"));
 });
 
 test("every bundled vector renders as printable pixels", async () => {
