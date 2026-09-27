@@ -531,7 +531,7 @@ test("Hero Patterns and OpenGameArt add attributed vector patterns and CC0 reusa
   assert.ok(readFileSync("docs/licenses/third-party/opengameart-seamless-texture-pack/source/grass.png").length > 100);
 });
 
-test("every bundled vector renders as printable pixels", async () => {
+test("every bundled Studio graphic renders as printable pixels", async () => {
   for (const asset of STUDIO_ASSETS) {
     try {
       const source = asset.svg ? Buffer.from(asset.svg) : readFileSync(path.join("public", asset.imageUrl!));
@@ -548,7 +548,14 @@ test("old layouts still load and vetted graphics round trip", () => {
   assert.equal(studioLayoutSchema.parse(base).surfaces[0].layers.length, 0);
   const withGraphic: { version: number; surfaces: { id: string; name: string; assetId: null; area: typeof base.surfaces[0]["area"]; layers: Record<string, unknown>[] }[] } = structuredClone(base);
   withGraphic.surfaces[0].layers.push({ kind: "graphic", id: "art-1", assetKey: STUDIO_ASSETS[0].id, x: 200, y: 200, scaleX: 1, scaleY: 1, angle: 0 });
-  assert.equal(studioLayoutSchema.parse(withGraphic).surfaces[0].layers[0].kind, "graphic");
+  const raster = studioAsset("smithsonian-chndm-rococo-fruit-floral-v1");
+  assert.ok(raster?.imageUrl && raster.width && raster.height);
+  assert.equal(studioEditorCommandSchema.safeParse({ type: "add_graphic", assetKey: raster.id }).success, true);
+  withGraphic.surfaces[0].layers.push({ kind: "graphic", id: "art-2", assetKey: raster.id, x: 300, y: 250, scaleX: 0.12, scaleY: 0.12, angle: 0 });
+  const restored = studioLayoutSchema.parse(JSON.parse(JSON.stringify(withGraphic)));
+  assert.equal(restored.surfaces[0].layers[0].kind, "graphic");
+  assert.equal(restored.surfaces[0].layers[1].kind, "graphic");
+  assert.equal(restored.surfaces[0].layers[1].assetKey, raster.id);
   withGraphic.surfaces[0].layers[0].assetKey = "unknown-asset";
   assert.equal(studioLayoutSchema.safeParse(withGraphic).success, false);
 });
