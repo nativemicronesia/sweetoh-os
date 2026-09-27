@@ -4,6 +4,8 @@ import { OPEN_CROP_STUDIO_ASSETS } from "./open-crop-assets";
 import { OPENCLIPART_STUDIO_ASSETS } from "./openclipart-assets";
 import { OPENCLIPART_COMPOSITION_ASSETS } from "./openclipart-composition-assets";
 import { OPENMOJI_STUDIO_ASSETS } from "./openmoji-assets";
+import { HERO_PATTERN_STUDIO_ASSETS } from "./hero-pattern-assets";
+import { OPENGAMEART_TEXTURE_STUDIO_ASSETS } from "./opengameart-texture-assets";
 
 /**
  * Studio-owned, versioned design resources. IDs are persisted in layouts:
@@ -73,6 +75,8 @@ export const STUDIO_ASSETS: readonly StudioAsset[] = [
   ...OPENCLIPART_STUDIO_ASSETS,
   ...OPENCLIPART_COMPOSITION_ASSETS,
   ...OPENMOJI_STUDIO_ASSETS,
+  ...HERO_PATTERN_STUDIO_ASSETS,
+  ...OPENGAMEART_TEXTURE_STUDIO_ASSETS,
 ];
 
 export const STUDIO_ASSET_IDS = new Set(STUDIO_ASSETS.map((asset) => asset.id));

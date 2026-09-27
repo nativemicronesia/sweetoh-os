@@ -21,7 +21,7 @@ test("seed graphics have stable unique identities and explicit provenance", () =
   assert.equal(new Set(STUDIO_ASSETS.map((asset) => asset.id)).size, STUDIO_ASSETS.length);
   for (const asset of STUDIO_ASSETS) {
     assert.ok(asset.name && asset.category && asset.license && asset.source);
-    assert.match(asset.svg, /^<svg(?:\s|>)/);
+    assert.match(asset.svg, /^(?:<\?xml[^>]*>\s*)?<svg(?:\s|>)/);
     assert.match(asset.svg, /xmlns="http:\/\/www\.w3\.org\/2000\/svg"/);
     assert.equal(studioAsset(asset.id), asset);
     assert.ok(studioAssetUrl(asset).startsWith("data:image/svg+xml"));
@@ -184,6 +184,45 @@ test("OpenMoji adds a broad pinned CC BY-SA illustration collection with origina
   assert.match(readFileSync("docs/licenses/third-party/openmoji/UPSTREAM-FAQ.md", "utf8"), /commercial/);
   assert.match(readFileSync("docs/licenses/third-party/openmoji/SOURCE.md", "utf8"), /aeb8bb3a59e2de39c754ac79180c8131c906acea/);
   assert.match(readFileSync("docs/licenses/third-party/openmoji/source/1F332.svg", "utf8"), /^<svg/);
+});
+
+test("Hero Patterns and OpenGameArt add attributed vector patterns and CC0 reusable material textures", () => {
+  const hero = STUDIO_ASSETS.filter((asset) => asset.id.startsWith("hero-pattern-"));
+  const oga = STUDIO_ASSETS.filter((asset) => asset.id.startsWith("oga-seamless-"));
+  assert.equal(hero.length, 80);
+  assert.equal(oga.length, 51);
+  for (const asset of hero) {
+    assert.equal(asset.licenseId, "CC-BY-4.0");
+    assert.equal(asset.commercialUse, true);
+    assert.equal(asset.modificationAllowed, true);
+    assert.equal(asset.redistributionAllowed, true);
+    assert.equal(asset.attributionRequired, true);
+    assert.match(asset.source, /Steve Schoger/);
+    assert.match(asset.sourceUrl ?? "", /sschoger\/hero-patterns\/blob\/6a2ed74a6910a8b1095d15dd31f7f3f0188517ad\/svg\//);
+    assert.match(asset.attributionText ?? "", /Steve Schoger.*CC BY 4\.0/);
+    assert.equal(studioEditorCommandSchema.safeParse({ type: "add_graphic", assetKey: asset.id }).success, true);
+  }
+  for (const asset of oga) {
+    assert.equal(asset.licenseId, "CC0-1.0");
+    assert.equal(asset.commercialUse, true);
+    assert.equal(asset.modificationAllowed, true);
+    assert.equal(asset.redistributionAllowed, true);
+    assert.equal(asset.attributionRequired, false);
+    assert.match(asset.source, /uploader n4/);
+    assert.equal(asset.svg.includes("data:image/webp;base64,"), true);
+    assert.equal(studioEditorCommandSchema.safeParse({ type: "add_graphic", assetKey: asset.id }).success, true);
+  }
+  assert.ok(findStudioAssets({ query: "formal invitation wedding pattern", kind: "pattern", limit: 50 }).some((asset) => asset.id === "hero-pattern-formal-invitation-v1"));
+  assert.ok(findStudioAssets({ query: "autumn fall background", kind: "pattern", limit: 50 }).some((asset) => asset.id === "hero-pattern-autumn-v1"));
+  assert.ok(findStudioAssets({ query: "brick wall texture", kind: "pattern", limit: 50 }).some((asset) => asset.id === "oga-seamless-wall-512x512-0-v1"));
+  assert.ok(findStudioAssets({ query: "fabric textile pattern", kind: "pattern", limit: 50 }).some((asset) => asset.id === "oga-seamless-blue-textile-v1"));
+  assert.doesNotMatch(hero.map((asset) => asset.id).join(" "), /aztec|moroccan|temple|church-on-sunday|death-star|charlie-brown/);
+  assert.match(readFileSync("docs/licenses/third-party/hero-patterns/CC-BY-4.0-LICENSE.txt", "utf8"), /Attribution 4\.0 International Public License/);
+  assert.match(readFileSync("docs/licenses/third-party/hero-patterns/SOURCE.md", "utf8"), /Excluded culturally specific/);
+  assert.match(readFileSync("docs/licenses/third-party/hero-patterns/source/autumn.svg", "utf8"), /^<svg/);
+  assert.match(readFileSync("docs/licenses/third-party/opengameart-seamless-texture-pack/CC0-1.0-LEGALCODE.txt", "utf8"), /CC0 1\.0 Universal/);
+  assert.match(readFileSync("docs/licenses/third-party/opengameart-seamless-texture-pack/SOURCE.md", "utf8"), /n4/);
+  assert.ok(readFileSync("docs/licenses/third-party/opengameart-seamless-texture-pack/source/grass.png").length > 100);
 });
 
 test("every bundled vector renders as printable pixels", async () => {
