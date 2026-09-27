@@ -2,6 +2,7 @@ import { z } from "zod";
 import { canUseCreativeLibraryAsset, creativeLibraryMetadataSchema } from "@/lib/domains/library/model";
 import { STUDIO_ASSETS, type StudioAsset } from "./asset-library";
 import { STUDIO_FONT_LABELS, STUDIO_FONT_PROVENANCE } from "./font-provenance";
+import { matchesStudioAssetQuery, studioAssetQueryScore } from "./asset-library-client";
 
 export const studioAssetSearchSchema = z.object({ query: z.string().trim().max(100).default(""), kind: z.enum(["any", "element", "pattern", "font"]).default("any"), limit: z.number().int().min(1).max(50).default(20) }).strict();
 
@@ -26,14 +27,10 @@ export function findStudioAssets(input: z.input<typeof studioAssetSearchSchema>)
     .filter((entry) => {
       if (query.kind !== "any" && entry.kind !== query.kind) return false;
       if (!terms.length) return true;
-      const text = `${entry.name} ${entry.category} ${entry.tags.join(" ")}`.toLowerCase();
-      return terms.every((term) => text.includes(term));
+      return matchesStudioAssetQuery(entry, query.query);
     })
     .map((entry, index) => {
-      const name = entry.name.toLowerCase();
-      const category = entry.category.toLowerCase();
-      const tags = entry.tags.join(" ").toLowerCase();
-      const score = terms.reduce((total, term) => total + (name.includes(term) ? 4 : 0) + (tags.includes(term) ? 2 : 0) + (category.includes(term) ? 1 : 0), 0);
+      const score = studioAssetQueryScore(entry, query.query);
       return { entry, score, index };
     })
     .sort((a, b) => b.score - a.score || a.index - b.index)

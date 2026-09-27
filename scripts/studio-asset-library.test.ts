@@ -14,6 +14,7 @@ import { STUDIO_ASSET_MANIFEST } from "../lib/studio/asset-manifest";
 import { STUDIO_ASSET_IDS, studioAssetMetadata, studioAssetOriginLabel } from "../lib/studio/asset-library-client";
 import { canSurfaceStudioAsset, findStudioAssets, studioAssetSearchSchema } from "../lib/studio/asset-library-search";
 import { STUDIO_FONT_PROVENANCE, resolveStudioFontKey } from "../lib/studio/font-provenance";
+import { filterStudioCreativeAssets } from "../lib/studio/creative-library-browser";
 import { buildStudioEditorState, studioEditorCommandSchema, studioEditorProposalSchema } from "../lib/studio/editor-commands";
 import { reorderLayers } from "../lib/studio/layer-order";
 import { mockupTemplateSchema } from "../lib/studio/mockup/templates";
@@ -50,6 +51,15 @@ test("Studio client index preserves all asset identity while keeping SVG bodies 
   assert.equal(studioAssetOriginLabel({ source: "SweetOh OS", license: "SweetOh original", licenseId: undefined }), "SweetOh original");
   assert.equal(studioAssetOriginLabel({ source: "Smithsonian Open Access — Cooper Hewitt, Smithsonian Design Museum", license: "CC0 1.0 Universal", licenseId: "CC0-1.0" }), "Smithsonian Open Access · CC0-1.0");
   assert.equal(studioAssetOriginLabel({ source: "OpenMoji", license: "CC BY-SA 4.0", licenseId: "CC-BY-SA-4.0" }), "OpenMoji · CC-BY-SA-4.0");
+});
+
+test("Studio search matches multiword creative briefs in any word order across both library modes", () => {
+  const assets = [{ id: "floral-frame", name: "Vintage floral border", previewUrl: "/preview", kind: "element", category: "Frames", tags: ["wedding", "antique"], productionMethods: ["sublimation"], sourceName: "Open collection", licenseId: "CC0-1.0" }];
+  assert.equal(filterStudioCreativeAssets(assets, { query: "wedding floral" }).length, 1);
+  assert.equal(filterStudioCreativeAssets(assets, { query: "floral wedding" }).length, 1);
+  assert.equal(filterStudioCreativeAssets(assets, { query: "beach chicken" }).length, 0);
+  assert.ok(findStudioAssets({ query: "wedding floral", kind: "any", limit: 50 }).some((asset) => asset.id === "smithsonian-chndm-floral-frieze-v1"));
+  assert.ok(findStudioAssets({ query: "floral wedding", kind: "any", limit: 50 }).some((asset) => asset.id === "smithsonian-chndm-floral-frieze-v1"));
 });
 
 test("built-in Studio SVG endpoint serves the exact registered vector and rejects unknown IDs", async () => {

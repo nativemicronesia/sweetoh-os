@@ -1,3 +1,5 @@
+import { matchesStudioAssetQuery } from "./asset-library-client";
+
 export type StudioCreativeAssetOption = {
   id: string;
   name: string;
@@ -19,12 +21,11 @@ export type StudioCreativeAssetFilters = {
 };
 
 export function filterStudioCreativeAssets(assets: StudioCreativeAssetOption[], filters: StudioCreativeAssetFilters) {
-  const query = filters.query?.trim().toLocaleLowerCase() ?? "";
   return assets.filter((asset) => {
     if (filters.kind && asset.kind !== filters.kind) return false;
     if (filters.category && asset.category !== filters.category) return false;
     if (filters.tag && !asset.tags.includes(filters.tag)) return false;
     if (filters.productionMethod && !asset.productionMethods.includes(filters.productionMethod)) return false;
-    return !query || `${asset.name} ${asset.kind} ${asset.category} ${asset.tags.join(" ")} ${asset.productionMethods.join(" ")} ${asset.sourceName ?? ""}`.toLocaleLowerCase().includes(query);
+    return matchesStudioAssetQuery({ name: asset.name, category: asset.category, tags: [asset.kind, ...asset.tags, ...asset.productionMethods, asset.sourceName ?? ""] }, filters.query ?? "");
   });
 }
