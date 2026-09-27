@@ -60,6 +60,13 @@ async function portAvailable(candidate) {
   });
 }
 
+function reviewProductId(href) {
+  const pathname = new URL(href, origin).pathname;
+  const match = /^\/partner\/review\/([0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})$/i.exec(pathname);
+  if (!match) throw new Error(`Expected a product review URL with a UUID, got ${pathname}.`);
+  return match[1];
+}
+
 async function waitForPort(candidate, timeoutMs = 90_000) {
   const end = Date.now() + timeoutMs;
   while (Date.now() < end) {
@@ -168,6 +175,44 @@ try {
   await feedbackPopover.locator("#partner-feedback-note").waitFor({ state: "visible", timeout: 10_000 });
   if (!(await feedbackPopover.innerText()).includes(new URL(page.url()).pathname)) throw new Error("Feedback did not capture the current page context.");
   await feedbackTrigger.click();
+
+  const productionSurfaceProductId = process.env.PARTNER_BROWSER_PRODUCTION_SURFACE_PRODUCT_ID;
+  if (productionSurfaceProductId) {
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(productionSurfaceProductId)) {
+      throw new Error("PARTNER_BROWSER_PRODUCTION_SURFACE_PRODUCT_ID must be a product UUID, never a canvas or blank route segment.");
+    }
+    const reviewId = reviewProductId(`${origin}/partner/review/${productionSurfaceProductId}`);
+    await page.goto(`${origin}/partner/review/${reviewId}`, { waitUntil: "domcontentloaded", timeout: 90_000 });
+    await page.getByRole("heading", { name: "Product workspace" }).waitFor({ state: "visible", timeout: 30_000 });
+    const attach = page.getByText("Attach a production blank to this product", { exact: true });
+    if (await attach.count()) {
+      await attach.waitFor({ state: "visible", timeout: 20_000 });
+      await attach.click();
+      const imagePath = process.env.PARTNER_BROWSER_PRODUCTION_BLANK_IMAGE;
+      if (!imagePath) throw new Error("Set PARTNER_BROWSER_PRODUCTION_BLANK_IMAGE to a temporary transparent PNG fixture.");
+      await page.locator('input[name="photo"]').setInputFiles(imagePath);
+      for (const [name, value] of Object.entries({ areaX: "20", areaY: "20", areaWidth: "60", areaHeight: "60", printWidth: "3", printHeight: "3" })) {
+        await page.locator(`[name="${name}"]`).fill(value);
+      }
+      await page.locator('[name="confirmBlank"]').check();
+      const saved = page.waitForResponse((response) => response.request().method() === "POST" && new URL(response.url()).pathname === `/partner/review/${reviewId}`, { timeout: 60_000 });
+      await page.getByRole("button", { name: "Save confirmed production surface" }).click();
+      await saved;
+    }
+    await page.reload({ waitUntil: "domcontentloaded", timeout: 90_000 });
+    await page.getByRole("heading", { name: "Product workspace" }).waitFor({ state: "visible", timeout: 30_000 });
+    await page.goto(`${origin}/partner/canvas?targetDraft=${productionSurfaceProductId}`, { waitUntil: "domcontentloaded", timeout: 90_000 });
+    await page.getByRole("combobox", { name: "Choose private product draft" }).waitFor({ state: "visible", timeout: 45_000 });
+    const selectedDraft = await page.getByRole("combobox", { name: "Choose private product draft" }).locator("option:checked").textContent();
+    if (!selectedDraft?.includes("TEMP QA")) throw new Error("Studio did not select the temporary product surface saved from review.");
+    await page.locator(".pe-surface-bar").getByText("Front", { exact: true }).waitFor({ state: "visible", timeout: 30_000 });
+    await page.locator(".pe-surface-bar").getByText("Verified production blank", { exact: true }).waitFor({ state: "visible", timeout: 30_000 });
+    const activeRegion = page.locator('.pe-surface-bar select[aria-label="Active print area"] option:checked');
+    await activeRegion.waitFor({ state: "attached", timeout: 30_000 });
+    if ((await activeRegion.textContent()) !== "Print area") throw new Error("Studio did not restore the saved print region.");
+    await page.locator(".print-canvas canvas, canvas.lower-canvas").first().waitFor({ state: "visible", timeout: 30_000 });
+    console.log(JSON.stringify({ browser: browser.version(), temporaryReview: "opened by UUID", productionBlankForm: "submitted with explicit confirmation and supplied test geometry", persistedReview: "reopened", studio: "selected exact TEMP QA product; Front blank, print region and canvas restored", pageErrors: browserErrors }));
+  }
 
   if (process.env.PARTNER_BROWSER_SESSION_ONLY === "1") {
     console.log(JSON.stringify({
