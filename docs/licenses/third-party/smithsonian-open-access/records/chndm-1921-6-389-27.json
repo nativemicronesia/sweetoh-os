@@ -1,0 +1,184 @@
+{
+  "id": "ld1-1643399887910-1643399898936-1",
+  "title": "Floral and Fruit Ornament Designs",
+  "unitCode": "CHNDM",
+  "type": "edanmdm",
+  "url": "edanmdm:chndm_1921-6-389-27",
+  "content": {
+    "freetext": {
+      "date": [
+        {
+          "label": "Date",
+          "content": "1778"
+        }
+      ],
+      "name": [
+        {
+          "label": "Designer",
+          "content": "Pierre Ranson, French, 1736–1786"
+        },
+        {
+          "label": "Print Maker",
+          "content": "Etienne Claude Voysard, French, 1746 - 1812"
+        },
+        {
+          "label": "Publisher",
+          "content": "Esnauts et Rapilly, French, active 1766 – 1804"
+        }
+      ],
+      "notes": [
+        {
+          "label": "Catalogue Status",
+          "content": "Research in Progress"
+        },
+        {
+          "label": "Description",
+          "content": "Six ornament designs with floral and fruit arrangements, including foliate branches, flowers, fruit, grapes, pears, a basket and vase of fruit and flowers. The plate is numbered and signed."
+        }
+      ],
+      "place": [
+        {
+          "label": "published in",
+          "content": "Paris, France"
+        }
+      ],
+      "setName": [
+        {
+          "label": "See more items in",
+          "content": "Cooper Hewitt, Smithsonian Design Museum Collection"
+        },
+        {
+          "label": "See more items in",
+          "content": "Drawings, Prints, and Graphic Design Department"
+        }
+      ],
+      "creditLine": [
+        {
+          "label": "Credit Line",
+          "content": "Purchased for the Museum by the Advisory Council"
+        }
+      ],
+      "dataSource": [
+        {
+          "label": "Data Source",
+          "content": "Cooper Hewitt, Smithsonian Design Museum"
+        }
+      ],
+      "identifier": [
+        {
+          "label": "Accession Number",
+          "content": "1921-6-389-27"
+        }
+      ],
+      "objectType": [
+        {
+          "label": "Object Name",
+          "content": "Print"
+        },
+        {
+          "label": "Type",
+          "content": "Print"
+        }
+      ],
+      "objectRights": [
+        {
+          "label": "Restrictions & Rights",
+          "content": "CC0"
+        }
+      ],
+      "physicalDescription": [
+        {
+          "label": "Medium",
+          "content": "Etching on laid paper"
+        }
+      ]
+    },
+    "indexedStructured": {
+      "date": [
+        "1770s"
+      ],
+      "name": [
+        "Esnauts & Rapilly",
+        "Voysard, Etienne Claude",
+        "Ranson, Pierre"
+      ],
+      "place": [
+        "France",
+        "Paris"
+      ],
+      "geoLocation": [
+        {
+          "L2": {
+            "type": "Country",
+            "content": "France"
+          },
+          "L5": {
+            "type": "City",
+            "content": "Paris"
+          }
+        }
+      ],
+      "object_type": [
+        "Prints"
+      ],
+      "online_media_type": [
+        "Images"
+      ]
+    },
+    "descriptiveNonRepeating": {
+      "guid": "http://n2t.net/ark:/65665/kq470c422c1-39b6-47eb-93a0-d14f051a4a20",
+      "title": {
+        "label": "Title",
+        "content": "Floral and Fruit Ornament Designs"
+      },
+      "record_ID": "chndm_1921-6-389-27",
+      "unit_code": "CHNDM",
+      "title_sort": "FLORAL AND FRUIT ORNAMENT DESIGNS",
+      "data_source": "Cooper Hewitt, Smithsonian Design Museum",
+      "record_link": "https://collection.cooperhewitt.org/view/objects/asitem/id/33463",
+      "online_media": {
+        "media": [
+          {
+            "id": "media:CHSDM-2EC0B69933F52-000001",
+            "guid": "http://n2t.net/ark:/65665/vc991df32a7-be9f-409b-9560-28949192b445",
+            "type": "Images",
+            "idsId": "CHSDM-2EC0B69933F52-000001",
+            "usage": {
+              "access": "CC0"
+            },
+            "content": "https://ids.si.edu/ids/deliveryService?id=CHSDM-2EC0B69933F52-000001",
+            "thumbnail": "https://ids.si.edu/ids/deliveryService?id=CHSDM-2EC0B69933F52-000001",
+            "altTextAccessibility": "FLORAL AND FRUIT ORNAMENT DESIGNS",
+            "extDescrAccessibility": "Six ornament designs with floral and fruit arrangements, including foliate branches, flowers, fruit, grapes, pears, a basket and vase of fruit and flowers. The plate is numbered and signed.",
+            "resources": [
+              {
+                "label": "High-resolution JPEG",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-2EC0B69933F52-000001.jpg",
+                "width": 4805,
+                "height": 6838,
+                "dimensions": "4805x6838"
+              },
+              {
+                "label": "Screen Image",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-2EC0B69933F52-000001_screen"
+              },
+              {
+                "label": "Thumbnail Image",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-2EC0B69933F52-000001_thumb"
+              }
+            ]
+          }
+        ],
+        "mediaCount": 1
+      },
+      "metadata_usage": {
+        "access": "CC0"
+      }
+    }
+  },
+  "hash": "0114776217e0e4852c951bbe8ebd0ae7466179e8",
+  "docSignature": "c898e4f09e9747c0c0f568fc7e1da0a6",
+  "timestamp": "1663784056",
+  "lastTimeUpdated": "1769540882",
+  "version": "1769538334"
+}

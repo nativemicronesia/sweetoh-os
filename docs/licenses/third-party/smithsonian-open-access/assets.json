@@ -20,6 +20,20 @@
       "crop": null
     },
     {
+      "id": "smithsonian-chndm-rococo-fruit-floral-v1",
+      "recordFile": "records/chndm-1921-6-389-27.json",
+      "originalFile": "originals/chndm-1921-6-389-27.jpg",
+      "sourceMediaUrl": "https://ids.si.edu/ids/download?id=CHSDM-2EC0B69933F52-000001.jpg",
+      "outputFile": "studio-assets/smithsonian/smithsonian-chndm-rococo-fruit-floral-v1.webp",
+      "name": "Rococo fruit & floral ornaments",
+      "kind": "element",
+      "category": "Illustrations",
+      "tags": ["ornament", "ornamental", "floral", "flowers", "fruit", "grapes", "pears", "botanical", "foliage", "basket", "vase", "rococo", "18th century", "French", "Paris", "engraving", "etching", "vintage", "antique", "classic", "romantic", "wedding", "invitation", "wall art", "print decoration", "sublimation", "gift", "line art"],
+      "sourceName": "Smithsonian Open Access — Cooper Hewitt; Pierre Ranson (designer), Etienne Claude Voysard (print maker), Esnauts et Rapilly (publisher)",
+      "useCredit": "Pierre Ranson, designer; Etienne Claude Voysard, print maker; Esnauts et Rapilly, publisher. Cooper Hewitt, Smithsonian Design Museum. CC0 1.0; credit is recommended, not required.",
+      "crop": { "left": 560, "top": 950, "width": 3040, "height": 3750 }
+    },
+    {
       "id": "smithsonian-chndm-floral-frieze-v1",
       "recordFile": "records/chndm-1914-21-54.json",
       "originalFile": "originals/chndm-1914-21-54.jpg",

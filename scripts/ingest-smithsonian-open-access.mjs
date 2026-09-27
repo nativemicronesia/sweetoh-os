@@ -41,7 +41,8 @@ for (const item of config.assetRecords) {
   const sourceUrl = descriptive.record_link;
   const licenseUrl = config.licenseUrl;
   const title = descriptive.title?.content ?? record.title;
-  const creators = content?.freetext?.name?.map((entry) => entry.content) ?? [];
+  const creatorCredits = content?.freetext?.name?.map((entry) => `${entry.content} (${entry.label.toLowerCase()})`) ?? [];
+  const creatorNames = content?.freetext?.name?.map((entry) => entry.content) ?? [];
   const date = content?.freetext?.date?.map((entry) => entry.content).join("; ") ?? null;
   const place = content?.freetext?.place?.map((entry) => entry.content).join("; ") ?? null;
   const sourceRecord = {
@@ -57,7 +58,7 @@ for (const item of config.assetRecords) {
     licenseUrl,
     attributionRequired: false,
     recommendedCredit: item.useCredit,
-    creators,
+    creatorCredits,
     date,
     place,
     originalFile: item.originalFile,
@@ -76,7 +77,7 @@ for (const item of config.assetRecords) {
     category: item.category,
     tags: item.tags,
     license: config.sourceLicense,
-    source,
+    source: item.sourceName ?? (creatorNames.length ? `${source}; ${creatorNames.join(", ")}` : source),
     sourceUrl,
     evidenceUrl: config.rightsEvidence,
     licenseId: "CC0-1.0",

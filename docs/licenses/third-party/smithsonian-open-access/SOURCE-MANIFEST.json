@@ -15,7 +15,7 @@
       "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
       "attributionRequired": false,
       "recommendedCredit": "Smithsonian Open Access; Cooper Hewitt, Smithsonian Design Museum. Creator not identified in the collection record.",
-      "creators": [],
+      "creatorCredits": [],
       "date": "19th century",
       "place": "France",
       "originalFile": "originals/chndm-1968-107-20.jpg",
@@ -33,6 +33,45 @@
       }
     },
     {
+      "id": "smithsonian-chndm-rococo-fruit-floral-v1",
+      "title": "Floral and Fruit Ornament Designs",
+      "recordId": "chndm_1921-6-389-27",
+      "sourceRecordUrl": "https://collection.cooperhewitt.org/view/objects/asitem/id/33463",
+      "sourceMediaUrl": "https://ids.si.edu/ids/download?id=CHSDM-2EC0B69933F52-000001.jpg",
+      "metadataAccess": "CC0",
+      "objectAccess": "CC0",
+      "recordRightsNotice": "CC0",
+      "license": "CC0 1.0 Universal",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "recommendedCredit": "Pierre Ranson, designer; Etienne Claude Voysard, print maker; Esnauts et Rapilly, publisher. Cooper Hewitt, Smithsonian Design Museum. CC0 1.0; credit is recommended, not required.",
+      "creatorCredits": [
+        "Pierre Ranson, French, 1736–1786 (designer)",
+        "Etienne Claude Voysard, French, 1746 - 1812 (print maker)",
+        "Esnauts et Rapilly, French, active 1766 – 1804 (publisher)"
+      ],
+      "date": "1778",
+      "place": "Paris, France",
+      "originalFile": "originals/chndm-1921-6-389-27.jpg",
+      "originalSha256": "b06de7b8328095e08f13de6522989b8f2483431febab4ddae4ed5f301f08f362",
+      "sourceDimensions": {
+        "width": 4805,
+        "height": 6838
+      },
+      "crop": {
+        "left": 560,
+        "top": 950,
+        "width": 3040,
+        "height": 3750
+      },
+      "derivativeFile": "studio-assets/smithsonian/smithsonian-chndm-rococo-fruit-floral-v1.webp",
+      "derivativeSha256": "eea1570e2b3901c9e414cee522ae8ebe59c06ab9fb30502692b5e2630ebf14df",
+      "derivativeDimensions": {
+        "width": 1946,
+        "height": 2400
+      }
+    },
+    {
       "id": "smithsonian-chndm-floral-frieze-v1",
       "title": "Design for a wallpaper frieze",
       "recordId": "chndm_1914-21-54",
@@ -45,7 +84,7 @@
       "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
       "attributionRequired": false,
       "recommendedCredit": "Smithsonian Open Access; Cooper Hewitt, Smithsonian Design Museum. Creator not identified in the collection record.",
-      "creators": [],
+      "creatorCredits": [],
       "date": "1810–30",
       "place": "France",
       "originalFile": "originals/chndm-1914-21-54.jpg",
@@ -75,7 +114,7 @@
       "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
       "attributionRequired": false,
       "recommendedCredit": "Smithsonian Open Access; Cooper Hewitt, Smithsonian Design Museum. Creator not identified in the collection record.",
-      "creators": [],
+      "creatorCredits": [],
       "date": "1825–30",
       "place": "USA",
       "originalFile": "originals/chndm-1938-50-9.jpg",

@@ -64,7 +64,7 @@ test("built-in Studio SVG endpoint serves the exact registered vector and reject
 
 test("Smithsonian CC0 artwork retains checked rights, source records, searchable themes, and raster delivery", async () => {
   const { assets } = JSON.parse(readFileSync("docs/licenses/third-party/smithsonian-open-access/SOURCE-MANIFEST.json", "utf8")) as { assets: Array<{ id: string; originalSha256: string; derivativeSha256: string; sourceMediaUrl: string; metadataAccess: string; objectAccess: string; recordRightsNotice: string; originalFile: string; derivativeFile: string }> };
-  assert.equal(assets.length, 3);
+  assert.equal(assets.length, 4);
   for (const record of assets) {
     const asset = studioAsset(record.id);
     assert.ok(asset && record.sourceMediaUrl.startsWith("https://ids.si.edu/"));
@@ -76,10 +76,16 @@ test("Smithsonian CC0 artwork retains checked rights, source records, searchable
     assert.equal(asset.commercialUse, true);
     assert.equal(asset.modificationAllowed, true);
     assert.equal(asset.redistributionAllowed, true);
+    assert.equal(studioEditorCommandSchema.safeParse({ type: "add_graphic", assetKey: record.id }).success, true);
     assert.equal(createHash("sha256").update(readFileSync(`docs/licenses/third-party/smithsonian-open-access/${record.originalFile}`)).digest("hex"), record.originalSha256);
     assert.equal(createHash("sha256").update(readFileSync(`public/${record.derivativeFile}`)).digest("hex"), record.derivativeSha256);
   }
   assert.ok(findStudioAssets({ query: "vintage birds flight wallpaper", kind: "any", limit: 50 }).some((asset) => asset.id === "smithsonian-chndm-birds-wallpaper-v1"));
+  const fruit = studioAsset("smithsonian-chndm-rococo-fruit-floral-v1");
+  assert.ok(fruit);
+  assert.match(fruit.source, /Pierre Ranson.*Etienne Claude Voysard.*Esnauts et Rapilly/);
+  assert.match(fruit.attributionText ?? "", /Pierre Ranson, designer; Etienne Claude Voysard, print maker; Esnauts et Rapilly, publisher/);
+  assert.ok(findStudioAssets({ query: "Rococo fruit floral vintage engraving", kind: "any", limit: 50 }).some((asset) => asset.id === fruit.id));
   assert.ok(findStudioAssets({ query: "floral wedding border frieze", kind: "any", limit: 50 }).some((asset) => asset.id === "smithsonian-chndm-floral-frieze-v1"));
   assert.ok(findStudioAssets({ query: "distressed floral trellis", kind: "pattern", limit: 50 }).some((asset) => asset.id === "smithsonian-chndm-floral-sidewall-strip-v1"));
   const asset = studioAsset("smithsonian-chndm-floral-frieze-v1")!;
