@@ -29,7 +29,7 @@ test("seed graphics have stable unique identities and explicit provenance", () =
 
 test("curated Tabler assets keep upstream provenance and commercial-use evidence searchable", () => {
   const tabler = STUDIO_ASSETS.filter((asset) => asset.id.startsWith("tabler-"));
-  assert.equal(tabler.length, 37);
+  assert.equal(tabler.length, 112);
   for (const asset of tabler) {
     assert.equal(asset.licenseId, "MIT");
     assert.match(asset.sourceUrl ?? "", /github\.com\/tabler\/tabler-icons\/blob\/[0-9a-f]{40}\/icons\/outline\//);
@@ -49,6 +49,15 @@ test("curated Tabler assets keep upstream provenance and commercial-use evidence
   assert.ok(findStudioAssets({ query: "ocean", kind: "element", limit: 50 }).some((asset) => asset.id === "tabler-beach-v1"));
   assert.ok(findStudioAssets({ query: "engraving", kind: "pattern", limit: 50 }).some((asset) => asset.id === "so-engraver-hatch-v1"));
   assert.ok(findStudioAssets({ query: "frame", kind: "element", limit: 50 }).some((asset) => asset.id === "so-double-oval-frame-v1"));
+  assert.ok(findStudioAssets({ query: "Christmas", kind: "any", limit: 50 }).some((asset) => asset.id === "tabler-christmas-tree-v1"));
+  assert.ok(findStudioAssets({ query: "Halloween", kind: "any", limit: 50 }).some((asset) => asset.id === "tabler-pumpkin-scary-v1"));
+  assert.ok(findStudioAssets({ query: "Easter", kind: "any", limit: 50 }).some((asset) => asset.id === "tabler-egg-v1"));
+  assert.ok(findStudioAssets({ query: "back to school", kind: "any", limit: 50 }).some((asset) => asset.id === "tabler-backpack-v1"));
+  assert.ok(findStudioAssets({ query: "wedding", kind: "any", limit: 50 }).some((asset) => asset.id === "tabler-rings-v1"));
+  assert.ok(findStudioAssets({ query: "faith", kind: "any", limit: 50 }).some((asset) => asset.id === "tabler-cross-v1"));
+  assert.ok(findStudioAssets({ query: "sports", kind: "any", limit: 50 }).some((asset) => asset.id === "tabler-ball-basketball-v1"));
+  assert.ok(findStudioAssets({ query: "dog mom", kind: "any", limit: 50 }).some((asset) => asset.id === "tabler-dog-v1"));
+  assert.ok(findStudioAssets({ query: "occupation", kind: "any", limit: 50 }).some((asset) => asset.id === "tabler-stethoscope-v1"));
 });
 
 test("every bundled vector renders as printable pixels", async () => {
