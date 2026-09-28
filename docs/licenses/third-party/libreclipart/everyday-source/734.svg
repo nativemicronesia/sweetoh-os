@@ -1,0 +1,225 @@
+
+
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   version="1.1"
+   id="svg1"
+   width="800"
+   height="800"
+   viewBox="0 0 800 800"
+   sodipodi:docname="city-skyline-in-the-evening.svg"
+   inkscape:version="1.3.2 (091e20e, 2023-11-25, custom)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <title
+     id="title15">city-skyline-in-the-evening</title>
+  <defs
+     id="defs1">
+    <linearGradient
+       x1="0"
+       y1="0"
+       x2="1"
+       y2="0"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0,600.5,-600.5,0,299.75,1.16e-5)"
+       spreadMethod="pad"
+       id="linearGradient2">
+      <stop
+         style="stop-opacity:1;stop-color:#ffaa00"
+         offset="0"
+         id="stop1" />
+      <stop
+         style="stop-opacity:1;stop-color:#663333"
+         offset="1"
+         id="stop2" />
+    </linearGradient>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath4">
+      <path
+         d="M 0,600 H 600 V 0 H 0 Z"
+         transform="translate(-299.75001,-401.07281)"
+         id="path4" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath6">
+      <path
+         d="M 0,600 H 600 V 0 H 0 Z"
+         transform="translate(-600.00002,-552.40801)"
+         id="path6" />
+    </clipPath>
+    <linearGradient
+       x1="0"
+       y1="0"
+       x2="1"
+       y2="0"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0,365.5784,-365.5784,0,299.75,0.003827)"
+       spreadMethod="pad"
+       id="linearGradient7">
+      <stop
+         style="stop-opacity:1;stop-color:#b67228"
+         offset="0"
+         id="stop6" />
+      <stop
+         style="stop-opacity:1;stop-color:#663333"
+         offset="1"
+         id="stop7" />
+    </linearGradient>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath9">
+      <path
+         d="M 0,600 H 600 V 0 H 0 Z"
+         transform="translate(-600.00002,-237.86041)"
+         id="path9" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath11">
+      <path
+         d="M 0,600 H 600 V 0 H 0 Z"
+         transform="translate(-600.00002,-200.48301)"
+         id="path11" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath13">
+      <path
+         d="M 0,600 H 600 V 0 H 0 Z"
+         transform="translate(-600.00002,-148.63281)"
+         id="path13" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath15">
+      <path
+         d="M 0,600 H 600 V 0 H 0 Z"
+         transform="translate(-556.05511,-477.06631)"
+         id="path15" />
+    </clipPath>
+  </defs>
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="0.7625"
+     inkscape:cx="399.34426"
+     inkscape:cy="400"
+     inkscape:window-width="1440"
+     inkscape:window-height="830"
+     inkscape:window-x="-6"
+     inkscape:window-y="-6"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer-MC0">
+    <inkscape:page
+       x="0"
+       y="0"
+       inkscape:label="1"
+       id="page1"
+       width="800"
+       height="800"
+       margin="0"
+       bleed="0" />
+  </sodipodi:namedview>
+  <g
+     id="layer-MC0"
+     inkscape:groupmode="layer"
+     inkscape:label="libreclipart.org">
+    <path
+       id="path2"
+       d="M 0,0 H 600 V 600 H 0 Z"
+       transform="matrix(1.3333333,0,0,-1.3333333,0,800)"
+       style="fill:url(#linearGradient2);stroke:none" />
+    <path
+       id="path3"
+       d="m 0,0 c 71.257,0 129.022,-57.765 129.022,-129.022 0,-71.256 -57.765,-129.021 -129.022,-129.021 -71.257,0 -129.022,57.765 -129.022,129.021 C -129.022,-57.765 -71.257,0 0,0"
+       style="fill:#bb7517;fill-opacity:1;fill-rule:nonzero;stroke:none"
+       transform="matrix(1.3333333,0,0,-1.3333333,399.66667,265.23627)"
+       clip-path="url(#clipPath4)" />
+    <path
+       id="path5"
+       d="m 0,0 v -47.059 c -22.885,1.22 -43.571,5.664 -56.687,12.411 -10.414,5.363 -26.633,9.083 -45.081,10.345 -18.449,1.261 -37.606,-0.038 -53.242,-3.618 -19.588,-4.478 -43.426,-6.239 -66.67,-4.92 -29.426,1.669 -59.256,-2.07 -78.57,-9.846 -7.566,-3.046 -18.43,-4.906 -30.089,-5.153 -11.66,-0.248 -23.114,1.139 -31.725,3.842 -27.334,8.58 -63.297,13.222 -100.392,12.963 -15.586,-0.11 -30.749,-1.765 -43.648,-4.761 -8.972,-2.081 -20.198,-2.683 -30.596,-1.635 -10.402,1.048 -18.887,3.637 -23.122,7.052 l -4.227,1.422 c -10.665,3.647 -23.122,6.365 -36.451,8.134 v 18.46 c 8.588,1.627 18.517,2.386 28.607,2.092 17.255,-0.499 32.544,-4.002 40.457,-9.273 8.275,-5.508 25.435,-8.775 43.487,-8.272 18.056,0.503 33.448,4.673 39.009,10.57 10.215,10.829 40.48,17.945 73.703,17.332 33.219,-0.618 61.055,-8.813 67.787,-19.958 2.931,-4.852 15.105,-8.409 29.582,-8.641 14.473,-0.233 27.566,2.919 31.812,7.657 7.818,8.729 30.387,14.946 56.977,15.705 26.595,0.754 51.851,-4.102 63.778,-12.27 8.789,-6.015 26.392,-9.941 46.029,-10.265 19.642,-0.324 38.262,3.007 48.698,8.706 7.57,4.135 18.358,7.181 30.574,8.98 z"
+       style="fill:#82492a;fill-opacity:1;fill-rule:nonzero;stroke:none"
+       transform="matrix(1.3333333,0,0,-1.3333333,800,63.456)"
+       clip-path="url(#clipPath6)" />
+    <path
+       id="path7"
+       d="M 117.818,277.007 41.859,320.86 0,296.693 V 0.004 h 600 v 303.235 l -70.832,-40.896 -147.597,85.214 -39.558,-22.836 -70.775,40.861 z"
+       transform="matrix(1.3333333,0,0,-1.3333333,0,800)"
+       style="fill:url(#linearGradient7);stroke:none" />
+    <path
+       id="path8"
+       d="m 0,0 v -237.857 h -600.5 v 206.212 h 11.751 v -32.49 h 23.263 v 39.923 h 9.594 v 9.56 h 22.062 V 0 h 10.071 v -14.652 h 14.629 v -9.56 h 14.149 v -33.127 h 20.385 v 19.112 h 11.271 v 30.581 h 10.554 V 7.433 h 10.551 V -7.646 h 18.468 V 0 h 41.486 v 14.866 h 17.267 v 7.432 h 31.416 v -7.432 h 14.629 v -53.093 h 20.861 v 6.582 h 19.909 v -6.582 h 12.948 v 30.581 h 19.184 V 0 h 46.766 v -7.646 h 17.987 V -49.27 h 16.787 v 12.956 h 10.07 V -49.27 h 16.787 v 19.112 h 9.114 v 11.469 h 9.952 V 5.946 h 3 v -24.635 h 6.952 v -11.469 h 15.11 v -8.069 h 15.826 v 12.532 h 16.55 v -12.532 h 13.189 V -7.646 H -24.94 V 0 Z"
+       style="fill:#612e2e;fill-opacity:1;fill-rule:nonzero;stroke:none"
+       transform="matrix(1.3333333,0,0,-1.3333333,800,482.8528)"
+       clip-path="url(#clipPath9)" />
+    <path
+       id="path10"
+       d="m 0,0 v -200.479 h -600.5 v 161.871 h 24.703 V 46.72 h 7.189 v 5.839 h 12.472 V 46.72 h 9.594 v -79.851 h 24.822 V 4.246 h 15.17 v 27.822 h 4.372 V 4.246 h 10.795 v -37.377 h 9.114 V -43.75 h 19.901 v 20.602 h 12.231 v 34.19 h 11.748 v 4.674 h 27.581 v 16.352 h 7.555 V 15.716 h 7.913 v -4.674 h 9.956 V -4.46 h 17.743 v -15.506 h 9.114 V 8.492 h 8.394 v -28.458 h 6.956 V -43.75 h 19.546 v 9.555 h 6.354 v 14.229 h 13.189 v 8.92 h 22.306 v -8.92 h 14.385 v 8.92 h 18.227 v 30.901 h 9.834 v 39.821 h 8.394 V 19.855 h 13.669 v -30.901 h 5.995 v -23.149 h 19.665 v 4.674 h 20.144 v 9.555 h 24.7 v 4.037 h 22.542 v -4.037 h 8.874 v -37.163 h 10.612 v 17.945 h 4.498 v -17.945 h 6.956 v 13.379 h 17.743 v 14.229 h 22.302 V -43.75 h 13.193 v 32.704 h 14.389 l 0,11.046 z"
+       style="fill:#4a1e1e;fill-opacity:1;fill-rule:nonzero;stroke:none"
+       transform="matrix(1.3333333,0,0,-1.3333333,800,532.68933)"
+       clip-path="url(#clipPath11)" />
+    <path
+       id="path12"
+       d="M 0,0 V -148.629 H -600.5 V 4.989 h 7.181 v -19.858 h 22.302 v -15.712 h 17.031 v 19.539 h 13.429 V 2.756 h 33.813 v -13.798 h 29.018 v -42.901 h 36.932 v 15.186 h 11.511 V -2.55 h 15.83 v 18.475 h 51.801 V -2.55 h 32.612 v -4.673 h 18.224 v -11.328 h 25.904 V 5.096 h 22.783 v 15.293 h 22.302 v 13.165 h 5.515 V 20.389 h 16.787 V 5.096 h 24.223 v -34.191 h 14.149 v -17.629 h 29.975 v 11.043 h 21.105 v 11.046 h 38.369 v -11.046 h 34.053 v 17.13 h 21.826 V 0 Z"
+       style="fill:#290f0f;fill-opacity:1;fill-rule:nonzero;stroke:none"
+       transform="matrix(1.3333333,0,0,-1.3333333,800,601.82293)"
+       clip-path="url(#clipPath13)" />
+    <path
+       id="path14"
+       d="m 0,0 4.227,-1.426 c 11.534,-3.945 25.157,-6.803 39.718,-8.545 v -17.37 c -9.282,-2.089 -20.476,-3.103 -31.873,-2.771 -17.256,0.499 -32.545,4.006 -40.458,9.274 -8.275,5.511 -25.435,8.774 -43.487,8.271 -18.052,-0.499 -33.448,-4.673 -39.009,-10.566 -10.215,-10.833 -40.48,-17.949 -73.703,-17.332 -33.218,0.614 -61.055,8.809 -67.786,19.954 -2.932,4.856 -15.106,8.413 -29.579,8.645 -14.477,0.233 -27.57,-2.92 -31.816,-7.661 -7.818,-8.725 -30.387,-14.946 -56.977,-15.701 -26.594,-0.758 -51.851,4.102 -63.777,12.266 -8.79,6.019 -26.392,9.941 -46.03,10.265 -19.642,0.324 -38.262,-3.003 -48.698,-8.706 -6.888,-3.762 -16.436,-6.62 -27.307,-8.462 v 46.347 c 21.582,-1.456 40.934,-5.79 53.421,-12.217 10.413,-5.359 26.632,-9.083 45.08,-10.345 18.449,-1.261 37.606,0.042 53.242,3.618 19.588,4.478 43.426,6.239 66.67,4.92 29.426,-1.665 59.256,2.07 78.57,9.846 7.566,3.046 18.43,4.906 30.09,5.153 11.66,0.248 23.114,-1.139 31.724,-3.842 27.334,-8.58 63.297,-13.222 100.392,-12.959 15.586,0.11 30.749,1.761 43.648,4.757 8.973,2.085 20.198,2.683 30.6,1.635 C -12.72,6 -4.235,3.411 0,0 Z"
+       style="fill:#935624;fill-opacity:1;fill-rule:nonzero;stroke:none"
+       transform="matrix(1.3333333,0,0,-1.3333333,741.4068,163.9116)"
+       clip-path="url(#clipPath15)" />
+  </g>
+  <metadata
+     id="metadata15">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:title>city-skyline-in-the-evening</dc:title>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>public domain</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:publisher>
+          <cc:Agent>
+            <dc:title>libreclipart.org</dc:title>
+          </cc:Agent>
+        </dc:publisher>
+        <dc:source>libreclipart.org</dc:source>
+        <dc:contributor>
+          <cc:Agent>
+            <dc:title>libreclipart.org</dc:title>
+          </cc:Agent>
+        </dc:contributor>
+        <cc:license
+           rdf:resource="http://creativecommons.org/publicdomain/zero/1.0/" />
+      </cc:Work>
+      <cc:License
+         rdf:about="http://creativecommons.org/publicdomain/zero/1.0/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+</svg>

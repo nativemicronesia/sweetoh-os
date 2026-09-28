@@ -495,6 +495,48 @@ test("Libreclipart sports vectors keep compatible item and SVG rights, distinct 
   assert.equal(canSurfaceStudioAsset({ ...studioAsset(id)!, modificationAllowed: false }), false);
 });
 
+test("Libreclipart everyday vectors keep individual rights evidence, searchable variety, and Studio insertion", async () => {
+  const base = "docs/licenses/third-party/libreclipart";
+  const source = JSON.parse(readFileSync(`${base}/everyday-SOURCE-MANIFEST.json`, "utf8")) as {
+    assets: Array<{ id: string; sourceItemId: number; sourceUrl: string; sourcePageLicenseLabel: string; sourceSvgRightsClaim: string; originalFile: string; originalSha256: string; normalizedSvgSha256: string; commercialUse: boolean; modificationAllowed: boolean; redistributionAllowed: boolean; attributionRequired: boolean }>;
+  };
+  assert.equal(source.assets.length, 109);
+  assert.equal(new Set(source.assets.map((record) => record.id)).size, source.assets.length);
+  assert.ok(!source.assets.some((record) => [104, 147, 138, 120, 116, 114, 102, 67, 35, 13, 8, 63].includes(record.sourceItemId)));
+  for (const record of source.assets) {
+    const asset = studioAsset(record.id);
+    assert.ok(asset, record.id);
+    assert.equal(asset.licenseId, "CC0-1.0");
+    assert.equal(asset.sourceUrl, record.sourceUrl);
+    assert.equal(record.commercialUse && record.modificationAllowed && record.redistributionAllowed, true);
+    assert.equal(record.attributionRequired, false);
+    assert.match(record.sourcePageLicenseLabel, /Creative Commons Zero/);
+    assert.match(record.sourceSvgRightsClaim, /public domain|CC\s?0/i);
+    assert.doesNotMatch(record.sourceSvgRightsClaim, /Free OSI License/i);
+    assert.equal(createHash("sha256").update(readFileSync(`${base}/${record.originalFile}`)).digest("hex"), record.originalSha256);
+    assert.equal(createHash("sha256").update(Buffer.from(asset.svg!)).digest("hex"), record.normalizedSvgSha256);
+    assert.ok(canSurfaceStudioAsset(asset));
+    assert.equal(studioEditorCommandSchema.safeParse({ type: "add_graphic", assetKey: record.id }).success, true);
+  }
+  for (const [query, id] of [
+    ["forest landscape", "libreclipart-780-v1"],
+    ["food restaurant menu", "libreclipart-475-v1"],
+    ["school teacher", "libreclipart-684-v1"],
+    ["travel postcard city", "libreclipart-706-v1"],
+    ["floral wedding invitation", "libreclipart-572-v1"],
+    ["abstract geometric background", "libreclipart-692-v1"],
+    ["brush stroke artistic mark", "libreclipart-586-v1"],
+  ] as const) {
+    assert.ok(findStudioAssets({ query, kind: "element", limit: 50 }).some((asset) => asset.id === id), query);
+  }
+  const id = "libreclipart-780-v1";
+  const response = await getStudioAssetResponse(new Request(`https://sweetoh.test${studioAssetUrl(id)}`), { params: Promise.resolve({ id }) });
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("Content-Type") ?? "", /^image\/svg\+xml/);
+  assert.ok((await sharp(Buffer.from(await response.arrayBuffer())).resize(240, 240).raw().toBuffer()).some((channel) => channel > 0));
+  assert.equal(canSurfaceStudioAsset({ ...studioAsset(id)!, commercialUse: false }), false);
+});
+
 test("Open Doodles adds authored lifestyle illustrations with CC0 rights and useful design retrieval", () => {
   const assets = STUDIO_ASSETS.filter((asset) => asset.id.startsWith("open-doodles-"));
   assert.equal(assets.length, 27);
@@ -610,7 +652,7 @@ test("Open Peeps adds Pablo Stanley's CC0 people illustrations to a searchable p
   for (const query of ["people portrait", "people invitation", "people standing", "people sitting", "wheelchair accessible"]) {
     assert.ok(findStudioAssets({ query, kind: "element", limit: 50 }).some((asset) => asset.id.startsWith("open-peeps-")), query);
   }
-  assert.ok(studioAssetCategories().includes("People"));
+  assert.ok(studioAssetCategories().includes("People & places"));
   assert.match(readFileSync("docs/licenses/third-party/open-peeps/CC0-LICENSE-EVIDENCE.md", "utf8"), /Pablo Stanley/);
   assert.match(readFileSync("docs/licenses/third-party/open-peeps/CC0-1.0-LEGALCODE.txt", "utf8"), /CC0 1\.0 Universal/);
 });
