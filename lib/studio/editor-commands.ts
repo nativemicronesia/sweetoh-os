@@ -47,6 +47,18 @@ export const studioEditorCommandSchema = z.discriminatedUnion("type", [
 });
 export type StudioEditorCommand = z.infer<typeof studioEditorCommandSchema>;
 
+export type StudioTextNumberField = "fontSize" | "textBoxWidth";
+
+/** Parse a completed typography control value, allowing incomplete digits while the user edits. */
+export function parseStudioTextNumber(field: StudioTextNumberField, input: string): number | null {
+  const raw = input.trim();
+  if (!raw) return null;
+  const value = Number(raw);
+  const min = field === "fontSize" ? 12 : 60;
+  const max = field === "fontSize" ? 120 : 1440;
+  return Number.isFinite(value) && value >= min && value <= max ? value : null;
+}
+
 /** State available to an assistant. It is a read-only document snapshot, never a Fabric object reference. */
 export const studioEditorStateSchema = z.object({
   revision: z.number().int().nonnegative(),

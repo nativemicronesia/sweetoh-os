@@ -96,7 +96,7 @@ import { sizedPhoto } from "@/lib/studio/photo";
 import { PRODUCT_FONTS, ensureFont, fontFamily } from "@/lib/studio/fonts";
 import { isStudioFontKey, resolveStudioFontKey } from "@/lib/studio/font-provenance";
 import { studioAssetMetadata, studioAssetUrl } from "@/lib/studio/asset-library-client";
-import { buildStudioEditorState, studioEditorCommandSchema, studioEditorProposalSchema, type StudioEditorCommand } from "@/lib/studio/editor-commands";
+import { buildStudioEditorState, parseStudioTextNumber, studioEditorCommandSchema, studioEditorProposalSchema, type StudioEditorCommand, type StudioTextNumberField } from "@/lib/studio/editor-commands";
 import { reorderLayers } from "@/lib/studio/layer-order";
 import { SHAPES, makeShape, type ShapeKind } from "@/lib/studio/shapes";
 import { makePatternRect } from "@/lib/studio/pattern";
@@ -218,6 +218,7 @@ type Panel = "files" | "text" | "shapes" | "assets" | "ai" | "inspiration" | "la
 type InspirationItem = { id: string; name: string; previewUrl: string };
 type Mockup = { color: string; hex: string; url: string };
 type PreviewData = { views: { name: string; url: string; hasProductionBlank: boolean }[]; colors: Mockup[] };
+type TextNumberDraft = { layerId: string; field: StudioTextNumberField; value: string };
 
 /** Extend Fabric's PencilBrush input lifecycle and keep the completed drawing
  * represented as one selectable Fabric Group inside the existing drawing layer. */
@@ -444,6 +445,7 @@ export function ProductEditor({
   const [applyTargetId, setApplyTargetId] = useState(initialApplyTargetId ?? privateProductDrafts[0]?.id ?? "");
   const [layers, setLayers] = useState<StudioLayer[]>([]);
   const [selected, setSelected] = useState<Selected>(null);
+  const [textNumberDraft, setTextNumberDraft] = useState<TextNumberDraft | null>(null);
   const [selectedLayerIds, setSelectedLayerIds] = useState<string[]>([]);
   const [fontFallbackNotice, setFontFallbackNotice] = useState(() => initial.current.surfaces.some((view) => view.layers.some((layer) => layer.kind === "text" && layer.font !== undefined && !isStudioFontKey(layer.font))));
   const [alignRelativeTo, setAlignRelativeTo] = useState<"selection" | "canvas">("selection");
@@ -567,6 +569,21 @@ export function ProductEditor({
     dirty.current = true;
     revision.current++;
     saveDraft();
+  }
+
+  function commitTextNumberDraft(field: StudioTextNumberField) {
+    const draft = textNumberDraft;
+    if (!draft || draft.field !== field || !selected || selected.kind !== "text" || draft.layerId !== selectedLayerIds[0]) {
+      setTextNumberDraft(null);
+      return;
+    }
+    const value = parseStudioTextNumber(field, draft.value);
+    if (value !== null) {
+      void executeEditorCommand(field === "fontSize"
+        ? { type: "set_text_style", fontSize: value }
+        : { type: "set_text_style", textBoxWidth: value }, false);
+    }
+    setTextNumberDraft(null);
   }
 
   /** Debounced local snapshot of the whole document. */
@@ -2663,8 +2680,8 @@ export function ProductEditor({
                     </button>
                     <button className="pe-toggle" aria-pressed={selected.italic ?? false} aria-label="Italic" onClick={() => void executeEditorCommand({ type: "set_text_style", italic: !selected.italic })}><i>I</i></button>
                   </div>
-                  <label className="pe-num"><span>Pt</span><input type="number" min={12} max={120} step={1} aria-label="Font size" value={selected.fontSize ?? 48} onFocus={() => checkpoint()} onChange={(e) => { const value = Number(e.target.value); if (value >= 12 && value <= 120) void executeEditorCommand({ type: "set_text_style", fontSize: value }, false); }} /></label>
-                  <label className="pe-num"><span>Text box width (px)</span><input type="number" min={60} max={1440} step={10} aria-label="Text box width" value={Math.round(selected.textBoxWidth ?? 300)} onFocus={() => checkpoint()} onChange={(e) => { const value = Number(e.target.value); if (value >= 60 && value <= 1440) void executeEditorCommand({ type: "set_text_style", textBoxWidth: value }, false); }} /></label>
+                  <label className="pe-num"><span>Pt</span><input type="number" min={12} max={120} step={1} aria-label="Font size" value={textNumberDraft?.layerId === selectedLayerIds[0] && textNumberDraft.field === "fontSize" ? textNumberDraft.value : selected.fontSize ?? 48} onFocus={(e) => { checkpoint(); setTextNumberDraft({ layerId: selectedLayerIds[0] ?? "", field: "fontSize", value: e.currentTarget.value }); }} onChange={(e) => setTextNumberDraft({ layerId: selectedLayerIds[0] ?? "", field: "fontSize", value: e.target.value })} onBlur={() => commitTextNumberDraft("fontSize")} onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); }} /></label>
+                  <label className="pe-num"><span>Text box width (px)</span><input type="number" min={60} max={1440} step={10} aria-label="Text box width" value={textNumberDraft?.layerId === selectedLayerIds[0] && textNumberDraft.field === "textBoxWidth" ? textNumberDraft.value : Math.round(selected.textBoxWidth ?? 300)} onFocus={(e) => { checkpoint(); setTextNumberDraft({ layerId: selectedLayerIds[0] ?? "", field: "textBoxWidth", value: e.currentTarget.value }); }} onChange={(e) => setTextNumberDraft({ layerId: selectedLayerIds[0] ?? "", field: "textBoxWidth", value: e.target.value })} onBlur={() => commitTextNumberDraft("textBoxWidth")} onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); }} /></label>
                   <p className="pe-label">Text alignment</p><div className="pe-row">{(["left", "center", "right", "justify"] as const).map((textAlign) => <button key={textAlign} className="pe-btn pe-btn-ghost pe-grow" aria-pressed={(selected.textAlign ?? "left") === textAlign} onClick={() => void executeEditorCommand({ type: "set_text_style", textAlign })}>{textAlign}</button>)}</div>
                   <label className="pe-slider"><span>Line height <b>{(selected.lineHeight ?? 1.16).toFixed(2)}</b></span><input type="range" min={0.8} max={3} step={0.05} value={selected.lineHeight ?? 1.16} onPointerDown={() => checkpoint()} onChange={(e) => void executeEditorCommand({ type: "set_text_style", lineHeight: Number(e.target.value) }, false)} /></label>
                   <label className="pe-slider"><span>Letter spacing <b>{selected.letterSpacing ?? 0}</b></span><input type="range" min={-100} max={500} step={10} value={selected.letterSpacing ?? 0} onPointerDown={() => checkpoint()} onChange={(e) => void executeEditorCommand({ type: "set_text_style", letterSpacing: Number(e.target.value) }, false)} /></label>

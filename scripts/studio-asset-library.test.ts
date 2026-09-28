@@ -15,7 +15,7 @@ import { STUDIO_ASSET_IDS, saveStudioLibraryIds, studioAssetCategories, studioAs
 import { canSurfaceStudioAsset, findStudioAssets, studioAssetSearchSchema } from "../lib/studio/asset-library-search";
 import { STUDIO_FONT_PROVENANCE, resolveStudioFontKey } from "../lib/studio/font-provenance";
 import { filterStudioCreativeAssets } from "../lib/studio/creative-library-browser";
-import { buildStudioEditorState, studioEditorCommandSchema, studioEditorProposalSchema } from "../lib/studio/editor-commands";
+import { buildStudioEditorState, parseStudioTextNumber, studioEditorCommandSchema, studioEditorProposalSchema } from "../lib/studio/editor-commands";
 import { reorderLayers } from "../lib/studio/layer-order";
 import { mockupTemplateSchema } from "../lib/studio/mockup/templates";
 import { CONFIRMED_SHOP_METHODS, KNOWLEDGE_ONLY_METHODS } from "../lib/domains/production/methods";
@@ -978,6 +978,21 @@ test("Studio pattern layout buttons expose their selected state accessibly", () 
   assert.match(patternToggle, /aria-pressed=\{Boolean\(selected\.brick\)\}/);
   assert.doesNotMatch(patternToggle, /aria-selected=/);
   assert.match(styles, /\.pe-seg button\[aria-pressed=true\]/);
+});
+
+test("Studio typography number fields preserve partial input and validate completed values", () => {
+  assert.equal(parseStudioTextNumber("fontSize", "16"), 16);
+  assert.equal(parseStudioTextNumber("textBoxWidth", "100"), 100);
+  assert.equal(parseStudioTextNumber("fontSize", "1"), null);
+  assert.equal(parseStudioTextNumber("textBoxWidth", ""), null);
+  assert.equal(parseStudioTextNumber("fontSize", "121"), null);
+  assert.equal(parseStudioTextNumber("textBoxWidth", "1441"), null);
+  const editor = readFileSync("app/(partner)/partner/canvas/product-editor.tsx", "utf8");
+  assert.match(editor, /function commitTextNumberDraft\(field: StudioTextNumberField\)/);
+  assert.match(editor, /onChange=\{\(e\) => setTextNumberDraft\(\{ layerId: selectedLayerIds\[0\] \?\? "", field: "fontSize", value: e\.target\.value \}\)\}/);
+  assert.match(editor, /onBlur=\{\(\) => commitTextNumberDraft\("fontSize"\)\}/);
+  assert.match(editor, /onBlur=\{\(\) => commitTextNumberDraft\("textBoxWidth"\)\}/);
+  assert.doesNotMatch(editor, /const value = Number\(e\.target\.value\); if \(value >= 12 && value <= 120\)/);
 });
 
 test("drawing brush identity and opacity survive save/reopen with stable built-in behavior", () => {
