@@ -18,6 +18,52 @@ Creative guidance should cover design fundamentals (composition, contrast, hiera
 
 SweetOh currently confirms sublimation and engraving as shop production methods. Other methods remain educational knowledge only. The repository still lacks an authoritative registry of machines, substrates, printable product/region combinations, method-specific acceptance rules and capacity; the method names alone do not validate a particular order or artwork.
 
+## Creative scope beyond predefined POD categories
+
+Studio's knowledge model is not limited to POD, library elements or a fixed
+set of design categories. It should reflect the full range of what people
+genuinely create and express, documented as general creative knowledge with
+the same production/knowledge split used above — a knowledge article is
+never a capability claim.
+
+**Tattoo design (general craft, knowledge only, not a production method).**
+SweetOh does not tattoo; this is documented the same way DTF or embroidery
+are — general knowledge, no shop capability implied. Verified, citable
+design fundamentals worth carrying: American Traditional flash composition
+(bold clean outlines, a limited primary-color palette, black shading for
+depth, balanced multi-design sheet layout, hand-lettering); linework-only
+style (precision, clean outlines, minimal/no shading, deliberate negative
+space); and the practical difference between hand-poke/stick-and-poke
+(single needle, manual, organic line quality — the older method) and
+machine tattooing (motor-driven, supports fine detail, shading and color
+work). Sources: [Lighthouse
+Tattoo](https://www.lighthousetattoo.com.au/traditional-flash-sheet/),
+[Tattooing101](https://tattooing101.com/learn/techniques/design/flash-art/),
+[Big Cat Tattoo](https://www.bigcattattoo.com/blog/what-is-tattoo-flash),
+[Stylecaster](https://stylecaster.com/beauty/skin-care/718688/hand-poke-versus-machine-tattoos/).
+
+**Parked — Micronesian/Pacific tatau and other lineage-restricted cultural
+material: do not ingest as generic reusable reference or Creative Library
+stock; this needs an explicit owner decision, not an autonomous one.**
+Independent research (Lars Krutak's ethnographic synthesis of Marshallese,
+Yapese and Pohnpeian tattoo traditions) documents these as historically
+rank-, gender- and lineage-restricted — chief-only and courtesan-only marks,
+tattooists and recipients determined by status, some patterns applied only
+by specific specialists. This is not a copyright-licensing question a CC0
+or public-domain tag can resolve; it is a living cultural-ownership
+question. The same pattern shows up institutionally: Auckland War Memorial
+Museum explicitly closes its Pacific collections and taonga Māori as an
+exception to its own open-access-by-default policy, and Te Papa Tongarewa
+licenses Pacific/taonga items per-object rather than in bulk, precisely
+because cultural status can override a technical rights clearance. SweetOh's
+pipeline should not be more permissive than the source cultures' own
+stewards. The same caution applies to tapa/siapo (Pacific bark cloth)
+patterns and other taonga-adjacent decorative material even where a
+technically public-domain reproduction exists via a third-party archive.
+If the owner later wants to pursue this, the right shape is almost
+certainly historical/educational description sourced to named ethnographers
+— not motif imagery treated as reusable stock.
+
 ## Safe future structure
 
 Keep method reference material versioned and source-attributed. Make capability a separate record keyed to an actual shop or approved production partner, method, supported material/product, printable area, color/file constraints, availability and effective dates. Quotes and accepted production orders must snapshot the enabled capability version and validated artwork requirements. Do not infer availability from a knowledge article or an AI response.
