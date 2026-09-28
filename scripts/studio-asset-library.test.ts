@@ -126,11 +126,11 @@ test("Smithsonian CC0 artwork retains checked rights, source records, searchable
   assert.equal(canSurfaceStudioAsset({ ...asset, modificationAllowed: false }), false);
 });
 
-test("Met public-domain surfaces and botanical scans keep exact rights evidence, originals, search, and raster insertion", async () => {
+test("Met public-domain surfaces, botanicals, and bird plates keep exact rights evidence, originals, search, and raster insertion", async () => {
   const { assets } = JSON.parse(readFileSync("docs/licenses/third-party/met-open-access/SOURCE-MANIFEST.json", "utf8")) as {
     assets: Array<{ id: string; objectId: number; publicDomainVerified: boolean; imageRightsBasis: string; sourceImageUrl: string; originalFile: string; originalSha256: string; derivativeFile: string; derivativeSha256: string }>;
   };
-  assert.equal(assets.length, 11);
+  assert.equal(assets.length, 19);
   for (const record of assets) {
     const itemRecord = JSON.parse(readFileSync(`docs/licenses/third-party/met-open-access/records/${record.objectId}.json`, "utf8")) as { objectID: number; isPublicDomain: boolean; primaryImage: string };
     const asset = studioAsset(record.id);
@@ -154,6 +154,8 @@ test("Met public-domain surfaces and botanical scans keep exact rights evidence,
   assert.ok(findStudioAssets({ query: "pomegranate autumn wallpaper pattern", kind: "pattern", limit: 50 }).some((asset) => asset.id === "met-365338-v1"));
   assert.ok(findStudioAssets({ query: "botanical watercolor French vintage", kind: "any", limit: 50 }).some((asset) => asset.id === "met-362554-v1"));
   assert.ok(findStudioAssets({ query: "Christmas gift tag vintage bird", kind: "any", limit: 50 }).some((asset) => asset.id === "met-768558-v1"));
+  assert.ok(findStudioAssets({ query: "Audubon marsh wren nest vintage", kind: "any", limit: 50 }).some((asset) => asset.id === "met-918308-v1"));
+  assert.ok(findStudioAssets({ query: "North American bird blossom engraving", kind: "any", limit: 50 }).some((asset) => asset.id === "met-918293-v1"));
   const asset = studioAsset("met-384020-v1")!;
   const response = await getStudioAssetResponse(new Request(`https://sweetoh.test${studioAssetUrl(asset.id)}`), { params: Promise.resolve({ id: asset.id }) });
   assert.equal(response.status, 200);
