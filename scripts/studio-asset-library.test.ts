@@ -71,6 +71,14 @@ test("Studio search matches multiword creative briefs in any word order across b
   assert.ok(halloweenBadge.some((asset) => asset.tags.includes("halloween")));
   assert.ok(halloweenBadge.some((asset) => asset.tags.includes("badge") || asset.name.toLowerCase().includes("badge")));
   assert.ok(halloweenBadge.slice(0, 5).some((asset) => asset.name.toLowerCase().includes("badge")));
+  const tropicalPatterns = findStudioAssets({ query: "tropical pattern", kind: "any", limit: 50 });
+  assert.ok(tropicalPatterns.length > 0);
+  assert.ok(tropicalPatterns.slice(0, 2).every((asset) => [asset.name, asset.category, ...asset.tags].join(" ").toLowerCase().includes("tropical")));
+  assert.ok(!tropicalPatterns.slice(0, 2).some((asset) => asset.name === "Party Confetti Seamless Pattern"));
+  assert.ok(studioAssetQueryScore({ name: "Geometric Background Pattern 242", category: "Patterns", tags: ["tropical pattern"] }, "tropical pattern") > studioAssetQueryScore({ name: "Party Confetti Seamless Pattern", category: "Patterns", tags: ["party", "pattern"] }, "tropical pattern"));
+  const babyBackgrounds = findStudioAssets({ query: "baby background", kind: "any", limit: 50 });
+  assert.ok(babyBackgrounds.length > 0);
+  assert.match([babyBackgrounds[0].name, babyBackgrounds[0].category, ...babyBackgrounds[0].tags].join(" ").toLowerCase(), /baby.*background|background.*baby/);
 });
 
 test("built-in Studio SVG endpoint serves the exact registered vector and rejects unknown IDs", async () => {

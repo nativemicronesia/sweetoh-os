@@ -65,7 +65,12 @@ export function studioAssetQueryScore(asset: StudioAssetSearchFields, query: str
   const name = asset.name.toLocaleLowerCase().match(/[\p{L}\p{N}]+/gu) ?? [];
   const category = asset.category.toLocaleLowerCase().match(/[\p{L}\p{N}]+/gu) ?? [];
   const tags = (typeof asset.tags === "string" ? asset.tags : asset.tags.join(" ")).toLocaleLowerCase().match(/[\p{L}\p{N}]+/gu) ?? [];
-  return searchTerms(query).reduce((score, term) => score + (tokenMatches(name, term) ? 4 : 0) + (tokenMatches(tags, term) ? 2 : 0) + (tokenMatches(category, term) ? 1 : 0), 0);
+  const terms = searchTerms(query);
+  const matchedTerms = terms.filter((term) => tokenMatches([...name, ...category, ...tags], term)).length;
+  const score = terms.reduce((total, term) => total + (tokenMatches(name, term) ? 4 : 0) + (tokenMatches(tags, term) ? 2 : 0) + (tokenMatches(category, term) ? 1 : 0), 0);
+  // Keep broad recall for useful alternate matches, while making assets that
+  // satisfy the whole brief rise above generic results for only one word.
+  return score + (terms.length > 1 && matchedTerms === terms.length ? terms.length * 4 : 0);
 }
 
 export function saveStudioLibraryIds(storage: Pick<Storage, "setItem">, key: string, ids: readonly string[]) {
