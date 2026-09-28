@@ -1,0 +1,1581 @@
+{
+  "schemaVersion": 1,
+  "source": "Font Awesome Free (FortAwesome/Font-Awesome, solid style)",
+  "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+  "sourceItemRecords": "fa-assets.json",
+  "assets": [
+    {
+      "id": "fa-anchor-v1",
+      "sourceItemId": "anchor",
+      "title": "Anchor (solid)",
+      "sourceCategory": "Ocean & Nautical",
+      "sourceTags": [
+        "anchor",
+        "nautical",
+        "ocean",
+        "sailor gift",
+        "boating"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/anchor.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/anchor.svg",
+      "originalSha256": "b53f9a2d5f3ca4962c2fd31336e0a2e254d2e4ebedea0df9129f5c1a325580fd",
+      "normalizedSvgSha256": "da09a015e395925daed44b11347b679601db090eec005cf7a730f446d2771a17",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 267
+      }
+    },
+    {
+      "id": "fa-bolt-v1",
+      "sourceItemId": "bolt",
+      "title": "Lightning bolt (solid)",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "lightning",
+        "bolt",
+        "energy",
+        "power",
+        "electrician gift",
+        "speed"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/bolt.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/bolt.svg",
+      "originalSha256": "c23816fcca202a690a4b6fdcc4f807965b2697dafdd2d3b67e0696cff250b774",
+      "normalizedSvgSha256": "f33c3cbc486acbd5300e03ca1da280d44312ff5423004259562eacf2219beafe",
+      "normalizedPreviewDimensions": {
+        "width": 262,
+        "height": 300
+      }
+    },
+    {
+      "id": "fa-compass-v1",
+      "sourceItemId": "compass",
+      "title": "Compass (solid)",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "compass",
+        "navigation",
+        "travel",
+        "adventure",
+        "explorer gift"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/compass.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/compass.svg",
+      "originalSha256": "c14cbf969720ef9914ec3e3abf522e4bd89fe3bf40d3f74dcd3cad4857690f21",
+      "normalizedSvgSha256": "5f3fce34df8909f4a2031af29e8703f0e4640e816988758a54eb06ec347a953a",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "fa-crown-v1",
+      "sourceItemId": "crown",
+      "title": "Crown (solid)",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "crown",
+        "royal",
+        "king",
+        "queen",
+        "birthday",
+        "celebration"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/crown.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/crown.svg",
+      "originalSha256": "3966f1b483a26c1d7334813db7fe1f25fd18d0ccba9fb2994b1948ea4cff8026",
+      "normalizedSvgSha256": "9b20a92e0c99ad93bde5a28c7dd61530d6f045e008be2c18d177e092d79d260b",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 267
+      }
+    },
+    {
+      "id": "fa-dove-v1",
+      "sourceItemId": "dove",
+      "title": "Dove (solid)",
+      "sourceCategory": "Nature & Animals",
+      "sourceTags": [
+        "dove",
+        "bird",
+        "peace",
+        "wedding",
+        "memorial",
+        "sympathy"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/dove.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/dove.svg",
+      "originalSha256": "d085222ecc36496e490874ebb95c929b63d8a8aeecc7666768ab9fc98fd2d1c0",
+      "normalizedSvgSha256": "307066b8fe13d00205918f337406126e4a3a4a719fa52782254d5857716f714a",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "fa-dragon-v1",
+      "sourceItemId": "dragon",
+      "title": "Dragon (solid)",
+      "sourceCategory": "Nature & Animals",
+      "sourceTags": [
+        "dragon",
+        "mythical",
+        "fantasy",
+        "chinese new year",
+        "kids"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/dragon.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/dragon.svg",
+      "originalSha256": "3c12ff29a71fef409199d905db09584852c5d47ff00c5c848dd5301a11216553",
+      "normalizedSvgSha256": "b853bea5dcce3372a5bd80f6edc18b2f7a8c800ae591d39ee371ab879e26ecf3",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 240
+      }
+    },
+    {
+      "id": "fa-feather-pointed-v1",
+      "sourceItemId": "feather-pointed",
+      "title": "Feather (solid)",
+      "sourceCategory": "Nature & Animals",
+      "sourceTags": [
+        "feather",
+        "writer gift",
+        "calligraphy",
+        "boho",
+        "native"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/feather-pointed.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/feather-pointed.svg",
+      "originalSha256": "8a76a627f5f074d5d35d02112586534f1158e91830577b60a35eb5c2588a7093",
+      "normalizedSvgSha256": "a3ee5e63b1f4dd1fd8147fd9a7bea89f35f0a688215ad5cb5b5b42474923d310",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "fa-fire-v1",
+      "sourceItemId": "fire",
+      "title": "Fire (solid)",
+      "sourceCategory": "Nature & Animals",
+      "sourceTags": [
+        "fire",
+        "flame",
+        "campfire",
+        "hot",
+        "firefighter gift"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/fire.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/fire.svg",
+      "originalSha256": "be3eb01c456234d184a4955836eb058fb5c759e5da56cfa04722a56d13a6eda5",
+      "normalizedSvgSha256": "34f2397bbee7e1e75b688c4713dcc4413cc6110a361844f1a4425e07d0707a28",
+      "normalizedPreviewDimensions": {
+        "width": 262,
+        "height": 300
+      }
+    },
+    {
+      "id": "fa-fish-v1",
+      "sourceItemId": "fish",
+      "title": "Fish (solid)",
+      "sourceCategory": "Nature & Animals",
+      "sourceTags": [
+        "fish",
+        "fishing gift",
+        "ocean",
+        "lake",
+        "pescatarian"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/fish.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/fish.svg",
+      "originalSha256": "31524ece91db265342b3dfbf14ef6811c24bf2466ee27e9fc2a846c14a523433",
+      "normalizedSvgSha256": "1896cb931aff62d5866d27bea12f17b066a8dc38147cfa494dfa27b0d96806b0",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 267
+      }
+    },
+    {
+      "id": "fa-flag-v1",
+      "sourceItemId": "flag",
+      "title": "Flag (solid)",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "flag",
+        "milestone",
+        "goal",
+        "sports",
+        "marker"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/flag.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/flag.svg",
+      "originalSha256": "d6a4578361c96471b2905a04fbb7222e619ab199d5b9cc01b3de2f1a259146a6",
+      "normalizedSvgSha256": "45c550a8c1f5d2683b48f11b5cad83039eeb82917ab3f5a455de30f296b8f902",
+      "normalizedPreviewDimensions": {
+        "width": 262,
+        "height": 300
+      }
+    },
+    {
+      "id": "fa-gem-v1",
+      "sourceItemId": "gem",
+      "title": "Gemstone (solid)",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "gem",
+        "diamond",
+        "jewelry",
+        "engagement",
+        "birthstone"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/gem.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/gem.svg",
+      "originalSha256": "8d44c59a6d97410af8aadfb2ac2c9d0494a3d215bb4e03c94894df73aafc7283",
+      "normalizedSvgSha256": "930a9591ba7a84f8dc58c76e3dd5833ac2d26780c32a3bb5d6f63734c03eee1b",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "fa-ghost-v1",
+      "sourceItemId": "ghost",
+      "title": "Ghost (solid)",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "ghost",
+        "halloween",
+        "spooky",
+        "kids",
+        "cute"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/ghost.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/ghost.svg",
+      "originalSha256": "ae46300c954d2e2dc787dcff7b3e5846f546faa57144b96d6c95ff60e10ae59e",
+      "normalizedSvgSha256": "1e1ab34eb3116603a43715d98e12b37046c824aabf74e57b044da22b2c2d298b",
+      "normalizedPreviewDimensions": {
+        "width": 225,
+        "height": 300
+      }
+    },
+    {
+      "id": "fa-heart-v1",
+      "sourceItemId": "heart",
+      "title": "Heart (solid)",
+      "sourceCategory": "Celebrations & Symbols",
+      "sourceTags": [
+        "heart",
+        "love",
+        "valentine",
+        "wedding",
+        "anniversary"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/heart.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/heart.svg",
+      "originalSha256": "32ad8d5198f892c06cd0a3bef843c200bc8c2faacbdd39e31378b0b277da78af",
+      "normalizedSvgSha256": "fc50f7c04957c3dfcff1bb29f16c05f89cde57926246311c284dca979ae97f3e",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "fa-leaf-v1",
+      "sourceItemId": "leaf",
+      "title": "Leaf (solid)",
+      "sourceCategory": "Nature & Animals",
+      "sourceTags": [
+        "leaf",
+        "plant",
+        "botanical",
+        "nature",
+        "eco",
+        "gardening gift"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/leaf.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/leaf.svg",
+      "originalSha256": "4b6137e9ab6ecbdc5da505cc35c06cb7daacabb16e6be384f1e6f7edc1e5353e",
+      "normalizedSvgSha256": "3490a1db10ac2033f693fb1a96dccdd37a3abd4242658054c933e18bb292f6af",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "fa-moon-v1",
+      "sourceItemId": "moon",
+      "title": "Crescent moon (solid)",
+      "sourceCategory": "Nature & Animals",
+      "sourceTags": [
+        "moon",
+        "crescent",
+        "night",
+        "celestial",
+        "ramadan"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/moon.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/moon.svg",
+      "originalSha256": "05d1bbe1770543053e5e0baf8d41c0600aad05ce8e3d1e7a2315b8557a7883cd",
+      "normalizedSvgSha256": "a8edd51344fe936dd653632df177394d86a084bda533b809d87ab63c7cabc1e7",
+      "normalizedPreviewDimensions": {
+        "width": 225,
+        "height": 300
+      }
+    },
+    {
+      "id": "fa-mug-hot-v1",
+      "sourceItemId": "mug-hot",
+      "title": "Hot mug (solid)",
+      "sourceCategory": "Food & Drink",
+      "sourceTags": [
+        "coffee",
+        "tea",
+        "mug",
+        "hot drink",
+        "cozy",
+        "cafe"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/mug-hot.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/mug-hot.svg",
+      "originalSha256": "36943727b20e6e28ae646213debee533a1724d8e8ee369822e604a270e759432",
+      "normalizedSvgSha256": "bb454ae46065df3f48e9f066f9cf5362b5fc6c023a5889c3a7009576e5b4b6fb",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "fa-cross-v1",
+      "sourceItemId": "cross",
+      "title": "Cross (solid)",
+      "sourceCategory": "Celebrations & Symbols",
+      "sourceTags": [
+        "cross",
+        "christian",
+        "faith",
+        "religious",
+        "memorial"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/cross.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/cross.svg",
+      "originalSha256": "622118a361b9a2c2f0b8b83459e595e703843d23a5744360ae87482ac95d4a9e",
+      "normalizedSvgSha256": "b891e395b2e639b97e398cb51979ea2f429fd5587ef1f69c753c7c1227e9beaf",
+      "normalizedPreviewDimensions": {
+        "width": 225,
+        "height": 300
+      }
+    },
+    {
+      "id": "fa-paw-v1",
+      "sourceItemId": "paw",
+      "title": "Paw print (solid)",
+      "sourceCategory": "Nature & Animals",
+      "sourceTags": [
+        "paw",
+        "pet",
+        "dog",
+        "cat",
+        "animal lover gift",
+        "vet gift"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/paw.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/paw.svg",
+      "originalSha256": "b4bc8b217251c95e2dcfac0a2d436cf833a914761157f0f34b6544dc9822490e",
+      "normalizedSvgSha256": "1fd24eaaa67d418c2531ee8a34255a5926f63b97bd8a98b5cbcba9ef4cf144cd",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "fa-apple-whole-v1",
+      "sourceItemId": "apple-whole",
+      "title": "Apple (solid)",
+      "sourceCategory": "Food & Drink",
+      "sourceTags": [
+        "apple",
+        "fruit",
+        "teacher gift",
+        "healthy",
+        "school"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/apple-whole.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/apple-whole.svg",
+      "originalSha256": "f1bd44d1860cc99a1d53a352922dcfe89f1820d858bcaed7098f0f9483172c60",
+      "normalizedSvgSha256": "d4661353d095e9fb3390f762781de28143f41c15d45086d411e217541d748dc7",
+      "normalizedPreviewDimensions": {
+        "width": 262,
+        "height": 300
+      }
+    },
+    {
+      "id": "fa-baby-v1",
+      "sourceItemId": "baby",
+      "title": "Baby (solid)",
+      "sourceCategory": "Celebrations & Symbols",
+      "sourceTags": [
+        "baby",
+        "infant",
+        "baby shower",
+        "newborn",
+        "nursery"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/baby.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/baby.svg",
+      "originalSha256": "3889d13aeb4437af3fa07a179d92368332b575a32deb4f43235279549444e27d",
+      "normalizedSvgSha256": "d6b693432d03a526c4f6df73264c2a1f2c3d6a9cad8c6672b9e61fce58aee2df",
+      "normalizedPreviewDimensions": {
+        "width": 262,
+        "height": 300
+      }
+    },
+    {
+      "id": "fa-beer-mug-empty-v1",
+      "sourceItemId": "beer-mug-empty",
+      "title": "Beer mug (solid)",
+      "sourceCategory": "Food & Drink",
+      "sourceTags": [
+        "beer",
+        "mug",
+        "pub",
+        "bar",
+        "cheers",
+        "dad gift"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/beer-mug-empty.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/beer-mug-empty.svg",
+      "originalSha256": "20f9f633993d9a636378ebb2c9ed448242bd38ba661afe80c48e99b60a6ed47f",
+      "normalizedSvgSha256": "2ab20e65e4c03c704b01242803c2d62438dab71b371bb57f52e7b67132f63846",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "fa-carrot-v1",
+      "sourceItemId": "carrot",
+      "title": "Carrot (solid)",
+      "sourceCategory": "Food & Drink",
+      "sourceTags": [
+        "carrot",
+        "vegetable",
+        "garden",
+        "healthy",
+        "easter"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/carrot.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/carrot.svg",
+      "originalSha256": "92ba373b96d6eec55191d20ce871610a7120d710315141264fc97d9f27b094bd",
+      "normalizedSvgSha256": "ced1e5a99c7dd1714f2e8f25d049ec1d04dfcc1496898bfb4446da1e8e978d93",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "fa-cat-v1",
+      "sourceItemId": "cat",
+      "title": "Cat (solid)",
+      "sourceCategory": "Nature & Animals",
+      "sourceTags": [
+        "cat",
+        "pet",
+        "kitten",
+        "animal lover gift",
+        "cute"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/cat.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/cat.svg",
+      "originalSha256": "dc894c401bb8a8abf019faab869a36b6bb12372315df65ae02d93cc7da04ee29",
+      "normalizedSvgSha256": "9a738ff105f0a5bd8dc0b57bcdb4e0c2d4a6c02887c4ea0091154c3f9b6eee3d",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 267
+      }
+    },
+    {
+      "id": "fa-cheese-v1",
+      "sourceItemId": "cheese",
+      "title": "Cheese wedge (solid)",
+      "sourceCategory": "Food & Drink",
+      "sourceTags": [
+        "cheese",
+        "food",
+        "wine pairing",
+        "charcuterie",
+        "kitchen"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/cheese.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/cheese.svg",
+      "originalSha256": "aeef0492de00e9cd78dec04fea53b7196fa11ed150682be388d8726e28f7a5b0",
+      "normalizedSvgSha256": "fa1798884b479cccb1c33dec0e592aedfe25727a1d4a54d6cd6de685b3d95bec",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "fa-church-v1",
+      "sourceItemId": "church",
+      "title": "Church (solid)",
+      "sourceCategory": "Celebrations & Symbols",
+      "sourceTags": [
+        "church",
+        "chapel",
+        "wedding",
+        "faith",
+        "christian"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/church.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/church.svg",
+      "originalSha256": "d1353470808e13840c0c4e9e14fd258f5c6e7f3a2ae86ff07f10d494b98b7c32",
+      "normalizedSvgSha256": "7e8a4e1f1b0970f115971ecf55b32c8669b15bf91e668b363e676d80b086d8a5",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 240
+      }
+    },
+    {
+      "id": "fa-cookie-v1",
+      "sourceItemId": "cookie",
+      "title": "Cookie (solid)",
+      "sourceCategory": "Food & Drink",
+      "sourceTags": [
+        "cookie",
+        "baking",
+        "dessert",
+        "sweet",
+        "kitchen gift"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/cookie.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/cookie.svg",
+      "originalSha256": "9b1accdebcac9f82df0a6d435518ba7d9f61c8f125ee685c1f2b2fdcd8cd06d5",
+      "normalizedSvgSha256": "90580b2c9d40c483426e73c7efae2bbe8608fc6d0970f7aa6600fc0cd78db784",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "fa-crow-v1",
+      "sourceItemId": "crow",
+      "title": "Crow (solid)",
+      "sourceCategory": "Nature & Animals",
+      "sourceTags": [
+        "crow",
+        "raven",
+        "bird",
+        "gothic",
+        "halloween"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/crow.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/crow.svg",
+      "originalSha256": "d08ea3d2e403977eab1efb17b910280fed8e6518aaa25b19b1798c4fec9d2238",
+      "normalizedSvgSha256": "f9b2ae0eb9547859070987920ad0ead4ff763a640ee832db530b93ec289747d7",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 240
+      }
+    },
+    {
+      "id": "fa-dog-v1",
+      "sourceItemId": "dog",
+      "title": "Dog (solid)",
+      "sourceCategory": "Nature & Animals",
+      "sourceTags": [
+        "dog",
+        "pet",
+        "puppy",
+        "animal lover gift",
+        "vet gift"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/dog.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/dog.svg",
+      "originalSha256": "b4e3ca6c0b79c0adc0ea181d5a44f9411927e2dd5275bf8c7b08bf811d0666a3",
+      "normalizedSvgSha256": "8b31316be687d46c33adc0cf536786f12eefb51d8728ec194dcd08ed44641f74",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 267
+      }
+    },
+    {
+      "id": "fa-drum-v1",
+      "sourceItemId": "drum",
+      "title": "Drum (solid)",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "drum",
+        "music",
+        "percussion",
+        "musician gift",
+        "band"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/drum.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/drum.svg",
+      "originalSha256": "aca6dec8faff1d6317008ddc2254e729dd41c4bc2035a22d7bc6c1016c89761b",
+      "normalizedSvgSha256": "cd00344f042a13f81dc99aca3293161f3d8facce4efb78f1b854dcc99e5cc473",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "fa-drumstick-bite-v1",
+      "sourceItemId": "drumstick-bite",
+      "title": "Turkey leg (solid)",
+      "sourceCategory": "Food & Drink",
+      "sourceTags": [
+        "turkey",
+        "drumstick",
+        "thanksgiving",
+        "bbq",
+        "food"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/drumstick-bite.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/drumstick-bite.svg",
+      "originalSha256": "fdf199b77dddeb42d3cb115783000034bb5355cab663bc437b18fe61c80f9640",
+      "normalizedSvgSha256": "43da5f49329354ff8a36a54ecaf010181c7743459edcb52955d8399547a791ce",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "fa-glasses-v1",
+      "sourceItemId": "glasses",
+      "title": "Glasses (solid)",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "glasses",
+        "eyewear",
+        "reading",
+        "optician gift",
+        "nerd"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/glasses.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/glasses.svg",
+      "originalSha256": "d1b6d876e833ac2d64edc209ff2db322699ddddac49cbe7011ed5ba3a10f3295",
+      "normalizedSvgSha256": "733efa0193ac1e11ee3d7a04552a238c140703602051b6258a400c6df72c995c",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 267
+      }
+    },
+    {
+      "id": "fa-graduation-cap-v1",
+      "sourceItemId": "graduation-cap",
+      "title": "Graduation cap (solid)",
+      "sourceCategory": "Celebrations & Symbols",
+      "sourceTags": [
+        "graduation",
+        "cap",
+        "school",
+        "diploma",
+        "student gift"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/graduation-cap.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/graduation-cap.svg",
+      "originalSha256": "22a3dc74f8ae1a643ce783511065b74debb9f0a3e9827a659b3d3a3d10042aad",
+      "normalizedSvgSha256": "6c078b2aa840e3af57c0ddb6403695295d5afa13e0455575b800726cacfc8372",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 240
+      }
+    },
+    {
+      "id": "fa-guitar-v1",
+      "sourceItemId": "guitar",
+      "title": "Guitar (solid)",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "guitar",
+        "music",
+        "musician gift",
+        "band",
+        "rock"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/guitar.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/guitar.svg",
+      "originalSha256": "1e07949b2f0c8808cee9f9ab03d32065380ab55a1aa20c26acf9a2f2e7c330bd",
+      "normalizedSvgSha256": "7a76f9167102c9c5ed200a431075359ba238604e6297fdb81a106aba5a46e77c",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "fa-hammer-v1",
+      "sourceItemId": "hammer",
+      "title": "Hammer (solid)",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "hammer",
+        "tool",
+        "construction gift",
+        "handyman gift",
+        "diy"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/hammer.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/hammer.svg",
+      "originalSha256": "cf2b1aca84a93a53a75fb3ab363884363561f86713485e8d90c55cc98ef83b74",
+      "normalizedSvgSha256": "8a9ba16c5b386ea1060f6fbc566bde5dcf9719e5b772d9afe051540cb847f42d",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 267
+      }
+    },
+    {
+      "id": "fa-hat-cowboy-v1",
+      "sourceItemId": "hat-cowboy",
+      "title": "Cowboy hat (solid)",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "cowboy",
+        "hat",
+        "western",
+        "rodeo",
+        "country"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/hat-cowboy.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/hat-cowboy.svg",
+      "originalSha256": "b9d0048a82db3444180b020fb9c55f37e3fa6276f4ca03d6d1c930cd39e012dd",
+      "normalizedSvgSha256": "52f709577cbc0d51523e72f0828c276b278ab96616ec91df185814df6bac2101",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 240
+      }
+    },
+    {
+      "id": "fa-horse-v1",
+      "sourceItemId": "horse",
+      "title": "Horse (solid)",
+      "sourceCategory": "Nature & Animals",
+      "sourceTags": [
+        "horse",
+        "equestrian gift",
+        "ranch",
+        "riding",
+        "farm"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/horse.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/horse.svg",
+      "originalSha256": "e635cdc78fb8337571078c67def92824fd35bb7c2e1a3147f3bf770abef85580",
+      "normalizedSvgSha256": "131189b19de95d5be184bc3cbf2d45753cc29c447f7201f2f61c38da105985d7",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 267
+      }
+    },
+    {
+      "id": "fa-ice-cream-v1",
+      "sourceItemId": "ice-cream",
+      "title": "Ice cream (solid)",
+      "sourceCategory": "Food & Drink",
+      "sourceTags": [
+        "ice cream",
+        "dessert",
+        "summer",
+        "sweet",
+        "kids"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/ice-cream.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/ice-cream.svg",
+      "originalSha256": "09ea2c4265d3e82b9bfda1b0da3a8bba3078349ad2e1f96fd104ddfb375f2393",
+      "normalizedSvgSha256": "cf10a2156969a347c6e4482ab231dc61c675af1fc8a1b1b23b837f673dd30dc0",
+      "normalizedPreviewDimensions": {
+        "width": 262,
+        "height": 300
+      }
+    },
+    {
+      "id": "fa-khanda-v1",
+      "sourceItemId": "khanda",
+      "title": "Khanda (solid)",
+      "sourceCategory": "Celebrations & Symbols",
+      "sourceTags": [
+        "khanda",
+        "sikh",
+        "sikhism",
+        "faith",
+        "religious symbol"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/khanda.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/khanda.svg",
+      "originalSha256": "2ad51e68a8f18090bc62ffe681ca1c108142954cf3aef423b40561864016f403",
+      "normalizedSvgSha256": "67496b3a78891e64e419d0d26668da1d2efcfed0508ac2fde16b78cbc541241b",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "fa-kiwi-bird-v1",
+      "sourceItemId": "kiwi-bird",
+      "title": "Kiwi bird (solid)",
+      "sourceCategory": "Nature & Animals",
+      "sourceTags": [
+        "kiwi",
+        "bird",
+        "new zealand",
+        "flightless bird"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/kiwi-bird.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/kiwi-bird.svg",
+      "originalSha256": "19eb90b1b12f712a0644fe4de98a551fd52da55a875338d7a15b803892f158d3",
+      "normalizedSvgSha256": "21c378a773632fbdd052cf4b77cc1d2dfb6259cd303d8c777a7dc898d7e2df85",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 267
+      }
+    },
+    {
+      "id": "fa-lemon-v1",
+      "sourceItemId": "lemon",
+      "title": "Lemon (solid)",
+      "sourceCategory": "Food & Drink",
+      "sourceTags": [
+        "lemon",
+        "citrus",
+        "fruit",
+        "summer",
+        "kitchen"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/lemon.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/lemon.svg",
+      "originalSha256": "d62e99256337838872e006ddaafea54970fbe4bda5ddc2b176d4d282712fb68a",
+      "normalizedSvgSha256": "fe543c197eb7c6d95a942d109e9d85b82656c2ed00f9a579bf85210c85be26e1",
+      "normalizedPreviewDimensions": {
+        "width": 262,
+        "height": 300
+      }
+    },
+    {
+      "id": "fa-medal-v1",
+      "sourceItemId": "medal",
+      "title": "Medal (solid)",
+      "sourceCategory": "Celebrations & Symbols",
+      "sourceTags": [
+        "medal",
+        "award",
+        "achievement",
+        "sports",
+        "winner"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/medal.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/medal.svg",
+      "originalSha256": "f8eab823faee7629ba2c9f9542b3f5d30fb4a422896cb6a7d435a8c59c9a8d44",
+      "normalizedSvgSha256": "a407a70114c13194b6009bb5cbce08535a6fa17de7a472ae27684237aa94a020",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "fa-mitten-v1",
+      "sourceItemId": "mitten",
+      "title": "Mitten (solid)",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "mitten",
+        "winter",
+        "cold",
+        "cozy",
+        "christmas gift"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/mitten.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/mitten.svg",
+      "originalSha256": "dcb505ff30b6b8e407aecad4b590dc49de648834b4e95ab2f8d94d5b20d6a016",
+      "normalizedSvgSha256": "1646fa089ce86948702a59f26adb68108fa748a4eb69f6caef6136614e4c4e21",
+      "normalizedPreviewDimensions": {
+        "width": 262,
+        "height": 300
+      }
+    },
+    {
+      "id": "fa-mosque-v1",
+      "sourceItemId": "mosque",
+      "title": "Mosque (solid)",
+      "sourceCategory": "Celebrations & Symbols",
+      "sourceTags": [
+        "mosque",
+        "islam",
+        "faith",
+        "religious",
+        "ramadan"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/mosque.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/mosque.svg",
+      "originalSha256": "7e39870dd6a7357f326b6793e7ab54e239876cb519fb350bac979a809e66f53f",
+      "normalizedSvgSha256": "8eaf6bc0575feb73bd9667598d1a5a2cf1e5f6bb90c4a958cd427a7b8c896689",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 240
+      }
+    },
+    {
+      "id": "fa-mug-saucer-v1",
+      "sourceItemId": "mug-saucer",
+      "title": "Coffee cup (solid)",
+      "sourceCategory": "Food & Drink",
+      "sourceTags": [
+        "coffee",
+        "cup",
+        "saucer",
+        "cafe",
+        "morning"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/mug-saucer.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/mug-saucer.svg",
+      "originalSha256": "c855a45f66e96bc9c33d7948fc824924a024337337c89d3ef1ee94c351ecf79d",
+      "normalizedSvgSha256": "d69a85be105d751e98b4a7aa03cd005a72bf8413b62998c0274a0a413405c081",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 240
+      }
+    },
+    {
+      "id": "fa-om-v1",
+      "sourceItemId": "om",
+      "title": "Om symbol (solid)",
+      "sourceCategory": "Celebrations & Symbols",
+      "sourceTags": [
+        "om",
+        "hindu",
+        "buddhist",
+        "yoga",
+        "meditation",
+        "faith"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/om.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/om.svg",
+      "originalSha256": "6d513e98c552010ded91d168efd8e240d40c90cbd8986abfc24483eb796eb3e9",
+      "normalizedSvgSha256": "3ec319c134a27407fe97f225ef5c9ea968814f6ec2016fb3d913d8f0f9b3f224",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "fa-otter-v1",
+      "sourceItemId": "otter",
+      "title": "Otter (solid)",
+      "sourceCategory": "Nature & Animals",
+      "sourceTags": [
+        "otter",
+        "animal",
+        "cute",
+        "river",
+        "wildlife gift"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/otter.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/otter.svg",
+      "originalSha256": "8e5e9d53cc6c2f4785a851aca05a29e22fb44ace4f300571fdcb24c5360a689d",
+      "normalizedSvgSha256": "39bbc1ba4b257af2182a76048ab8314da5d6441f3cd2e4e2a01e64360f504246",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 240
+      }
+    },
+    {
+      "id": "fa-paintbrush-v1",
+      "sourceItemId": "paintbrush",
+      "title": "Paintbrush (solid)",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "paintbrush",
+        "art",
+        "artist gift",
+        "craft",
+        "painting"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/paintbrush.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/paintbrush.svg",
+      "originalSha256": "d4460e16b62a7ec39d79123200f3b33629da36b49fe823d7437926b6f87181d9",
+      "normalizedSvgSha256": "26e3eecae9e630ab98340b785f4fb12a31b686e30ae89318126d5244244a782f",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 267
+      }
+    },
+    {
+      "id": "fa-palette-v1",
+      "sourceItemId": "palette",
+      "title": "Artist palette (solid)",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "palette",
+        "art",
+        "artist gift",
+        "painting",
+        "craft"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/palette.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/palette.svg",
+      "originalSha256": "d079dbbce8d282b2476acdccdb2106b8d6784edb51739e9767710cc1324a1e9f",
+      "normalizedSvgSha256": "b5e66d4b7930bd3c95e2b45d086bf3bd0749dff409e961a29eee81c2475e49aa",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "fa-peace-v1",
+      "sourceItemId": "peace",
+      "title": "Peace sign (solid)",
+      "sourceCategory": "Celebrations & Symbols",
+      "sourceTags": [
+        "peace",
+        "sixties",
+        "hippie",
+        "symbol",
+        "retro"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/peace.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/peace.svg",
+      "originalSha256": "e9ad6502dadfeae5ba1a6dbcb25bf0cfd458357857219f6b52cf2b866cde5870",
+      "normalizedSvgSha256": "cc56946839a47668bb514c1833acef1beec41a2d639d3fdad28a77287d46c83e",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "fa-pepper-hot-v1",
+      "sourceItemId": "pepper-hot",
+      "title": "Hot pepper (solid)",
+      "sourceCategory": "Food & Drink",
+      "sourceTags": [
+        "pepper",
+        "chili",
+        "spicy",
+        "hot sauce",
+        "kitchen"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/pepper-hot.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/pepper-hot.svg",
+      "originalSha256": "93d5c81f80692a89a8949290014366c9240c4b1c68b96d07f29b316429882f35",
+      "normalizedSvgSha256": "8a1c78a6f011b3a77b95d7fd39de2f598cf0767c17607a8276eec830be141cab",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "fa-pizza-slice-v1",
+      "sourceItemId": "pizza-slice",
+      "title": "Pizza slice (solid)",
+      "sourceCategory": "Food & Drink",
+      "sourceTags": [
+        "pizza",
+        "food",
+        "italian",
+        "fast food",
+        "party"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/pizza-slice.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/pizza-slice.svg",
+      "originalSha256": "7c2c8f24b6b849a9ca208d29eb42a87234374a7c7b95d6479458adf25e78b0a0",
+      "normalizedSvgSha256": "8af68af0a3fcd4ee3499b674d873b3c2a2d5f28508c2a79370226376b068fd1c",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "fa-place-of-worship-v1",
+      "sourceItemId": "place-of-worship",
+      "title": "Place of worship (solid)",
+      "sourceCategory": "Celebrations & Symbols",
+      "sourceTags": [
+        "place of worship",
+        "faith",
+        "interfaith",
+        "religious",
+        "generic"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/place-of-worship.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/place-of-worship.svg",
+      "originalSha256": "2241bd378074be2c91dd8856b1f8ba9191915412f26cd384205f106413052284",
+      "normalizedSvgSha256": "9aa2755bb4ca872b52a7d7851aa1bd8d6a81aa72610a9d04e80994be4d1c7f9b",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 240
+      }
+    },
+    {
+      "id": "fa-cloud-sun-v1",
+      "sourceItemId": "cloud-sun",
+      "title": "Cloud with sun (solid)",
+      "sourceCategory": "Nature & Animals",
+      "sourceTags": [
+        "weather",
+        "cloud",
+        "sun",
+        "forecast",
+        "partly cloudy"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/cloud-sun.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/cloud-sun.svg",
+      "originalSha256": "8eecd3befc941beddc22286eec9e92747769a0d3b5e5641e06e786a4497d1410",
+      "normalizedSvgSha256": "607dfa379c64fd5a8ea0defac9d57413a4e79300508586dae817638706b8c6f2",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 240
+      }
+    },
+    {
+      "id": "fa-mountain-sun-v1",
+      "sourceItemId": "mountain-sun",
+      "title": "Mountain with sun (solid)",
+      "sourceCategory": "Nature & Animals",
+      "sourceTags": [
+        "mountain",
+        "sun",
+        "hiking gift",
+        "outdoors",
+        "landscape"
+      ],
+      "sourceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/svgs/solid/mountain-sun.svg",
+      "license": "CC BY 4.0",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/FortAwesome/Font-Awesome/blob/840c215f894f429b26b8c1402a65da835dc5a450/LICENSE.txt",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "fa-source/mountain-sun.svg",
+      "originalSha256": "a0869fff83a0ba5296ae793ca52a96a5e91fb612bc16367ecf748a496b491d93",
+      "normalizedSvgSha256": "3cfa45e724969040f19bd5b11f25d6a2abf1d653b8321ccd7834b982208a1cb9",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 240
+      }
+    }
+  ]
+}

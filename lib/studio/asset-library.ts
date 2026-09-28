@@ -1,6 +1,7 @@
 import { TABLER_STUDIO_ASSETS } from "./tabler-assets";
 import { FEATHER_STUDIO_ASSETS } from "./feather-icons-assets";
 import { WIKIMEDIA_PACIFIC_CHARTS_STUDIO_ASSETS } from "./wikimedia-commons-pacific-charts-assets";
+import { FONT_AWESOME_STUDIO_ASSETS } from "./font-awesome-free-assets";
 import { PATTERNFILLS_STUDIO_ASSETS } from "./patternfills-assets";
 import { OPEN_CROP_STUDIO_ASSETS } from "./open-crop-assets";
 import { OPENCLIPART_STUDIO_ASSETS } from "./openclipart-assets";
@@ -98,6 +99,7 @@ export const STUDIO_ASSETS: readonly StudioAsset[] = [
   ...TABLER_STUDIO_ASSETS,
   ...FEATHER_STUDIO_ASSETS,
   ...WIKIMEDIA_PACIFIC_CHARTS_STUDIO_ASSETS,
+  ...FONT_AWESOME_STUDIO_ASSETS,
   ...PATTERNFILLS_STUDIO_ASSETS,
   ...OPEN_CROP_STUDIO_ASSETS,
   ...OPENCLIPART_STUDIO_ASSETS,
