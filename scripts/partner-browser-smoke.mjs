@@ -234,6 +234,34 @@ try {
     await page.getByRole("button", { name: "Undo" }).click();
     await page.getByRole("button", { name: "Redo" }).click();
     if (await geometry.inputValue() !== "18") throw new Error("Studio redo did not restore the selected artwork rotation.");
+    // Create a practical, text-heavy hierarchy using the existing text presets
+    // and selected-text properties, then test duplicate/delete history.
+    await page.getByRole("button", { name: "Text", exact: true }).click();
+    await page.getByRole("button", { name: "Add a heading", exact: true }).click();
+    const textContent = page.getByLabel("Text", { exact: true });
+    await textContent.fill("ISLAND DAYS");
+    await page.getByLabel("Font", { exact: true }).selectOption("montserrat");
+    await page.getByLabel("Font size", { exact: true }).fill("56");
+    await page.getByRole("button", { name: "center", exact: true }).click();
+    await page.getByRole("button", { name: "Bold", exact: true }).click();
+    await page.locator(".pe-props .pe-swatches button[aria-label='#1f7048']").click();
+    await page.getByRole("button", { name: "Add a subheading", exact: true }).click();
+    await textContent.fill("Made for slow summer mornings");
+    await page.getByLabel("Font", { exact: true }).selectOption("inter");
+    await page.getByLabel("Font size", { exact: true }).fill("30");
+    await page.getByRole("button", { name: "Add body text", exact: true }).click();
+    await textContent.fill("Designed for bright island days");
+    await page.getByRole("button", { name: "Layers", exact: true }).click();
+    await page.locator(".pe-layers").getByRole("button", { name: "ISLAND DAYS", exact: true }).waitFor({ state: "visible", timeout: 10_000 });
+    await page.locator(".pe-layers").getByRole("button", { name: "Made for slow summer mornings", exact: true }).waitFor({ state: "visible", timeout: 10_000 });
+    await page.locator(".pe-layers").getByRole("button", { name: "Designed for bright island days", exact: true }).waitFor({ state: "visible", timeout: 10_000 });
+    const textRowsBeforeCopy = await page.locator(".pe-layer-row").count();
+    await page.getByRole("button", { name: "Duplicate", exact: true }).click();
+    if (await page.locator(".pe-layer-row").count() !== textRowsBeforeCopy + 1) throw new Error("Duplicate did not create a separate text layer.");
+    await page.getByRole("button", { name: "Delete", exact: true }).click();
+    await page.getByRole("button", { name: "Undo" }).click();
+    await page.getByRole("button", { name: "Redo" }).click();
+    if (await page.locator(".pe-layer-row").count() !== textRowsBeforeCopy) throw new Error("Text duplicate/delete undo and redo did not preserve layer state.");
     await page.getByRole("button", { name: "Library", exact: true }).click();
     await page.getByRole("button", { name: "Originals & fonts", exact: true }).click();
     await search.fill("tropical leaf");
@@ -268,6 +296,15 @@ try {
     await page.getByRole("button", { name: "To front", exact: true }).click();
     await page.getByRole("button", { name: "Undo" }).click();
     await page.getByRole("button", { name: "Redo" }).click();
+    await layers.getByRole("button", { name: "ISLAND DAYS", exact: true }).waitFor({ state: "visible", timeout: 10_000 });
+    await layers.getByRole("button", { name: "ISLAND DAYS", exact: true }).click();
+    await page.getByRole("button", { name: "Text", exact: true }).click();
+    await page.getByRole("button", { name: "Text", exact: true }).click();
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.locator(".pe-props").scrollIntoViewIfNeeded();
+    await page.getByLabel("Font", { exact: true }).waitFor({ state: "visible", timeout: 10_000 });
+    const tabletTypography = await page.evaluate(() => ({ width: innerWidth, height: innerHeight, horizontalOverflow: document.documentElement.scrollWidth > innerWidth, propertiesVisible: Boolean(document.querySelector(".pe-props select[aria-label='Font']")?.getBoundingClientRect().height) }));
+    if (tabletTypography.horizontalOverflow || !tabletTypography.propertiesVisible) throw new Error(`Selected text properties are not usable at tablet size: ${JSON.stringify(tabletTypography)}`);
     // Let the editor's debounced recovery snapshot land, then exercise a real
     // refresh/reopen. The browser context is isolated and discarded afterward,
     // so this proves persistence without writing a partner asset or product.
@@ -289,6 +326,10 @@ try {
     await page.getByRole("button", { name: /undo/i }).click();
     await layers.getByText("Butterfly", { exact: true }).waitFor({ state: "detached", timeout: 15_000 });
     await layers.getByText("Doctor checks X-ray image", { exact: true }).waitFor({ state: "visible", timeout: 15_000 });
+    await layers.getByRole("button", { name: "ISLAND DAYS", exact: true }).click();
+    const reopenedText = page.getByLabel("Text", { exact: true });
+    await reopenedText.fill("ISLAND DAYS · KEEP CREATING");
+    if (await reopenedText.inputValue() !== "ISLAND DAYS · KEEP CREATING") throw new Error("Studio could not continue editing saved typography after refresh.");
     const inspection = await page.evaluate(() => ({
       viewport: { width: innerWidth, height: innerHeight },
       assetCards: document.querySelectorAll(".pe-asset-card").length,
@@ -301,9 +342,11 @@ try {
       studio: "opened directly without changing product data",
       libraryCoverage: { totalAssets, desktopViewport, tabletLayout, reusableShelfResults: reusableResults },
       creativeLibrarySearch: "searched medical, tropical and celebration themes; inserted approved illustration, SweetOh original and pattern assets",
+      typography: "created three text layers; edited copy, font, size, alignment, weight and color; duplicate/delete history passed",
       selectionAndHistory: "selected, moved, resized and rotated artwork; multi-selected layers and reordered them; undo/redo passed",
+      tabletTypography,
       studioRefreshRecovery: "restored the inserted layer from the isolated browser draft after refresh",
-      continuedEditing: "inserted Butterfly after restore; undo removed it while retaining the recovered layer",
+      continuedEditing: "inserted Butterfly after restore, undid that insertion, and edited recovered heading text",
       partnerData: "unchanged; browser context closed without saving a partner asset or product",
       inspection,
       pageErrors: browserErrors,
