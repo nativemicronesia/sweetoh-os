@@ -1,0 +1,1684 @@
+{
+  "schemaVersion": 1,
+  "source": "Public-Domain-and-CC0-Playing-Cards (github.com/AustinGabriel)",
+  "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+  "sourceItemRecords": "cards-assets.json",
+  "assets": [
+    {
+      "id": "cc0-cards-10-of-clubs-v1",
+      "sourceItemId": "10-of-clubs",
+      "title": "10 of Clubs",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "clubs",
+        "10"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/10-of-clubs.svg",
+      "originalSha256": "736aa824550357f0e1995b86dab36ea37c3fb0bf8013e29d5355b424b8443056",
+      "normalizedSvgSha256": "c0373cc94fb5073592d14b4bdda3282b6a6dc0f3a55fe48ebe79bdaf43a707a4",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-10-of-diamonds-v1",
+      "sourceItemId": "10-of-diamonds",
+      "title": "10 of Diamonds",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "diamonds",
+        "10"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/10-of-diamonds.svg",
+      "originalSha256": "d50e0fca98eff47bcb35c64ccfbdfb4e10bb570c1b8062598b08b57af511dba4",
+      "normalizedSvgSha256": "a015313e0ad3af3af91235e29dfd0fd3dd4adb01a120f425c5d00402181bb127",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-10-of-hearts-v1",
+      "sourceItemId": "10-of-hearts",
+      "title": "10 of Hearts",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "hearts",
+        "10"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/10-of-hearts.svg",
+      "originalSha256": "c7b07f71f844c29517d7141f9e8278dacc4629c86797746a9a9cc93c11d2bd33",
+      "normalizedSvgSha256": "e4381c7e7a071e9cb310f667692b2004455a0402bc3f42b7bb8cf014839e6342",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-10-of-spades-v1",
+      "sourceItemId": "10-of-spades",
+      "title": "10 of Spades",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "spades",
+        "10"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/10-of-spades.svg",
+      "originalSha256": "ac135f68bc80698b092032edc75973d3d546bfa91ffcad81c26d87a96973106e",
+      "normalizedSvgSha256": "7efb57b261fc07a79ea2a93cb047b528c1aff81c72084b35fe31e871d0e6917b",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-2-of-clubs-v1",
+      "sourceItemId": "2-of-clubs",
+      "title": "2 of Clubs",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "clubs",
+        "2"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/2-of-clubs.svg",
+      "originalSha256": "dbe54fe7ccbdea8627b22c1550b77c778d15fba330fa1460906ba3d89d6f1240",
+      "normalizedSvgSha256": "9383ae957c7d74fde25daeadc3c5638b67acf897306d97d860c3cf02612109a2",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-2-of-diamonds-v1",
+      "sourceItemId": "2-of-diamonds",
+      "title": "2 of Diamonds",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "diamonds",
+        "2"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/2-of-diamonds.svg",
+      "originalSha256": "0db89568815248bc34b8b4e8c933a46558892e36552645570f7ed5b379fab38a",
+      "normalizedSvgSha256": "f008f0e4152a2dff1dc8d4192e89e807617a906f61be72095f4ec38e9c9995af",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-2-of-hearts-v1",
+      "sourceItemId": "2-of-hearts",
+      "title": "2 of Hearts",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "hearts",
+        "2"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/2-of-hearts.svg",
+      "originalSha256": "86dfce7af24d49ab8147dbaffbe194e155b365bc3c29c41413f540726e563dec",
+      "normalizedSvgSha256": "051ea8a7f3d691d7bd70f8f6defdd163488335e381e4abb43b0c231bf2211aa3",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-2-of-spades-v1",
+      "sourceItemId": "2-of-spades",
+      "title": "2 of Spades",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "spades",
+        "2"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/2-of-spades.svg",
+      "originalSha256": "f77083eaa095acd3d434bfac0b8a0bb922fde5d463667ec609ee548f6d2dae42",
+      "normalizedSvgSha256": "198d27b3bc1f480ebede812d8db9bd9359af737540cd22e4bf2a3fca57b504d0",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-3-of-clubs-v1",
+      "sourceItemId": "3-of-clubs",
+      "title": "3 of Clubs",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "clubs",
+        "3"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/3-of-clubs.svg",
+      "originalSha256": "9c9e23add8144935630c3d4c402f904553812f566a064a5491840ce4d11881da",
+      "normalizedSvgSha256": "c68e1047e53b7601edb9bc812b5bdf9f985a46f2dd668ad93a5a498ed5bf7fda",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-3-of-diamonds-v1",
+      "sourceItemId": "3-of-diamonds",
+      "title": "3 of Diamonds",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "diamonds",
+        "3"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/3-of-diamonds.svg",
+      "originalSha256": "83c1d603d031ee4c59ff69475a018ae28ec32bbea2eab2748ba86c296738e369",
+      "normalizedSvgSha256": "35654d1883d31c6cbf255eea46e0fe0242c99cbb3001ed1353239f121472d2b6",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-3-of-hearts-v1",
+      "sourceItemId": "3-of-hearts",
+      "title": "3 of Hearts",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "hearts",
+        "3"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/3-of-hearts.svg",
+      "originalSha256": "6811af9037e0574981e7ccd31f747abb1903d1330a69a8b2b80fdadbffae441d",
+      "normalizedSvgSha256": "13394be8ca369d99e8fb65c56934bcf31c8dbdd236585883f9faba2ecfa1b38e",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-3-of-spades-v1",
+      "sourceItemId": "3-of-spades",
+      "title": "3 of Spades",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "spades",
+        "3"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/3-of-spades.svg",
+      "originalSha256": "84b735e5a3ca76bd75348dac72556e8cfe268ced6ecbb1a79f9a6adad02aa127",
+      "normalizedSvgSha256": "11e55be6704a7d91b7cbb41e254829fe0bac1a6ebec41048fd926b1360a064c1",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-4-of-clubs-v1",
+      "sourceItemId": "4-of-clubs",
+      "title": "4 of Clubs",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "clubs",
+        "4"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/4-of-clubs.svg",
+      "originalSha256": "0adf86eee47d5dd55538fde9538247595932f32510dae3cee7700a19bf8d6124",
+      "normalizedSvgSha256": "1f382e404547c14126819c2c95bb6885023969c5df3ff7cdd50d4f3bf0bdaa21",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-4-of-diamonds-v1",
+      "sourceItemId": "4-of-diamonds",
+      "title": "4 of Diamonds",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "diamonds",
+        "4"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/4-of-diamonds.svg",
+      "originalSha256": "100165608ecb5da1b397b69fb4e017a8f565bbb493bbe9feb969da38fb47783f",
+      "normalizedSvgSha256": "4e0842b3742532fba7d555af7fc14f17cb9f9e0687dbd632c6926d8bb90d5960",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-4-of-hearts-v1",
+      "sourceItemId": "4-of-hearts",
+      "title": "4 of Hearts",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "hearts",
+        "4"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/4-of-hearts.svg",
+      "originalSha256": "2dcb3d8afd2a04507e76c0fe216df02acfbfedcee6e63d3419cc2319d29fb771",
+      "normalizedSvgSha256": "f032c9b817f507a20d0cd5d7298d5c89139be058978ed599726129373a834249",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-4-of-spades-v1",
+      "sourceItemId": "4-of-spades",
+      "title": "4 of Spades",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "spades",
+        "4"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/4-of-spades.svg",
+      "originalSha256": "5cfa8d3d7d446d59e55902deb49fb72a73558c6fb1c75c67a8eccdfdd6b71dfc",
+      "normalizedSvgSha256": "729592112759d2022b76edd49ae21fc8966ee030093fd4973cd69e324983aeff",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-5-of-clubs-v1",
+      "sourceItemId": "5-of-clubs",
+      "title": "5 of Clubs",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "clubs",
+        "5"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/5-of-clubs.svg",
+      "originalSha256": "b05754fa9eeefb0a0f2a670d2d11c4cec58dd5f023dba65ab3d6de306ff1ec53",
+      "normalizedSvgSha256": "a7d477fb4b7378e1ed7d454135125fb18a79d58fc57f6e1816caf0154b2ed177",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-5-of-diamonds-v1",
+      "sourceItemId": "5-of-diamonds",
+      "title": "5 of Diamonds",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "diamonds",
+        "5"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/5-of-diamonds.svg",
+      "originalSha256": "1bbbdbc7c88cbe71f58aeaa8a8da5234dc7354c0fea353fe7f3030f8c265416d",
+      "normalizedSvgSha256": "4976ef240116714bab911247e03317a562f1c487aa481729b710b46900598696",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-5-of-hearts-v1",
+      "sourceItemId": "5-of-hearts",
+      "title": "5 of Hearts",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "hearts",
+        "5"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/5-of-hearts.svg",
+      "originalSha256": "d4c186c630451bedec3f52d9a5b61638a84815879cfede854c582542b137f44c",
+      "normalizedSvgSha256": "b7daa70f739c6199f3f2fcadef408e89c3a7942edf6018ff0442f66a46201cd4",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-5-of-spades-v1",
+      "sourceItemId": "5-of-spades",
+      "title": "5 of Spades",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "spades",
+        "5"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/5-of-spades.svg",
+      "originalSha256": "adfdd98eef09b0f4b21e4f0203d686ad7b9745cb638d8a03083d19fcdbac7adb",
+      "normalizedSvgSha256": "3f865065bccf1a8f311bdf522e81d46e6e4ab7f3c6580e2bdc1504a8e326ab8c",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-6-of-clubs-v1",
+      "sourceItemId": "6-of-clubs",
+      "title": "6 of Clubs",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "clubs",
+        "6"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/6-of-clubs.svg",
+      "originalSha256": "20143f24046d9f3be060dd8b8bae8c084b5dcde56d91aed570746c7abafbc73d",
+      "normalizedSvgSha256": "96c5257589c0c546ac093fedc08706afcbd9c7635d88c5485fc7d8528f7641b5",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-6-of-diamonds-v1",
+      "sourceItemId": "6-of-diamonds",
+      "title": "6 of Diamonds",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "diamonds",
+        "6"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/6-of-diamonds.svg",
+      "originalSha256": "421e66f6d12ec374cef60ca086e8f2c728f67ab63eb06c7b92714c5d1851f1fd",
+      "normalizedSvgSha256": "0ad9e8f5671a3c9472523276e30748831798acfc373954e8bc778bcea789e946",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-6-of-hearts-v1",
+      "sourceItemId": "6-of-hearts",
+      "title": "6 of Hearts",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "hearts",
+        "6"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/6-of-hearts.svg",
+      "originalSha256": "60c0585870b8f17fa52855235dc115ad4f87ac79d0cacc642944418e977ab8b8",
+      "normalizedSvgSha256": "b1fea0f5a74e14b81a66c0a322a05442ea7c1a7436fade1674825f4d7c63b483",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-6-of-spades-v1",
+      "sourceItemId": "6-of-spades",
+      "title": "6 of Spades",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "spades",
+        "6"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/6-of-spades.svg",
+      "originalSha256": "dff0ec1a3b1d0faeac82ac769aea24115edc23e4dd92c0cdd534925867431977",
+      "normalizedSvgSha256": "5f1c4cc208d0b9858064607a35dc09898d31f4590303dc0817875da22a53c8ba",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-7-of-clubs-v1",
+      "sourceItemId": "7-of-clubs",
+      "title": "7 of Clubs",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "clubs",
+        "7"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/7-of-clubs.svg",
+      "originalSha256": "fe19e9964a53d9f0c026e8b46e1a4efc264409e1bcc7fecba93804c5892158a4",
+      "normalizedSvgSha256": "0d11e2e9f36d52497ec0b3e42ff0b32eaaf6c2ecbed74c32a27cb8545166c4b2",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-7-of-diamonds-v1",
+      "sourceItemId": "7-of-diamonds",
+      "title": "7 of Diamonds",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "diamonds",
+        "7"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/7-of-diamonds.svg",
+      "originalSha256": "6d5e70777288561728425edb681e46883406d7aee45f51751157f0c847db7aa6",
+      "normalizedSvgSha256": "8158bd39194e6f3aa1b84cac28b2b0199bb04bf9a95ab700208bc46b124792b3",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-7-of-hearts-v1",
+      "sourceItemId": "7-of-hearts",
+      "title": "7 of Hearts",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "hearts",
+        "7"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/7-of-hearts.svg",
+      "originalSha256": "e5d89c00d87b7789dde4a54f351328943c5ebb48bd7c93e9e2f65aa4cad20ff5",
+      "normalizedSvgSha256": "a6793c8d700941e4db7ba817c827c1d09d0196c06e50cda0c3c3ac3891bb4af2",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-7-of-spades-v1",
+      "sourceItemId": "7-of-spades",
+      "title": "7 of Spades",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "spades",
+        "7"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/7-of-spades.svg",
+      "originalSha256": "961a6aaffc88cbad05f7b317aa3307c6566fa1cb248aae345fb62768c58437f6",
+      "normalizedSvgSha256": "12ec96072622d0451b020058ff681fba33c1cb08ed69f75391bb49950e754aa0",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-8-of-clubs-v1",
+      "sourceItemId": "8-of-clubs",
+      "title": "8 of Clubs",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "clubs",
+        "8"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/8-of-clubs.svg",
+      "originalSha256": "b890b9924891eb6802ee5179c476e6ea94a938ac757de0cbc97d46a9e3ce2761",
+      "normalizedSvgSha256": "0be145f8ea8edd69c09df8c3a2659cfe0ef1b34546987f6b006197f161a9829f",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-8-of-diamonds-v1",
+      "sourceItemId": "8-of-diamonds",
+      "title": "8 of Diamonds",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "diamonds",
+        "8"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/8-of-diamonds.svg",
+      "originalSha256": "f96d20859d38d5dbeb79c35486bf25664f2e08dea998b61ad737dc3507b852b7",
+      "normalizedSvgSha256": "965337aa4b3edf49e33ccdeb839b38fe059dd18420ba4bdc0261cfed6a290f68",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-8-of-hearts-v1",
+      "sourceItemId": "8-of-hearts",
+      "title": "8 of Hearts",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "hearts",
+        "8"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/8-of-hearts.svg",
+      "originalSha256": "a5adfdd690ae5fbad7c95af885c9ac801a9f132f929c5ce36428fa03880483ea",
+      "normalizedSvgSha256": "33a9cd1aa1ced76de8bee42de1e8c469bc21508350f4460e1c8e23f355842f72",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-8-of-spades-v1",
+      "sourceItemId": "8-of-spades",
+      "title": "8 of Spades",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "spades",
+        "8"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/8-of-spades.svg",
+      "originalSha256": "d9ffbe96e1e91ec8f22013d52d5a3c6c4dc7aafaeae67bae296e3620dd737d64",
+      "normalizedSvgSha256": "3d2697b37f0244346bef8cf6a8546feb2b11ae11c01a7bae4a93e1b1501bee63",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-9-of-clubs-v1",
+      "sourceItemId": "9-of-clubs",
+      "title": "9 of Clubs",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "clubs",
+        "9"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/9-of-clubs.svg",
+      "originalSha256": "8b1042601361253ed86835058ab691c7b419ea2633e89c4c4c0b6128adb5f07a",
+      "normalizedSvgSha256": "716e70d7e951e5bf0258ab0866bdf14125151d350cefe96bb90d8a70fef60132",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-9-of-diamonds-v1",
+      "sourceItemId": "9-of-diamonds",
+      "title": "9 of Diamonds",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "diamonds",
+        "9"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/9-of-diamonds.svg",
+      "originalSha256": "7fee22a6907aff5c5e66bc06606cbc630f9b27e81e3b187414fe4bf9cfb5aa4f",
+      "normalizedSvgSha256": "3e99293308f129a867b42165b92d4cef2c3adc0fa7880406a1f88999cc43ee4e",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-9-of-hearts-v1",
+      "sourceItemId": "9-of-hearts",
+      "title": "9 of Hearts",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "hearts",
+        "9"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/9-of-hearts.svg",
+      "originalSha256": "065aecae09b8d59d8edc5d549be2cd850ed9987e5a0859ea06bf30989f8ead7c",
+      "normalizedSvgSha256": "c71a3bfaccd757b93f915d594d5f6ae8ef3a488c0f717102696a9d2d432faf63",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-9-of-spades-v1",
+      "sourceItemId": "9-of-spades",
+      "title": "9 of Spades",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "spades",
+        "9"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/9-of-spades.svg",
+      "originalSha256": "fec75c583cd43d3ff52b7aef6db5c9167688fa80e850d6aaa5febc815611fee1",
+      "normalizedSvgSha256": "8933e3ec15f503ea040f2320dd2ac07ae41511cc4ce755fd5bab8153a8d9ef1f",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-ace-of-clubs-v1",
+      "sourceItemId": "ace-of-clubs",
+      "title": "Ace of Clubs",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "clubs",
+        "ace"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/ace-of-clubs.svg",
+      "originalSha256": "d24e57cad212e1eea30181795b35644cef795b50e2f14064769a7d02b1d1f3e6",
+      "normalizedSvgSha256": "b4379a29c34e3eee8cb3482db30a3fb825900fc9544c1f978861beb413b0c840",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-ace-of-diamonds-v1",
+      "sourceItemId": "ace-of-diamonds",
+      "title": "Ace of Diamonds",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "diamonds",
+        "ace"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/ace-of-diamonds.svg",
+      "originalSha256": "ab0a4a9d45c3f6d4c0c35e3307549d9f4bb692f748901cb6642643bdba4ee1b5",
+      "normalizedSvgSha256": "834a4a63a6d07c28a7f576358fd2bb974feccde9bc57af1c3396a94016465615",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-ace-of-hearts-v1",
+      "sourceItemId": "ace-of-hearts",
+      "title": "Ace of Hearts",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "hearts",
+        "ace"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/ace-of-hearts.svg",
+      "originalSha256": "d980a14c6af8be62fdcc0f1c31a25375be7bfbdabd0daf060804bb0e62739040",
+      "normalizedSvgSha256": "ee39bac95864b8440e4ad3533ff374e081244c517b8a48818faa2e9851c6cf21",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-ace-of-spades-v1",
+      "sourceItemId": "ace-of-spades",
+      "title": "Ace of Spades",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "spades",
+        "ace"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/ace-of-spades.svg",
+      "originalSha256": "b6f68c9280229557559e9c05a4707ba942229735ac162b43c053549f7abeeb37",
+      "normalizedSvgSha256": "ea0c32838b12a5f71eafb177b7fc81fbcbe5a4e7be3d38df6f8bcddede95423c",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-black-joker-v1",
+      "sourceItemId": "black-joker",
+      "title": "Black Joker",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "joker",
+        "card game",
+        "game design",
+        "tabletop"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/black-joker.svg",
+      "originalSha256": "8ccd8fe20fabccb239fbac36b727b9209cbd8c1d082535da29a6c9c22cab40b9",
+      "normalizedSvgSha256": "eba968d016163a0c8845586dedd6b237c17782ee2b73ba2d6830a223a0525a46",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-card-back-blue-v1",
+      "sourceItemId": "card-back-blue",
+      "title": "Card Back Blue",
+      "sourceCategory": "Card Backs",
+      "sourceTags": [
+        "playing card",
+        "card back",
+        "card game",
+        "game design",
+        "tabletop"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/card-back-blue.svg",
+      "originalSha256": "d495d8318f01d0b18b539dfd5717dec0df01fc1d8aea5a648273e2ae27d613f4",
+      "normalizedSvgSha256": "4ec6beb98424dfa3a2498c3a4b98214ddba0cbc6cfbddd8e5aff805e708492ed",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-card-back-red-v1",
+      "sourceItemId": "card-back-red",
+      "title": "Card Back Red",
+      "sourceCategory": "Card Backs",
+      "sourceTags": [
+        "playing card",
+        "card back",
+        "card game",
+        "game design",
+        "tabletop"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/card-back-red.svg",
+      "originalSha256": "8e8ef384fd9ea72702b5184ded816539dd1414edacae47e0468d1c1bfa20486a",
+      "normalizedSvgSha256": "36a7f05352b0be96dde97c385d2c039dde022612f3b886400d58b8e633cbf5a7",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-jack-of-clubs-v1",
+      "sourceItemId": "jack-of-clubs",
+      "title": "Jack of Clubs",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "clubs",
+        "jack"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/jack-of-clubs.svg",
+      "originalSha256": "74ce471114e5e8864ce7cf119c315fcf1ad26a456eae180752740814bd472aa2",
+      "normalizedSvgSha256": "5e37cfee56feb0ff9953aff2d94640421c4ccb0b21291c9e4a71753c990f69e0",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-jack-of-diamonds-v1",
+      "sourceItemId": "jack-of-diamonds",
+      "title": "Jack of Diamonds",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "diamonds",
+        "jack"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/jack-of-diamonds.svg",
+      "originalSha256": "2ce1182b59b05e9bf656f780c5a5d181be76879f7ffae904ea41f2bfb6267e0a",
+      "normalizedSvgSha256": "e7ce0fbc594607b1c286ec3721b5c4bbe3c7a3da99e2a73e8ba12c6c74b7d41d",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-jack-of-hearts-v1",
+      "sourceItemId": "jack-of-hearts",
+      "title": "Jack of Hearts",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "hearts",
+        "jack"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/jack-of-hearts.svg",
+      "originalSha256": "4c4e466a67f7dc84e7708b0a73fcf762484a7b90e5d2db407356ed08baac1b75",
+      "normalizedSvgSha256": "be5b95557798795fd8be0cfa18925eff36bf8b22363202fca971df38dbc7db7c",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-jack-of-spades-v1",
+      "sourceItemId": "jack-of-spades",
+      "title": "Jack of Spades",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "spades",
+        "jack"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/jack-of-spades.svg",
+      "originalSha256": "3a79476842a2f14127176ca7d23e7e0257cc018019859bdf610f1f55cf98cc2d",
+      "normalizedSvgSha256": "ee742f58bf0136cabc0d09af7c2ccd382a150771de4a4f4a2ffe488fe42633ea",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-king-of-clubs-v1",
+      "sourceItemId": "king-of-clubs",
+      "title": "King of Clubs",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "clubs",
+        "king"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/king-of-clubs.svg",
+      "originalSha256": "2fb7c477e67b42308b97bf83b512d231f266f1d3a19619000c1bbef4e4be6e00",
+      "normalizedSvgSha256": "16ee3df063bebeca5de149f8c1582ade3f73be35f849b2438a3a38c0782aa8b9",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-king-of-diamonds-v1",
+      "sourceItemId": "king-of-diamonds",
+      "title": "King of Diamonds",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "diamonds",
+        "king"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/king-of-diamonds.svg",
+      "originalSha256": "cf955d1f708ccfde60371ebe46a007bf8faaa36909cb0491c2ae491d4e44350c",
+      "normalizedSvgSha256": "c48bfb2524054af4356259def7257ebc928954d045a9505e06765d641f152193",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-king-of-hearts-v1",
+      "sourceItemId": "king-of-hearts",
+      "title": "King of Hearts",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "hearts",
+        "king"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/king-of-hearts.svg",
+      "originalSha256": "f0bd499873e13dc663cd31940c4ef7e61a7e2b15c77e67738597bfacd846e7dc",
+      "normalizedSvgSha256": "58284590cf878118d2cbc9777f729585806776a3eab5f9a85553becc5bfb8f50",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-king-of-spades-v1",
+      "sourceItemId": "king-of-spades",
+      "title": "King of Spades",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "spades",
+        "king"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/king-of-spades.svg",
+      "originalSha256": "ac324d163e4a1b59a0286cea4ce97b504ee00503549661df98b590237f872ea9",
+      "normalizedSvgSha256": "069a5b66e94e67562871ab17471f6bf58f258f5c005b1523189b2c05af2b8814",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-queen-of-clubs-v1",
+      "sourceItemId": "queen-of-clubs",
+      "title": "Queen of Clubs",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "clubs",
+        "queen"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/queen-of-clubs.svg",
+      "originalSha256": "de20d3534501ea5988998db6ce2e9d5ec20c2d3e8d44cdc18b22e81e44caec67",
+      "normalizedSvgSha256": "a5beafb1202305c5815ab13cfb62bd5835e4a7499a79ee9fab6b0c8f6684fc34",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-queen-of-diamonds-v1",
+      "sourceItemId": "queen-of-diamonds",
+      "title": "Queen of Diamonds",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "diamonds",
+        "queen"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/queen-of-diamonds.svg",
+      "originalSha256": "d8716c07b5512a56c5e6ccfc77668001ab62f1204c3220c5481d77f62b94212d",
+      "normalizedSvgSha256": "7e15dbdc77056d5cfb5209c0b044756409f63d47daf60e1cccf6082504f94f3d",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-queen-of-hearts-v1",
+      "sourceItemId": "queen-of-hearts",
+      "title": "Queen of Hearts",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "hearts",
+        "queen"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/queen-of-hearts.svg",
+      "originalSha256": "aac78b3ebfbe8d655cd1ccbb72b4d4cc46129d533c0b61f234bffbfa6d30651b",
+      "normalizedSvgSha256": "2c1b17bb92444261606132f0f5144e6926af51b2d7545dd42c783a0c5aef1f54",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-queen-of-spades-v1",
+      "sourceItemId": "queen-of-spades",
+      "title": "Queen of Spades",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "card game",
+        "game design",
+        "tabletop",
+        "spades",
+        "queen"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/queen-of-spades.svg",
+      "originalSha256": "f9343e12f6769a2beadfbefc67e3ac488c5f3b285bf6851ec2c5191ae7691a83",
+      "normalizedSvgSha256": "65fef38bd4fd77aa51372e79b2153d4a671d4bedcee6cdd5a1e7f1081d42d158",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    },
+    {
+      "id": "cc0-cards-red-joker-v1",
+      "sourceItemId": "red-joker",
+      "title": "Red Joker",
+      "sourceCategory": "Playing Cards",
+      "sourceTags": [
+        "playing card",
+        "joker",
+        "card game",
+        "game design",
+        "tabletop"
+      ],
+      "sourceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/tree/3765067c32fcef42a30e87022332db729658e7cd",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceLicenseEvidenceUrl": "https://github.com/AustinGabriel/Public-Domain-and-CC0-Playing-Cards/blob/3765067c32fcef42a30e87022332db729658e7cd/LICENSE",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "svg-source/red-joker.svg",
+      "originalSha256": "bca9390c13c341fe8a4802969d8e5f0dec2fd6a2ed10466946a8791d23409be1",
+      "normalizedSvgSha256": "66b7be62e69466faeff5c82fd75e8a4df31b9cfba33c545c2cd7e36fd774cf83",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 420
+      }
+    }
+  ]
+}

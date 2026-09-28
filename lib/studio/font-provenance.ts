@@ -19,11 +19,13 @@ export const STUDIO_FONT_PROVENANCE = {
   barlow: ofl("barlowcondensed"),
   space: ofl("spacegrotesk"),
   fraunces: ofl("fraunces"),
+  kalam: ofl("kalam"),
+  tiltWarp: ofl("tiltwarp"),
 } as const;
 
 /** Stable names/rights for catalog search without loading fonts into the canvas. */
 export const STUDIO_FONT_LABELS: Record<keyof typeof STUDIO_FONT_PROVENANCE, string> = {
-  inter: "Inter", montserrat: "Montserrat", anton: "Anton", bebas: "Bebas Neue", oswald: "Oswald", playfair: "Playfair Display", pacifico: "Pacifico", marker: "Permanent Marker", caveat: "Caveat", lobster: "Lobster", barlow: "Barlow Condensed", space: "Space Grotesk", fraunces: "Fraunces",
+  inter: "Inter", montserrat: "Montserrat", anton: "Anton", bebas: "Bebas Neue", oswald: "Oswald", playfair: "Playfair Display", pacifico: "Pacifico", marker: "Permanent Marker", caveat: "Caveat", lobster: "Lobster", barlow: "Barlow Condensed", space: "Space Grotesk", fraunces: "Fraunces", kalam: "Kalam", tiltWarp: "Tilt Warp",
 };
 
 export type StudioFontKey = keyof typeof STUDIO_FONT_PROVENANCE;

@@ -1,0 +1,726 @@
+[
+  {
+    "id": "10-of-clubs",
+    "title": "10 of Clubs",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "clubs",
+      "10"
+    ]
+  },
+  {
+    "id": "10-of-diamonds",
+    "title": "10 of Diamonds",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "diamonds",
+      "10"
+    ]
+  },
+  {
+    "id": "10-of-hearts",
+    "title": "10 of Hearts",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "hearts",
+      "10"
+    ]
+  },
+  {
+    "id": "10-of-spades",
+    "title": "10 of Spades",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "spades",
+      "10"
+    ]
+  },
+  {
+    "id": "2-of-clubs",
+    "title": "2 of Clubs",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "clubs",
+      "2"
+    ]
+  },
+  {
+    "id": "2-of-diamonds",
+    "title": "2 of Diamonds",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "diamonds",
+      "2"
+    ]
+  },
+  {
+    "id": "2-of-hearts",
+    "title": "2 of Hearts",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "hearts",
+      "2"
+    ]
+  },
+  {
+    "id": "2-of-spades",
+    "title": "2 of Spades",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "spades",
+      "2"
+    ]
+  },
+  {
+    "id": "3-of-clubs",
+    "title": "3 of Clubs",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "clubs",
+      "3"
+    ]
+  },
+  {
+    "id": "3-of-diamonds",
+    "title": "3 of Diamonds",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "diamonds",
+      "3"
+    ]
+  },
+  {
+    "id": "3-of-hearts",
+    "title": "3 of Hearts",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "hearts",
+      "3"
+    ]
+  },
+  {
+    "id": "3-of-spades",
+    "title": "3 of Spades",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "spades",
+      "3"
+    ]
+  },
+  {
+    "id": "4-of-clubs",
+    "title": "4 of Clubs",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "clubs",
+      "4"
+    ]
+  },
+  {
+    "id": "4-of-diamonds",
+    "title": "4 of Diamonds",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "diamonds",
+      "4"
+    ]
+  },
+  {
+    "id": "4-of-hearts",
+    "title": "4 of Hearts",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "hearts",
+      "4"
+    ]
+  },
+  {
+    "id": "4-of-spades",
+    "title": "4 of Spades",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "spades",
+      "4"
+    ]
+  },
+  {
+    "id": "5-of-clubs",
+    "title": "5 of Clubs",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "clubs",
+      "5"
+    ]
+  },
+  {
+    "id": "5-of-diamonds",
+    "title": "5 of Diamonds",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "diamonds",
+      "5"
+    ]
+  },
+  {
+    "id": "5-of-hearts",
+    "title": "5 of Hearts",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "hearts",
+      "5"
+    ]
+  },
+  {
+    "id": "5-of-spades",
+    "title": "5 of Spades",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "spades",
+      "5"
+    ]
+  },
+  {
+    "id": "6-of-clubs",
+    "title": "6 of Clubs",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "clubs",
+      "6"
+    ]
+  },
+  {
+    "id": "6-of-diamonds",
+    "title": "6 of Diamonds",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "diamonds",
+      "6"
+    ]
+  },
+  {
+    "id": "6-of-hearts",
+    "title": "6 of Hearts",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "hearts",
+      "6"
+    ]
+  },
+  {
+    "id": "6-of-spades",
+    "title": "6 of Spades",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "spades",
+      "6"
+    ]
+  },
+  {
+    "id": "7-of-clubs",
+    "title": "7 of Clubs",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "clubs",
+      "7"
+    ]
+  },
+  {
+    "id": "7-of-diamonds",
+    "title": "7 of Diamonds",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "diamonds",
+      "7"
+    ]
+  },
+  {
+    "id": "7-of-hearts",
+    "title": "7 of Hearts",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "hearts",
+      "7"
+    ]
+  },
+  {
+    "id": "7-of-spades",
+    "title": "7 of Spades",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "spades",
+      "7"
+    ]
+  },
+  {
+    "id": "8-of-clubs",
+    "title": "8 of Clubs",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "clubs",
+      "8"
+    ]
+  },
+  {
+    "id": "8-of-diamonds",
+    "title": "8 of Diamonds",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "diamonds",
+      "8"
+    ]
+  },
+  {
+    "id": "8-of-hearts",
+    "title": "8 of Hearts",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "hearts",
+      "8"
+    ]
+  },
+  {
+    "id": "8-of-spades",
+    "title": "8 of Spades",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "spades",
+      "8"
+    ]
+  },
+  {
+    "id": "9-of-clubs",
+    "title": "9 of Clubs",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "clubs",
+      "9"
+    ]
+  },
+  {
+    "id": "9-of-diamonds",
+    "title": "9 of Diamonds",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "diamonds",
+      "9"
+    ]
+  },
+  {
+    "id": "9-of-hearts",
+    "title": "9 of Hearts",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "hearts",
+      "9"
+    ]
+  },
+  {
+    "id": "9-of-spades",
+    "title": "9 of Spades",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "spades",
+      "9"
+    ]
+  },
+  {
+    "id": "ace-of-clubs",
+    "title": "Ace of Clubs",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "clubs",
+      "ace"
+    ]
+  },
+  {
+    "id": "ace-of-diamonds",
+    "title": "Ace of Diamonds",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "diamonds",
+      "ace"
+    ]
+  },
+  {
+    "id": "ace-of-hearts",
+    "title": "Ace of Hearts",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "hearts",
+      "ace"
+    ]
+  },
+  {
+    "id": "ace-of-spades",
+    "title": "Ace of Spades",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "spades",
+      "ace"
+    ]
+  },
+  {
+    "id": "black-joker",
+    "title": "Black Joker",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "joker",
+      "card game",
+      "game design",
+      "tabletop"
+    ]
+  },
+  {
+    "id": "card-back-blue",
+    "title": "Card Back Blue",
+    "category": "Card Backs",
+    "tags": [
+      "playing card",
+      "card back",
+      "card game",
+      "game design",
+      "tabletop"
+    ]
+  },
+  {
+    "id": "card-back-red",
+    "title": "Card Back Red",
+    "category": "Card Backs",
+    "tags": [
+      "playing card",
+      "card back",
+      "card game",
+      "game design",
+      "tabletop"
+    ]
+  },
+  {
+    "id": "jack-of-clubs",
+    "title": "Jack of Clubs",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "clubs",
+      "jack"
+    ]
+  },
+  {
+    "id": "jack-of-diamonds",
+    "title": "Jack of Diamonds",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "diamonds",
+      "jack"
+    ]
+  },
+  {
+    "id": "jack-of-hearts",
+    "title": "Jack of Hearts",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "hearts",
+      "jack"
+    ]
+  },
+  {
+    "id": "jack-of-spades",
+    "title": "Jack of Spades",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "spades",
+      "jack"
+    ]
+  },
+  {
+    "id": "king-of-clubs",
+    "title": "King of Clubs",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "clubs",
+      "king"
+    ]
+  },
+  {
+    "id": "king-of-diamonds",
+    "title": "King of Diamonds",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "diamonds",
+      "king"
+    ]
+  },
+  {
+    "id": "king-of-hearts",
+    "title": "King of Hearts",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "hearts",
+      "king"
+    ]
+  },
+  {
+    "id": "king-of-spades",
+    "title": "King of Spades",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "spades",
+      "king"
+    ]
+  },
+  {
+    "id": "queen-of-clubs",
+    "title": "Queen of Clubs",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "clubs",
+      "queen"
+    ]
+  },
+  {
+    "id": "queen-of-diamonds",
+    "title": "Queen of Diamonds",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "diamonds",
+      "queen"
+    ]
+  },
+  {
+    "id": "queen-of-hearts",
+    "title": "Queen of Hearts",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "hearts",
+      "queen"
+    ]
+  },
+  {
+    "id": "queen-of-spades",
+    "title": "Queen of Spades",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "card game",
+      "game design",
+      "tabletop",
+      "spades",
+      "queen"
+    ]
+  },
+  {
+    "id": "red-joker",
+    "title": "Red Joker",
+    "category": "Playing Cards",
+    "tags": [
+      "playing card",
+      "joker",
+      "card game",
+      "game design",
+      "tabletop"
+    ]
+  }
+]

@@ -3,6 +3,7 @@ import {
   Bebas_Neue,
   Caveat,
   Inter,
+  Kalam,
   Lobster,
   Montserrat,
   Oswald,
@@ -12,6 +13,7 @@ import {
   Barlow_Condensed,
   Space_Grotesk,
   Fraunces,
+  Tilt_Warp,
 } from "next/font/google";
 
 /**
@@ -31,6 +33,8 @@ const lobster = Lobster({ subsets: ["latin"], weight: "400", display: "swap" });
 const barlow = Barlow_Condensed({ subsets: ["latin"], weight: ["400", "700"], display: "swap" });
 const space = Space_Grotesk({ subsets: ["latin"], weight: ["400", "700"], display: "swap" });
 const fraunces = Fraunces({ subsets: ["latin"], weight: ["400", "700"], display: "swap" });
+const kalam = Kalam({ subsets: ["latin"], weight: ["400", "700"], display: "swap" });
+const tiltWarp = Tilt_Warp({ subsets: ["latin"], weight: "400", display: "swap" });
 
 export const PRODUCT_FONTS = [
   { key: "inter", label: "Inter", family: inter.style.fontFamily, bold: true },
@@ -46,6 +50,8 @@ export const PRODUCT_FONTS = [
   { key: "barlow", label: "Barlow Condensed", family: barlow.style.fontFamily, bold: true },
   { key: "space", label: "Space Grotesk", family: space.style.fontFamily, bold: true },
   { key: "fraunces", label: "Fraunces", family: fraunces.style.fontFamily, bold: true },
+  { key: "kalam", label: "Kalam", family: kalam.style.fontFamily, bold: true },
+  { key: "tiltWarp", label: "Tilt Warp", family: tiltWarp.style.fontFamily, bold: false },
 ] as const;
 
 export type ProductFontKey = (typeof PRODUCT_FONTS)[number]["key"];
