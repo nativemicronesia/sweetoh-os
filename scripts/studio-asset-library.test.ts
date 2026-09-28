@@ -537,6 +537,50 @@ test("Libreclipart everyday vectors keep individual rights evidence, searchable 
   assert.equal(canSurfaceStudioAsset({ ...studioAsset(id)!, commercialUse: false }), false);
 });
 
+test("uiGradients backgrounds keep pinned MIT notice, original palettes, search, and SVG insertion", async () => {
+  const base = "docs/licenses/third-party/uigradients";
+  const manifest = JSON.parse(readFileSync(`${base}/SOURCE-MANIFEST.json`, "utf8")) as {
+    revision: string; originalDataSha256: string; originalLicenseSha256: string;
+    assets: Array<{ id: string; sourceIndex: number; originalName: string; originalColors: string[]; normalizedSvgSha256: string }>;
+  };
+  const original = readFileSync(`${base}/gradients.json`);
+  const notice = readFileSync(`${base}/LICENSE.md`);
+  const source = JSON.parse(original.toString()) as Array<{ name: string; colors: string[] }>;
+  assert.equal(manifest.revision, "afb018418e92c3fa4048daa88eb6525a78f5486e");
+  assert.equal(manifest.assets.length, 148);
+  assert.equal(createHash("sha256").update(original).digest("hex"), manifest.originalDataSha256);
+  assert.equal(createHash("sha256").update(notice).digest("hex"), manifest.originalLicenseSha256);
+  assert.match(notice.toString(), /Copyright \(c\) 2017 Indrashish Ghosh/);
+  for (const record of manifest.assets) {
+    const asset = studioAsset(record.id);
+    assert.ok(asset, record.id);
+    assert.equal(source[record.sourceIndex]?.name, record.originalName);
+    assert.deepEqual(source[record.sourceIndex]?.colors, record.originalColors);
+    assert.equal(asset.licenseId, "MIT");
+    assert.equal(asset.attributionRequired, true);
+    assert.match(asset.attributionText ?? "", /MIT License/);
+    assert.equal(asset.commercialUse && asset.modificationAllowed && asset.redistributionAllowed, true);
+    assert.equal(createHash("sha256").update(Buffer.from(asset.svg!)).digest("hex"), record.normalizedSvgSha256);
+    assert.ok(canSurfaceStudioAsset(asset));
+    assert.equal(studioEditorCommandSchema.safeParse({ type: "add_graphic", assetKey: record.id }).success, true);
+  }
+  for (const [query, id] of [
+    ["christmas gradient background", "uigradients-christmas-v1"],
+    ["wedding pastel gradient", "uigradients-wedding-day-blues-v1"],
+    ["tropical island gradient", "uigradients-bora-bora-v1"],
+    ["dark night gradient", "uigradients-midnight-city-v1"],
+  ] as const) {
+    assert.ok(findStudioAssets({ query, kind: "element", limit: 50 }).some((asset) => asset.id === id), query);
+  }
+  const id = "uigradients-christmas-v1";
+  const response = await getStudioAssetResponse(new Request(`https://sweetoh.test${studioAssetUrl(id)}`), { params: Promise.resolve({ id }) });
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("Content-Type") ?? "", /^image\/svg\+xml/);
+  const raster = await sharp(Buffer.from(await response.arrayBuffer())).resize(120, 120).raw().toBuffer();
+  assert.ok(new Set(raster).size > 4);
+  assert.throws(() => canSurfaceStudioAsset({ ...studioAsset(id)!, attributionText: null }), /Required attribution text must be recorded/);
+});
+
 test("Open Doodles adds authored lifestyle illustrations with CC0 rights and useful design retrieval", () => {
   const assets = STUDIO_ASSETS.filter((asset) => asset.id.startsWith("open-doodles-"));
   assert.equal(assets.length, 27);
