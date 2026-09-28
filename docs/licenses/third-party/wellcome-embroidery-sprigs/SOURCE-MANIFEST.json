@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "source": "Wellcome Collection — 1775 embroidery-design flower sprig engravings (Kilburn & Dodd)",
+  "rightsEvidence": "Per-work Wellcome Collection catalogue API license + accessConditions, independently verified live for each item; snapshots in records/.",
+  "assets": [
+    {
+      "id": "wellcome-lilies-carnations-auricula-v1",
+      "workId": "cqwy8xcd",
+      "iiifImageId": "V0044077",
+      "title": "Two sprigs of flowers, including lilies, carnations and Auricula, meant as designs for embroidery",
+      "creator": "William Kilburn",
+      "date": "1775 (published 1776)",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/cqwy8xcd",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0044077/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 1414,
+      "iiifWidth": 3150,
+      "iiifHeight": 2226,
+      "originalFile": "originals/lilies-carnations-auricula.jpg",
+      "originalSha256": "ea924f7f6f3c5cebf67165db59b5f64e8881b5008b4f56a57950a6a3b568d913",
+      "normalizedOutputSha256": "3223f620c183d8512ac7fae81231611d683efd959203f5961450a09a5f7aa548",
+      "normalizedDimensions": {
+        "width": 2000,
+        "height": 1414
+      }
+    },
+    {
+      "id": "wellcome-tulip-honeysuckle-v1",
+      "workId": "tjhcd6kq",
+      "iiifImageId": "V0044075",
+      "title": "Two sprigs of flowers, including tulip and honeysuckle, meant as designs for embroidery",
+      "creator": "William Kilburn",
+      "date": "1775 (published 1776)",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/tjhcd6kq",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0044075/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 1413,
+      "iiifWidth": 3100,
+      "iiifHeight": 2190,
+      "originalFile": "originals/tulip-honeysuckle.jpg",
+      "originalSha256": "34f3d0e947128671c944a9607aca2e8533351c1415c3af12707d4376f6f4c270",
+      "normalizedOutputSha256": "184adf78345055d18fadce65015a2df064682c103074a3ba06c00d512595b76f",
+      "normalizedDimensions": {
+        "width": 2000,
+        "height": 1413
+      }
+    },
+    {
+      "id": "wellcome-convolvulus-carnations-v1",
+      "workId": "yvbzqfk6",
+      "iiifImageId": "V0044078",
+      "title": "Two sprigs of flowers, including Convolvulus and carnations, meant as designs for embroidery",
+      "creator": "Dodd",
+      "date": "1775 (published 1776)",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/yvbzqfk6",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0044078/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 1294,
+      "iiifWidth": 3400,
+      "iiifHeight": 2199,
+      "originalFile": "originals/convolvulus-carnations.jpg",
+      "originalSha256": "33e1a1cc4793ed66c11cb3fc4ae216d9a520986ba8e877718e9dca4460b4fa7a",
+      "normalizedOutputSha256": "23d7b9372476ddb25cf6b2c649a80a1551bea809c5be71195329387521befa96",
+      "normalizedDimensions": {
+        "width": 2000,
+        "height": 1294
+      }
+    },
+    {
+      "id": "wellcome-roses-narcissi-v1",
+      "workId": "ykvqwre9",
+      "iiifImageId": "V0044074",
+      "title": "Two sprigs of flowers including roses and Narcissi, meant as designs for embroidery",
+      "creator": "William Kilburn",
+      "date": "1775 (published 1776)",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/ykvqwre9",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0044074/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 1415,
+      "iiifWidth": 3200,
+      "iiifHeight": 2263,
+      "originalFile": "originals/roses-narcissi.jpg",
+      "originalSha256": "b3a43a7aab6d37274508c0d9bdcecdd694aa69274c5ffdb1d7551a485d5eb805",
+      "normalizedOutputSha256": "859d4b04a19f31775b534602305f9fad4d2fea25ea56087234f00be3f959d284",
+      "normalizedDimensions": {
+        "width": 2000,
+        "height": 1415
+      }
+    },
+    {
+      "id": "wellcome-iris-narcissus-v1",
+      "workId": "ruymcc9g",
+      "iiifImageId": "V0044076",
+      "title": "Two sprigs of flowers, including iris and double Narcissus, meant as designs for embroidery",
+      "creator": "William Kilburn",
+      "date": "1775 (published 1776)",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/ruymcc9g",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0044076/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 1358,
+      "iiifWidth": 3200,
+      "iiifHeight": 2172,
+      "originalFile": "originals/iris-narcissus.jpg",
+      "originalSha256": "aa2c1b85e32bd5c71fe70909a5e6ede129e1bced724d80f3afca78c75673c09b",
+      "normalizedOutputSha256": "9a1549b53b9c054a585ae77041c331c81de07cd2796afb4c18e19ed9d5ea568d",
+      "normalizedDimensions": {
+        "width": 2000,
+        "height": 1358
+      }
+    }
+  ]
+}
