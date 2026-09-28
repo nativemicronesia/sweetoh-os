@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "source": "Libreclipart.org hobbies, occupations, and family celebrations",
+  "sourceLicenseEvidenceUrl": "https://libreclipart.org/en/licenses",
+  "sourceItemRecords": "life-events-assets.json",
+  "assets": [
+    {
+      "id": "libreclipart-418-v1",
+      "sourceItemId": 418,
+      "title": "Worker repairing a washing machine",
+      "description": "A repairman is working on a washing machine.",
+      "sourceCategory": "people",
+      "sourceTags": [
+        "device",
+        "repairman",
+        "washing machine",
+        "plumber",
+        "technician"
+      ],
+      "publishedDate": "21-02-2025",
+      "creatorMetadata": "libreclipart.org",
+      "individualArtist": null,
+      "sourceUrl": "https://libreclipart.org/en/vectors/people/worker-repairing-a-washing-machine/418",
+      "previewUrl": "https://lt-next.sfo3.digitaloceanspaces.com/storage_clipart/2103/worker-repairing-washing-machine.jpg",
+      "sourceDownloadUrl": "https://libreclipart.org/en/download/418/svg/0",
+      "sourcePageLicenseLabel": "Creative Commons Zero (CC0)",
+      "sourceSvgRightsClaim": "This image is in public domain by libreclipart.org",
+      "sourceLicenseEvidenceUrl": "https://libreclipart.org/en/licenses",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "life-events-source/418.svg",
+      "originalSha256": "b85988443487a225fe095b1675a9f889b2f203c5d41d66c7cf23f3afe3a71b39",
+      "normalizedSvgSha256": "3c918d756cb5c6fbae014bd12518e35c70f1023ab9f454e17cb8bad626679361",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "libreclipart-612-v1",
+      "sourceItemId": 612,
+      "title": "Under construction signs",
+      "description": "A road is under construction.",
+      "sourceCategory": "transportation",
+      "sourceTags": [
+        "sign",
+        "road",
+        "street",
+        "construction",
+        "under construction",
+        "stop",
+        "barrier"
+      ],
+      "publishedDate": "05-05-2025",
+      "creatorMetadata": "libreclipart.org",
+      "individualArtist": null,
+      "sourceUrl": "https://libreclipart.org/en/vectors/transportation/under-construction-signs/612",
+      "previewUrl": "https://lt-next.sfo3.digitaloceanspaces.com/storage_clipart/3071/under-construction-signs.jpg",
+      "sourceDownloadUrl": "https://libreclipart.org/en/download/612/svg/0",
+      "sourcePageLicenseLabel": "Creative Commons Zero (CC0)",
+      "sourceSvgRightsClaim": "This image is in public domain by libreclipart.org",
+      "sourceLicenseEvidenceUrl": "https://libreclipart.org/en/licenses",
+      "license": "CC0 1.0 Universal",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "life-events-source/612.svg",
+      "originalSha256": "af9af9135d7ec8cc01f442e2ec3d0103f2af21b5998604d5c82e6d6bfb516d4d",
+      "normalizedSvgSha256": "67e8d7ddfde61607f545848e8d613e9ace210ba01cb22bbebc0861e5fafda0e2",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    }
+  ]
+}
