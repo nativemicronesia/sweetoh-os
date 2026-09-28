@@ -1,0 +1,175 @@
+{
+  "id": "ld1-1643399887910-1643399945751-0",
+  "title": "Geometric Pattern Imitating Warp Ikat (Kasuri)",
+  "unitCode": "CHNDM",
+  "type": "edanmdm",
+  "url": "edanmdm:chndm_1976-103-110",
+  "content": {
+    "freetext": {
+      "date": [
+        {
+          "label": "Date",
+          "content": "mid 18th - early 19th century"
+        }
+      ],
+      "notes": [
+        {
+          "label": "Catalogue Status",
+          "content": "Research in Progress"
+        },
+        {
+          "label": "Description",
+          "content": "This warped geometric \u2013 checkered pattern resembles a different textile pattern called Ikat (Kasuri). This design started during the middle of the 18th century and became popular for kimonos as well as futon covers."
+        }
+      ],
+      "place": [
+        {
+          "label": "made in",
+          "content": "Japan"
+        }
+      ],
+      "setName": [
+        {
+          "label": "See more items in",
+          "content": "Cooper Hewitt, Smithsonian Design Museum Collection"
+        },
+        {
+          "label": "See more items in",
+          "content": "Drawings, Prints, and Graphic Design Department"
+        }
+      ],
+      "creditLine": [
+        {
+          "label": "Credit Line",
+          "content": "Gift of Helen Snyder"
+        }
+      ],
+      "dataSource": [
+        {
+          "label": "Data Source",
+          "content": "Cooper Hewitt, Smithsonian Design Museum"
+        }
+      ],
+      "identifier": [
+        {
+          "label": "Accession Number",
+          "content": "1976-103-110"
+        }
+      ],
+      "objectType": [
+        {
+          "label": "Type",
+          "content": "textile designs"
+        },
+        {
+          "label": "Object Name",
+          "content": "Katagami"
+        },
+        {
+          "label": "Type",
+          "content": "Katagami"
+        }
+      ],
+      "objectRights": [
+        {
+          "label": "Restrictions & Rights",
+          "content": "CC0"
+        }
+      ],
+      "physicalDescription": [
+        {
+          "label": "Medium",
+          "content": "Mulberry paper (kozo washi) treated with fermented persimmon tannin (kakishibu), and silk threads (itoire)"
+        },
+        {
+          "label": "Dimensions",
+          "content": "Sheet: 27.5 x 42.4 cm (10 13/16 x 16 11/16 in.)"
+        },
+        {
+          "label": "Dimensions",
+          "content": "Mat: 35.6 x 45.7 cm (14 x 18 in.)"
+        }
+      ]
+    },
+    "indexedStructured": {
+      "date": [
+        "1820s",
+        "1720s"
+      ],
+      "place": [
+        "Japan"
+      ],
+      "geoLocation": [
+        {
+          "L2": {
+            "type": "Country",
+            "content": "Japan"
+          }
+        }
+      ],
+      "object_type": [
+        "Katagami",
+        "Design drawings",
+        "Textiles"
+      ],
+      "online_media_type": [
+        "Images"
+      ]
+    },
+    "descriptiveNonRepeating": {
+      "guid": "http://n2t.net/ark:/65665/kq40b43fd1b-bff9-43d1-b017-f3dfed0b4c37",
+      "title": {
+        "label": "Title",
+        "content": "Geometric Pattern Imitating Warp Ikat (Kasuri)"
+      },
+      "record_ID": "chndm_1976-103-110",
+      "unit_code": "CHNDM",
+      "title_sort": "GEOMETRIC PATTERN IMITATING WARP IKAT (KASURI)",
+      "data_source": "Cooper Hewitt, Smithsonian Design Museum",
+      "record_link": "https://collection.cooperhewitt.org/view/objects/asitem/id/155705",
+      "online_media": {
+        "media": [
+          {
+            "id": "media:CHSDM-CHD5100",
+            "guid": "http://n2t.net/ark:/65665/vc9f1bcbeaf-8d17-4494-b301-058d5ccc34db",
+            "type": "Images",
+            "idsId": "CHSDM-CHD5100",
+            "usage": {
+              "access": "CC0"
+            },
+            "content": "https://ids.si.edu/ids/deliveryService?id=CHSDM-CHD5100",
+            "thumbnail": "https://ids.si.edu/ids/deliveryService?id=CHSDM-CHD5100",
+            "altTextAccessibility": "GEOMETRIC PATTERN IMITATING WARP IKAT (KASURI)",
+            "extDescrAccessibility": "This warped geometric - checkered pattern resembles a different textile pattern called Ikat (Kasuri). This design started during the middle of the 18th century and became popular for kimonos as well as futon covers.",
+            "resources": [
+              {
+                "label": "High-resolution JPEG",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-CHD5100.jpg",
+                "width": 2986,
+                "height": 1969,
+                "dimensions": "2986x1969"
+              },
+              {
+                "label": "Screen Image",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-CHD5100_screen"
+              },
+              {
+                "label": "Thumbnail Image",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-CHD5100_thumb"
+              }
+            ]
+          }
+        ],
+        "mediaCount": 1
+      },
+      "metadata_usage": {
+        "access": "CC0"
+      }
+    }
+  },
+  "hash": "003b3c27f402bd685d20a24594514f8bace871d7",
+  "docSignature": "afdfd324e3ae4c35821f270402d83dd5",
+  "timestamp": "1663784559",
+  "lastTimeUpdated": "1769540882",
+  "version": "1769538334"
+}

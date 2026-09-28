@@ -1,0 +1,173 @@
+{
+  "id": "ld1-1643399887910-1643399893549-1",
+  "title": "Textile",
+  "unitCode": "CHNDM",
+  "type": "edanmdm",
+  "url": "edanmdm:chndm_1915-5-6-a",
+  "content": {
+    "freetext": {
+      "date": [
+        {
+          "label": "Date",
+          "content": "1915"
+        }
+      ],
+      "name": [
+        {
+          "label": "Manufacturer",
+          "content": "Cheney Brothers, South Manchester, Connecticut, USA"
+        }
+      ],
+      "notes": [
+        {
+          "label": "Catalogue Status",
+          "content": "Research in Progress"
+        },
+        {
+          "label": "Description",
+          "content": "Reproduction textile with an adapted design from a sixteenth century textile. Pattern has interlacing bands forming ogives that frame a central pomegranate and surrounding pomegranate buds."
+        }
+      ],
+      "place": [
+        {
+          "label": "made in",
+          "content": "USA"
+        }
+      ],
+      "setName": [
+        {
+          "label": "See more items in",
+          "content": "Cooper Hewitt, Smithsonian Design Museum Collection"
+        },
+        {
+          "label": "See more items in",
+          "content": "Textiles Department"
+        }
+      ],
+      "creditLine": [
+        {
+          "label": "Credit Line",
+          "content": "Gift of Cheney Brothers"
+        }
+      ],
+      "dataSource": [
+        {
+          "label": "Data Source",
+          "content": "Cooper Hewitt, Smithsonian Design Museum"
+        }
+      ],
+      "identifier": [
+        {
+          "label": "Accession Number",
+          "content": "1915-5-6-a"
+        }
+      ],
+      "objectType": [
+        {
+          "label": "Type",
+          "content": "woven textiles"
+        },
+        {
+          "label": "Type",
+          "content": "Textile"
+        }
+      ],
+      "objectRights": [
+        {
+          "label": "Restrictions & Rights",
+          "content": "CC0"
+        }
+      ],
+      "physicalDescription": [
+        {
+          "label": "Medium",
+          "content": "Medium: silk Technique: compound satin weave"
+        },
+        {
+          "label": "Dimensions",
+          "content": "H x W: 63.6 \u00d7 64.5 cm (25 1/16 \u00d7 25 3/8 in.)"
+        }
+      ]
+    },
+    "indexedStructured": {
+      "date": [
+        "1910s"
+      ],
+      "name": [
+        "Cheney Brothers"
+      ],
+      "place": [
+        "USA"
+      ],
+      "geoLocation": [
+        {
+          "L2": {
+            "type": "Country",
+            "content": "USA"
+          }
+        }
+      ],
+      "object_type": [
+        "Textiles"
+      ],
+      "online_media_type": [
+        "Images"
+      ]
+    },
+    "descriptiveNonRepeating": {
+      "guid": "http://n2t.net/ark:/65665/kq4e9915229-c439-4927-bd89-27f00e6e8895",
+      "title": {
+        "label": "Title",
+        "content": "Textile"
+      },
+      "record_ID": "chndm_1915-5-6-a",
+      "unit_code": "CHNDM",
+      "title_sort": "TEXTILE",
+      "data_source": "Cooper Hewitt, Smithsonian Design Museum",
+      "record_link": "https://collection.cooperhewitt.org/view/objects/asitem/id/20825",
+      "online_media": {
+        "media": [
+          {
+            "id": "media:CHSDM-37ACBA834E7E2-000001",
+            "guid": "http://n2t.net/ark:/65665/vc943220ede-890d-4526-9997-249bb3524edd",
+            "type": "Images",
+            "idsId": "CHSDM-37ACBA834E7E2-000001",
+            "usage": {
+              "access": "CC0"
+            },
+            "content": "https://ids.si.edu/ids/deliveryService?id=CHSDM-37ACBA834E7E2-000001",
+            "thumbnail": "https://ids.si.edu/ids/deliveryService?id=CHSDM-37ACBA834E7E2-000001",
+            "altTextAccessibility": "",
+            "extDescrAccessibility": "Reproduction textile with an adapted design from a sixteenth century textile. Pattern has interlacing bands forming ogives that frame a central pomegranate and surrounding pomegranate buds.",
+            "resources": [
+              {
+                "label": "High-resolution JPEG",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-37ACBA834E7E2-000001.jpg",
+                "width": 6910,
+                "height": 6749,
+                "dimensions": "6910x6749"
+              },
+              {
+                "label": "Screen Image",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-37ACBA834E7E2-000001_screen"
+              },
+              {
+                "label": "Thumbnail Image",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-37ACBA834E7E2-000001_thumb"
+              }
+            ]
+          }
+        ],
+        "mediaCount": 1
+      },
+      "metadata_usage": {
+        "access": "CC0"
+      }
+    }
+  },
+  "hash": "1d848ce7cda4d975e4cd94e06029ebd106a32667",
+  "docSignature": "7df70a149db45bf746c4370e877fad88",
+  "timestamp": "1663784056",
+  "lastTimeUpdated": "1774089457",
+  "version": "1774086217"
+}

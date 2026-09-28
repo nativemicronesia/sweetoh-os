@@ -108,7 +108,7 @@ test("built-in Studio SVG endpoint serves the exact registered vector and reject
 
 test("Smithsonian CC0 artwork retains checked rights, source records, searchable themes, and raster delivery", async () => {
   const { assets } = JSON.parse(readFileSync("docs/licenses/third-party/smithsonian-open-access/SOURCE-MANIFEST.json", "utf8")) as { assets: Array<{ id: string; originalSha256: string; derivativeSha256: string; sourceMediaUrl: string; metadataAccess: string; objectAccess: string; recordRightsNotice: string; originalFile: string; derivativeFile: string }> };
-  assert.equal(assets.length, 8);
+  assert.equal(assets.length, 13);
   for (const record of assets) {
     const asset = studioAsset(record.id);
     assert.ok(asset && record.sourceMediaUrl.startsWith("https://ids.si.edu/"));
@@ -882,7 +882,7 @@ test("PhyloPic contributes diverse per-image verified CC0 nature silhouettes wit
 
 test("Openclipart frame, banner, badge, and background primitives are CC0 and findable by real design briefs", () => {
   const assets = STUDIO_ASSETS.filter((asset) => asset.id.startsWith("openclipart-"));
-  assert.equal(assets.length, 14);
+  assert.equal(assets.length, 17);
   for (const asset of assets) {
     assert.equal(asset.licenseId, "CC0-1.0");
     assert.equal(asset.licenseUrl, "https://creativecommons.org/publicdomain/zero/1.0/");
@@ -890,7 +890,7 @@ test("Openclipart frame, banner, badge, and background primitives are CC0 and fi
     assert.equal(asset.modificationAllowed, true);
     assert.equal(asset.redistributionAllowed, true);
     assert.equal(asset.attributionRequired, false);
-    assert.match(asset.sourceUrl ?? "", /^https:\/\/openclipart\.org\/detail\/\d+$/);
+    assert.match(asset.sourceUrl ?? "", /^https:\/\/openclipart\.org\/detail\/\d+(?:\/[a-z0-9-]+)?$/);
     assert.equal(asset.evidenceUrl, asset.sourceUrl);
     assert.equal(studioEditorCommandSchema.safeParse({ type: "add_graphic", assetKey: asset.id }).success, true);
   }

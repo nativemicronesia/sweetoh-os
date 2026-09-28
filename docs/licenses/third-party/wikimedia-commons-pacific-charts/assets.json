@@ -1,0 +1,36 @@
+[
+  {
+    "id": "admiralty-chart-970",
+    "title": "Islands and Anchorages in the Caroline Islands (Admiralty Chart No. 970)",
+    "commonsTitle": "File:Admiralty_Chart_No_970_Islands_and_Anchorages_in_the_Caroline_Islands,_Published_1929.jpg",
+    "commonsUrl": "https://commons.wikimedia.org/wiki/File:Admiralty_Chart_No_970_Islands_and_Anchorages_in_the_Caroline_Islands,_Published_1929.jpg",
+    "recordFile": "records/admiralty-chart-970.json",
+    "originalFile": "originals/admiralty-chart-970.jpg",
+    "outputFile": "studio-assets/wikimedia-commons-pacific-charts/admiralty-chart-970.webp",
+    "name": "1929 Admiralty chart: Caroline Islands anchorages",
+    "kind": "element",
+    "category": "Maps & Charts",
+    "tags": ["map", "nautical chart", "Caroline Islands", "Chuuk", "Namonuito", "Hall Islands", "Micronesia", "Pacific", "1929", "vintage", "engraving", "line art", "navigational", "sailor gift", "boat gift", "print decoration"],
+    "creator": "United Kingdom Hydrographic Office",
+    "date": "1929",
+    "useCredit": "Scan of original Admiralty Chart No. 970, United Kingdom Hydrographic Office, 1929. Wikimedia Commons. Public domain.",
+    "crop": null
+  },
+  {
+    "id": "albatross-track-1900",
+    "title": "Track of the Albatross from Pohnpei through the Caroline Islands to Guam, February 1900",
+    "commonsTitle": "File:Track_of_the_Albatross_from_Pohnpei_through_the_Caroline_Islands_to_Guam_in_February_1900_(map0027541873).jpg",
+    "commonsUrl": "https://commons.wikimedia.org/wiki/File:Track_of_the_Albatross_from_Pohnpei_through_the_Caroline_Islands_to_Guam_in_February_1900_(map0027541873).jpg",
+    "recordFile": "records/albatross-track-1900.json",
+    "originalFile": "originals/albatross-track-1900.jpg",
+    "outputFile": "studio-assets/wikimedia-commons-pacific-charts/albatross-track-1900.webp",
+    "name": "1900 chart: Pohnpei to Guam through the Carolines",
+    "kind": "element",
+    "category": "Maps & Charts",
+    "tags": ["map", "nautical chart", "Pohnpei", "Ponapi", "Chuuk", "Truk", "Guam", "Caroline Islands", "Micronesia", "Pacific", "1900", "vintage", "engraving", "line art", "navigational", "sailor gift", "boat gift", "expedition", "print decoration"],
+    "creator": "Alexander Agassiz (USFC Steamer Albatross expedition)",
+    "date": "1900",
+    "useCredit": "USFC Steamer Albatross expedition chart, Alexander Agassiz, 1900. Source: NOAA Photo Library. Wikimedia Commons. Public domain.",
+    "crop": null
+  }
+]

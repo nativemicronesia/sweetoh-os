@@ -1,0 +1,1419 @@
+{
+  "schemaVersion": 1,
+  "source": "Feather Icons (feathericons/feather)",
+  "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+  "sourceItemRecords": "feather-assets.json",
+  "assets": [
+    {
+      "id": "feather-award-v1",
+      "sourceItemId": "award",
+      "title": "Award ribbon",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "award",
+        "medal",
+        "achievement",
+        "graduation",
+        "recognition"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/award.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/award.svg",
+      "originalSha256": "e7f7415885207b98c5c59d3ebd07fa8affbf27248fde22be1a21a4d5589b7b1b",
+      "normalizedSvgSha256": "96327469195d8b36bd09b70dfd68d8dbe84fbc938f10aa4f196cabaa0968a900",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-book-open-v1",
+      "sourceItemId": "book-open",
+      "title": "Open book",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "book",
+        "reading",
+        "education",
+        "library",
+        "teacher gift"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/book-open.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/book-open.svg",
+      "originalSha256": "df29753e646e9bff5e40c80de8703478a779571e672e61ae65ca6b14fe80cf11",
+      "normalizedSvgSha256": "72efc47035d2301eaec92954de079f42f2d37bc9e4e166302f7758cacd01cabe",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-clock-v1",
+      "sourceItemId": "clock",
+      "title": "Clock",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "clock",
+        "time",
+        "retirement",
+        "anniversary",
+        "watch"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/clock.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/clock.svg",
+      "originalSha256": "1c9bbf4c26cdb34f1eea393f6b151c2d962b7c252ce451ae58ae83621aeebcfc",
+      "normalizedSvgSha256": "e0d5824dd3ffcf772c838efbec3c35ccbd6793db176041b6c541e2e1ef2dcba9",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-cloud-drizzle-v1",
+      "sourceItemId": "cloud-drizzle",
+      "title": "Cloud with drizzle",
+      "sourceCategory": "Nature & Weather",
+      "sourceTags": [
+        "weather",
+        "drizzle",
+        "rain",
+        "cloud",
+        "forecast"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/cloud-drizzle.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/cloud-drizzle.svg",
+      "originalSha256": "d73c653fef1b166082435498f7e63ca78c5b714f53e452d1d7e14f85274484ca",
+      "normalizedSvgSha256": "4dfb54c33897eae20105dd3ee721c4a2241e9224fa7d379f94cc1ea149f8f636",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-cloud-lightning-v1",
+      "sourceItemId": "cloud-lightning",
+      "title": "Cloud with lightning",
+      "sourceCategory": "Nature & Weather",
+      "sourceTags": [
+        "weather",
+        "storm",
+        "lightning",
+        "thunder",
+        "cloud"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/cloud-lightning.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/cloud-lightning.svg",
+      "originalSha256": "51232f1fdb0c2dbfc9accf274b5d20dc1eae3454b1abc0fc545f5d0bcc3c9995",
+      "normalizedSvgSha256": "0549608d794f73ecdb5544b8ae989d506a81f95126708532e9159abebf951866",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-cloud-snow-v1",
+      "sourceItemId": "cloud-snow",
+      "title": "Cloud with snow",
+      "sourceCategory": "Nature & Weather",
+      "sourceTags": [
+        "weather",
+        "snow",
+        "winter",
+        "cloud",
+        "christmas"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/cloud-snow.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/cloud-snow.svg",
+      "originalSha256": "d4f296750eccc435013b463e35964eec0f5f5239b1bb1d6b2ab0e4efd2db41b4",
+      "normalizedSvgSha256": "ca8fc34e0849f9044522631389a735202302b4441aebe5ddc56822753ae8dc17",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-disc-v1",
+      "sourceItemId": "disc",
+      "title": "Vinyl record",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "music",
+        "vinyl",
+        "record",
+        "dj",
+        "retro"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/disc.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/disc.svg",
+      "originalSha256": "15e7080672c999b97c9de65e3367758d92dba5ccb4302f887bced78574d35649",
+      "normalizedSvgSha256": "c5a152a5c5f72495d8b4f09a1dabb5da6e9eb5b14afcc2a189bcab9fef7c9b8c",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-dollar-sign-v1",
+      "sourceItemId": "dollar-sign",
+      "title": "Dollar sign",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "money",
+        "finance",
+        "business",
+        "currency",
+        "accountant gift"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/dollar-sign.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/dollar-sign.svg",
+      "originalSha256": "0716eff55bca52a7ac5ea9fe8e3fb68b9117cbf2e2e038f01aac9a827d1f15c8",
+      "normalizedSvgSha256": "daef4b6fa4a0967753f7b2d7b0842d86069d361642cc2ba742eeb11d1500862c",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-droplet-v1",
+      "sourceItemId": "droplet",
+      "title": "Water droplet",
+      "sourceCategory": "Nature & Weather",
+      "sourceTags": [
+        "water",
+        "droplet",
+        "rain",
+        "ocean",
+        "hydration"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/droplet.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/droplet.svg",
+      "originalSha256": "254957f2c4694de6f6e0b22cd408d128233411a3443a5e27915515e807037775",
+      "normalizedSvgSha256": "1e7f2a51e4ad24e2f3381b16f27db775d7f2f98bb017cb0e4b1efe1284dac0e1",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-film-v1",
+      "sourceItemId": "film",
+      "title": "Film reel frame",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "film",
+        "movie",
+        "cinema",
+        "videographer gift"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/film.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/film.svg",
+      "originalSha256": "cdc70078f11b09013e4e7c4cce6e4c672c6e712939f2b3b66477e7d3b481001a",
+      "normalizedSvgSha256": "4a3ee26d9b2c371ab94cd046a9781c0728a43447e7fefecd3209bf7258a00f65",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-flag-v1",
+      "sourceItemId": "flag",
+      "title": "Flag",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "flag",
+        "milestone",
+        "goal",
+        "sports",
+        "marker"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/flag.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/flag.svg",
+      "originalSha256": "07104ec4551b0d83a24d27d2b2f729c91ef0a1ed04532dfcfaa34495108f8df0",
+      "normalizedSvgSha256": "ea792d0d52f215cd318cfa28b10b718b804cdf034fa88e0e664a4396df85a80e",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-globe-v1",
+      "sourceItemId": "globe",
+      "title": "Globe",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "globe",
+        "world",
+        "travel",
+        "geography",
+        "teacher gift"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/globe.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/globe.svg",
+      "originalSha256": "68f2f1eeac609b6edae282ec5b5846b35bbecd5993fcefec1308aa0533410fe3",
+      "normalizedSvgSha256": "a7fa7abe33cd7b76965ac1f7446abfe93c2349a47d59bba85d4559803a844ed5",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-headphones-v1",
+      "sourceItemId": "headphones",
+      "title": "Headphones",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "headphones",
+        "music",
+        "audio",
+        "dj gift",
+        "gamer gift"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/headphones.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/headphones.svg",
+      "originalSha256": "9d4399c09662c80e4bb1d9e29d65dcbbaf18cca54a7aef071263ce506a784bce",
+      "normalizedSvgSha256": "1b4b4d497cbdfe575eb2c63bc45f723962f6e94914ae85782149506460368883",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-hexagon-v1",
+      "sourceItemId": "hexagon",
+      "title": "Hexagon frame",
+      "sourceCategory": "Frames",
+      "sourceTags": [
+        "hexagon",
+        "geometric",
+        "badge",
+        "frame",
+        "monogram"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/hexagon.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/hexagon.svg",
+      "originalSha256": "5e9d015a8b6d914ee67af6fdd40734279ecbef1b4cd1b7e9d778f8659ec4b5b0",
+      "normalizedSvgSha256": "6f469673500afd1ab3c3dbe056b29980ef58b35ae5e100eb64c61756aca59d0a",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-home-v1",
+      "sourceItemId": "home",
+      "title": "Home",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "home",
+        "house",
+        "housewarming",
+        "family",
+        "real estate gift"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/home.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/home.svg",
+      "originalSha256": "2b633ad9144db455c1cb08dd75f6e47a1cbbb0aaa747205012db3578830e0541",
+      "normalizedSvgSha256": "79bd8901f0492c98a962db1a9013810676f9d3ad49a43eb563bd08cec806a50a",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-key-v1",
+      "sourceItemId": "key",
+      "title": "Key",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "key",
+        "new home",
+        "unlock",
+        "realtor gift",
+        "graduation"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/key.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/key.svg",
+      "originalSha256": "ab53f8a5c64b6a5d66c07781e9c49f3063e77072be75ed977eea9fe9e1c273c1",
+      "normalizedSvgSha256": "d7c7205a3794da41e8da56c684f40b6d8878ed00c96d57401b5b7c0517bf31f0",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-life-buoy-v1",
+      "sourceItemId": "life-buoy",
+      "title": "Life buoy",
+      "sourceCategory": "Ocean & Nautical",
+      "sourceTags": [
+        "nautical",
+        "life buoy",
+        "ocean",
+        "coastal",
+        "boating",
+        "sailor gift"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/life-buoy.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/life-buoy.svg",
+      "originalSha256": "d8d4750398e57b88d3a1dcfdc006d2eb1997dd47d8440c0ad4359126b6d2828b",
+      "normalizedSvgSha256": "c68278d25bd3bdfc394af3c20367d306b9a7f8822f033dee1921bed2cf70eb48",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-lock-v1",
+      "sourceItemId": "lock",
+      "title": "Padlock",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "lock",
+        "security",
+        "privacy",
+        "safety"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/lock.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/lock.svg",
+      "originalSha256": "ab5282d46ac4f40654e5bc56cfca5df0a92eaa48f0671a719cc9aa7f241a5e38",
+      "normalizedSvgSha256": "9267fe838a78144b5e810eb75836974898cd3d3d28b3e5fede1441ca46ba2c01",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-map-v1",
+      "sourceItemId": "map",
+      "title": "Folded map",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "map",
+        "travel",
+        "adventure",
+        "explorer gift",
+        "hiking"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/map.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/map.svg",
+      "originalSha256": "57776cec294acd035b7ea01b4c222f54360481dee1f58fc12a3ad6da6cbcf0e9",
+      "normalizedSvgSha256": "8ac6631f0d6c6689361b59c6122c531530ae43bc9849f1e3209313af00bbba6a",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-map-pin-v1",
+      "sourceItemId": "map-pin",
+      "title": "Map pin",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "map pin",
+        "location",
+        "travel",
+        "hometown",
+        "wedding location"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/map-pin.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/map-pin.svg",
+      "originalSha256": "4ab2f7ab8bf88d5f0a37d23f5f0d98f91319a2857cb89cbc81dd596df227aa05",
+      "normalizedSvgSha256": "d5dacae879543135728e19434e1b061cf77f950ac42b68d7281bdd1f89a27815",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-mic-v1",
+      "sourceItemId": "mic",
+      "title": "Microphone",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "microphone",
+        "singer gift",
+        "podcast",
+        "karaoke",
+        "speaker gift"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/mic.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/mic.svg",
+      "originalSha256": "851ae601ee1770cd607014492487d7d985d7567d07528e3b3ff37d1a39c698c5",
+      "normalizedSvgSha256": "da6a7db4ebd1146a7b21d2a4138b3792d8e5e7efefd63ae1599fa9989e782202",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-moon-v1",
+      "sourceItemId": "moon",
+      "title": "Crescent moon",
+      "sourceCategory": "Nature & Weather",
+      "sourceTags": [
+        "moon",
+        "crescent",
+        "night",
+        "celestial",
+        "dreamy"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/moon.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/moon.svg",
+      "originalSha256": "ff41660bed6944d45049192d789b6c453ec133bd3e3ccb232907013c1a5ac2af",
+      "normalizedSvgSha256": "f63322d52edad1564043df5416ba3c58bab6b4f384763dfc2f8b279330d89e4f",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-octagon-v1",
+      "sourceItemId": "octagon",
+      "title": "Octagon frame",
+      "sourceCategory": "Frames",
+      "sourceTags": [
+        "octagon",
+        "geometric",
+        "badge",
+        "frame",
+        "stop sign shape"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/octagon.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/octagon.svg",
+      "originalSha256": "a65b21e4d4b14793906fcc5c7ab006b8f3df50b9cfaee3926c270679dc990194",
+      "normalizedSvgSha256": "24111ef455dbd30b74444b867dd4a1ccf966c19a5e653b5f47248b5a41b641c5",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-package-v1",
+      "sourceItemId": "package",
+      "title": "Shipping package",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "package",
+        "shipping",
+        "delivery",
+        "small business",
+        "mail carrier gift"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/package.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/package.svg",
+      "originalSha256": "a1506e19f18c10c30b85a6a1be927551bf56b9026e976777894f546828bb6c51",
+      "normalizedSvgSha256": "67e2b87a73cdcd1e41d69390fe8680d6a1b180e6a07eaa5ba3cd1af0ee2f597e",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-pen-tool-v1",
+      "sourceItemId": "pen-tool",
+      "title": "Pen nib",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "pen",
+        "writer gift",
+        "calligraphy",
+        "artist",
+        "signature"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/pen-tool.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/pen-tool.svg",
+      "originalSha256": "47bd67f8d5ab977450bcf7784e3cff699789ab49d9a711f5a3783e2fa45bf412",
+      "normalizedSvgSha256": "ee04c09a574ce286e8013169e15c477fbb325e5bdb6b2430a8882afa65f7f080",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-phone-v1",
+      "sourceItemId": "phone",
+      "title": "Phone",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "phone",
+        "call",
+        "contact",
+        "business card"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/phone.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/phone.svg",
+      "originalSha256": "a53581cb0370067a943736cea87801a12d1f1a11f3085a925012a961b148d5a3",
+      "normalizedSvgSha256": "a47daeabb47c17f710c1e7abe8186ba3a3f8a4742d4717b9660e4c22aba7c1b3",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-printer-v1",
+      "sourceItemId": "printer",
+      "title": "Printer",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "printer",
+        "print shop",
+        "office",
+        "small business"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/printer.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/printer.svg",
+      "originalSha256": "365e9fabd32528c013d510691dabed50b33e8506043c6893b852fcfe433620d5",
+      "normalizedSvgSha256": "5ee00d178a33a3a354aacedc1172925e3750b82fbcb1a2b7ee4c2b7f1fee0a89",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-radio-v1",
+      "sourceItemId": "radio",
+      "title": "Radio",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "radio",
+        "retro",
+        "broadcast",
+        "music",
+        "dj gift"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/radio.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/radio.svg",
+      "originalSha256": "43b35ecb9d0eacd8388515ebae9d6f15ae81e15e2f396b70d944fa9e49ddb6b4",
+      "normalizedSvgSha256": "2fe208c42328a6af3f952d81675e5c3c8c0da6505542d4c1d8243c9519c3b6e8",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-settings-v1",
+      "sourceItemId": "settings",
+      "title": "Gear",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "gear",
+        "settings",
+        "mechanic gift",
+        "engineer gift",
+        "tools"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/settings.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/settings.svg",
+      "originalSha256": "8fe83a7900335105bedd742225ac0d96454a96670a186774532df41414c9cfbb",
+      "normalizedSvgSha256": "989cb85585653cc4ebb67b21cd115be1f30ffb65cb770cf87b30847cad3d3be7",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-shield-v1",
+      "sourceItemId": "shield",
+      "title": "Shield",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "shield",
+        "protection",
+        "police gift",
+        "military gift",
+        "security"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/shield.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/shield.svg",
+      "originalSha256": "4c7125a51403ca1cb4b8ced412fd54e4c831aacefb2e5b6a21164192f83ce887",
+      "normalizedSvgSha256": "0edf172ac4235040b7eaca19dec7034447c29c4bbac2b1126c7bc6edebcbe6b0",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-shopping-bag-v1",
+      "sourceItemId": "shopping-bag",
+      "title": "Shopping bag",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "shopping",
+        "retail",
+        "boutique",
+        "small business"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/shopping-bag.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/shopping-bag.svg",
+      "originalSha256": "55420fda6a8eb69e831bb730820bee1834b8e06e1f335026efc13a57326ac466",
+      "normalizedSvgSha256": "97d784daffecf908f9287c16c3ed10379f786c5d82e48fbc581dc1992a714620",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-smile-v1",
+      "sourceItemId": "smile",
+      "title": "Smiling face",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "smile",
+        "happy",
+        "expression",
+        "kids"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/smile.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/smile.svg",
+      "originalSha256": "30a84466dd917591fc3d6f2828e33756aa1edb95c0b60fa293f5b8e461292681",
+      "normalizedSvgSha256": "7911c371c19a91ccb119b3b59e8630606c1df8c78e6ac252112186b0ab0bc87c",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-speaker-v1",
+      "sourceItemId": "speaker",
+      "title": "Speaker",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "speaker",
+        "audio",
+        "music",
+        "dj gift"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/speaker.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/speaker.svg",
+      "originalSha256": "98c2e398aede48e7cb0bafa1b7c4c686d7f7f732734b7f6e1296cda3fd38050b",
+      "normalizedSvgSha256": "9eabe2d3b135846af2d41efd23f4d0c2426faba55ddb76b5e7674578d213a975",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-star-v1",
+      "sourceItemId": "star",
+      "title": "Star outline",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "star",
+        "celestial",
+        "favorite",
+        "award",
+        "night sky"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/star.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/star.svg",
+      "originalSha256": "270f826c022a34610f8ce0d608503ecadfe8b6e5a873ee06006a9838e3a512e5",
+      "normalizedSvgSha256": "992314aaf603a2de0334c223da1be143c9a708b48896795f8003962f2e89fe25",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-tag-v1",
+      "sourceItemId": "tag",
+      "title": "Price tag",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "tag",
+        "sale",
+        "label",
+        "shop",
+        "retail"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/tag.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/tag.svg",
+      "originalSha256": "2187ab274a475132a44161243cec893cd4f6561705372da6e871aea23aaa1b27",
+      "normalizedSvgSha256": "a975ff57888b0294270e9b02d57ab58d940ff01b342542055ed98477ada0b23d",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-target-v1",
+      "sourceItemId": "target",
+      "title": "Target",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "target",
+        "goal",
+        "archery gift",
+        "focus",
+        "sales"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/target.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/target.svg",
+      "originalSha256": "64633eb86485fc63c02cec374ebdcc9fd82e3d20ad647e32bd13f4ec3f847e59",
+      "normalizedSvgSha256": "e89e9d11e6250de86fd57f02e6d56c653cf1bb9eff957fa1dfa7a2f335209900",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-thermometer-v1",
+      "sourceItemId": "thermometer",
+      "title": "Thermometer",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "thermometer",
+        "temperature",
+        "weather",
+        "health"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/thermometer.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/thermometer.svg",
+      "originalSha256": "e1648f4b967c554d50efbda6e880861df6331dca021eebba22e36f9e16c61041",
+      "normalizedSvgSha256": "f2a56bbd2d10f9b50f72b1a28ae8e6737f538b43e8633378f760d45652e95ca8",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-thumbs-up-v1",
+      "sourceItemId": "thumbs-up",
+      "title": "Thumbs up",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "thumbs up",
+        "approve",
+        "like",
+        "encouragement"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/thumbs-up.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/thumbs-up.svg",
+      "originalSha256": "ef4cdd1d4edfc1afeb7a207f36c43ea3c0a06d04b2e3e2e79c5c13e6e85c0aad",
+      "normalizedSvgSha256": "4b96ee20e9ec650f2d75ff3cd76be2b70560dbfa8277f4ff8832a5c08a87180e",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-tool-v1",
+      "sourceItemId": "tool",
+      "title": "Wrench",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "wrench",
+        "tool",
+        "mechanic gift",
+        "handyman gift",
+        "repair"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/tool.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/tool.svg",
+      "originalSha256": "a3921501d5e3199111cdb2df87eb23a657c3340d10b1201c75567e325a509050",
+      "normalizedSvgSha256": "4728bef11e47ba38e92960fd54eefaa514771b313284256b7571a3f656b6a5c8",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-triangle-v1",
+      "sourceItemId": "triangle",
+      "title": "Triangle frame",
+      "sourceCategory": "Frames",
+      "sourceTags": [
+        "triangle",
+        "geometric",
+        "badge",
+        "frame",
+        "mountain"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/triangle.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/triangle.svg",
+      "originalSha256": "bf83a3b9ea4b99387aee0b65371a4b7dc2c2e3ada3ba56776a10e0a2b7fd338e",
+      "normalizedSvgSha256": "9df7bad29f1752344dd9102b9990ded9866e025f0b1938ca6c8eea3e0b8c4543",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-truck-v1",
+      "sourceItemId": "truck",
+      "title": "Delivery truck",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "truck",
+        "delivery",
+        "moving",
+        "trucker gift",
+        "logistics"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/truck.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/truck.svg",
+      "originalSha256": "405fc8f5fb2fa11a639b291ffe384dc0464659b70a1a0631284925b0e6b8626e",
+      "normalizedSvgSha256": "581f714b039260e08bac9cb143ef69fdfd46202d5fcf10dc47f3230064576834",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-umbrella-v1",
+      "sourceItemId": "umbrella",
+      "title": "Umbrella",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "umbrella",
+        "rain",
+        "weather",
+        "beach",
+        "shade"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/umbrella.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/umbrella.svg",
+      "originalSha256": "aeca2b7745bf59353032a14a047314cb253d42753bf7c79628b66bf21141ef75",
+      "normalizedSvgSha256": "88d44b5bf743da8fce13c59376f5246ac2da3a0765e42116b9126bd583a7accb",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-watch-v1",
+      "sourceItemId": "watch",
+      "title": "Wristwatch",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "watch",
+        "time",
+        "graduation gift",
+        "retirement gift",
+        "anniversary"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/watch.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/watch.svg",
+      "originalSha256": "e578a55bdd6bde5589c54353afc9d48c931291b51803ef26ab35dae5de56fdff",
+      "normalizedSvgSha256": "db5cd44332b86b658ae81750761e9388398badc4949cd7a25d4ed7fc5fb75832",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-zap-v1",
+      "sourceItemId": "zap",
+      "title": "Lightning bolt",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "lightning",
+        "energy",
+        "power",
+        "electrician gift",
+        "speed"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/zap.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/zap.svg",
+      "originalSha256": "85afd3069e5d060ee77624281756c923b972db40bef65e1d7a7669b58e185f1d",
+      "normalizedSvgSha256": "79149f849b06322cb34967a5193244067d70ac17850a73bd2c845bbf137200a7",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-circle-v1",
+      "sourceItemId": "circle",
+      "title": "Circle frame",
+      "sourceCategory": "Frames",
+      "sourceTags": [
+        "circle",
+        "geometric",
+        "badge",
+        "frame",
+        "monogram"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/circle.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/circle.svg",
+      "originalSha256": "8d4932d902c2a59c7ab573d727059cd7da329a25a50a993d6f169d3cb3ef0dff",
+      "normalizedSvgSha256": "27107f4a7b3c46e328eb0b21e295bd4f1b6dd637648581d1eae1ccc6567dc010",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-square-v1",
+      "sourceItemId": "square",
+      "title": "Square frame",
+      "sourceCategory": "Frames",
+      "sourceTags": [
+        "square",
+        "geometric",
+        "badge",
+        "frame",
+        "coaster"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/square.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/square.svg",
+      "originalSha256": "f0e379ea210aeac63306055dec59dfc5b079bd81f383a57bd25769f465e5100f",
+      "normalizedSvgSha256": "57e8f41a6969718e76d129b6b3b02f97224a960a6d89e2520bef41c1195ecacc",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-video-v1",
+      "sourceItemId": "video",
+      "title": "Video camera",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "video",
+        "camera",
+        "videographer gift",
+        "filmmaker"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/video.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/video.svg",
+      "originalSha256": "34394850a913a2714fe58c1d56f2bdb1cc72fa288cfad6764e9a6b79087f5c17",
+      "normalizedSvgSha256": "958250483733d368973df0703b8d7c302713779bb7045332f101aea7fb5657c8",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-users-v1",
+      "sourceItemId": "users",
+      "title": "People group",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "people",
+        "group",
+        "family",
+        "team",
+        "community"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/users.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/users.svg",
+      "originalSha256": "243fdb4e387832bca0a9085dece53772cb35c0bf08b02994da9d190195fb9a4a",
+      "normalizedSvgSha256": "b8a45e56dec26a12f7a3ee432fe91d744c6d3562b8e444dc1ccec749f5a834b7",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    },
+    {
+      "id": "feather-user-v1",
+      "sourceItemId": "user",
+      "title": "Person outline",
+      "sourceCategory": "Symbols & Line Art",
+      "sourceTags": [
+        "person",
+        "profile",
+        "portrait placeholder",
+        "avatar"
+      ],
+      "sourceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/icons/user.svg",
+      "license": "MIT License",
+      "licenseId": "MIT",
+      "licenseUrl": "https://opensource.org/license/mit/",
+      "sourceLicenseEvidenceUrl": "https://github.com/feathericons/feather/blob/3dc050d97405062eba78aa57115c0a15c63abdaa/LICENSE",
+      "attributionRequired": true,
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "originalFile": "feather-source/user.svg",
+      "originalSha256": "9702770af562da1cc2cc970f54c61253a4271959e76f30b865132de63189526b",
+      "normalizedSvgSha256": "5a06a475542f4d70c168089a92fe56503daf585169fdb056753086ff109c45a8",
+      "normalizedPreviewDimensions": {
+        "width": 300,
+        "height": 300
+      }
+    }
+  ]
+}

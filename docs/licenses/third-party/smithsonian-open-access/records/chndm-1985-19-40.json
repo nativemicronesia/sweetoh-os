@@ -1,0 +1,203 @@
+{
+  "id": "ld1-1643399887910-1643399957901-0",
+  "title": "Sidewall - sample",
+  "unitCode": "CHNDM",
+  "type": "edanmdm",
+  "url": "edanmdm:chndm_1985-19-40",
+  "content": {
+    "freetext": {
+      "date": [
+        {
+          "label": "Date",
+          "content": "1906\u201308"
+        }
+      ],
+      "notes": [
+        {
+          "label": "Catalogue Status",
+          "content": "Research in Progress"
+        },
+        {
+          "label": "Description",
+          "content": "Diaper or foliate stripe design containing vining foliage printed in red on red ground. Half the background is printed in deep red with the foliate pattern revealed in the void, while on the other half the design is printed in deep red on a textile-patterned light red ground."
+        }
+      ],
+      "place": [
+        {
+          "label": "made in",
+          "content": "USA"
+        }
+      ],
+      "setName": [
+        {
+          "label": "See more items in",
+          "content": "Cooper Hewitt, Smithsonian Design Museum Collection"
+        },
+        {
+          "label": "See more items in",
+          "content": "Wallcoverings Department"
+        }
+      ],
+      "creditLine": [
+        {
+          "label": "Credit Line",
+          "content": "Gift of Dorwin L. Starr"
+        }
+      ],
+      "dataSource": [
+        {
+          "label": "Data Source",
+          "content": "Cooper Hewitt, Smithsonian Design Museum"
+        }
+      ],
+      "identifier": [
+        {
+          "label": "Accession Number",
+          "content": "1985-19-40"
+        }
+      ],
+      "objectType": [
+        {
+          "label": "Type",
+          "content": "Wallcoverings"
+        },
+        {
+          "label": "Type",
+          "content": "Sidewall - sample"
+        }
+      ],
+      "objectRights": [
+        {
+          "label": "Restrictions & Rights",
+          "content": "CC0"
+        }
+      ],
+      "physicalDescription": [
+        {
+          "label": "Medium",
+          "content": "Machine-printed paper"
+        },
+        {
+          "label": "Dimensions",
+          "content": "70 x 48 cm (27 9/16 x 18 7/8 in.)"
+        }
+      ]
+    },
+    "indexedStructured": {
+      "date": [
+        "1900s"
+      ],
+      "place": [
+        "USA"
+      ],
+      "geoLocation": [
+        {
+          "L2": {
+            "type": "Country",
+            "content": "USA"
+          }
+        }
+      ],
+      "object_type": [
+        "Fill papers",
+        "Sample",
+        "Wall coverings"
+      ],
+      "online_media_type": [
+        "Images"
+      ]
+    },
+    "descriptiveNonRepeating": {
+      "guid": "http://n2t.net/ark:/65665/kq47c7ed055-8c14-4183-9774-9b936e31ccb6",
+      "title": {
+        "label": "Title",
+        "content": "Sidewall - sample"
+      },
+      "record_ID": "chndm_1985-19-40",
+      "unit_code": "CHNDM",
+      "title_sort": "SIDEWALL - SAMPLE",
+      "data_source": "Cooper Hewitt, Smithsonian Design Museum",
+      "record_link": "https://collection.cooperhewitt.org/view/objects/asitem/id/182705",
+      "online_media": {
+        "media": [
+          {
+            "id": "media:CHSDM-72C76885459C2_01-000001",
+            "guid": "http://n2t.net/ark:/65665/vc95c0c5216-425f-4cd1-b91b-5830c09fa88f",
+            "type": "Images",
+            "idsId": "CHSDM-72C76885459C2_01-000001",
+            "usage": {
+              "access": "CC0"
+            },
+            "content": "https://ids.si.edu/ids/deliveryService?id=CHSDM-72C76885459C2_01-000001",
+            "thumbnail": "https://ids.si.edu/ids/deliveryService?id=CHSDM-72C76885459C2_01-000001",
+            "altTextAccessibility": "",
+            "extDescrAccessibility": "Diaper or foliate stripe design containing vining foliage printed in red on red ground. Half the background is printed in deep red with the foliate pattern revealed in the void, while on the other half the design is printed in deep red on a textile-patterned light red ground.",
+            "resources": [
+              {
+                "label": "High-resolution TIFF",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-72C76885459C2_01-000001.tif",
+                "width": 5264,
+                "height": 7578,
+                "dimensions": "5264x7578"
+              },
+              {
+                "label": "High-resolution JPEG",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-72C76885459C2_01-000001.jpg",
+                "width": 5264,
+                "height": 7578,
+                "dimensions": "5264x7578"
+              },
+              {
+                "label": "Screen Image",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-72C76885459C2_01-000001_screen"
+              },
+              {
+                "label": "Thumbnail Image",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-72C76885459C2_01-000001_thumb"
+              }
+            ]
+          },
+          {
+            "id": "media:CHSDM-CH2200",
+            "guid": "http://n2t.net/ark:/65665/vc9608603ce-8f50-4ccb-9946-025849a2ddd4",
+            "type": "Images",
+            "idsId": "CHSDM-CH2200",
+            "usage": {
+              "access": "CC0"
+            },
+            "content": "https://ids.si.edu/ids/deliveryService?id=CHSDM-CH2200",
+            "thumbnail": "https://ids.si.edu/ids/deliveryService?id=CHSDM-CH2200",
+            "altTextAccessibility": "",
+            "extDescrAccessibility": "Diaper or foliate stripe design containing vining foliage printed in red on red ground. Half the background is printed in deep red with the foliate pattern revealed in the void, while on the other half the design is printed in deep red on a textile-patterned light red ground.",
+            "resources": [
+              {
+                "label": "High-resolution JPEG",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-CH2200.jpg",
+                "width": 1019,
+                "height": 1500,
+                "dimensions": "1019x1500"
+              },
+              {
+                "label": "Screen Image",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-CH2200_screen"
+              },
+              {
+                "label": "Thumbnail Image",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-CH2200_thumb"
+              }
+            ]
+          }
+        ],
+        "mediaCount": 2
+      },
+      "metadata_usage": {
+        "access": "CC0"
+      }
+    }
+  },
+  "hash": "a31e79d6e9c150a3db6d5378a3812a4f116e2941",
+  "docSignature": "822650a6ef47a3bf525f2ae7601cb25d",
+  "timestamp": "1663784559",
+  "lastTimeUpdated": "1769540882",
+  "version": "1769538334"
+}

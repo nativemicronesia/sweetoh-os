@@ -275,6 +275,189 @@
         "width": 2400,
         "height": 454
       }
+    },
+    {
+      "id": "smithsonian-chndm-pomegranate-repeat-v1",
+      "title": "Textile",
+      "recordId": "chndm_1915-5-6-a",
+      "sourceRecordUrl": "https://collection.cooperhewitt.org/view/objects/asitem/id/20825",
+      "sourceMediaUrl": "https://ids.si.edu/ids/download?id=CHSDM-37ACBA834E7E2-000001_screen",
+      "metadataAccess": "CC0",
+      "objectAccess": "CC0",
+      "recordRightsNotice": "CC0",
+      "license": "CC0 1.0 Universal",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "recommendedCredit": "Cheney Brothers, South Manchester, Connecticut. Cooper Hewitt, Smithsonian Design Museum. CC0 1.0; credit is recommended, not required.",
+      "creatorCredits": [
+        "Cheney Brothers, South Manchester, Connecticut, USA (manufacturer)"
+      ],
+      "date": "1915",
+      "place": "USA",
+      "originalFile": "originals/chndm-1915-5-6-a.jpg",
+      "originalSha256": "5fecf49d3c228feb0c400ad3e107597658b0fe71235fdf168b729b388b0b05b6",
+      "sourceDimensions": {
+        "width": 1200,
+        "height": 1172
+      },
+      "crop": {
+        "left": 120,
+        "top": 100,
+        "width": 900,
+        "height": 900
+      },
+      "derivativeFile": "studio-assets/smithsonian/smithsonian-chndm-pomegranate-repeat-v1.webp",
+      "derivativeSha256": "50ed65e975983c081a03404830c79d31de7c5e4b9e09b72616760f38f61d7ddc",
+      "derivativeDimensions": {
+        "width": 900,
+        "height": 900
+      }
+    },
+    {
+      "id": "smithsonian-chndm-foliate-sidewall-v1",
+      "title": "Sidewall - sample",
+      "recordId": "chndm_1985-19-40",
+      "sourceRecordUrl": "https://collection.cooperhewitt.org/view/objects/asitem/id/182705",
+      "sourceMediaUrl": "https://ids.si.edu/ids/download?id=CHSDM-72C76885459C2_01-000001_screen",
+      "metadataAccess": "CC0",
+      "objectAccess": "CC0",
+      "recordRightsNotice": "CC0",
+      "license": "CC0 1.0 Universal",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "recommendedCredit": "Smithsonian Open Access; Cooper Hewitt, Smithsonian Design Museum. Creator not identified in the collection record.",
+      "creatorCredits": [],
+      "date": "1906–08",
+      "place": "USA",
+      "originalFile": "originals/chndm-1985-19-40.jpg",
+      "originalSha256": "d13c9b34cc6f2a13931550bc7e87de51bfd8cee7fb42d84da813960cb8f474e5",
+      "sourceDimensions": {
+        "width": 833,
+        "height": 1199
+      },
+      "crop": {
+        "left": 20,
+        "top": 15,
+        "width": 795,
+        "height": 1170
+      },
+      "derivativeFile": "studio-assets/smithsonian/smithsonian-chndm-foliate-sidewall-v1.webp",
+      "derivativeSha256": "7b85e0ac0f0e58069cbc680850cd2cfaf53105b82608f4c1b9d89cf0ade889dc",
+      "derivativeDimensions": {
+        "width": 795,
+        "height": 1170
+      }
+    },
+    {
+      "id": "smithsonian-chndm-diderot-loom-plate-v1",
+      "title": "Passementerie, Façon de passer le Patron par devant",
+      "recordId": "chndm_1949-152-184",
+      "sourceRecordUrl": "https://collection.cooperhewitt.org/view/objects/asitem/id/100074",
+      "sourceMediaUrl": "https://ids.si.edu/ids/download?id=CHSDM-1949-152-184MattFlynn_screen",
+      "metadataAccess": "CC0",
+      "objectAccess": "CC0",
+      "recordRightsNotice": "CC0",
+      "license": "CC0 1.0 Universal",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "recommendedCredit": "Denis Diderot, author; J.R. Lucotte, designer; Robert Bénard, engraver. Cooper Hewitt, Smithsonian Design Museum. CC0 1.0; credit is recommended, not required.",
+      "creatorCredits": [
+        "Denis Diderot, French, 1713–1784 (author)",
+        "J.R. Lucotte, French, 1733 – 1784 (designer)",
+        "Robert Bénard, French, 1734–1772 (engraver)"
+      ],
+      "date": "ca. 1763",
+      "place": "France",
+      "originalFile": "originals/chndm-1949-152-184.jpg",
+      "originalSha256": "16edb048cd4786001aabd6b894232f9b20606b2242e0ac767297027d6d6c230d",
+      "sourceDimensions": {
+        "width": 784,
+        "height": 1200
+      },
+      "crop": {
+        "left": 40,
+        "top": 30,
+        "width": 700,
+        "height": 1140
+      },
+      "derivativeFile": "studio-assets/smithsonian/smithsonian-chndm-diderot-loom-plate-v1.webp",
+      "derivativeSha256": "307df425066b6478932e5d2c4a2e13e48ee765cabcf4161968589005a363f4d2",
+      "derivativeDimensions": {
+        "width": 700,
+        "height": 1140
+      }
+    },
+    {
+      "id": "smithsonian-chndm-ikat-kasuri-pattern-v1",
+      "title": "Geometric Pattern Imitating Warp Ikat (Kasuri)",
+      "recordId": "chndm_1976-103-110",
+      "sourceRecordUrl": "https://collection.cooperhewitt.org/view/objects/asitem/id/155705",
+      "sourceMediaUrl": "https://ids.si.edu/ids/download?id=CHSDM-CHD5100_screen",
+      "metadataAccess": "CC0",
+      "objectAccess": "CC0",
+      "recordRightsNotice": "CC0",
+      "license": "CC0 1.0 Universal",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "recommendedCredit": "Smithsonian Open Access; Cooper Hewitt, Smithsonian Design Museum. Creator not identified in the collection record.",
+      "creatorCredits": [],
+      "date": "mid 18th - early 19th century",
+      "place": "Japan",
+      "originalFile": "originals/chndm-1976-103-110.jpg",
+      "originalSha256": "699fd9c2568f1d53190bcd8e862f9cfe8f7907c08d59beb9bdf62dd0314203f6",
+      "sourceDimensions": {
+        "width": 1200,
+        "height": 792
+      },
+      "crop": {
+        "left": 110,
+        "top": 115,
+        "width": 990,
+        "height": 545
+      },
+      "derivativeFile": "studio-assets/smithsonian/smithsonian-chndm-ikat-kasuri-pattern-v1.webp",
+      "derivativeSha256": "311662a3a7551aa6f0ba71a2c86e67130939c624ee1a602576462c9289eef8ca",
+      "derivativeDimensions": {
+        "width": 990,
+        "height": 545
+      }
+    },
+    {
+      "id": "smithsonian-chndm-gothic-medallion-frieze-v1",
+      "title": "Frieze",
+      "recordId": "chndm_1979-91-388",
+      "sourceRecordUrl": "https://collection.cooperhewitt.org/view/objects/asitem/id/161031",
+      "sourceMediaUrl": "https://ids.si.edu/ids/download?id=CHSDM-8254FABF9FB32-000001_screen",
+      "metadataAccess": "CC0",
+      "objectAccess": "CC0",
+      "recordRightsNotice": "CC0",
+      "license": "CC0 1.0 Universal",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "recommendedCredit": "Standard Wall-Paper Company, Pittsburgh, Pennsylvania. Cooper Hewitt, Smithsonian Design Museum. CC0 1.0; credit is recommended, not required.",
+      "creatorCredits": [
+        "Standard Wall-Paper Company, Standard Wall-Paper Company, Pittsburgh, Pennsylvania (manufacturer)"
+      ],
+      "date": "1905–1915",
+      "place": "Pittsburgh, Pennsylvania, USA",
+      "originalFile": "originals/chndm-1979-91-388.jpg",
+      "originalSha256": "41eb52e80bed278a4556b7ae691790f478c683af3c389c218138d4ed68d3a584",
+      "sourceDimensions": {
+        "width": 1200,
+        "height": 647
+      },
+      "crop": {
+        "left": 5,
+        "top": 50,
+        "width": 1190,
+        "height": 570
+      },
+      "derivativeFile": "studio-assets/smithsonian/smithsonian-chndm-gothic-medallion-frieze-v1.webp",
+      "derivativeSha256": "79dcbf15498425ff07411a408d92b8d5e9551558079928ed1c9fab8007e992c5",
+      "derivativeDimensions": {
+        "width": 1190,
+        "height": 570
+      }
     }
   ]
 }

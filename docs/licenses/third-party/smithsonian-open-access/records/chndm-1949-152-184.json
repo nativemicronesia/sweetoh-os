@@ -1,0 +1,231 @@
+{
+  "id": "ld1-1643399887910-1643399919974-1",
+  "title": "Passementerie, Fa\u00e7on de passer le Patron par devant",
+  "unitCode": "CHNDM",
+  "type": "edanmdm",
+  "url": "edanmdm:chndm_1949-152-184",
+  "content": {
+    "freetext": {
+      "date": [
+        {
+          "label": "Date",
+          "content": "ca. 1763"
+        }
+      ],
+      "name": [
+        {
+          "label": "Author",
+          "content": "Denis Diderot, French, 1713\u20131784"
+        },
+        {
+          "label": "Designer",
+          "content": "J.R. Lucotte, French, 1733 \u2013 1784"
+        },
+        {
+          "label": "Engraver",
+          "content": "Robert B\u00e9nard, French, 1734\u20131772"
+        }
+      ],
+      "notes": [
+        {
+          "label": "Catalogue Status",
+          "content": "Research in Progress"
+        },
+        {
+          "label": "Description",
+          "content": "Picture from Diderot's Encyclopedia showing a man at a loom; scale. Beneath, textile patterns that the loom can create. All pictures are labelled with figure numbers."
+        }
+      ],
+      "place": [
+        {
+          "label": "made in",
+          "content": "France"
+        }
+      ],
+      "setName": [
+        {
+          "label": "See more items in",
+          "content": "Cooper Hewitt, Smithsonian Design Museum Collection"
+        },
+        {
+          "label": "See more items in",
+          "content": "Drawings, Prints, and Graphic Design Department"
+        }
+      ],
+      "creditLine": [
+        {
+          "label": "Credit Line",
+          "content": "Gift of Mrs. George A. Kubler"
+        }
+      ],
+      "dataSource": [
+        {
+          "label": "Data Source",
+          "content": "Cooper Hewitt, Smithsonian Design Museum"
+        }
+      ],
+      "identifier": [
+        {
+          "label": "Accession Number",
+          "content": "1949-152-184"
+        }
+      ],
+      "objectType": [
+        {
+          "label": "Type",
+          "content": "textile designs"
+        },
+        {
+          "label": "Object Name",
+          "content": "Print"
+        },
+        {
+          "label": "Type",
+          "content": "Print"
+        }
+      ],
+      "objectRights": [
+        {
+          "label": "Restrictions & Rights",
+          "content": "CC0"
+        }
+      ],
+      "physicalDescription": [
+        {
+          "label": "Medium",
+          "content": "Engraving on paper"
+        },
+        {
+          "label": "Dimensions",
+          "content": "Sheet: 35.6 x 22.7 cm (14 in. x 8 15/16 in.), irregular"
+        },
+        {
+          "label": "Dimensions",
+          "content": "Platemark: 35.5 x 22.8 cm (14 x 9 in.)"
+        }
+      ]
+    },
+    "indexedStructured": {
+      "date": [
+        "1750s",
+        "1760s"
+      ],
+      "name": [
+        "Diderot, Denis",
+        "B\u00e9nard, Robert",
+        "Lucotte, J.R."
+      ],
+      "place": [
+        "France"
+      ],
+      "geoLocation": [
+        {
+          "L2": {
+            "type": "Country",
+            "content": "France"
+          }
+        }
+      ],
+      "object_type": [
+        "Design drawings",
+        "Prints",
+        "Textiles"
+      ],
+      "online_media_type": [
+        "Images"
+      ]
+    },
+    "descriptiveNonRepeating": {
+      "guid": "http://n2t.net/ark:/65665/kq4b3917fd7-abe4-42ac-9514-1cc8a2d5ffed",
+      "title": {
+        "label": "Title",
+        "content": "Passementerie, Fa\u00e7on de passer le Patron par devant"
+      },
+      "record_ID": "chndm_1949-152-184",
+      "unit_code": "CHNDM",
+      "title_sort": "PASSEMENTERIE, FA\u00c7ON DE PASSER LE PATRON PAR DEVANT",
+      "data_source": "Cooper Hewitt, Smithsonian Design Museum",
+      "record_link": "https://collection.cooperhewitt.org/view/objects/asitem/id/100074",
+      "online_media": {
+        "media": [
+          {
+            "id": "media:CHSDM-1949-152-184MattFlynn",
+            "guid": "http://n2t.net/ark:/65665/vc96bb9b234-16e8-4e0a-88f1-7d2f812e51fa",
+            "type": "Images",
+            "idsId": "CHSDM-1949-152-184MattFlynn",
+            "usage": {
+              "access": "CC0"
+            },
+            "content": "https://ids.si.edu/ids/deliveryService?id=CHSDM-1949-152-184MattFlynn",
+            "thumbnail": "https://ids.si.edu/ids/deliveryService?id=CHSDM-1949-152-184MattFlynn",
+            "altTextAccessibility": "PASSEMENTERIE, FA\u00c7ON DE PASSER LE PATRON PAR DEVANT",
+            "extDescrAccessibility": "Picture from Diderot's Encyclopedia showing a man at a loom; scale. Beneath, textile patterns that the loom can create. All pictures are labelled with figure numbers.",
+            "resources": [
+              {
+                "label": "High-resolution TIFF",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-1949-152-184MattFlynn.tif",
+                "width": 1960,
+                "height": 3000,
+                "dimensions": "1960x3000"
+              },
+              {
+                "label": "High-resolution JPEG",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-1949-152-184MattFlynn.jpg",
+                "width": 1960,
+                "height": 3000,
+                "dimensions": "1960x3000"
+              },
+              {
+                "label": "Screen Image",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-1949-152-184MattFlynn_screen"
+              },
+              {
+                "label": "Thumbnail Image",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-1949-152-184MattFlynn_thumb"
+              }
+            ]
+          },
+          {
+            "id": "media:CHSDM-17B3D3080B672-000001",
+            "guid": "http://n2t.net/ark:/65665/vc95bafb9c2-51e1-40b1-aa1d-261563ced169",
+            "type": "Images",
+            "idsId": "CHSDM-17B3D3080B672-000001",
+            "usage": {
+              "access": "CC0"
+            },
+            "content": "https://ids.si.edu/ids/deliveryService?id=CHSDM-17B3D3080B672-000001",
+            "thumbnail": "https://ids.si.edu/ids/deliveryService?id=CHSDM-17B3D3080B672-000001",
+            "altTextAccessibility": "PASSEMENTERIE, FA\u00c7ON DE PASSER LE PATRON PAR DEVANT",
+            "extDescrAccessibility": "Picture from Diderot's Encyclopedia showing a man at a loom; scale. Beneath, textile patterns that the loom can create. All pictures are labelled with figure numbers.",
+            "resources": [
+              {
+                "label": "High-resolution JPEG",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-17B3D3080B672-000001.jpg",
+                "width": 2924,
+                "height": 4377,
+                "dimensions": "2924x4377"
+              },
+              {
+                "label": "Screen Image",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-17B3D3080B672-000001_screen"
+              },
+              {
+                "label": "Thumbnail Image",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-17B3D3080B672-000001_thumb"
+              }
+            ]
+          }
+        ],
+        "mediaCount": 2
+      },
+      "metadata_usage": {
+        "access": "CC0"
+      }
+    }
+  },
+  "hash": "aff7693bc339046ad8ec83a6557e8f84f7335b86",
+  "docSignature": "5c6b9c19db38412c95aeee1b3ee72bd9",
+  "timestamp": "1663784057",
+  "lastTimeUpdated": "1769540882",
+  "version": "1769538334"
+}

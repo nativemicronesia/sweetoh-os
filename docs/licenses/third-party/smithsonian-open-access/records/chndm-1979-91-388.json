@@ -1,0 +1,185 @@
+{
+  "id": "ld1-1643399887910-1643399949052-0",
+  "title": "Frieze",
+  "unitCode": "CHNDM",
+  "type": "edanmdm",
+  "url": "edanmdm:chndm_1979-91-388",
+  "content": {
+    "freetext": {
+      "date": [
+        {
+          "label": "Date",
+          "content": "1905\u20131915"
+        }
+      ],
+      "name": [
+        {
+          "label": "Manufacturer",
+          "content": "Standard Wall-Paper Company, Standard Wall-Paper Company, Pittsburgh, Pennsylvania"
+        }
+      ],
+      "notes": [
+        {
+          "label": "Catalogue Status",
+          "content": "Research in Progress"
+        },
+        {
+          "label": "Description",
+          "content": "Horizontally repeating gothic-inspired pattern. Large medallions with borders of stylized fleur-de-lis and foliate scrollwork are printed in the middle of the panel. A border of smaller, similar medallions runs across the bottom of the page. An allover diaper pattern is printed behind the scrollwork, and gives the impression of a woven textile. Pattern is printed in reds, greens, tans and yellows atop a brown ground."
+        }
+      ],
+      "place": [
+        {
+          "label": "made in",
+          "content": "Pittsburgh, Pennsylvania, USA"
+        }
+      ],
+      "setName": [
+        {
+          "label": "See more items in",
+          "content": "Cooper Hewitt, Smithsonian Design Museum Collection"
+        },
+        {
+          "label": "See more items in",
+          "content": "Wallcoverings Department"
+        }
+      ],
+      "creditLine": [
+        {
+          "label": "Credit Line",
+          "content": "Gift of Victorian Collectibles"
+        }
+      ],
+      "dataSource": [
+        {
+          "label": "Data Source",
+          "content": "Cooper Hewitt, Smithsonian Design Museum"
+        }
+      ],
+      "identifier": [
+        {
+          "label": "Accession Number",
+          "content": "1979-91-388"
+        }
+      ],
+      "objectType": [
+        {
+          "label": "Type",
+          "content": "Wallcoverings"
+        },
+        {
+          "label": "Type",
+          "content": "Frieze"
+        }
+      ],
+      "objectRights": [
+        {
+          "label": "Restrictions & Rights",
+          "content": "CC0"
+        }
+      ],
+      "physicalDescription": [
+        {
+          "label": "Medium",
+          "content": "Machine-printed paper"
+        },
+        {
+          "label": "Dimensions",
+          "content": "91 x 49 cm (35 13/16 x 19 5/16 in.)"
+        }
+      ]
+    },
+    "indexedStructured": {
+      "date": [
+        "1910s",
+        "1900s"
+      ],
+      "name": [
+        "Standard Wall-Paper Company"
+      ],
+      "place": [
+        "USA",
+        "Pittsburgh",
+        "Pennsylvania"
+      ],
+      "geoLocation": [
+        {
+          "L2": {
+            "type": "Country",
+            "content": "USA"
+          },
+          "L3": {
+            "type": "State",
+            "content": "Pennsylvania"
+          },
+          "L5": {
+            "type": "City",
+            "content": "Pittsburgh"
+          }
+        }
+      ],
+      "object_type": [
+        "Friezes (ornamental areas)",
+        "Wall coverings"
+      ],
+      "online_media_type": [
+        "Images"
+      ]
+    },
+    "descriptiveNonRepeating": {
+      "guid": "http://n2t.net/ark:/65665/kq4c8a36e98-a9f3-4d6b-942c-c041fbc3ecdb",
+      "title": {
+        "label": "Title",
+        "content": "Frieze"
+      },
+      "record_ID": "chndm_1979-91-388",
+      "unit_code": "CHNDM",
+      "title_sort": "FRIEZE",
+      "data_source": "Cooper Hewitt, Smithsonian Design Museum",
+      "record_link": "https://collection.cooperhewitt.org/view/objects/asitem/id/161031",
+      "online_media": {
+        "media": [
+          {
+            "id": "media:CHSDM-8254FABF9FB32-000001",
+            "guid": "http://n2t.net/ark:/65665/vc9ae96fcd1-5abf-464a-a558-66c4eadaefc9",
+            "type": "Images",
+            "idsId": "CHSDM-8254FABF9FB32-000001",
+            "usage": {
+              "access": "CC0"
+            },
+            "content": "https://ids.si.edu/ids/deliveryService?id=CHSDM-8254FABF9FB32-000001",
+            "thumbnail": "https://ids.si.edu/ids/deliveryService?id=CHSDM-8254FABF9FB32-000001",
+            "altTextAccessibility": "",
+            "extDescrAccessibility": "Horizontally repeating gothic-inspired pattern. Large medallions with borders of stylized fleur-de-lis and foliate scrollwork are printed in the middle of the panel. A border of smaller, similar medallions runs across the bottom of the page. An allover diaper pattern is printed behind the scrollwork, and gives the impression of a woven textile. Pattern is printed in reds, greens, tans and yellows atop a brown ground.",
+            "resources": [
+              {
+                "label": "High-resolution JPEG",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-8254FABF9FB32-000001.jpg",
+                "width": 6403,
+                "height": 3451,
+                "dimensions": "6403x3451"
+              },
+              {
+                "label": "Screen Image",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-8254FABF9FB32-000001_screen"
+              },
+              {
+                "label": "Thumbnail Image",
+                "url": "https://ids.si.edu/ids/download?id=CHSDM-8254FABF9FB32-000001_thumb"
+              }
+            ]
+          }
+        ],
+        "mediaCount": 1
+      },
+      "metadata_usage": {
+        "access": "CC0"
+      }
+    }
+  },
+  "hash": "5d63d3da1c4d069e04eaaa7a7640e2a91b4a95fd",
+  "docSignature": "2f15573866d372edce82271dc34737a3",
+  "timestamp": "1663784559",
+  "lastTimeUpdated": "1769540882",
+  "version": "1769538334"
+}

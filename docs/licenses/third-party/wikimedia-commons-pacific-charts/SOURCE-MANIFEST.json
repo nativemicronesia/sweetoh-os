@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "source": "Wikimedia Commons — historical Pacific/Caroline Islands nautical charts",
+  "rightsEvidence": "Per-file Wikimedia Commons extmetadata LicenseShortName + Restrictions fields, independently verified live for each item; snapshots in records/.",
+  "assets": [
+    {
+      "id": "admiralty-chart-970",
+      "title": "Islands and Anchorages in the Caroline Islands (Admiralty Chart No. 970)",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Admiralty_Chart_No_970_Islands_and_Anchorages_in_the_Caroline_Islands,_Published_1929.jpg",
+      "creator": "United Kingdom Hydrographic Office",
+      "date": "1929",
+      "license": "Public domain",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/admiralty-chart-970.json",
+      "sha1OfOriginalUpload": "23075a35b9b2e950f653f4c7c0205fec4833af2a",
+      "originalFile": "originals/admiralty-chart-970.jpg",
+      "originalSha256": "20ef901d4cf310a53977e37efd64d31f0fc0fccd6d6bfee44c121851ca310d8d",
+      "normalizedOutputSha256": "aa453b3430db0ae4dcb34d5c0750e6af4723f28ca208b4b978098f829472b653",
+      "normalizedDimensions": {
+        "width": 2400,
+        "height": 1637
+      }
+    },
+    {
+      "id": "albatross-track-1900",
+      "title": "Track of the Albatross from Pohnpei through the Caroline Islands to Guam, February 1900",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Track_of_the_Albatross_from_Pohnpei_through_the_Caroline_Islands_to_Guam_in_February_1900_(map0027541873).jpg",
+      "creator": "Alexander Agassiz (USFC Steamer Albatross expedition)",
+      "date": "1900",
+      "license": "Public domain",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/albatross-track-1900.json",
+      "sha1OfOriginalUpload": "a6c9da18aa498a909c112a5827bcfcc1ecf8034b",
+      "originalFile": "originals/albatross-track-1900.jpg",
+      "originalSha256": "14f57ad48c0c91c9ba4c4be6c6ecd5f0c6667fc0b3df99542adfe1d726014272",
+      "normalizedOutputSha256": "0f19ed7e7d6f45c4776a4d63a384a00653d13b93183c85fb931d1dbe4884bb63",
+      "normalizedDimensions": {
+        "width": 2400,
+        "height": 1923
+      }
+    }
+  ]
+}
