@@ -581,6 +581,42 @@ test("uiGradients backgrounds keep pinned MIT notice, original palettes, search,
   assert.throws(() => canSurfaceStudioAsset({ ...studioAsset(id)!, attributionText: null }), /Required attribution text must be recorded/);
 });
 
+test("Openclipart seasonal frames preserve artist provenance, CC0 originals, and specific browse queries", async () => {
+  const base = "docs/licenses/third-party/openclipart";
+  const manifest = JSON.parse(readFileSync(`${base}/seasonal-frame-SOURCE-MANIFEST.json`, "utf8")) as {
+    sourceLicenseEvidenceUrl: string;
+    assets: Array<{ id: string; sourceItemId: number; artist: string; sourceUrl: string; rightsEvidenceUrl: string; originalFile: string; originalSha256: string; normalizedSvgSha256: string; commercialUse: boolean; modificationAllowed: boolean; redistributionAllowed: boolean; attributionRequired: boolean }>;
+  };
+  assert.equal(manifest.sourceLicenseEvidenceUrl, "https://openclipart.org/share");
+  assert.equal(manifest.assets.length, 3);
+  for (const record of manifest.assets) {
+    const asset = studioAsset(record.id);
+    assert.ok(asset, record.id);
+    assert.ok(record.artist.length > 0);
+    assert.equal(asset.sourceUrl, record.sourceUrl);
+    assert.equal(record.rightsEvidenceUrl, "https://openclipart.org/share");
+    assert.equal(asset.licenseId, "CC0-1.0");
+    assert.equal(record.commercialUse && record.modificationAllowed && record.redistributionAllowed, true);
+    assert.equal(record.attributionRequired, false);
+    assert.equal(createHash("sha256").update(readFileSync(`${base}/${record.originalFile}`)).digest("hex"), record.originalSha256);
+    assert.equal(createHash("sha256").update(Buffer.from(asset.svg!)).digest("hex"), record.normalizedSvgSha256);
+    assert.ok(canSurfaceStudioAsset(asset));
+    assert.equal(studioEditorCommandSchema.safeParse({ type: "add_graphic", assetKey: record.id }).success, true);
+  }
+  for (const [query, id] of [
+    ["halloween bats frame", "openclipart-86779-v1"],
+    ["sports soccer football border", "openclipart-194064-v1"],
+    ["flower leaf botanical frame", "openclipart-379-v1"],
+  ] as const) {
+    assert.ok(findStudioAssets({ query, kind: "element", limit: 50 }).some((asset) => asset.id === id), query);
+  }
+  const id = "openclipart-194064-v1";
+  const response = await getStudioAssetResponse(new Request(`https://sweetoh.test${studioAssetUrl(id)}`), { params: Promise.resolve({ id }) });
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("Content-Type") ?? "", /^image\/svg\+xml/);
+  assert.ok((await sharp(Buffer.from(await response.arrayBuffer())).resize(240, 240).raw().toBuffer()).some((channel) => channel > 0));
+});
+
 test("Open Doodles adds authored lifestyle illustrations with CC0 rights and useful design retrieval", () => {
   const assets = STUDIO_ASSETS.filter((asset) => asset.id.startsWith("open-doodles-"));
   assert.equal(assets.length, 27);

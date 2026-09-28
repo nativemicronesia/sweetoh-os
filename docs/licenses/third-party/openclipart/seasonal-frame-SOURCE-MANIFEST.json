@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "source": "Openclipart seasonal and sport frames",
+  "sourceLicenseEvidenceUrl": "https://openclipart.org/share",
+  "licenseCodeFile": "CC0-1.0-LEGALCODE.txt",
+  "sourceItemRecords": "seasonal-frame-assets.json",
+  "assets": [
+    {
+      "id": "openclipart-86779-v1",
+      "sourceItemId": 86779,
+      "sourceTitle": "Halloween Frame",
+      "artist": "inky2010",
+      "uploadedAt": "2010-09-25T13:34:00",
+      "description": "Black and white Halloween border with a dead tree, bats and a ghost.",
+      "sourceTags": [
+        "2010",
+        "avatar",
+        "black",
+        "border",
+        "Borders",
+        "clip",
+        "frame",
+        "free",
+        "ghost",
+        "Halloween",
+        "halloween2010",
+        "icon",
+        "Inkscape",
+        "inky2010",
+        "Laser ideas",
+        "silhouette",
+        "spooky"
+      ],
+      "sourceUrl": "https://openclipart.org/detail/86779/halloween-frame",
+      "rightsEvidenceUrl": "https://openclipart.org/share",
+      "license": "CC0 1.0 — public domain dedication",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "attributionRequired": false,
+      "originalFile": "source/86779.svg",
+      "originalSha256": "bb60b99773c973fa816d8eeadd60428b5a4db86139df210664dfc4329d46d003",
+      "normalizedSvgSha256": "5bf10459e1c0d85b6732212a90efaf7781904eeb35191eead7bad5b932b8e581",
+      "normalizedDimensions": {
+        "width": 500,
+        "height": 391
+      }
+    },
+    {
+      "id": "openclipart-194064-v1",
+      "sourceItemId": 194064,
+      "sourceTitle": "Football Border",
+      "artist": "aungkarns",
+      "uploadedAt": "2014-06-08T14:33:00",
+      "description": "Black and white rectangular border built from soccer balls.",
+      "sourceTags": [
+        "Border",
+        "Football Border",
+        "Sport",
+        "worldcup"
+      ],
+      "sourceUrl": "https://openclipart.org/detail/194064/football-border",
+      "rightsEvidenceUrl": "https://openclipart.org/share",
+      "license": "CC0 1.0 — public domain dedication",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "attributionRequired": false,
+      "originalFile": "source/194064.svg",
+      "originalSha256": "38ff82631f45ab418158c5eb621370bb60e54fed41a9e1092e0a100d78db3bca",
+      "normalizedSvgSha256": "59be7c034c913e086b88013389ee475109ff6c316b0ee83f53209efc1d8084ee",
+      "normalizedDimensions": {
+        "width": 500,
+        "height": 493
+      }
+    },
+    {
+      "id": "openclipart-379-v1",
+      "sourceItemId": 379,
+      "sourceTitle": "floral frame",
+      "artist": "johnny_automatic",
+      "uploadedAt": "2006-10-04T20:51:00",
+      "description": "A simple frame formed from flowers and leaves.",
+      "sourceTags": [
+        "Borders",
+        "For Use",
+        "border",
+        "flower",
+        "frame",
+        "leaf"
+      ],
+      "sourceUrl": "https://openclipart.org/detail/379/floral-frame",
+      "rightsEvidenceUrl": "https://openclipart.org/share",
+      "license": "CC0 1.0 — public domain dedication",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "redistributionAllowed": true,
+      "attributionRequired": false,
+      "originalFile": "source/379.svg",
+      "originalSha256": "5c9050a16dcaeda1ca4f9b73d41e13fb8a8e53e8d52854a97e4b0144ed626340",
+      "normalizedSvgSha256": "f612752e0d950baf4c9390b05c8513f9d3d0aa907b310c2edd252869218c7e77",
+      "normalizedDimensions": {
+        "width": 500,
+        "height": 216
+      }
+    }
+  ]
+}

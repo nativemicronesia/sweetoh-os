@@ -15,5 +15,10 @@ The files in `source/` are downloaded upstream SVG originals, retained unmodifie
 | Party Confetti Seamless Pattern | #245704 — Party Pattern | Arvin61r58 | 2016-04-04 | https://openclipart.org/detail/245704 | `c5132593c11ace91d44b508f53fe1c9386022992591c08e62723a15372bfb9ce` |
 | Geometric Background Pattern 242 | #289745 — Background pattern 242 | Firkin | 2017-11-05 | https://openclipart.org/detail/289745 | `4259ca8c174681586d2505ccb2751cf3db37731e9b748adba5d47bd2ab857cea` |
 | Checkerboard Seamless Pattern | #285499 — Background pattern 214 | Firkin | 2017-08-25 | https://openclipart.org/detail/285499 | `c7d676399ee3fe8a7376ade6553b4a93ed5fe79392ce1a86249eee06408cba77` |
+| Halloween Tree & Bats Frame | #86779 — Halloween Frame | inky2010 | 2010-09-25 | https://openclipart.org/detail/86779/halloween-frame | `bb60b99773c973fa816d8eeadd60428b5a4db86139df210664dfc4329d46d003` |
+| Soccer Ball Border | #194064 — Football Border | aungkarns | 2014-06-08 | https://openclipart.org/detail/194064/football-border | `38ff82631f45ab418158c5eb621370bb60e54fed41a9e1092e0a100d78db3bca` |
+| Flower & Leaf Frame | #379 — floral frame | johnny_automatic | 2006-10-04 | https://openclipart.org/detail/379/floral-frame | `5c9050a16dcaeda1ca4f9b73d41e13fb8a8e53e8d52854a97e4b0144ed626340` |
 
 License evidence: https://openclipart.org/share and https://creativecommons.org/publicdomain/zero/1.0/
+
+The seasonal and sports frame batch preserves exact authors, upload dates, source tags and original SVGs in `seasonal-frame-assets.json`, `seasonal-frame-SOURCE-MANIFEST.json`, and `source/{id}.svg`. SVGs are individually screened for embedded images, scripts, external references and renderability before Studio registration. A download endpoint is currently inconsistent; only three originals that returned valid renderable vectors were admitted.

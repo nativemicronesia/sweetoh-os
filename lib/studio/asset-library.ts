@@ -3,6 +3,7 @@ import { PATTERNFILLS_STUDIO_ASSETS } from "./patternfills-assets";
 import { OPEN_CROP_STUDIO_ASSETS } from "./open-crop-assets";
 import { OPENCLIPART_STUDIO_ASSETS } from "./openclipart-assets";
 import { OPENCLIPART_COMPOSITION_ASSETS } from "./openclipart-composition-assets";
+import { OPENCLIPART_SEASONAL_STUDIO_ASSETS } from "./openclipart-seasonal-assets";
 import { OPENMOJI_STUDIO_ASSETS } from "./openmoji-assets";
 import { HERO_PATTERN_STUDIO_ASSETS } from "./hero-pattern-assets";
 import { OPENGAMEART_TEXTURE_STUDIO_ASSETS } from "./opengameart-texture-assets";
@@ -95,6 +96,7 @@ export const STUDIO_ASSETS: readonly StudioAsset[] = [
   ...OPEN_CROP_STUDIO_ASSETS,
   ...OPENCLIPART_STUDIO_ASSETS,
   ...OPENCLIPART_COMPOSITION_ASSETS,
+  ...OPENCLIPART_SEASONAL_STUDIO_ASSETS,
   ...OPENMOJI_STUDIO_ASSETS,
   ...HERO_PATTERN_STUDIO_ASSETS,
   ...OPENGAMEART_TEXTURE_STUDIO_ASSETS,
