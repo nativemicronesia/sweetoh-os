@@ -821,6 +821,114 @@
         "width": 2400,
         "height": 1111
       }
+    },
+    {
+      "id": "cma-117132-v1",
+      "objectId": 117132,
+      "accessionNumber": "1937.699",
+      "title": "Marigold",
+      "titleInOriginalLanguage": null,
+      "creators": [
+        {
+          "id": 24604,
+          "description": "William Morris (British, 1834–1896)",
+          "extent": null,
+          "qualifier": null,
+          "role": "designer",
+          "biography": null,
+          "name_in_original_language": null,
+          "birth_year": "1834",
+          "death_year": "1896",
+          "use_in_caption": true,
+          "include_extent": false,
+          "weight": 1
+        }
+      ],
+      "date": "20th century",
+      "culture": [
+        "England, 20th century"
+      ],
+      "department": "Textiles",
+      "collection": "Textiles",
+      "objectType": "Textile",
+      "technique": "plain weave cotton, printed",
+      "medium": null,
+      "measurements": "Overall: 91.4 x 92.7 cm (36 x 36 1/2 in.)",
+      "tombstone": "Marigold, 20th century. William Morris (British, 1834–1896). Plain weave cotton, printed; overall: 91.4 x 92.7 cm (36 x 36 1/2 in.). The Cleveland Museum of Art, Gift of Mrs. Henry Chisholm, 1937.699",
+      "objectPage": "https://clevelandart.org/art/1937.699",
+      "sourceRecordUrl": "https://openaccess-api.clevelandart.org/api/artworks/117132",
+      "sourceImageUrl": "https://openaccess-cdn.clevelandart.org/1937.699/1937.699_print.jpg",
+      "shareLicenseStatus": "CC0",
+      "license": "CC0 1.0 Universal",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "recommendedCredit": "William Morris (British, 1834–1896) (designer). Marigold, 20th century. The Cleveland Museum of Art, 1937.699. CC0 1.0; credit is recommended, not required.",
+      "originalFile": "originals/cma-117132.jpg",
+      "originalSha256": "830fb722e2f96ca620e80d95d8f0e83aad9ac68925d79f953de3a6839a1786ec",
+      "originalDimensions": {
+        "width": 1869,
+        "height": 3400
+      },
+      "derivativeFile": "studio-assets/cma/cma-117132-v1.webp",
+      "derivativeSha256": "28357e50408dc9dc704334e5be18cba3a5fa8dd3e9015197357761430a387751",
+      "derivativeDimensions": {
+        "width": 1319,
+        "height": 2400
+      }
+    },
+    {
+      "id": "cma-117135-v1",
+      "objectId": 117135,
+      "accessionNumber": "1937.700",
+      "title": "Peony",
+      "titleInOriginalLanguage": null,
+      "creators": [
+        {
+          "id": 56740,
+          "description": "Kate Faulkner (British, 1841–1898)",
+          "extent": null,
+          "qualifier": null,
+          "role": "designer",
+          "biography": null,
+          "name_in_original_language": null,
+          "birth_year": "1841",
+          "death_year": "1898",
+          "use_in_caption": true,
+          "include_extent": false,
+          "weight": 1
+        }
+      ],
+      "date": "1920",
+      "culture": [
+        "England, 20th century"
+      ],
+      "department": "Textiles",
+      "collection": "Textiles",
+      "objectType": "Textile",
+      "technique": "plain weave cotton, printed",
+      "medium": null,
+      "measurements": "Overall: 86 x 99.4 cm (33 7/8 x 39 1/8 in.)",
+      "tombstone": "Peony, 1920. Kate Faulkner (British, 1841–1898). Plain weave cotton, printed; overall: 86 x 99.4 cm (33 7/8 x 39 1/8 in.). The Cleveland Museum of Art, Gift of Mrs. Henry Chisholm, 1937.700",
+      "objectPage": "https://clevelandart.org/art/1937.700",
+      "sourceRecordUrl": "https://openaccess-api.clevelandart.org/api/artworks/117135",
+      "sourceImageUrl": "https://openaccess-cdn.clevelandart.org/1937.700/1937.700_print.jpg",
+      "shareLicenseStatus": "CC0",
+      "license": "CC0 1.0 Universal",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "recommendedCredit": "Kate Faulkner (British, 1841–1898) (designer). Peony, 1920. The Cleveland Museum of Art, 1937.700. CC0 1.0; credit is recommended, not required.",
+      "originalFile": "originals/cma-117135.jpg",
+      "originalSha256": "21f1f9070e7e73fdf72b079bc73a5a7d270a623c9af54a2a67b6d2f85aa1ae37",
+      "originalDimensions": {
+        "width": 3400,
+        "height": 3002
+      },
+      "derivativeFile": "studio-assets/cma/cma-117135-v1.webp",
+      "derivativeSha256": "5d48b32948304e2ce65f123e015470feffb1a5675070f4340a492434cf0bfb07",
+      "derivativeDimensions": {
+        "width": 2400,
+        "height": 2119
+      }
     }
   ]
 }

@@ -175,7 +175,7 @@ test("Cleveland Museum CC0 art keeps record-level rights, creator context, print
   const { assets } = JSON.parse(readFileSync("docs/licenses/third-party/cleveland-open-access/SOURCE-MANIFEST.json", "utf8")) as {
     assets: Array<{ id: string; objectId: number; shareLicenseStatus: string; sourceImageUrl: string; creators: Array<{ description: string; role: string }>; originalFile: string; originalSha256: string; derivativeFile: string; derivativeSha256: string }>;
   };
-  assert.equal(assets.length, 15);
+  assert.equal(assets.length, 17);
   assert.match(readFileSync("docs/licenses/third-party/cleveland-open-access/CC0-1.0-LEGALCODE.txt", "utf8"), /^CC0 1\.0 Universal\n/);
   for (const record of assets) {
     const itemRecord = JSON.parse(readFileSync(`docs/licenses/third-party/cleveland-open-access/records/${record.objectId}.json`, "utf8")).data as { id: number; share_license_status: string; images: { print?: { url: string } } };
@@ -199,11 +199,20 @@ test("Cleveland Museum CC0 art keeps record-level rights, creator context, print
   assert.ok(findStudioAssets({ query: "Plums Pomona Britannica orchard", kind: "any", limit: 50 }).some((asset) => asset.id === "cma-132850-v1"));
   assert.ok(findStudioAssets({ query: "Giovanna Garzoni fruit birds", kind: "any", limit: 50 }).some((asset) => asset.id === "cma-132616-v1"));
   assert.ok(findStudioAssets({ query: "Japanese winter summer flowers screen", kind: "any", limit: 50 }).some((asset) => asset.id === "cma-153736-v1"));
+  assert.ok(findStudioAssets({ query: "William Morris Marigold Arts and Crafts repeat", kind: "pattern", limit: 50 }).some((asset) => asset.id === "cma-117132-v1"));
+  assert.ok(findStudioAssets({ query: "Kate Faulkner peony blue textile repeat", kind: "pattern", limit: 50 }).some((asset) => asset.id === "cma-117135-v1"));
   const asset = studioAsset("cma-132618-v1")!;
   const response = await getStudioAssetResponse(new Request(`https://sweetoh.test${studioAssetUrl(asset.id)}`), { params: Promise.resolve({ id: asset.id }) });
   assert.equal(response.status, 200);
   assert.match(response.headers.get("Content-Type") ?? "", /^image\/webp/);
   assert.ok((await sharp(Buffer.from(await response.arrayBuffer())).resize(480, 480).raw().toBuffer()).some((channel) => channel > 0));
+  for (const id of ["cma-117132-v1", "cma-117135-v1"]) {
+    const pattern = studioAsset(id)!;
+    const image = await getStudioAssetResponse(new Request(`https://sweetoh.test${studioAssetUrl(id)}`), { params: Promise.resolve({ id }) });
+    assert.equal(image.status, 200);
+    const pixels = await sharp(Buffer.from(await image.arrayBuffer())).resize(180, 180).raw().toBuffer();
+    assert.ok(pixels.some((channel) => channel > 0), `${pattern.name} should render as visible pixels`);
+  }
 });
 
 test("SweetOh stationery originals are searchable, insertable, and render as distinct reusable primitives", async () => {
@@ -766,7 +775,7 @@ test("multi-layer z-order moves selected objects as a stable block or one step",
 });
 
 test("text styles validate, survive save/reopen and unavailable saved fonts use Inter", () => {
-  const style = { type: "set_text_style", font: "montserrat", fontSize: 42, color: "#c8102e", bold: true, italic: true, textAlign: "center", lineHeight: 1.35, letterSpacing: 36, textBoxWidth: 240, text: "Sweet Oh" } as const;
+  const style = { type: "set_text_style", font: "montserrat", fontSize: 16, color: "#c8102e", bold: true, italic: true, textAlign: "center", lineHeight: 1.35, letterSpacing: 36, textBoxWidth: 100, text: "Sweet Oh" } as const;
   assert.equal(studioEditorCommandSchema.safeParse(style).success, true);
   assert.equal(studioEditorCommandSchema.safeParse({ ...style, font: "unlicensed-font" }).success, false);
   assert.equal(resolveStudioFontKey("montserrat"), "montserrat");
@@ -778,10 +787,10 @@ test("text styles validate, survive save/reopen and unavailable saved fonts use 
   const reopened = studioLayoutSchema.parse(JSON.parse(JSON.stringify(layout)));
   const snapshot = buildStudioEditorState(reopened, "front", ["type-style"], 2);
   assert.equal(snapshot.layers[0].geometry.textAlign, "center");
-  assert.equal(snapshot.layers[0].geometry.textBoxWidth, 240);
+  assert.equal(snapshot.layers[0].geometry.textBoxWidth, 100);
   const text = reopened.surfaces[0].layers[0];
   assert.equal(text.kind, "text");
-  if (text.kind === "text") assert.deepEqual({ id: text.id, font: text.font, size: text.fontSize, bold: text.bold, italic: text.italic, align: text.textAlign, lineHeight: text.lineHeight, spacing: text.letterSpacing, width: text.textBoxWidth, content: text.text }, { id: "type-style", font: "montserrat", size: 42, bold: true, italic: true, align: "center", lineHeight: 1.35, spacing: 36, width: 240, content: "Sweet Oh" });
+  if (text.kind === "text") assert.deepEqual({ id: text.id, font: text.font, size: text.fontSize, bold: text.bold, italic: text.italic, align: text.textAlign, lineHeight: text.lineHeight, spacing: text.letterSpacing, width: text.textBoxWidth, content: text.text }, { id: "type-style", font: "montserrat", size: 16, bold: true, italic: true, align: "center", lineHeight: 1.35, spacing: 36, width: 100, content: "Sweet Oh" });
   const editor = readFileSync("app/(partner)/partner/canvas/product-editor.tsx", "utf8");
   assert.match(editor, /case "set_text_style"[\s\S]*?changeSelected\([\s\S]*?record\)/);
   assert.match(editor, /function changeSelected\([\s\S]*?if \(record\) checkpoint\(\)[\s\S]*?capture\(\)/);
