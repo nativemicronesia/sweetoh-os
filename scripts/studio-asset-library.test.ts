@@ -225,6 +225,42 @@ test("SweetOh stationery originals are searchable, insertable, and render as dis
   assert.match(await response.text(), /viewBox="0 0 760 500"/);
 });
 
+test("SweetOh original illustration set covers practical seasonal and gift compositions", async () => {
+  const ids = [
+    "so-hibiscus-palm-corners-v1", "so-seashell-and-kelp-border-v1", "so-citrus-and-leaf-corners-v1",
+    "so-birthday-balloon-bouquet-v1", "so-baby-moon-mobile-v1", "so-wildflower-divider-v1",
+    "so-autumn-pumpkin-and-vine-v1", "so-graduation-floral-seal-v1", "so-holly-orange-corners-v1",
+  ];
+  const originals = ids.map((id) => STUDIO_ASSETS.find((asset) => asset.id === id));
+  assert.ok(originals.every((asset) => asset));
+  assert.equal(new Set(originals.map((asset) => asset!.id)).size, ids.length);
+  for (const asset of originals) {
+    assert.equal(asset!.source, "SweetOh OS");
+    assert.equal(asset!.license, "SweetOh original — free for SweetOh customer designs");
+    assert.equal(asset!.commercialUse, true);
+    assert.equal(asset!.modificationAllowed, true);
+    assert.equal(asset!.redistributionAllowed, true);
+    assert.equal(asset!.attributionRequired, false);
+    assert.equal(canSurfaceStudioAsset(asset!), true);
+    assert.equal(studioEditorCommandSchema.safeParse({ type: "add_graphic", assetKey: asset!.id }).success, true);
+    const rendered = await sharp(Buffer.from(asset!.svg!)).resize(120, 120, { fit: "inside" }).ensureAlpha().raw().toBuffer();
+    assert.ok(rendered.some((channel) => channel > 0), `${asset!.id} should produce visible pixels`);
+  }
+  for (const [query, id] of [
+    ["tropical island hibiscus invitation corners", ids[0]],
+    ["ocean island seashell kelp border", ids[1]],
+    ["summer citrus fruit picnic corner frame", ids[2]],
+    ["birthday balloons party bouquet", ids[3]],
+    ["baby moon stars nursery mobile", ids[4]],
+    ["spring wildflower wedding divider", ids[5]],
+    ["autumn fall harvest pumpkin vine", ids[6]],
+    ["graduation diploma floral seal", ids[7]],
+    ["Christmas winter holly orange corner", ids[8]],
+  ] as const) {
+    assert.ok(findStudioAssets({ query, kind: "any", limit: 50 }).some((asset) => asset.id === id), query);
+  }
+});
+
 test("curated Tabler assets keep upstream provenance and commercial-use evidence searchable", () => {
   const tabler = STUDIO_ASSETS.filter((asset) => asset.id.startsWith("tabler-"));
   assert.equal(tabler.length, 112);
