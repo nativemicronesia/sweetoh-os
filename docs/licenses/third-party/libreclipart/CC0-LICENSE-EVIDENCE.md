@@ -7,5 +7,6 @@ Source collection: [Libreclipart.org](https://libreclipart.org/en) — its publi
 - Collection overview: https://libreclipart.org/en
 - Ingested item metadata and exact source URLs: asset-manifest.json
 - Original SVG files: source/
+- Curated sports item records, original SVGs, and rights cross-check: SPORTS-README.md, sports-assets.json, sports-SOURCE-MANIFEST.json, sports-source/
 
 The publisher describes this catalog as original, human-curated vectors. The item records used here do not name individual creators, so the library records that fact explicitly rather than assigning authorship to the publisher.

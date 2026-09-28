@@ -7,6 +7,7 @@ import { OPENMOJI_STUDIO_ASSETS } from "./openmoji-assets";
 import { HERO_PATTERN_STUDIO_ASSETS } from "./hero-pattern-assets";
 import { OPENGAMEART_TEXTURE_STUDIO_ASSETS } from "./opengameart-texture-assets";
 import { LIBRECLIPART_STUDIO_ASSETS } from "./libreclipart-assets";
+import { LIBRECLIPART_SPORTS_STUDIO_ASSETS } from "./libreclipart-sports-assets";
 import { OPEN_DOODLES_STUDIO_ASSETS } from "./open-doodles-assets";
 import { KITBITZ_STUDIO_ASSETS } from "./kitbitz-assets";
 import { OPEN_PEEPS_STUDIO_ASSETS } from "./open-peeps-assets";
@@ -96,6 +97,7 @@ export const STUDIO_ASSETS: readonly StudioAsset[] = [
   ...HERO_PATTERN_STUDIO_ASSETS,
   ...OPENGAMEART_TEXTURE_STUDIO_ASSETS,
   ...LIBRECLIPART_STUDIO_ASSETS,
+  ...LIBRECLIPART_SPORTS_STUDIO_ASSETS,
   ...OPEN_DOODLES_STUDIO_ASSETS,
   ...KITBITZ_STUDIO_ASSETS,
   ...OPEN_PEEPS_STUDIO_ASSETS,

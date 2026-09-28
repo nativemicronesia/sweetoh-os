@@ -420,7 +420,9 @@ test("diverse open collections retain exact provenance, evidence, rights, search
 });
 
 test("Libreclipart illustration batch keeps CC0 evidence, originals, designer tags, and Studio insertion", () => {
-  const assets = STUDIO_ASSETS.filter((asset) => asset.id.startsWith("libreclipart-"));
+  const sourceRecords = JSON.parse(readFileSync("docs/licenses/third-party/libreclipart/asset-manifest.json", "utf8")) as Array<{ id: string }>;
+  const sourceIds = new Set(sourceRecords.map((record) => `libreclipart-${record.id}-v1`));
+  const assets = STUDIO_ASSETS.filter((asset) => sourceIds.has(asset.id));
   assert.equal(assets.length, 68);
   assert.equal(new Set(assets.map((asset) => asset.id)).size, assets.length);
   for (const asset of assets) {
@@ -447,6 +449,50 @@ test("Libreclipart illustration batch keeps CC0 evidence, originals, designer ta
   }
   assert.match(readFileSync("docs/licenses/third-party/libreclipart/CC0-LICENSE-EVIDENCE.md", "utf8"), /all free vector images are under CC0/);
   assert.equal(readFileSync("docs/licenses/third-party/libreclipart/source/860.svg", "utf8").includes("<svg"), true);
+});
+
+test("Libreclipart sports vectors keep compatible item and SVG rights, distinct artwork, and Studio retrieval", async () => {
+  const base = "docs/licenses/third-party/libreclipart";
+  const source = JSON.parse(readFileSync(`${base}/sports-SOURCE-MANIFEST.json`, "utf8")) as {
+    sourceLicenseEvidenceUrl: string;
+    assets: Array<{ id: string; sourceItemId: number; sourceUrl: string; sourcePageLicenseLabel: string; sourceSvgRightsClaim: string; creatorMetadata: string | null; originalFile: string; originalSha256: string; normalizedSvgSha256: string; commercialUse: boolean; modificationAllowed: boolean; redistributionAllowed: boolean; attributionRequired: boolean }>;
+  };
+  assert.equal(source.sourceLicenseEvidenceUrl, "https://libreclipart.org/en/licenses");
+  assert.equal(source.assets.length, 30);
+  assert.ok(!source.assets.some((record) => record.sourceItemId === 74 || record.sourceItemId === 60));
+  assert.equal(new Set(source.assets.map((record) => record.id)).size, 30);
+  for (const record of source.assets) {
+    const asset = studioAsset(record.id);
+    assert.ok(asset, record.id);
+    assert.equal(asset.licenseId, "CC0-1.0");
+    assert.equal(asset.sourceUrl, record.sourceUrl);
+    assert.equal(record.commercialUse && record.modificationAllowed && record.redistributionAllowed, true);
+    assert.equal(record.attributionRequired, false);
+    assert.match(record.sourcePageLicenseLabel, /Creative Commons Zero/);
+    assert.match(record.sourceSvgRightsClaim, /public domain|CC\s?0/i);
+    assert.doesNotMatch(record.sourceSvgRightsClaim, /Free OSI License/i);
+    assert.ok(record.creatorMetadata === null || /libreclipart\.org|opensourceimages\.org/.test(record.creatorMetadata));
+    assert.equal(createHash("sha256").update(readFileSync(`${base}/${record.originalFile}`)).digest("hex"), record.originalSha256);
+    assert.equal(createHash("sha256").update(Buffer.from(asset.svg!)).digest("hex"), record.normalizedSvgSha256);
+    assert.doesNotMatch(asset.svg!, /<script\b|<foreignObject\b|<iframe\b|<image\b|javascript:|<!DOCTYPE/i);
+    assert.ok(canSurfaceStudioAsset(asset));
+    assert.equal(studioEditorCommandSchema.safeParse({ type: "add_graphic", assetKey: record.id }).success, true);
+  }
+  for (const [query, id] of [
+    ["basketball team logo", "libreclipart-608-v1"],
+    ["Black kid basketball sports", "libreclipart-368-v1"],
+    ["crossed baseball bats sports", "libreclipart-223-v1"],
+    ["female fencer sports", "libreclipart-408-v1"],
+    ["swimmer summer sports", "libreclipart-726-v1"],
+  ] as const) {
+    assert.ok(findStudioAssets({ query, kind: "element", limit: 50 }).some((asset) => asset.id === id), query);
+  }
+  const id = "libreclipart-608-v1";
+  const response = await getStudioAssetResponse(new Request(`https://sweetoh.test${studioAssetUrl(id)}`), { params: Promise.resolve({ id }) });
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("Content-Type") ?? "", /^image\/svg\+xml/);
+  assert.ok((await sharp(Buffer.from(await response.arrayBuffer())).resize(240, 240).raw().toBuffer()).some((channel) => channel > 0));
+  assert.equal(canSurfaceStudioAsset({ ...studioAsset(id)!, modificationAllowed: false }), false);
 });
 
 test("Open Doodles adds authored lifestyle illustrations with CC0 rights and useful design retrieval", () => {
