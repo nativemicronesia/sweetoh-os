@@ -155,6 +155,142 @@
         "width": 1294,
         "height": 509
       }
+    },
+    {
+      "id": "pohnpei-senyavin-admiralty-981",
+      "title": "Senyavin Islands (Admiralty Chart No. 981)",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Admiralty_Chart_No_981_Senyavin_Islands,_Published_1928,_New_Edition_1955.jpg",
+      "creator": "United Kingdom Hydrographic Office",
+      "date": "1928, new edition 1955",
+      "license": "Public domain",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/pohnpei-senyavin-admiralty-981.json",
+      "sha1OfOriginalUpload": "d168260a94b0c7c27d1d616cd6709f5640491cde",
+      "originalFile": "originals/pohnpei-senyavin-admiralty-981.jpg",
+      "originalSha256": "a88e24711fbb31923edcdf3e5f255fdc3f335e3c07b50ffc2595f913e83b7c7f",
+      "normalizedOutputSha256": "69966e8c6e163f3fcff90be390eccff9722b4d5a40be299c5965da4640238b94",
+      "normalizedDimensions": {
+        "width": 2400,
+        "height": 1639
+      }
+    },
+    {
+      "id": "kosrae-sarfert-1919",
+      "title": "Kusae (Kosrae), from the Sarfert German South Seas Expedition survey",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Sarfert_Kusae_Kosrae_1919.jpg",
+      "creator": "E. Sarfert, Hamburg South Seas Expedition (Ergebnisse der Südsee-Expedition 1908-1910)",
+      "date": "1919",
+      "license": "Public domain",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/kosrae-sarfert-1919.json",
+      "sha1OfOriginalUpload": "eff76a076b529fbaa2c46f17e03f6fafa0b46203",
+      "originalFile": "originals/kosrae-sarfert-1919.jpg",
+      "originalSha256": "af9f0640528be5df1668c4f03449f34635e3651b96a9e895fc4f1b70ee493dde",
+      "normalizedOutputSha256": "71a95494ca02789ad19ff948f773e92976f7fae2869ca7eac026658ab2847c37",
+      "normalizedDimensions": {
+        "width": 2400,
+        "height": 2064
+      }
+    },
+    {
+      "id": "yap-woleai-old-map",
+      "title": "Woleai Atoll, Yap State",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Woleai_old_map.png",
+      "creator": "Unattributed public-domain cartography",
+      "date": "unknown, mid-20th century style",
+      "license": "Public domain",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/yap-woleai-old-map.json",
+      "sha1OfOriginalUpload": "8c0f9617a5430d2269225ac523574a03d555385d",
+      "originalFile": "originals/yap-woleai-old-map.png",
+      "originalSha256": "74b07eea6d0f5673cb7e89f85971a2691a841a063f966adc7915511dfe7933c3",
+      "normalizedOutputSha256": "1351665535cb58a0dd057e953c7c2e60766f5519d9dd89a4b16ef8f92ad5bcb6",
+      "normalizedDimensions": {
+        "width": 1200,
+        "height": 843
+      }
+    },
+    {
+      "id": "yap-ulithi-islands",
+      "title": "Ulithi Islands, Yap State (Western Carolines Operation chart)",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Ulithi_Islands.png",
+      "creator": "U.S. Navy (Western Carolines Operation planning chart)",
+      "date": "1944-era",
+      "license": "Public domain",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/yap-ulithi-islands.json",
+      "sha1OfOriginalUpload": "1d7b9e4747f36af9257ccc6a528c9c580fa60b3f",
+      "originalFile": "originals/yap-ulithi-islands.png",
+      "originalSha256": "8016ac5d47a57f4dac5d21895b0a33e9154665211eb0ba6924de13f0f1ac80c6",
+      "normalizedOutputSha256": "ac7ad427ab17f24cf6479658a0bcff4211da94074c2d0d1ee5fa4b5c037854d3",
+      "normalizedDimensions": {
+        "width": 1650,
+        "height": 1263
+      }
+    },
+    {
+      "id": "yap-ifaluk",
+      "title": "Ifaluk (Wilson Islands), Yap State",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Ifaluk.jpg",
+      "creator": "German Südsee-Expedition-era survey (unattributed)",
+      "date": "early 20th century style",
+      "license": "Public domain",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/yap-ifaluk.json",
+      "sha1OfOriginalUpload": "f2b97c7d9a16de80dde47a4faecd28568344351f",
+      "originalFile": "originals/yap-ifaluk.jpg",
+      "originalSha256": "685cf9e91f32416b469313bea480b6912b6637912540801fedaf39361e172a8f",
+      "normalizedOutputSha256": "339792cd146631b7aa442bf949ce53c61dc945e6cce4f07c537e0469564ae902",
+      "normalizedDimensions": {
+        "width": 745,
+        "height": 755
+      }
+    },
+    {
+      "id": "pohnpei-pingelap",
+      "title": "Pingelap Atoll, Pohnpei State",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Pingelap.jpg",
+      "creator": "German Südsee-Expedition-era survey (unattributed)",
+      "date": "early 20th century style",
+      "license": "Public domain",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/pohnpei-pingelap.json",
+      "sha1OfOriginalUpload": "7ee85297f1af813be5dfb1158b71afb5242f9e04",
+      "originalFile": "originals/pohnpei-pingelap.jpg",
+      "originalSha256": "54c1dfcce3983a0d4a1ce47ff4a035d5ad6d73f138daa80e99c1862db7dced7b",
+      "normalizedOutputSha256": "8d4db9752892b25b5090db95d3452ab916df7c82c06fda7a6ca4e14c8ba19a3f",
+      "normalizedDimensions": {
+        "width": 825,
+        "height": 1137
+      }
+    },
+    {
+      "id": "pohnpei-kapingamarangi-iss",
+      "title": "Kapingamarangi Atoll from the International Space Station",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Kapingamarangi_ISS006.jpg",
+      "creator": "NASA, ISS Expedition 6",
+      "date": "modern",
+      "license": "Public domain",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/pohnpei-kapingamarangi-iss.json",
+      "sha1OfOriginalUpload": "b54fae55333eb441a39404293297514b3902a3aa",
+      "originalFile": "originals/pohnpei-kapingamarangi-iss.jpg",
+      "originalSha256": "f2dd95ac9c390060c6570513ad30b2fcd31b963e08c545903256206ef04a862d",
+      "normalizedOutputSha256": "3c1d23e1a902273821d9d410c90561eb720738844d86d9550fb626db174d3927",
+      "normalizedDimensions": {
+        "width": 2400,
+        "height": 1589
+      }
+    },
+    {
+      "id": "chuuk-islands-map",
+      "title": "Chuuk Islands map (Chuuk Lagoon)",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Chuuk_islands.svg",
+      "creator": "Aotearoa (original author), Skimel (vectorization)",
+      "date": "modern",
+      "license": "CC BY-SA 4.0",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/chuuk-islands-svg.json",
+      "sha1OfOriginalUpload": "08ccdc69a032a125635f6ab8feefd08421c5c694",
+      "originalFile": "originals/chuuk-islands-svg.png",
+      "originalSha256": "e4d0a81c0447dcbb77d13871224d9b1216303896662a23855e733ead81bf6a3a",
+      "normalizedOutputSha256": "ace240e2013d57b2388ad25e2bbf5a0cbe24b63a3584217e673c2d4e60df7de4",
+      "normalizedDimensions": {
+        "width": 2400,
+        "height": 1869
+      }
     }
   ]
 }

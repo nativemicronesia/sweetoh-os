@@ -9,7 +9,7 @@ const items = JSON.parse(await readFile(path.join(collection, "assets.json"), "u
 const publicDir = path.join(root, "public");
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
 
-if (!Array.isArray(items) || items.length !== 9) throw new Error("Wikimedia Commons Pacific charts set changed size unexpectedly");
+if (!Array.isArray(items) || items.length !== 17) throw new Error("Wikimedia Commons Pacific charts set changed size unexpectedly");
 
 const LICENSES = {
   "Public domain": { licenseId: "PD", licenseUrl: "https://en.wikipedia.org/wiki/Public_domain", attributionRequired: false },

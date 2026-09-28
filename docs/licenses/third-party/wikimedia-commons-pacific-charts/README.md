@@ -1,18 +1,27 @@
 # Wikimedia Commons — Micronesian/Pacific nautical charts and maps
 
-Nine public-domain (and one CC BY-SA, clearly marked) historical and modern
-maps covering all seven Micronesian entities SweetOh's own community draws
-from — Palau, the Federated States of Micronesia (Pohnpei/Chuuk/Yap/Kosrae),
-Guam, the CNMI, the Marshall Islands, Nauru, and Kiribati — plus outer
-atolls, found mainly via Wikimedia Commons' `Category:Maps_of_the_*`
-categories for each entity.
+Seventeen public-domain (and two CC BY-SA, clearly marked) historical and
+modern maps covering all seven Micronesian entities SweetOh's own community
+draws from — Palau, the Federated States of Micronesia (with Pohnpei, Chuuk,
+Yap and Kosrae states covered individually, including their outer atolls),
+Guam, the CNMI, the Marshall Islands, Nauru, and Kiribati — found mainly via
+Wikimedia Commons' `Category:Maps_of_the_*` categories for each entity and
+state.
 
 ## What's in this pack
 
 | Entity | Item | Era | License |
 |---|---|---|---|
-| FSM (Caroline Is.) | Admiralty Chart No. 970, Islands and Anchorages | 1929 | Public domain |
+| FSM (Caroline Is., general) | Admiralty Chart No. 970, Islands and Anchorages | 1929 | Public domain |
 | FSM (Pohnpei→Guam) | Track of the Albatross expedition chart | 1900 | Public domain |
+| FSM — Pohnpei State | Admiralty Chart No. 981, Senyavin Islands, with harbor insets | 1928/1955 | Public domain |
+| FSM — Pohnpei State (Pingelap, outer atoll) | Pingeläp Inseln | early 20th c. | Public domain |
+| FSM — Pohnpei State (Kapingamarangi, Polynesian outlier) | ISS astronaut photograph | modern | Public domain |
+| FSM — Kosrae State | Sarfert survey topographic map of Kusae (Kosrae) | 1919 | Public domain |
+| FSM — Yap State (Woleai, outer atoll) | Woleai Atoll diagram | mid-20th c. style | Public domain |
+| FSM — Yap State (Ulithi, outer atoll) | Ulithi Islands, Western Carolines Operation chart | 1944-era | Public domain |
+| FSM — Yap State (Ifaluk, outer atoll) | Ifaluk oder Wilson Inseln | early 20th c. | Public domain |
+| FSM — Chuuk State | Chuuk Islands (Chuuk Lagoon) map | modern | CC BY-SA 4.0 |
 | Palau | Admiralty Chart No. 1103, Peeloo Archipelago | 1796 | Public domain |
 | Guam | Plan of Umatac Bay, with coastal profile views | 1796 | Public domain |
 | Marshall Islands | Marshallese stick chart (Musée du quai Branly) | traditional/photographed | CC BY-SA 4.0 |
@@ -20,6 +29,13 @@ categories for each entity.
 | Nauru | Nauru detail map with regional locator | 1988 | Public domain |
 | Kiribati | Tarawa Atoll diagram (modern, minimal) | modern | Public domain |
 | Kiribati | South Tarawa labeled satellite-style map | modern | Public domain |
+
+Pohnpei State's `Nukuoro_map.png` (a second Polynesian outlier, alongside
+Kapingamarangi, CC BY-SA 3.0) was identified and its license independently
+verified, but the actual image file repeatedly failed to download (HTTP 429
+rate-limiting from Commons, confirmed via response header, not a rights or
+file-corruption issue) — parked for a future pass rather than retried
+indefinitely.
 
 ## Why these, and not more from the same categories
 
@@ -71,6 +87,20 @@ colonial-era indentured-laborers settlement site as part of its normal
 place-name/facility labeling (matching how the source U.S. government base
 map documents the island) — this is factual geographic/infrastructure
 labeling, not content that treats that history as a decorative motif.
+
+The Ulithi chart is titled "Western Carolines Operation" and dates to the
+1944 US Navy planning for what became a major WWII fleet anchorage — but its
+actual content is passages, anchorages and island outlines, the same kind of
+navigational information as every other chart in this pack, not troop
+dispositions or gun emplacements. (A separate category of NARA "Disposition
+of Japanese Forces and Gun Installations" material was found during scouting
+for Guam and deliberately excluded as reading like a war-target map rather
+than a navigational chart; this item is not that.)
+
+Kapingamarangi and Nukuoro (the latter not yet ingested) are Polynesian
+exclaves within Pohnpei State — linguistically and culturally Polynesian,
+distinct from the surrounding Chuukic/Pohnpeic Micronesian culture. Tagged
+and captioned as such rather than folded into generic "Micronesian" framing.
 
 ## Rights and provenance
 
