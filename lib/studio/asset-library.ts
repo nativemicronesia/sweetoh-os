@@ -14,6 +14,7 @@ import { PHYLOPIC_STUDIO_ASSETS } from "./phylopic-assets";
 import { SMITHSONIAN_STUDIO_ASSETS } from "./smithsonian-assets";
 import { MET_STUDIO_ASSETS } from "./met-assets";
 import { CLEVELAND_STUDIO_ASSETS } from "./cleveland-assets";
+import { SWEETOH_STATIONERY_ASSETS } from "./stationery-assets";
 import { STUDIO_ASSET_IDS, studioAssetUrl } from "./asset-library-client";
 
 /**
@@ -82,6 +83,7 @@ const SWEETOH_STUDIO_ASSETS: readonly StudioAsset[] = [
 /** SweetOh originals and separately documented, rights-cleared open-license resources. */
 export const STUDIO_ASSETS: readonly StudioAsset[] = [
   ...SWEETOH_STUDIO_ASSETS,
+  ...SWEETOH_STATIONERY_ASSETS,
   ...TABLER_STUDIO_ASSETS,
   ...PATTERNFILLS_STUDIO_ASSETS,
   ...OPEN_CROP_STUDIO_ASSETS,

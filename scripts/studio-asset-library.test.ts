@@ -198,6 +198,33 @@ test("Cleveland Museum CC0 art keeps record-level rights, creator context, print
   assert.ok((await sharp(Buffer.from(await response.arrayBuffer())).resize(480, 480).raw().toBuffer()).some((channel) => channel > 0));
 });
 
+test("SweetOh stationery originals are searchable, insertable, and render as distinct reusable primitives", async () => {
+  const originals = STUDIO_ASSETS.filter((asset) => asset.id.startsWith("so-") && ["so-invitation-botanical-corners-v1", "so-wedding-flourish-divider-v1", "so-arched-keepsake-label-v1", "so-keepsake-botanical-wreath-v1", "so-gift-bow-v1", "so-festive-confetti-burst-v1"].includes(asset.id));
+  assert.equal(originals.length, 6);
+  assert.equal(new Set(originals.map((asset) => asset.id)).size, originals.length);
+  for (const asset of originals) {
+    assert.equal(asset.source, "SweetOh OS");
+    assert.equal(asset.license, "SweetOh original — free for SweetOh customer designs");
+    assert.equal(asset.commercialUse, true);
+    assert.equal(asset.modificationAllowed, true);
+    assert.equal(asset.redistributionAllowed, true);
+    assert.equal(asset.attributionRequired, false);
+    assert.ok(asset.svg?.startsWith('<svg xmlns="http://www.w3.org/2000/svg"'));
+    assert.equal(canSurfaceStudioAsset(asset), true);
+    assert.equal(studioEditorCommandSchema.safeParse({ type: "add_graphic", assetKey: asset.id }).success, true);
+  }
+  assert.ok(findStudioAssets({ query: "wedding invitation corner border", kind: "any", limit: 50 }).some((asset) => asset.id === "so-invitation-botanical-corners-v1"));
+  assert.ok(findStudioAssets({ query: "wedding divider flourishes", kind: "any", limit: 50 }).some((asset) => asset.id === "so-wedding-flourish-divider-v1"));
+  assert.ok(findStudioAssets({ query: "baby keepsake arch label", kind: "any", limit: 50 }).some((asset) => asset.id === "so-arched-keepsake-label-v1"));
+  assert.ok(findStudioAssets({ query: "wedding floral wreath frame", kind: "any", limit: 50 }).some((asset) => asset.id === "so-keepsake-botanical-wreath-v1"));
+  assert.ok(findStudioAssets({ query: "birthday gift bow ribbon", kind: "any", limit: 50 }).some((asset) => asset.id === "so-gift-bow-v1"));
+  assert.ok(findStudioAssets({ query: "graduation party confetti burst", kind: "any", limit: 50 }).some((asset) => asset.id === "so-festive-confetti-burst-v1"));
+  const response = await getStudioAssetResponse(new Request("https://sweetoh.test/api/studio/assets/so-gift-bow-v1"), { params: Promise.resolve({ id: "so-gift-bow-v1" }) });
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("Content-Type") ?? "", /^image\/svg\+xml/);
+  assert.match(await response.text(), /viewBox="0 0 760 500"/);
+});
+
 test("curated Tabler assets keep upstream provenance and commercial-use evidence searchable", () => {
   const tabler = STUDIO_ASSETS.filter((asset) => asset.id.startsWith("tabler-"));
   assert.equal(tabler.length, 112);
