@@ -1,0 +1,82 @@
+[
+  {
+    "id": "dragonflies-mayflies",
+    "workId": "k9xecxkk",
+    "iiifImageId": "V0022511ER",
+    "title": "Five dragonflies and four mayflies",
+    "apiTitleMatch": "Five dragonflies and four mayflies",
+    "creator": "J. Newton after James Barbut",
+    "date": "c. 1780",
+    "tags": ["dragonfly", "mayfly", "insect", "entomology", "engraving", "hand-colored", "nature", "garden gift", "sublimation"]
+  },
+  {
+    "id": "lepidoptera-seven-insects",
+    "workId": "j9wjm5u9",
+    "iiifImageId": "V0020562ER",
+    "title": "Seven insects of the order Lepidoptera, including butterflies and moths",
+    "apiTitleMatch": "Seven insects of the order Lepidoptera",
+    "creator": "Thomas Milton",
+    "date": "1806",
+    "tags": ["butterfly", "moth", "lepidoptera", "insect", "entomology", "engraving", "line art", "nature", "sublimation"]
+  },
+  {
+    "id": "insect-variety-beetles-wasps",
+    "workId": "ut654r7y",
+    "iiifImageId": "V0022738ER",
+    "title": "A variety of insect life including beetles, wasps and dragonflies",
+    "apiTitleMatch": "A variety of insect life",
+    "creator": "R. Scott after Thomas Brown",
+    "date": "unknown",
+    "tags": ["beetle", "wasp", "dragonfly", "insect", "entomology", "engraving", "nature", "sublimation"]
+  },
+  {
+    "id": "scarabaeus-beetle",
+    "workId": "krf7bcgs",
+    "iiifImageId": "V0020757",
+    "title": "A male scarabaeus beetle",
+    "apiTitleMatch": "Amale scarabaeus beetle",
+    "creator": "William Home Lizars",
+    "date": "19th century",
+    "tags": ["beetle", "scarab", "insect", "entomology", "engraving", "hand-colored", "nature", "sublimation"]
+  },
+  {
+    "id": "six-beetles-stag-beetle",
+    "workId": "r3dhdzwq",
+    "iiifImageId": "V0022498ER",
+    "title": "Six beetles including a stag beetle",
+    "apiTitleMatch": "Six beetles including a stag beetle",
+    "creator": "I. O. W.",
+    "date": "unknown",
+    "tags": ["beetle", "stag beetle", "insect", "entomology", "engraving", "hand-colored", "nature", "sublimation"]
+  },
+  {
+    "id": "nine-scarabaeid-beetles",
+    "workId": "f5e2jkdf",
+    "iiifImageId": "V0022511EL",
+    "title": "Nine different scarabaeid beetles",
+    "apiTitleMatch": "Nine different scarabaeid beetles",
+    "creator": "J. Newton after James Barbut",
+    "date": "c. 1780",
+    "tags": ["beetle", "scarab", "insect", "entomology", "engraving", "hand-colored", "nature", "sublimation"]
+  },
+  {
+    "id": "six-different-beetles",
+    "workId": "e8ukhjfp",
+    "iiifImageId": "V0022531",
+    "title": "Six different beetles",
+    "apiTitleMatch": "Six different beetles",
+    "creator": "unattributed",
+    "date": "unknown",
+    "tags": ["beetle", "insect", "entomology", "engraving", "hand-colored", "nature", "sublimation"]
+  },
+  {
+    "id": "medlar-butterfly-caterpillar",
+    "workId": "q295sczh",
+    "iiifImageId": "V0044323EL",
+    "title": "A flowering branch of medlar with butterfly, chrysalis and caterpillar",
+    "apiTitleMatch": "A flowering branch of medlar",
+    "creator": "J. Pass",
+    "date": "c. 1816",
+    "tags": ["butterfly", "caterpillar", "chrysalis", "medlar", "insect", "botanical", "entomology", "engraving", "hand-colored", "nature", "sublimation"]
+  }
+]

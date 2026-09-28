@@ -1,0 +1,183 @@
+{
+  "schemaVersion": 1,
+  "source": "Wellcome Collection — 18th/19th-century entomological engravings",
+  "rightsEvidence": "Per-work Wellcome Collection catalogue API license + accessConditions, independently verified live for each item; snapshots in records/.",
+  "assets": [
+    {
+      "id": "wellcome-insects-dragonflies-mayflies-v1",
+      "workId": "k9xecxkk",
+      "iiifImageId": "V0022511ER",
+      "title": "Five dragonflies and four mayflies",
+      "creator": "J. Newton after James Barbut",
+      "date": "c. 1780",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/k9xecxkk",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0022511ER/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 2742,
+      "iiifWidth": 1299,
+      "iiifHeight": 1781,
+      "originalFile": "originals/dragonflies-mayflies.jpg",
+      "originalSha256": "d86c3c436c597a5e5c5c022aada011ab81fca8f038612620c2ce9c4f3804fe22",
+      "normalizedOutputSha256": "40ca1dd6ab75086049d55346fdda0a1e950ca515991671f928bbd4a20aa06432",
+      "normalizedDimensions": {
+        "width": 1751,
+        "height": 2400
+      }
+    },
+    {
+      "id": "wellcome-insects-lepidoptera-seven-insects-v1",
+      "workId": "j9wjm5u9",
+      "iiifImageId": "V0020562ER",
+      "title": "Seven insects of the order Lepidoptera, including butterflies and moths",
+      "creator": "Thomas Milton",
+      "date": "1806",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/j9wjm5u9",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0020562ER/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 2441,
+      "iiifWidth": 1573,
+      "iiifHeight": 1920,
+      "originalFile": "originals/lepidoptera-seven-insects.jpg",
+      "originalSha256": "4488443c8e1be88b6b486347e75fc00dea8996eeb0cca8fe2148ec609e9af785",
+      "normalizedOutputSha256": "97749e7f3d096434728c09789c3a90964818feaac7e6129b488699f1fa69352a",
+      "normalizedDimensions": {
+        "width": 1966,
+        "height": 2400
+      }
+    },
+    {
+      "id": "wellcome-insects-insect-variety-beetles-wasps-v1",
+      "workId": "ut654r7y",
+      "iiifImageId": "V0022738ER",
+      "title": "A variety of insect life including beetles, wasps and dragonflies",
+      "creator": "R. Scott after Thomas Brown",
+      "date": "unknown",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/ut654r7y",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0022738ER/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 3300,
+      "iiifWidth": 1246,
+      "iiifHeight": 2056,
+      "originalFile": "originals/insect-variety-beetles-wasps.jpg",
+      "originalSha256": "33f4413f0da6beac8d808a517c4ca7875bb598ed4bdb379841b5787f1cc418a9",
+      "normalizedOutputSha256": "aebfa59caade91bfe5bd6458521bc04915f3ce7575e95afebf7f7990b3b11489",
+      "normalizedDimensions": {
+        "width": 1455,
+        "height": 2400
+      }
+    },
+    {
+      "id": "wellcome-insects-scarabaeus-beetle-v1",
+      "workId": "krf7bcgs",
+      "iiifImageId": "V0020757",
+      "title": "A male scarabaeus beetle",
+      "creator": "William Home Lizars",
+      "date": "19th century",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/krf7bcgs",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0020757/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 1108,
+      "iiifWidth": 3553,
+      "iiifHeight": 1968,
+      "originalFile": "originals/scarabaeus-beetle.jpg",
+      "originalSha256": "c027ea79a38220aebb20d06968aeab81c814a610d0a1502029a515d3bfd6c415",
+      "normalizedOutputSha256": "1c3e119642777e5b5616c484995a5cceed9cfb35384cff867e969950b60f1f9c",
+      "normalizedDimensions": {
+        "width": 2000,
+        "height": 1108
+      }
+    },
+    {
+      "id": "wellcome-insects-six-beetles-stag-beetle-v1",
+      "workId": "r3dhdzwq",
+      "iiifImageId": "V0022498ER",
+      "title": "Six beetles including a stag beetle",
+      "creator": "I. O. W.",
+      "date": "unknown",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/r3dhdzwq",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0022498ER/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 3043,
+      "iiifWidth": 1384,
+      "iiifHeight": 2106,
+      "originalFile": "originals/six-beetles-stag-beetle.jpg",
+      "originalSha256": "7ea59f455eb32ccbaf55cd536a8c0c61a3cee71623db794d08d02fb6d8ae522c",
+      "normalizedOutputSha256": "fbe2cb3cb1723c2e20fcbd1d4371a6f1c6dbcb293bb25b7972b931fd71219a43",
+      "normalizedDimensions": {
+        "width": 1577,
+        "height": 2400
+      }
+    },
+    {
+      "id": "wellcome-insects-nine-scarabaeid-beetles-v1",
+      "workId": "f5e2jkdf",
+      "iiifImageId": "V0022511EL",
+      "title": "Nine different scarabaeid beetles",
+      "creator": "J. Newton after James Barbut",
+      "date": "c. 1780",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/f5e2jkdf",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0022511EL/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 2769,
+      "iiifWidth": 1539,
+      "iiifHeight": 2131,
+      "originalFile": "originals/nine-scarabaeid-beetles.jpg",
+      "originalSha256": "1cd31029e588f1f377b0f84b3e561f0f906c346057ea2f4569f91f5c042db55b",
+      "normalizedOutputSha256": "5abdb8a66a14e412155fde2a58975dc1c63e7229860986b6d997bc375cb3a32b",
+      "normalizedDimensions": {
+        "width": 1733,
+        "height": 2400
+      }
+    },
+    {
+      "id": "wellcome-insects-six-different-beetles-v1",
+      "workId": "e8ukhjfp",
+      "iiifImageId": "V0022531",
+      "title": "Six different beetles",
+      "creator": "unattributed",
+      "date": "unknown",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/e8ukhjfp",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0022531/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 977,
+      "iiifWidth": 3850,
+      "iiifHeight": 1881,
+      "originalFile": "originals/six-different-beetles.jpg",
+      "originalSha256": "ceb5777e81dbd1a5d5b9503123e9441125d8f6598b83c2f31364eae19956bed3",
+      "normalizedOutputSha256": "7579c4cb1b2693490946025e0f7e76c484d8b5d7337d579f74fbf083f2ddb91f",
+      "normalizedDimensions": {
+        "width": 2000,
+        "height": 977
+      }
+    },
+    {
+      "id": "wellcome-insects-medlar-butterfly-caterpillar-v1",
+      "workId": "q295sczh",
+      "iiifImageId": "V0044323EL",
+      "title": "A flowering branch of medlar with butterfly, chrysalis and caterpillar",
+      "creator": "J. Pass",
+      "date": "c. 1816",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/q295sczh",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0044323EL/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 2639,
+      "iiifWidth": 1305,
+      "iiifHeight": 1722,
+      "originalFile": "originals/medlar-butterfly-caterpillar.jpg",
+      "originalSha256": "6085d19bd5fd477b791f6e92d550062d2ac8be835dc66eb803948f5b23de28d5",
+      "normalizedOutputSha256": "96a5a9ee7ee87b22dd91e69846f19f6ad0249f6b7ee926308c856d22aa10b433",
+      "normalizedDimensions": {
+        "width": 1819,
+        "height": 2400
+      }
+    }
+  ]
+}
