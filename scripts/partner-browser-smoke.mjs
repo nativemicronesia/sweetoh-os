@@ -12,6 +12,7 @@ import { chromium } from "playwright";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const require = createRequire(import.meta.url);
+const sharp = require("sharp");
 dotenv.config({ path: path.join(root, ".env.local"), quiet: true });
 
 // 3042 is the stable local port used by the pre-authorized partner browser path.
@@ -116,11 +117,13 @@ async function stopProcess(child) {
 
 let app;
 let browser;
+let smokePage;
 let tempDir;
 let appLogs = "";
 const browserErrors = [];
 const browserNetworkEvents = [];
 let cleanupTask;
+let imageSmokeName = null;
 
 function cleanup() {
   cleanupTask ??= (async () => {
@@ -147,6 +150,10 @@ try {
     throw new Error(`Port ${port} is unavailable (${portCheck}). Set PARTNER_BROWSER_PORT to an unused local port.`);
   }
   tempDir = await mkdtemp(path.join(os.tmpdir(), "sweetoh-partner-browser-"));
+  imageSmokeName = `studio-image-smoke-${Date.now()}`;
+  const imageSmokePath = path.join(tempDir, `${imageSmokeName}.png`);
+  const imageSmokeSvg = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512"><rect width="512" height="512" fill="#fff"/><circle cx="256" cy="270" r="148" fill="#ef476f"/><path d="M256 335c-8-74 17-137 84-190-2 73-26 139-84 190Zm-3 7c8-71-17-130-80-174 1 66 26 124 80 174Z" fill="#1f7048"/><circle cx="256" cy="270" r="55" fill="#ffd166"/></svg>`);
+  await sharp(imageSmokeSvg).png().toFile(imageSmokePath);
   const fontMocksPath = path.join(tempDir, "google-fonts.cjs");
   await writeFile(fontMocksPath, `module.exports = ${JSON.stringify(mockedGoogleFontResponses())};\n`);
 
@@ -169,6 +176,7 @@ try {
   });
   const context = await browser.newContext();
   const page = await context.newPage();
+  smokePage = page;
   page.on("pageerror", (error) => browserErrors.push(error.message));
   page.on("requestfailed", (request) => browserNetworkEvents.push(`failed ${request.method()} ${request.url()}: ${request.failure()?.errorText ?? "request failed"}`));
   page.on("request", (request) => browserNetworkEvents.push(`request ${request.method()} ${request.url()}`));
@@ -330,6 +338,82 @@ try {
     const reopenedText = page.getByLabel("Text", { exact: true });
     await reopenedText.fill("ISLAND DAYS · KEEP CREATING");
     if (await reopenedText.inputValue() !== "ISLAND DAYS · KEEP CREATING") throw new Error("Studio could not continue editing saved typography after refresh.");
+
+    // Import a temporary, locally generated image and exercise image-specific
+    // controls. It is a flat white backdrop with vector artwork so background
+    // removal stays on the existing local path and does not spend AI credits.
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.getByRole("button", { name: "Uploads", exact: true }).click();
+    await page.getByLabel("Upload artwork file").setInputFiles(imageSmokePath);
+    await page.getByRole("button", { name: "Layers", exact: true }).click();
+    await layers.getByRole("button", { name: imageSmokeName, exact: true }).waitFor({ state: "visible", timeout: 45_000 });
+    await layers.getByRole("button", { name: imageSmokeName, exact: true }).click();
+    await page.getByRole("button", { name: "Crop", exact: true }).click();
+    const cropDialog = page.getByRole("dialog", { name: "Crop", exact: true });
+    await cropDialog.getByRole("button", { name: "4:5", exact: true }).click();
+    await page.waitForTimeout(500);
+    await cropDialog.getByRole("button", { name: "Apply crop", exact: true }).click();
+    const flipButtons = page.getByRole("button", { name: "Flip", exact: true });
+    await flipButtons.nth(0).click();
+    await flipButtons.nth(1).click();
+    const adjustByPointer = async (labelText, fraction = 0.72) => {
+      const slider = page.locator(".pe-props label.pe-slider").filter({ hasText: labelText }).locator("input[type='range']");
+      await slider.scrollIntoViewIfNeeded();
+      const before = await slider.inputValue();
+      const box = await slider.boundingBox();
+      if (!box) throw new Error(`Image adjustment control '${labelText}' is not visible.`);
+      await page.mouse.click(box.x + box.width * fraction, box.y + box.height / 2);
+      if (await slider.inputValue() === before) throw new Error(`Image adjustment '${labelText}' did not respond.`);
+    };
+    for (const label of ["Brightness", "Contrast", "Saturation", "Cool ↔ Warm tint", "Soft focus", "Opacity"]) {
+      await adjustByPointer(label, label === "Opacity" ? 0.68 : 0.72);
+    }
+    await page.getByRole("button", { name: "Remove background", exact: true }).click();
+    const cutoutName = `${imageSmokeName} (no background)`;
+    await layers.getByRole("button", { name: cutoutName, exact: true }).waitFor({ state: "visible", timeout: 60_000 });
+    await page.getByRole("button", { name: "Undo", exact: true }).click();
+    await layers.getByRole("button", { name: imageSmokeName, exact: true }).waitFor({ state: "visible", timeout: 15_000 });
+    await page.getByRole("button", { name: "Redo", exact: true }).click();
+    await layers.getByRole("button", { name: cutoutName, exact: true }).waitFor({ state: "visible", timeout: 15_000 });
+
+    // Duplicate and remove the cutout, checking those image actions use the
+    // same history stack while text and reusable graphics remain on the canvas.
+    const imageRowsBeforeCopy = await page.locator(".pe-layer-row").count();
+    await page.getByRole("button", { name: "Duplicate", exact: true }).click();
+    await page.locator(".pe-layer-row").nth(imageRowsBeforeCopy).waitFor({ state: "visible", timeout: 15_000 });
+    await page.getByRole("button", { name: "Delete", exact: true }).click();
+    await page.getByRole("button", { name: "Undo", exact: true }).click();
+    await page.locator(".pe-layer-row").nth(imageRowsBeforeCopy).waitFor({ state: "visible", timeout: 15_000 });
+    await page.getByRole("button", { name: "Redo", exact: true }).click();
+    await page.waitForFunction((count) => document.querySelectorAll(".pe-layer-row").length === count, imageRowsBeforeCopy, { timeout: 15_000 });
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.locator(".pe-props").scrollIntoViewIfNeeded();
+    await adjustByPointer("Contrast", 0.6);
+    const tabletImageEditing = await page.evaluate(() => ({ width: innerWidth, height: innerHeight, horizontalOverflow: document.documentElement.scrollWidth > innerWidth, propertiesVisible: Boolean(document.querySelector(".pe-props input[type='range']")?.getBoundingClientRect().height) }));
+    if (tabletImageEditing.horizontalOverflow || !tabletImageEditing.propertiesVisible) throw new Error(`Selected image controls are not usable at tablet size: ${JSON.stringify(tabletImageEditing)}`);
+
+    // Refresh/reopen the local recovery draft, continue editing, then archive
+    // only the two temporary test assets from My files.
+    await page.waitForTimeout(1_500);
+    await page.reload({ waitUntil: "commit", timeout: 90_000 });
+    await page.locator(".pe-stage canvas.lower-canvas").waitFor({ state: "visible", timeout: 60_000 });
+    await page.getByRole("button", { name: "Restore it", exact: true }).waitFor({ state: "visible", timeout: 15_000 });
+    await page.getByRole("button", { name: "Restore it", exact: true }).click();
+    await page.getByRole("button", { name: "Layers", exact: true }).click();
+    await layers.getByRole("button", { name: cutoutName, exact: true }).waitFor({ state: "visible", timeout: 15_000 });
+    await layers.getByRole("button", { name: cutoutName, exact: true }).click();
+    await page.getByRole("button", { name: "Close panel", exact: true }).click();
+    await page.getByRole("button", { name: "Flip", exact: true }).first().waitFor({ state: "visible", timeout: 10_000 });
+    await page.getByRole("button", { name: "Flip", exact: true }).first().click();
+    await page.goto(`${origin}/partner/library`, { waitUntil: "commit", timeout: 90_000 });
+    await page.getByRole("heading", { name: "My files", exact: true }).waitFor({ state: "visible", timeout: 30_000 });
+    for (const name of [cutoutName, imageSmokeName]) {
+      const card = page.getByText(name, { exact: true }).locator("xpath=ancestor::li[1]");
+      await card.getByRole("button", { name: "Remove", exact: true }).click();
+      await page.waitForURL(/\/partner\/library\?success=/, { timeout: 30_000 });
+      await page.goto(`${origin}/partner/library`, { waitUntil: "commit", timeout: 90_000 });
+      await page.getByRole("heading", { name: "My files", exact: true }).waitFor({ state: "visible", timeout: 30_000 });
+    }
     const inspection = await page.evaluate(() => ({
       viewport: { width: innerWidth, height: innerHeight },
       assetCards: document.querySelectorAll(".pe-asset-card").length,
@@ -343,6 +427,8 @@ try {
       libraryCoverage: { totalAssets, desktopViewport, tabletLayout, reusableShelfResults: reusableResults },
       creativeLibrarySearch: "searched medical, tropical and celebration themes; inserted approved illustration, SweetOh original and pattern assets",
       typography: "created three text layers; edited copy, font, size, alignment, weight and color; duplicate/delete history passed",
+      imageEditing: "uploaded a temporary image; crop, flip, opacity, brightness, contrast, saturation, tint, soft focus and local background removal passed; undo/redo, duplicate/delete and tablet controls passed",
+      imageRefreshAndCleanup: "restored edited image after refresh, continued editing, then archived both temporary My files records",
       selectionAndHistory: "selected, moved, resized and rotated artwork; multi-selected layers and reordered them; undo/redo passed",
       tabletTypography,
       studioRefreshRecovery: "restored the inserted layer from the isolated browser draft after refresh",
@@ -468,6 +554,24 @@ try {
   }
 } catch (error) {
   console.error(`Partner browser smoke failed: ${error instanceof Error ? error.message : String(error)}`);
+  if (imageSmokeName && smokePage) {
+    try {
+      await smokePage.goto(`${origin}/partner/library`, { waitUntil: "commit", timeout: 45_000 });
+      await smokePage.getByRole("heading", { name: "My files", exact: true }).waitFor({ state: "visible", timeout: 30_000 });
+      for (const name of [`${imageSmokeName} (no background)`, imageSmokeName]) {
+        const card = smokePage.getByText(name, { exact: true }).locator("xpath=ancestor::li[1]");
+        if (await card.count()) {
+          await card.getByRole("button", { name: "Remove", exact: true }).click();
+          await smokePage.waitForURL(/\/partner\/library\?success=/, { timeout: 30_000 });
+          await smokePage.goto(`${origin}/partner/library`, { waitUntil: "commit", timeout: 45_000 });
+          await smokePage.getByRole("heading", { name: "My files", exact: true }).waitFor({ state: "visible", timeout: 30_000 });
+        }
+      }
+      console.error(`Archived temporary Studio image records: ${imageSmokeName} and its cutout, if created.`);
+    } catch (cleanupError) {
+      console.error(`Temporary image cleanup needs follow-up for ${imageSmokeName}: ${cleanupError instanceof Error ? cleanupError.message : String(cleanupError)}`);
+    }
+  }
   if (appLogs) console.error(`Next.js output: ${appLogs.slice(-2500)}`);
   if (browserErrors.length) console.error(`Browser page errors: ${browserErrors.join(" | ")}`);
   if (browserNetworkEvents.length) console.error(`Browser network events: ${browserNetworkEvents.slice(-30).join(" | ")}`);
