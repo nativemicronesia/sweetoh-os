@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "source": "Wikimedia Commons — historical Pacific/Caroline Islands nautical charts",
+  "source": "Wikimedia Commons — historical and modern Micronesian/Pacific nautical charts and maps",
   "rightsEvidence": "Per-file Wikimedia Commons extmetadata LicenseShortName + Restrictions fields, independently verified live for each item; snapshots in records/.",
   "assets": [
     {
@@ -35,6 +35,125 @@
       "normalizedDimensions": {
         "width": 2400,
         "height": 1923
+      }
+    },
+    {
+      "id": "palau-admiralty-1103",
+      "title": "Chart of the Peeloo (Palau) Archipelago, from Observations in 1793 & 1794",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Admiralty_Chart_No_1103_Peeloo_archipelago_or_Pellew_Islands,_Published_1796.jpg",
+      "creator": "John McCluer, published by Alexander Dalrymple",
+      "date": "1796",
+      "license": "Public domain",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/palau-admiralty-1103.json",
+      "sha1OfOriginalUpload": "b0b6ad1f1665ac34593b43bb130e78c586accbb6",
+      "originalFile": "originals/palau-admiralty-1103.jpg",
+      "originalSha256": "03cf553767166566829a512a84647e6e5490652b6bb07dbddd1684bdda0f75a3",
+      "normalizedOutputSha256": "e5a7121eb1a8cb323fae627c42875e50528fada8e38452ed811057aa162e5110",
+      "normalizedDimensions": {
+        "width": 2400,
+        "height": 1594
+      }
+    },
+    {
+      "id": "guam-umatac-bay-1796",
+      "title": "Plan of Umatac Bay on the Island Guahan or Guam",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Admiralty_Chart_No_1101_Umatac_Bay,_Published_1796.jpg",
+      "creator": "Officers of the Frigate Astrea, Royal Company of the Philippines",
+      "date": "1796",
+      "license": "Public domain",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/guam-umatac-bay-1796.json",
+      "sha1OfOriginalUpload": "c6f236e0d834b70500559d05668d69407d9cd5cf",
+      "originalFile": "originals/guam-umatac-bay-1796.jpg",
+      "originalSha256": "cd05b10c75b72acbe3031324490083d854a88f558a6b56db9a2fe8ee9e07399e",
+      "normalizedOutputSha256": "f3520606b5d57f03fb83ba2ba8f7a39b35afb9b2aa4afcff809df148596da72f",
+      "normalizedDimensions": {
+        "width": 2400,
+        "height": 1888
+      }
+    },
+    {
+      "id": "marshall-stick-chart",
+      "title": "Marshallese stick chart (Musée du quai Branly, Paris)",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Paris_musee_branly_carte_navigation_iles_marshall.JPG",
+      "creator": "Photo: Wikimedia Commons user Velvet, of a Marshallese stick chart held at the Musée du quai Branly, Paris",
+      "date": "photographed 2010s; stick chart tradition centuries old",
+      "license": "CC BY-SA 4.0",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/marshall-stick-chart.json",
+      "sha1OfOriginalUpload": "5c0cf119489bba83857757bf816c299b0e7b12d8",
+      "originalFile": "originals/marshall-stick-chart.jpg",
+      "originalSha256": "d943b632b27351cac192d0096aa349ed5c0e426f3ed404423e9e2e3a6ecf6f75",
+      "normalizedOutputSha256": "58bbbc713b3fbdaef28ae9de3271620873bd34e9b0ee1ca0effee59d3c4ecbb0",
+      "normalizedDimensions": {
+        "width": 2400,
+        "height": 2011
+      }
+    },
+    {
+      "id": "marshall-majuro-atoll",
+      "title": "Map of Majuro Atoll, Marshall Islands",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Map_of_Majuro_Atoll.png",
+      "creator": "Unattributed public-domain cartography",
+      "date": "unknown, mid-20th century style",
+      "license": "Public domain",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/marshall-majuro-atoll.json",
+      "sha1OfOriginalUpload": "bcf49168909fa628b86ca0a81058c817a5bc9854",
+      "originalFile": "originals/marshall-majuro-atoll.png",
+      "originalSha256": "955d314e861a0590c285ea5266fbf7cd8f541ee87a8b170045c2804a91d9238a",
+      "normalizedOutputSha256": "8dd53e61c1efb79b1243aadc571a680a62aa454456dc908ef868437a48831ef1",
+      "normalizedDimensions": {
+        "width": 637,
+        "height": 381
+      }
+    },
+    {
+      "id": "nauru-regional-map",
+      "title": "Nauru detail map with regional locator (1988)",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Nauru_-_DPLA_-_1c744fa83bc11976202e84294e1e0cf8.jpg",
+      "creator": "U.S. government cartography (1988 base map)",
+      "date": "1988",
+      "license": "Public domain",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/nauru-regional-map.json",
+      "sha1OfOriginalUpload": "e729c4af10888cbc6668ebc4f78a0b50910d359b",
+      "originalFile": "originals/nauru-regional-map.jpg",
+      "originalSha256": "ff4da0f9b6d47b1245cde7ab8f762e0fa1931390a4a2e99db074b2ef2a082d6e",
+      "normalizedOutputSha256": "ecabcf3b14ed2d880ceba35c87f6c45e2ab7f916befc3e1d9f2f13bf35e02cf3",
+      "normalizedDimensions": {
+        "width": 1874,
+        "height": 2400
+      }
+    },
+    {
+      "id": "kiribati-tarawa-atoll",
+      "title": "Tarawa Atoll, Kiribati (diagram)",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Tarawa_Atoll,_Kiribati.svg",
+      "creator": "Unattributed public-domain cartography (rendered from SVG source)",
+      "date": "modern",
+      "license": "Public domain",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/kiribati-tarawa-atoll.json",
+      "sha1OfOriginalUpload": "f311a076bb9fe3c4108d75702c8c4395c60b76db",
+      "originalFile": "originals/kiribati-tarawa-atoll.png",
+      "originalSha256": "07f8580e7740a161764eb38e89143e61cd806c155d7632356eec394d5399792a",
+      "normalizedOutputSha256": "2e68aa00fa042e278944c2d8b3ad1405740e149795553db306ab99b03d5c7440",
+      "normalizedDimensions": {
+        "width": 2400,
+        "height": 2400
+      }
+    },
+    {
+      "id": "kiribati-south-tarawa",
+      "title": "South Tarawa, Kiribati (satellite-style labeled map)",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:06_Map_of_South_Tarawa,_Kiribati.jpg",
+      "creator": "Government of USA / Government of Kiribati",
+      "date": "modern",
+      "license": "Public domain",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/kiribati-south-tarawa.json",
+      "sha1OfOriginalUpload": "65d289490fc3e7caac4edcc1e35c8e8586bb9529",
+      "originalFile": "originals/kiribati-south-tarawa.jpg",
+      "originalSha256": "6b900bc474c7d86b5b49cdf1ea770715f26c5bdb3754e3cdaaeace76010254f3",
+      "normalizedOutputSha256": "ba4555d22d9cf9b423739bcc219f0e4897cadc2fe30479fd49b33d7127da5725",
+      "normalizedDimensions": {
+        "width": 1294,
+        "height": 509
       }
     }
   ]
