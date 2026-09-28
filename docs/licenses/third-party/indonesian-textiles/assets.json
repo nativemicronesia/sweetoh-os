@@ -1,0 +1,82 @@
+[
+  {
+    "id": "batik-sample",
+    "europeanaId": "2048221/europeana_fashion_661149",
+    "imageUrl": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/RV/RV-499-99.jpg",
+    "title": "Batik (sample)",
+    "category": "Patterns",
+    "tags": ["batik", "Indonesian textile", "Indonesia", "wax-resist dye", "textile design", "pattern reference", "global folk art", "sublimation", "craft gift"]
+  },
+  {
+    "id": "batik-sekar-pala",
+    "europeanaId": "2048221/europeana_fashion_674260",
+    "imageUrl": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/RV/RV-847-7.jpg",
+    "title": "Batik pattern: Sekar pala",
+    "category": "Patterns",
+    "tags": ["batik", "sekar pala", "Indonesian textile", "Indonesia", "geometric pattern", "wax-resist dye", "textile design", "global folk art", "sublimation"]
+  },
+  {
+    "id": "ikat-cloth",
+    "europeanaId": "2048221/europeana_fashion_733868",
+    "imageUrl": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/RV/RV-2074-5.jpg",
+    "title": "Ikat cloth",
+    "category": "Patterns",
+    "tags": ["ikat", "Indonesian textile", "Indonesia", "woven cloth", "textile design", "striped pattern", "global folk art", "sublimation"]
+  },
+  {
+    "id": "ikat-cloth-2",
+    "europeanaId": "2048221/europeana_fashion_786603",
+    "imageUrl": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/RV/RV-4160-46.jpg",
+    "title": "Ikat cloth",
+    "category": "Patterns",
+    "tags": ["ikat", "Indonesian textile", "Indonesia", "woven cloth", "textile design", "striped pattern", "global folk art", "sublimation"]
+  },
+  {
+    "id": "ikat-triangle-motifs",
+    "europeanaId": "2048221/europeana_fashion_785029",
+    "imageUrl": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/RV/RV-4032-15.jpg",
+    "title": "Ikat cloth with triangle motifs",
+    "category": "Patterns",
+    "tags": ["ikat", "triangle motif", "Indonesian textile", "Indonesia", "geometric pattern", "textile design", "global folk art", "sublimation"]
+  },
+  {
+    "id": "ikat-sarong-blue-red",
+    "europeanaId": "2048221/europeana_fashion_1030206",
+    "imageUrl": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/NMVW/7038-2.jpg",
+    "title": "Blue-red ikat sarong",
+    "category": "Patterns",
+    "tags": ["ikat", "sarong", "Indonesian textile", "Indonesia", "striped pattern", "textile design", "global folk art", "sublimation"]
+  },
+  {
+    "id": "kain-panjang",
+    "europeanaId": "2048221/europeana_fashion_1038053",
+    "imageUrl": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/NMVW/7082-S-4393-31.jpg",
+    "title": "Kain panjang (long cloth)",
+    "category": "Patterns",
+    "tags": ["kain panjang", "Indonesian textile", "Indonesia", "Javanese textile", "textile design", "global folk art", "sublimation"]
+  },
+  {
+    "id": "kain-prada-gold",
+    "europeanaId": "2048221/europeana_fashion_1035994",
+    "imageUrl": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/NMVW/7082-S-371-1.jpg",
+    "title": "Kain prada (gold-leaf cloth)",
+    "category": "Patterns",
+    "tags": ["kain prada", "gold leaf", "Indonesian textile", "Indonesia", "floral pattern", "luxury textile", "global folk art", "sublimation"]
+  },
+  {
+    "id": "songket-kain",
+    "europeanaId": "2048221/europeana_fashion_1036614",
+    "imageUrl": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/NMVW/7082-S-451-3843.jpg",
+    "title": "Kain songket (gold-thread cloth)",
+    "category": "Patterns",
+    "tags": ["songket", "gold thread", "Indonesian textile", "Indonesia", "woven pattern", "global folk art", "sublimation"]
+  },
+  {
+    "id": "ceremonial-cloth-geometric",
+    "europeanaId": "2048221/europeana_fashion_66157",
+    "imageUrl": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/TM/TM-1772-1508.jpg",
+    "title": "Silk ceremonial cloth with geometric and animal figures",
+    "category": "Patterns",
+    "tags": ["ceremonial cloth", "weft ikat", "silk", "Indonesian textile", "Indonesia", "geometric pattern", "animal motif", "global folk art", "sublimation"]
+  }
+]

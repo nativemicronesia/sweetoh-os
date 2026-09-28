@@ -7,6 +7,7 @@ import { WELLCOME_EMBROIDERY_SPRIGS_STUDIO_ASSETS } from "./wellcome-embroidery-
 import { WELLCOME_BOTANICAL_PLATES_STUDIO_ASSETS } from "./wellcome-botanical-plates-assets";
 import { WELLCOME_MARINE_LIFE_STUDIO_ASSETS } from "./wellcome-marine-life-assets";
 import { WELLCOME_INSECTS_STUDIO_ASSETS } from "./wellcome-insects-assets";
+import { INDONESIAN_TEXTILES_STUDIO_ASSETS } from "./indonesian-textiles-assets";
 import { PATTERNFILLS_STUDIO_ASSETS } from "./patternfills-assets";
 import { OPEN_CROP_STUDIO_ASSETS } from "./open-crop-assets";
 import { OPENCLIPART_STUDIO_ASSETS } from "./openclipart-assets";
@@ -110,6 +111,7 @@ export const STUDIO_ASSETS: readonly StudioAsset[] = [
   ...WELLCOME_BOTANICAL_PLATES_STUDIO_ASSETS,
   ...WELLCOME_MARINE_LIFE_STUDIO_ASSETS,
   ...WELLCOME_INSECTS_STUDIO_ASSETS,
+  ...INDONESIAN_TEXTILES_STUDIO_ASSETS,
   ...PATTERNFILLS_STUDIO_ASSETS,
   ...OPEN_CROP_STUDIO_ASSETS,
   ...OPENCLIPART_STUDIO_ASSETS,

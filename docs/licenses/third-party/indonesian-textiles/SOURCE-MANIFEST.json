@@ -1,0 +1,177 @@
+{
+  "schemaVersion": 1,
+  "source": "National Museum of World Cultures (Netherlands) — Indonesian textiles, via Europeana",
+  "rightsEvidence": "Per-item Europeana record edmRights + edmIsShownBy, independently verified live for each item; snapshots in records/.",
+  "assets": [
+    {
+      "id": "indonesian-textile-batik-sample-v1",
+      "europeanaId": "2048221/europeana_fashion_661149",
+      "title": "Batik (sample)",
+      "sourceRecordUrl": "https://www.europeana.eu/item/2048221/europeana_fashion_661149",
+      "license": "CC0 1.0 Universal",
+      "licenseEvidence": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/RV/RV-499-99.jpg",
+      "originalWidth": 4136,
+      "originalHeight": 1696,
+      "originalFile": "originals/batik-sample.jpg",
+      "originalSha256": "d61c13def7ef2db0cf0bb4780c2205c9ff6d02cba675e16bc380be52795b87a5",
+      "normalizedOutputSha256": "05fe87bb1c2e07fab6f5e0e7556a9c3c75be1684b8f11e28f3bbc7df7446121d",
+      "normalizedDimensions": {
+        "width": 2400,
+        "height": 984
+      }
+    },
+    {
+      "id": "indonesian-textile-batik-sekar-pala-v1",
+      "europeanaId": "2048221/europeana_fashion_674260",
+      "title": "Batik pattern: Sekar pala",
+      "sourceRecordUrl": "https://www.europeana.eu/item/2048221/europeana_fashion_674260",
+      "license": "CC0 1.0 Universal",
+      "licenseEvidence": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/RV/RV-847-7.jpg",
+      "originalWidth": 3219,
+      "originalHeight": 3277,
+      "originalFile": "originals/batik-sekar-pala.jpg",
+      "originalSha256": "e0b32dd8ef89b96fb2778bd3e83e995061de214ee8c1639c82964dd5277131e6",
+      "normalizedOutputSha256": "950ef75e18f946badecbcd621eb2bd60eacecdbdfd585208a1a3c0839b1b31c4",
+      "normalizedDimensions": {
+        "width": 2358,
+        "height": 2400
+      }
+    },
+    {
+      "id": "indonesian-textile-ikat-cloth-v1",
+      "europeanaId": "2048221/europeana_fashion_733868",
+      "title": "Ikat cloth",
+      "sourceRecordUrl": "https://www.europeana.eu/item/2048221/europeana_fashion_733868",
+      "license": "CC0 1.0 Universal",
+      "licenseEvidence": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/RV/RV-2074-5.jpg",
+      "originalWidth": 4256,
+      "originalHeight": 3405,
+      "originalFile": "originals/ikat-cloth.jpg",
+      "originalSha256": "9b2104fc04bf4e8a9fe65e103c92b35c39e36557fd5b242e175682e1054532a3",
+      "normalizedOutputSha256": "9b66216407d0cb06bd00fb75927cd0337b998b89d0a4e4ff2882d99e662815e1",
+      "normalizedDimensions": {
+        "width": 2400,
+        "height": 1920
+      }
+    },
+    {
+      "id": "indonesian-textile-ikat-cloth-2-v1",
+      "europeanaId": "2048221/europeana_fashion_786603",
+      "title": "Ikat cloth",
+      "sourceRecordUrl": "https://www.europeana.eu/item/2048221/europeana_fashion_786603",
+      "license": "CC0 1.0 Universal",
+      "licenseEvidence": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/RV/RV-4160-46.jpg",
+      "originalWidth": 4256,
+      "originalHeight": 1681,
+      "originalFile": "originals/ikat-cloth-2.jpg",
+      "originalSha256": "794ff3335d16a50acf1b692b2bc7dd27893828d08b8533fe7f6d654fa1e407a0",
+      "normalizedOutputSha256": "1e68f0ae293ab587c5403115e5437ee944937151e50e7032226aa03030b2c3aa",
+      "normalizedDimensions": {
+        "width": 2400,
+        "height": 948
+      }
+    },
+    {
+      "id": "indonesian-textile-ikat-triangle-motifs-v1",
+      "europeanaId": "2048221/europeana_fashion_785029",
+      "title": "Ikat cloth with triangle motifs",
+      "sourceRecordUrl": "https://www.europeana.eu/item/2048221/europeana_fashion_785029",
+      "license": "CC0 1.0 Universal",
+      "licenseEvidence": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/RV/RV-4032-15.jpg",
+      "originalWidth": 5120,
+      "originalHeight": 3107,
+      "originalFile": "originals/ikat-triangle-motifs.jpg",
+      "originalSha256": "9025f98c8423099d565d15571e96871a1df904b8b2b8e66050cfe1b2a67d268d",
+      "normalizedOutputSha256": "8106d957dbf80343da32340519eaf067b48ed5949afec30423d0deb71dd6a218",
+      "normalizedDimensions": {
+        "width": 2400,
+        "height": 1456
+      }
+    },
+    {
+      "id": "indonesian-textile-ikat-sarong-blue-red-v1",
+      "europeanaId": "2048221/europeana_fashion_1030206",
+      "title": "Blue-red ikat sarong",
+      "sourceRecordUrl": "https://www.europeana.eu/item/2048221/europeana_fashion_1030206",
+      "license": "CC0 1.0 Universal",
+      "licenseEvidence": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/NMVW/7038-2.jpg",
+      "originalWidth": 2703,
+      "originalHeight": 4256,
+      "originalFile": "originals/ikat-sarong-blue-red.jpg",
+      "originalSha256": "81788089450905d79e9f1615734af5a2622d3f858137de4be54cdb68f72852b1",
+      "normalizedOutputSha256": "21b9026635ed9ef6723be307dc0af199c9fe2938c9d13547e970adb1b879be38",
+      "normalizedDimensions": {
+        "width": 1524,
+        "height": 2400
+      }
+    },
+    {
+      "id": "indonesian-textile-kain-panjang-v1",
+      "europeanaId": "2048221/europeana_fashion_1038053",
+      "title": "Kain panjang (long cloth)",
+      "sourceRecordUrl": "https://www.europeana.eu/item/2048221/europeana_fashion_1038053",
+      "license": "CC0 1.0 Universal",
+      "licenseEvidence": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/NMVW/7082-S-4393-31.jpg",
+      "originalWidth": 3886,
+      "originalHeight": 3243,
+      "originalFile": "originals/kain-panjang.jpg",
+      "originalSha256": "6c399d5a556ed50a30402fb4ff934c31e606553ba2aa07db640583aec50c08d7",
+      "normalizedOutputSha256": "2850c66bb48bb8fcd0d3e3aa9bbd1f4487d3d80fbf09810bdad91678de6d9a83",
+      "normalizedDimensions": {
+        "width": 2400,
+        "height": 2003
+      }
+    },
+    {
+      "id": "indonesian-textile-kain-prada-gold-v1",
+      "europeanaId": "2048221/europeana_fashion_1035994",
+      "title": "Kain prada (gold-leaf cloth)",
+      "sourceRecordUrl": "https://www.europeana.eu/item/2048221/europeana_fashion_1035994",
+      "license": "CC0 1.0 Universal",
+      "licenseEvidence": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/NMVW/7082-S-371-1.jpg",
+      "originalWidth": 3374,
+      "originalHeight": 4631,
+      "originalFile": "originals/kain-prada-gold.jpg",
+      "originalSha256": "bacf04770bc2ebb82702db1c6b2da6801e2e0dd9451c9b3933826dcc5d93b81a",
+      "normalizedOutputSha256": "10f5f14de96ed2b5a6cd3d6428eb1f2920209b448c664948b8d8dc727e36449a",
+      "normalizedDimensions": {
+        "width": 1749,
+        "height": 2400
+      }
+    },
+    {
+      "id": "indonesian-textile-songket-kain-v1",
+      "europeanaId": "2048221/europeana_fashion_1036614",
+      "title": "Kain songket (gold-thread cloth)",
+      "sourceRecordUrl": "https://www.europeana.eu/item/2048221/europeana_fashion_1036614",
+      "license": "CC0 1.0 Universal",
+      "licenseEvidence": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/NMVW/7082-S-451-3843.jpg",
+      "originalWidth": 4284,
+      "originalHeight": 3098,
+      "originalFile": "originals/songket-kain.jpg",
+      "originalSha256": "1f13af5492ecb829d90f22c26d39c3ae45fac62827c2d60ce9cc819fc2b260f1",
+      "normalizedOutputSha256": "20f27bd45b4cb85443db2fd3a54f99e87f3f0d091cfc612da0c7e1491d6ce84b",
+      "normalizedDimensions": {
+        "width": 2400,
+        "height": 1736
+      }
+    },
+    {
+      "id": "indonesian-textile-ceremonial-cloth-geometric-v1",
+      "europeanaId": "2048221/europeana_fashion_66157",
+      "title": "Silk ceremonial cloth with geometric and animal figures",
+      "sourceRecordUrl": "https://www.europeana.eu/item/2048221/europeana_fashion_66157",
+      "license": "CC0 1.0 Universal",
+      "licenseEvidence": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/TM/TM-1772-1508.jpg",
+      "originalWidth": 1500,
+      "originalHeight": 1125,
+      "originalFile": "originals/ceremonial-cloth-geometric.jpg",
+      "originalSha256": "8a40cc9a8115f0fa72c46dbd20437b5ad79d35a465c0afff5bc8b5bc473ccb18",
+      "normalizedOutputSha256": "9aef44413fd88c8cb6a0765b33bf3cdb0e1745672870c24bdfb5690bad5e4575",
+      "normalizedDimensions": {
+        "width": 1500,
+        "height": 1125
+      }
+    }
+  ]
+}
