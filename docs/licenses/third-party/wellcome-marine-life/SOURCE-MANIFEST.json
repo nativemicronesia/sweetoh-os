@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "source": "Wellcome Collection — 18th/19th-century marine life engravings",
+  "rightsEvidence": "Per-work Wellcome Collection catalogue API license + accessConditions, independently verified live for each item; snapshots in records/.",
+  "assets": [
+    {
+      "id": "wellcome-marine-sea-urchin-starfish-octopus-v1",
+      "workId": "shq844bv",
+      "iiifImageId": "V0020779EL",
+      "title": "Above, an edible sea urchin, a star fish and a purple spantangus; below, a common octopus and a large cuttlefish",
+      "creator": "William Home Lizars",
+      "date": "19th century",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/shq844bv",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0020779EL/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 3258,
+      "iiifWidth": 1412,
+      "iiifHeight": 2300,
+      "originalFile": "originals/sea-urchin-starfish-octopus.jpg",
+      "originalSha256": "a65e3de00f02e95c1a62cc188656cb2289e3017bd9ca7f6f23efcebece314b95",
+      "normalizedOutputSha256": "d54da6673d05bca862730b08da9838813f4b485a0d2c625cf93c4a66738da2ee",
+      "normalizedDimensions": {
+        "width": 1473,
+        "height": 2400
+      }
+    },
+    {
+      "id": "wellcome-marine-corals-narwhal-natural-history-v1",
+      "workId": "ruf5kygq",
+      "iiifImageId": "V0020671ER",
+      "title": "Reef building corals, a narwhal, a horseshoe crab, and other natural history subjects",
+      "creator": "Heath",
+      "date": "1806",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/ruf5kygq",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0020671ER/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 2568,
+      "iiifWidth": 1509,
+      "iiifHeight": 1938,
+      "originalFile": "originals/corals-narwhal-natural-history.jpg",
+      "originalSha256": "5745606d6bd3eb0007d84cb6480835e704a8daf28abc14d293236abf3a424c0c",
+      "normalizedOutputSha256": "766d81993ecdf76b8cf012418bd9b9a2e7aca1dd34a472dbe150630d9baf0a30",
+      "normalizedDimensions": {
+        "width": 1869,
+        "height": 2400
+      }
+    },
+    {
+      "id": "wellcome-marine-coconut-crab-v1",
+      "workId": "ncsurw88",
+      "iiifImageId": "V0022033",
+      "title": "A crustacean (crab)",
+      "creator": "J. L. D. Coutant after F. N. Bevallet",
+      "date": "18th century",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/ncsurw88",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0022033/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 2340,
+      "iiifWidth": 2445,
+      "iiifHeight": 2860,
+      "originalFile": "originals/coconut-crab.jpg",
+      "originalSha256": "49a480bb5c6b63a7eeef354dd994557d3296f979fd2588457404444e876f30a7",
+      "normalizedOutputSha256": "bb47dc8610720c92dcdac9bb99e7e0bf0c19d2b55d03d36cd73c972342dcd920",
+      "normalizedDimensions": {
+        "width": 2000,
+        "height": 2340
+      }
+    },
+    {
+      "id": "wellcome-marine-anemone-starfish-aquarium-v1",
+      "workId": "p43nchhh",
+      "iiifImageId": "V0021973EL",
+      "title": "A serpent-haired sea-anemone and three species of star-fish",
+      "creator": "unattributed",
+      "date": "19th century",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/p43nchhh",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0021973EL/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 3436,
+      "iiifWidth": 1294,
+      "iiifHeight": 2223,
+      "originalFile": "originals/anemone-starfish-aquarium.jpg",
+      "originalSha256": "fb3e287a5f682bf5e6f1be4eafa9937dbe7f9d71416a6854bc46980f04a94846",
+      "normalizedOutputSha256": "2687fa58fd36ec4cb13afd1d360e12f14f8c0ae1256bb2f24960e6c184bef5d0",
+      "normalizedDimensions": {
+        "width": 1397,
+        "height": 2400
+      }
+    },
+    {
+      "id": "wellcome-marine-marine-aquarium-anemones-v1",
+      "workId": "dp7jcx2h",
+      "iiifImageId": "V0021974",
+      "title": "A marine aquarium furnished with sea-anemones, sea-cucumbers and starfish",
+      "creator": "unattributed",
+      "date": "19th century",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/dp7jcx2h",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0021974/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 1228,
+      "iiifWidth": 3636,
+      "iiifHeight": 2232,
+      "originalFile": "originals/marine-aquarium-anemones.jpg",
+      "originalSha256": "9af98884ea8f3b0eea8f885deed45a3463c7ffe05f860ade6291a749da437200",
+      "normalizedOutputSha256": "ba2fada59759e7b173485690c994fd69185a17a447147afd5f697e8cb5214d3a",
+      "normalizedDimensions": {
+        "width": 2000,
+        "height": 1228
+      }
+    },
+    {
+      "id": "wellcome-marine-variety-sea-anemones-v1",
+      "workId": "n6rnrbna",
+      "iiifImageId": "V0021978",
+      "title": "A variety of sea anemones on the ground of an aquarium",
+      "creator": "unattributed",
+      "date": "19th century",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/n6rnrbna",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0021978/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 1338,
+      "iiifWidth": 3248,
+      "iiifHeight": 2172,
+      "originalFile": "originals/variety-sea-anemones.jpg",
+      "originalSha256": "8c58f4ae7d14845c91229ea490e88736c0641faf25677800bec15910b7f56bb0",
+      "normalizedOutputSha256": "5be47c0953b2ae4e113c1af64ba888777850da8a1f69f7f80ff15bdf66007814",
+      "normalizedDimensions": {
+        "width": 2000,
+        "height": 1338
+      }
+    }
+  ]
+}
