@@ -959,6 +959,27 @@ test("new shape, image and typography controls stay serializable across save/reo
   assert.equal(studioLayoutSchema.safeParse(invalid).success, false);
 });
 
+test("Studio persists the latest captured edit for crash recovery and makes custom shape colors undoable", () => {
+  const source = readFileSync("app/(partner)/partner/canvas/product-editor.tsx", "utf8");
+  const capture = source.slice(source.indexOf("function capture()"), source.indexOf("function checkpoint()"));
+  assert.match(capture, /if \(dirty\.current\) saveDraft\(\)/);
+  const clearDraft = source.slice(source.indexOf("function clearDraft()"), source.indexOf("function checkOutside()"));
+  assert.match(clearDraft, /clearTimeout\(draftTimer\.current\)/);
+  assert.match(clearDraft, /draftTimer\.current = null/);
+  assert.match(source, /value=\{selected\.fill \?\? "#1f7048"\} onClick=\{\(\) => checkpoint\(\)\} onChange=\{\(e\) => setFill\(e\.target\.value, false\)\}/);
+  assert.match(source, /title="Outline color"><input type="color" value=\{selected\.stroke \?\? "#ffffff"\} onClick=\{\(\) => checkpoint\(\)\} onChange=/);
+});
+
+test("Studio pattern layout buttons expose their selected state accessibly", () => {
+  const editor = readFileSync("app/(partner)/partner/canvas/product-editor.tsx", "utf8");
+  const styles = readFileSync("app/(partner)/partner/studio.css", "utf8");
+  const patternToggle = editor.slice(editor.indexOf('<div className="pe-seg">'), editor.indexOf("</div>", editor.indexOf('<div className="pe-seg">')));
+  assert.match(patternToggle, /aria-pressed=\{!selected\.brick\}/);
+  assert.match(patternToggle, /aria-pressed=\{Boolean\(selected\.brick\)\}/);
+  assert.doesNotMatch(patternToggle, /aria-selected=/);
+  assert.match(styles, /\.pe-seg button\[aria-pressed=true\]/);
+});
+
 test("drawing brush identity and opacity survive save/reopen with stable built-in behavior", () => {
   assert.deepEqual(STUDIO_DRAW_BRUSHES.map(({ id }) => id), ["pencil", "marker", "dashed"]);
   assert.equal(drawingDashPattern("pencil", 8), undefined);

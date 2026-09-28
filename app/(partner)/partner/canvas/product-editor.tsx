@@ -555,6 +555,8 @@ export function ProductEditor({
     setLayers([...s.layers]);
     checkOutside();
     scheduleMockups();
+    // A transform can outlast the checkpoint debounce; persist the captured final state too.
+    if (dirty.current) saveDraft();
   }
   function checkpoint() {
     if (batching.current) return;
@@ -581,6 +583,8 @@ export function ProductEditor({
     }, 1200);
   }
   function clearDraft() {
+    if (draftTimer.current) clearTimeout(draftTimer.current);
+    draftTimer.current = null;
     try {
       localStorage.removeItem(draftKey);
     } catch {
@@ -2722,7 +2726,7 @@ export function ProductEditor({
                       <button key={c} aria-label={c} aria-pressed={selected.fill?.toLowerCase() === c} style={{ background: c }} onClick={() => setFill(c)} />
                     ))}
                     <label className="pe-color-input" title="Custom color">
-                      <input type="color" value={selected.fill ?? "#1f7048"} onChange={(e) => setFill(e.target.value, false)} />
+                      <input type="color" value={selected.fill ?? "#1f7048"} onClick={() => checkpoint()} onChange={(e) => setFill(e.target.value, false)} />
                     </label>
                   </div>
                   <p className="pe-label">Gradient fills</p>
@@ -2733,7 +2737,7 @@ export function ProductEditor({
                   </div>
                   <p className="pe-label">Outline</p>
                   <div className="pe-row">
-                    <label className="pe-color-input" title="Outline color"><input type="color" value={selected.stroke ?? "#ffffff"} onChange={(e) => changeSelected((o) => o.set({ stroke: e.target.value }), false)} /></label>
+                    <label className="pe-color-input" title="Outline color"><input type="color" value={selected.stroke ?? "#ffffff"} onClick={() => checkpoint()} onChange={(e) => changeSelected((o) => o.set({ stroke: e.target.value }), false)} /></label>
                     <label className="pe-num"><span>Width</span><input type="number" min={0} max={100} step={1} value={selected.strokeWidth ?? 0} onChange={(e) => changeSelected((o) => o.set({ stroke: e.target.value ? selected.stroke ?? "#ffffff" : undefined, strokeWidth: Number(e.target.value) }))} /></label>
                   </div>
                 </section>
@@ -2752,8 +2756,8 @@ export function ProductEditor({
                     <input type="range" min={0} max={0.7} step={0.01} value={selected.gap} onChange={(e) => void updatePattern({ gap: Number(e.target.value) })} />
                   </label>
                   <div className="pe-seg">
-                    <button aria-selected={!selected.brick} onClick={() => void updatePattern({ brick: false })}>Grid</button>
-                    <button aria-selected={Boolean(selected.brick)} onClick={() => void updatePattern({ brick: true })}>Brick</button>
+                    <button aria-pressed={!selected.brick} onClick={() => void updatePattern({ brick: false })}>Grid</button>
+                    <button aria-pressed={Boolean(selected.brick)} onClick={() => void updatePattern({ brick: true })}>Brick</button>
                   </div>
                   <p className="pe-muted pe-small">The pattern fills the chosen print area. Preview shows the final cut shape.</p>
                 </section>
