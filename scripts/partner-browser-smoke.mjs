@@ -198,11 +198,13 @@ try {
     await page.goto(`${origin}/partner/canvas`, { waitUntil: "commit", timeout: 90_000 });
     await page.locator(".pe-stage canvas.lower-canvas").waitFor({ state: "visible", timeout: 60_000 });
     await page.getByText("Loading product…", { exact: true }).waitFor({ state: "detached", timeout: 45_000 });
+    const desktopViewport = await page.evaluate(() => ({ width: innerWidth, height: innerHeight, horizontalOverflow: document.documentElement.scrollWidth > innerWidth }));
     const assetLibraryButton = page.getByRole("button", { name: "Library", exact: true });
     await assetLibraryButton.waitFor({ state: "visible", timeout: 90_000 });
     await assetLibraryButton.click();
     await page.getByRole("heading", { name: "Asset library", exact: true }).waitFor({ state: "visible", timeout: 15_000 });
     const search = page.getByPlaceholder("Search elements and fonts");
+    const totalAssets = await page.getByLabel("Studio asset category").locator("option").first().textContent();
     await search.fill("doctor x-ray lungs");
     const assetButton = page.getByRole("button", { name: "Add Doctor checks X-ray image", exact: true });
     await assetButton.waitFor({ state: "visible", timeout: 30_000 });
@@ -214,6 +216,58 @@ try {
     await page.getByRole("button", { name: "Layers", exact: true }).click();
     const layers = page.locator(".pe-layers");
     await layers.getByText("Doctor checks X-ray image", { exact: true }).waitFor({ state: "visible", timeout: 15_000 });
+    // Select the inserted object and exercise the existing transform controls
+    // through their history-backed inputs.
+    await layers.getByRole("button", { name: "Doctor checks X-ray image", exact: true }).click();
+    const bounds = page.locator(".pe-props .pe-grid2 input[type='number']");
+    const xControl = bounds.nth(0);
+    const widthControl = bounds.nth(2);
+    const movedX = String(Number(await xControl.inputValue()) + 2);
+    const resizedWidth = String(Number(await widthControl.inputValue()) + 1);
+    await xControl.fill(movedX);
+    await widthControl.fill(resizedWidth);
+    if (await xControl.inputValue() !== movedX || await widthControl.inputValue() !== resizedWidth) throw new Error("Studio did not apply the selected artwork move/resize controls.");
+    const geometry = page.locator(".pe-props .pe-grid2 input[type='number']").nth(4);
+    await geometry.fill("18");
+    await geometry.blur();
+    if (await geometry.inputValue() !== "18") throw new Error("Studio did not apply the selected artwork rotation.");
+    await page.getByRole("button", { name: "Undo" }).click();
+    await page.getByRole("button", { name: "Redo" }).click();
+    if (await geometry.inputValue() !== "18") throw new Error("Studio redo did not restore the selected artwork rotation.");
+    await page.getByRole("button", { name: "Library", exact: true }).click();
+    await page.getByRole("button", { name: "Originals & fonts", exact: true }).click();
+    await search.fill("tropical leaf");
+    await page.getByRole("button", { name: "Add Tropical leaf", exact: true }).waitFor({ state: "visible", timeout: 20_000 });
+    await page.getByRole("button", { name: "Add Tropical leaf", exact: true }).click();
+    await page.getByRole("button", { name: "My reusable assets", exact: false }).click();
+    const reusableSearch = page.getByPlaceholder("Search names, tags, source or method");
+    await reusableSearch.fill("doctor x-ray lungs");
+    const reusableResults = await page.locator(".pe-asset-card").count();
+    // The reusable-asset shelf may be empty for this partner; the verified
+    // launch collection above remains available independently.
+    const tabletViewport = { width: 768, height: 1024 };
+    await page.setViewportSize(tabletViewport);
+    const tabletLayout = await page.evaluate(() => {
+      const panel = document.querySelector(".pe-panel");
+      const rail = document.querySelector(".pe-rail");
+      const box = panel?.getBoundingClientRect();
+      return { width: innerWidth, height: innerHeight, horizontalOverflow: document.documentElement.scrollWidth > innerWidth, panelVisible: Boolean(box && box.width > 0 && box.height > 0), railVisible: Boolean(rail && rail.getBoundingClientRect().height > 0) };
+    });
+    if (tabletLayout.horizontalOverflow || !tabletLayout.panelVisible || !tabletLayout.railVisible) throw new Error(`Studio library is not usable at tablet size: ${JSON.stringify(tabletLayout)}`);
+    await page.getByRole("button", { name: "Originals & fonts", exact: true }).click();
+    await search.fill("party confetti");
+    await page.getByRole("button", { name: "Add Party confetti", exact: true }).waitFor({ state: "visible", timeout: 20_000 });
+    await page.getByRole("button", { name: "Add Party confetti", exact: true }).click();
+    await page.getByRole("button", { name: "Layers", exact: true }).click();
+    await layers.getByText("Tropical leaf", { exact: true }).waitFor({ state: "visible", timeout: 15_000 });
+    await layers.getByText("Party confetti", { exact: true }).waitFor({ state: "visible", timeout: 15_000 });
+    const multiSelect = page.locator(".pe-layer-select");
+    await multiSelect.nth(0).check();
+    await multiSelect.nth(1).check();
+    await page.getByRole("heading", { name: "2 objects", exact: true }).waitFor({ state: "visible", timeout: 10_000 });
+    await page.getByRole("button", { name: "To front", exact: true }).click();
+    await page.getByRole("button", { name: "Undo" }).click();
+    await page.getByRole("button", { name: "Redo" }).click();
     // Let the editor's debounced recovery snapshot land, then exercise a real
     // refresh/reopen. The browser context is isolated and discarded afterward,
     // so this proves persistence without writing a partner asset or product.
@@ -245,7 +299,9 @@ try {
       browser: browser.version(),
       partnerLogin: "passed",
       studio: "opened directly without changing product data",
-      creativeLibrarySearch: "found and inserted Doctor checks X-ray image",
+      libraryCoverage: { totalAssets, desktopViewport, tabletLayout, reusableShelfResults: reusableResults },
+      creativeLibrarySearch: "searched medical, tropical and celebration themes; inserted approved illustration, SweetOh original and pattern assets",
+      selectionAndHistory: "selected, moved, resized and rotated artwork; multi-selected layers and reordered them; undo/redo passed",
       studioRefreshRecovery: "restored the inserted layer from the isolated browser draft after refresh",
       continuedEditing: "inserted Butterfly after restore; undo removed it while retaining the recovered layer",
       partnerData: "unchanged; browser context closed without saving a partner asset or product",
