@@ -10,6 +10,7 @@ import { OPENGAMEART_TEXTURE_STUDIO_ASSETS } from "./opengameart-texture-assets"
 import { LIBRECLIPART_STUDIO_ASSETS } from "./libreclipart-assets";
 import { LIBRECLIPART_SPORTS_STUDIO_ASSETS } from "./libreclipart-sports-assets";
 import { LIBRECLIPART_EVERYDAY_STUDIO_ASSETS } from "./libreclipart-everyday-assets";
+import { LIBRECLIPART_WORKLIFE_STUDIO_ASSETS } from "./libreclipart-worklife-assets";
 import { UIGRADIENTS_STUDIO_ASSETS } from "./uigradients-assets";
 import { OPEN_DOODLES_STUDIO_ASSETS } from "./open-doodles-assets";
 import { KITBITZ_STUDIO_ASSETS } from "./kitbitz-assets";
@@ -103,6 +104,7 @@ export const STUDIO_ASSETS: readonly StudioAsset[] = [
   ...LIBRECLIPART_STUDIO_ASSETS,
   ...LIBRECLIPART_SPORTS_STUDIO_ASSETS,
   ...LIBRECLIPART_EVERYDAY_STUDIO_ASSETS,
+  ...LIBRECLIPART_WORKLIFE_STUDIO_ASSETS,
   ...UIGRADIENTS_STUDIO_ASSETS,
   ...OPEN_DOODLES_STUDIO_ASSETS,
   ...KITBITZ_STUDIO_ASSETS,

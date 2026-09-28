@@ -537,6 +537,46 @@ test("Libreclipart everyday vectors keep individual rights evidence, searchable 
   assert.equal(canSurfaceStudioAsset({ ...studioAsset(id)!, commercialUse: false }), false);
 });
 
+test("Libreclipart work and life illustrations keep CC0 evidence, visual families searchable, and Studio insertion", async () => {
+  const base = "docs/licenses/third-party/libreclipart";
+  const source = JSON.parse(readFileSync(`${base}/worklife-SOURCE-MANIFEST.json`, "utf8")) as {
+    assets: Array<{ id: string; sourceItemId: number; sourceUrl: string; sourcePageLicenseLabel: string; sourceSvgRightsClaim: string; originalFile: string; originalSha256: string; normalizedSvgSha256: string; commercialUse: boolean; modificationAllowed: boolean; redistributionAllowed: boolean; attributionRequired: boolean }>;
+  };
+  assert.equal(source.assets.length, 77);
+  assert.equal(new Set(source.assets.map((record) => record.id)).size, source.assets.length);
+  for (const record of source.assets) {
+    const asset = studioAsset(record.id);
+    assert.ok(asset, record.id);
+    assert.equal(asset.licenseId, "CC0-1.0");
+    assert.equal(asset.sourceUrl, record.sourceUrl);
+    assert.equal(record.commercialUse && record.modificationAllowed && record.redistributionAllowed, true);
+    assert.equal(record.attributionRequired, false);
+    assert.match(record.sourcePageLicenseLabel, /Creative Commons Zero/);
+    assert.match(record.sourceSvgRightsClaim, /public domain|CC\s?0/i);
+    assert.doesNotMatch(record.sourceSvgRightsClaim, /Free OSI License/i);
+    assert.equal(createHash("sha256").update(readFileSync(`${base}/${record.originalFile}`)).digest("hex"), record.originalSha256);
+    assert.equal(createHash("sha256").update(Buffer.from(asset.svg!)).digest("hex"), record.normalizedSvgSha256);
+    assert.ok(canSurfaceStudioAsset(asset));
+    assert.equal(studioEditorCommandSchema.safeParse({ type: "add_graphic", assetKey: record.id }).success, true);
+  }
+  for (const [query, id] of [
+    ["doctor x-ray lungs", "libreclipart-858-v1"],
+    ["startup business launch", "libreclipart-445-v1"],
+    ["female drummer music", "libreclipart-846-v1"],
+    ["kid programmer technology", "libreclipart-784-v1"],
+    ["cargo ship travel", "libreclipart-373-v1"],
+    ["rhythmic gymnastics sports", "libreclipart-376-v1"],
+  ] as const) {
+    assert.ok(findStudioAssets({ query, kind: "element", limit: 50 }).some((asset) => asset.id === id), query);
+  }
+  const id = "libreclipart-858-v1";
+  const response = await getStudioAssetResponse(new Request(`https://sweetoh.test${studioAssetUrl(id)}`), { params: Promise.resolve({ id }) });
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("Content-Type") ?? "", /^image\/svg\+xml/);
+  assert.ok((await sharp(Buffer.from(await response.arrayBuffer())).resize(240, 240).raw().toBuffer()).some((channel) => channel > 0));
+  assert.equal(canSurfaceStudioAsset({ ...studioAsset(id)!, commercialUse: false }), false);
+});
+
 test("uiGradients backgrounds keep pinned MIT notice, original palettes, search, and SVG insertion", async () => {
   const base = "docs/licenses/third-party/uigradients";
   const manifest = JSON.parse(readFileSync(`${base}/SOURCE-MANIFEST.json`, "utf8")) as {

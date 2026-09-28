@@ -10,3 +10,4 @@ Source collection: [Libreclipart.org](https://libreclipart.org/en) — its publi
 - Curated sports item records, original SVGs, and rights cross-check: SPORTS-README.md, sports-assets.json, sports-SOURCE-MANIFEST.json, sports-source/
 
 The publisher describes this catalog as original, human-curated vectors. The item records used here do not name individual creators, so the library records that fact explicitly rather than assigning authorship to the publisher.
+The 77 work/life item pages and original SVG rights metadata are also retained in `worklife-assets.json` and `worklife-source/`; see `WORKLIFE-README.md` and `worklife-SOURCE-MANIFEST.json` for per-item evidence and hashes.
