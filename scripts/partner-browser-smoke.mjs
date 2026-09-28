@@ -296,7 +296,7 @@ try {
     await page.getByRole("button", { name: "Add Party confetti", exact: true }).click();
     await page.getByRole("button", { name: "Layers", exact: true }).click();
     await layers.getByText("Tropical leaf", { exact: true }).waitFor({ state: "visible", timeout: 15_000 });
-    await layers.getByText("Party confetti", { exact: true }).waitFor({ state: "visible", timeout: 15_000 });
+    await layers.locator(".pe-layer-row").filter({ hasText: "Party confetti" }).waitFor({ state: "visible", timeout: 15_000 });
     const multiSelect = page.locator(".pe-layer-select");
     await multiSelect.nth(0).check();
     await multiSelect.nth(1).check();
@@ -347,6 +347,104 @@ try {
     await page.getByLabel("Upload artwork file").setInputFiles(imageSmokePath);
     await page.getByRole("button", { name: "Layers", exact: true }).click();
     await layers.getByRole("button", { name: imageSmokeName, exact: true }).waitFor({ state: "visible", timeout: 45_000 });
+    await layers.getByRole("button", { name: imageSmokeName, exact: true }).click();
+    // Exercise the real mixed-object selection controls with an imported image,
+    // a reusable graphic and text together. Save snapshots are isolated to this
+    // disposable browser context and let the smoke assert that group movement
+    // changes every selected layer rather than only the active one.
+    const rowFor = (name) => page.locator(".pe-layer-row").filter({ hasText: name });
+    const selectRow = async (name) => {
+      const row = rowFor(name);
+      await row.waitFor({ state: "visible", timeout: 15_000 });
+      await row.locator("input.pe-layer-select").check();
+      return row;
+    };
+    const imageRow = await selectRow(imageSmokeName);
+    const leafRow = await selectRow("Tropical leaf");
+    const headingRow = await selectRow("ISLAND DAYS · KEEP CREATING");
+    await page.getByRole("heading", { name: "3 objects", exact: true }).waitFor({ state: "visible", timeout: 10_000 });
+    const readDraftPositions = () => page.evaluate(() => {
+      const key = Object.keys(localStorage).find((item) => item.startsWith("sweetoh:draft:"));
+      const draft = key ? JSON.parse(localStorage.getItem(key) || "null") : null;
+      return draft?.studio?.surfaces?.flatMap((surface) => surface.layers.map(({ id, x, y, scaleX, scaleY }) => ({ id, x, y, scaleX, scaleY }))) ?? [];
+    });
+    await page.waitForTimeout(1_500);
+    const positionsBeforeMove = await readDraftPositions();
+    const canvasKeyboardTarget = page.locator(".pe-stage canvas.upper-canvas");
+    const canvasBounds = await canvasKeyboardTarget.boundingBox();
+    if (!canvasBounds) throw new Error("The canvas was not available for moving a selected composition.");
+    const dragStart = { x: canvasBounds.x + canvasBounds.width / 2, y: canvasBounds.y + canvasBounds.height / 2 };
+    await page.mouse.move(dragStart.x, dragStart.y);
+    await page.mouse.down();
+    await page.mouse.move(dragStart.x + 16, dragStart.y + 12, { steps: 4 });
+    await page.mouse.up();
+    await page.waitForTimeout(1_500);
+    const positionsAfterMove = await readDraftPositions();
+    const movedLayers = positionsBeforeMove.flatMap((before) => {
+      const after = positionsAfterMove.find((item) => item.id === before.id);
+      return after && (Math.abs(after.x - before.x) > 0.01 || Math.abs(after.y - before.y) > 0.01) ? [{ dx: after.x - before.x, dy: after.y - before.y }] : [];
+    });
+    if (movedLayers.length !== 3 || Math.max(...movedLayers.map(({ dx }) => dx)) - Math.min(...movedLayers.map(({ dx }) => dx)) > 0.05 || Math.max(...movedLayers.map(({ dy }) => dy)) - Math.min(...movedLayers.map(({ dy }) => dy)) > 0.05) throw new Error(`Dragging the canvas selection did not move all three selected layers together (${movedLayers.length}/3 moved by the same amount).`);
+    // Drag the visible bottom-right ActiveSelection handle outward; all three
+    // underlying layer scales should grow together and remain independently saved.
+    const selectionCorner = { x: canvasBounds.x + canvasBounds.width * 0.669, y: canvasBounds.y + canvasBounds.height * 0.625 };
+    await page.mouse.move(selectionCorner.x, selectionCorner.y);
+    await page.mouse.down();
+    await page.mouse.move(selectionCorner.x + 14, selectionCorner.y + 14, { steps: 4 });
+    await page.mouse.up();
+    await page.waitForTimeout(1_500);
+    const positionsAfterResize = await readDraftPositions();
+    const resizedLayers = positionsBeforeMove.flatMap((before) => {
+      const after = positionsAfterResize.find((item) => item.id === before.id);
+      return after && after.scaleX > before.scaleX * 1.01 && after.scaleY > before.scaleY * 1.01 ? [after] : [];
+    });
+    if (resizedLayers.length !== 3) throw new Error(`Resizing the canvas selection did not scale all three selected layers together (${resizedLayers.length}/3 changed; tried ${JSON.stringify(selectionCorner)} within ${JSON.stringify(canvasBounds)}).`);
+    await page.getByRole("button", { name: "Group", exact: true }).click();
+    for (const row of [imageRow, leafRow, headingRow]) {
+      if (!(await row.innerText()).includes("Grouped")) throw new Error("Grouping did not mark every selected layer in Layers.");
+    }
+    await page.getByRole("button", { name: "Undo", exact: true }).click();
+    await page.waitForFunction(({ name, grouped }) => {
+      const row = [...document.querySelectorAll(".pe-layer-row")].find((item) => item.textContent?.includes(name));
+      return Boolean(row) && row.textContent?.includes("Grouped") === grouped;
+    }, { name: imageSmokeName, grouped: false }, { timeout: 15_000 });
+    for (const row of [imageRow, leafRow, headingRow]) await row.locator("input.pe-layer-select").check();
+    await page.getByRole("button", { name: "Redo", exact: true }).click();
+    await page.waitForFunction(({ name, grouped }) => {
+      const row = [...document.querySelectorAll(".pe-layer-row")].find((item) => item.textContent?.includes(name));
+      return Boolean(row) && row.textContent?.includes("Grouped") === grouped;
+    }, { name: imageSmokeName, grouped: true }, { timeout: 15_000 });
+    for (const row of [imageRow, leafRow, headingRow]) await row.locator("input.pe-layer-select").check();
+    await page.getByRole("button", { name: "Ungroup", exact: true }).click();
+    await page.waitForFunction(({ name, grouped }) => {
+      const row = [...document.querySelectorAll(".pe-layer-row")].find((item) => item.textContent?.includes(name));
+      return Boolean(row) && row.textContent?.includes("Grouped") === grouped;
+    }, { name: imageSmokeName, grouped: false }, { timeout: 15_000 });
+    const readLayerOrder = () => page.locator(".pe-layer-row").evaluateAll((rows) => rows.map((row) => row.querySelector("span")?.textContent?.trim() ?? ""));
+    const layerOrderBefore = await readLayerOrder();
+    await page.getByRole("button", { name: "To front", exact: true }).click();
+    const layerOrderAfter = await readLayerOrder();
+    if (layerOrderAfter.slice(0, 3).some((name) => ![imageSmokeName, "Tropical leaf", "ISLAND DAYS · KEEP CREATING"].some((selectedName) => name.startsWith(selectedName)))) throw new Error("To front did not bring the selected composition layers above the unselected layers.");
+    await page.getByRole("button", { name: "Undo", exact: true }).click();
+    await page.waitForFunction((expected) => JSON.stringify([...document.querySelectorAll(".pe-layer-row")].map((row) => row.querySelector("span")?.textContent?.trim() ?? "")) === JSON.stringify(expected), layerOrderBefore, { timeout: 15_000 });
+    await page.getByRole("button", { name: "Redo", exact: true }).click();
+    await page.waitForFunction((expected) => JSON.stringify([...document.querySelectorAll(".pe-layer-row")].map((row) => row.querySelector("span")?.textContent?.trim() ?? "")) === JSON.stringify(expected), layerOrderAfter, { timeout: 15_000 });
+    for (const row of [imageRow, leafRow, headingRow]) await row.locator("input.pe-layer-select").check();
+    await page.getByRole("button", { name: "Align selected hcenter to selection", exact: true }).click();
+    for (const row of [imageRow, leafRow, headingRow]) await row.locator("input.pe-layer-select").check();
+    await page.getByRole("button", { name: "Canvas", exact: true }).click();
+    await page.getByRole("button", { name: "Align selected left to canvas", exact: true }).click();
+    const partyRow = rowFor("Party confetti");
+    await partyRow.getByRole("button", { name: "Hide layer", exact: true }).click();
+    await page.waitForFunction(() => document.querySelector(".pe-layer-row[data-hidden='true']") !== null);
+    await partyRow.getByRole("button", { name: "Show layer", exact: true }).click();
+    await page.waitForFunction(() => document.querySelector(".pe-layer-row[data-hidden='true']") === null);
+    await partyRow.getByRole("button", { name: "Lock layer", exact: true }).click();
+    await partyRow.getByRole("button", { name: "Unlock layer", exact: true }).waitFor({ state: "visible", timeout: 10_000 });
+    if (!(await partyRow.getByRole("button", { name: "Party confetti", exact: true }).isDisabled())) throw new Error("A locked layer remained selectable from Layers.");
+    await partyRow.getByRole("button", { name: "Unlock layer", exact: true }).click();
+    if (await partyRow.getByRole("button", { name: "Party confetti", exact: true }).isDisabled()) throw new Error("Unlock did not restore selection from Layers.");
+    for (const row of [imageRow, leafRow, headingRow]) await row.locator("input.pe-layer-select").uncheck();
     await layers.getByRole("button", { name: imageSmokeName, exact: true }).click();
     await page.getByRole("button", { name: "Crop", exact: true }).click();
     const cropDialog = page.getByRole("dialog", { name: "Crop", exact: true });
@@ -429,7 +527,7 @@ try {
       typography: "created three text layers; edited copy, font, size, alignment, weight and color; duplicate/delete history passed",
       imageEditing: "uploaded a temporary image; crop, flip, opacity, brightness, contrast, saturation, tint, soft focus and local background removal passed; undo/redo, duplicate/delete and tablet controls passed",
       imageRefreshAndCleanup: "restored edited image after refresh, continued editing, then archived both temporary My files records",
-      selectionAndHistory: "selected, moved, resized and rotated artwork; multi-selected layers and reordered them; undo/redo passed",
+      selectionAndHistory: "selected a mixed image/graphic/text set; dragged and resized all three together; grouped/ungrouped, aligned to selection/canvas, changed front/back order, hid/showed and locked/unlocked a layer; undo/redo passed",
       tabletTypography,
       studioRefreshRecovery: "restored the inserted layer from the isolated browser draft after refresh",
       continuedEditing: "inserted Butterfly after restore, undid that insertion, and edited recovered heading text",
