@@ -607,6 +607,56 @@
       "sourceImageUrl": "https://images.metmuseum.org/CRDImages/dp/original/DP-46577-001.jpg",
       "originalFile": "originals/met-918294.jpg",
       "outputFile": "studio-assets/met/met-918294-v1.webp"
+    },
+    {
+      "objectId": 824468,
+      "name": "Scattered 18th-century floral decorative paper",
+      "kind": "pattern",
+      "category": "Patterns & Backgrounds",
+      "tags": ["scattered floral", "flower repeat", "decorative paper", "printed paper", "woodblock print", "18th century", "antique", "vintage", "botanical", "flowers", "blue flowers", "coral flowers", "ornamental", "wallpaper", "surface design", "gift wrap", "scrapbooking", "stationery", "invitation", "home decor", "sublimation", "evergreen"],
+      "originalFile": "originals/met-824468.jpg",
+      "outputFile": "studio-assets/met/met-824468-v1.webp",
+      "sourceImageUrl": "https://images.metmuseum.org/CRDImages/dp/original/DP887119.jpg"
+    },
+    {
+      "objectId": 221483,
+      "name": "Flower Garden textile by William Morris",
+      "kind": "pattern",
+      "category": "Patterns & Backgrounds",
+      "tags": ["William Morris", "Morris & Company", "Arts and Crafts", "British design", "England", "Merton Abbey", "1879", "19th century", "woven silk", "dense botanical", "flower garden", "foliage repeat", "vintage textile", "wallpaper", "surface design", "fabric pattern", "home decor", "gift wrap", "scrapbooking", "wedding", "sublimation", "evergreen"],
+      "originalFile": "originals/met-221483.jpg",
+      "outputFile": "studio-assets/met/met-221483-v1.webp",
+      "sourceImageUrl": "https://images.metmuseum.org/CRDImages/es/original/DP-14636-026.jpg"
+    },
+    {
+      "objectId": 450738,
+      "name": "Safavid floral bouquet and ribbon textile fragment",
+      "kind": "pattern",
+      "category": "Patterns & Backgrounds",
+      "tags": ["floral bouquet repeat", "flower bunch", "pink ribbon", "decorative textile", "textile fragment", "silk", "early 17th century", "Safavid textile", "attributed to Iran", "Persian art context", "Islamic Art collection", "botanical", "floral", "antique", "vintage", "romantic", "wedding", "invitation", "fabric design", "surface design", "sublimation", "evergreen"],
+      "originalFile": "originals/met-450738.jpg",
+      "outputFile": "studio-assets/met/met-450738-v1.webp",
+      "sourceImageUrl": "https://images.metmuseum.org/CRDImages/is/original/wb-46.156.19.JPG"
+    },
+    {
+      "objectId": 823390,
+      "name": "French scallop and palmette decorative paper",
+      "kind": "pattern",
+      "category": "Patterns & Backgrounds",
+      "tags": ["scallop repeat", "palmette", "decorative paper", "printed paper", "relief print", "black and blue", "French", "France", "late 18th century", "early 19th century", "antique", "vintage", "ornamental", "geometric floral", "wallpaper", "surface design", "gift wrap", "scrapbooking", "home decor", "sublimation", "evergreen"],
+      "originalFile": "originals/met-823390.jpg",
+      "outputFile": "studio-assets/met/met-823390-v1.webp",
+      "sourceImageUrl": "https://images.metmuseum.org/CRDImages/dp/original/DP886806.jpg"
+    },
+    {
+      "objectId": 64389,
+      "name": "Bush clover and meandering stream textile stencil",
+      "kind": "element",
+      "category": "Botanical & Gardening",
+      "tags": ["Japan", "Japanese textile design", "19th century", "Asian Art collection", "bush clover", "lespedeza", "meandering stream", "water motif", "textile stencil", "paper and silk stencil", "monochrome", "botanical", "ornamental plant", "nature", "historical pattern design", "surface design reference", "sublimation", "evergreen"],
+      "originalFile": "originals/met-64389.jpg",
+      "outputFile": "studio-assets/met/met-64389-v1.webp",
+      "sourceImageUrl": "https://images.metmuseum.org/CRDImages/as/original/DP13682.jpg"
     }
   ]
 }

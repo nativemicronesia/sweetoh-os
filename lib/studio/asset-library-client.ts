@@ -95,7 +95,21 @@ export function studioAssetMetadata(id: string) {
   return STUDIO_ASSETS_BY_ID.get(id);
 }
 export function studioAssetCategories() {
-  return [...new Set([...STUDIO_ASSET_MANIFEST.filter((asset) => asset.studioUseApproved).map((asset) => asset.category), "Fonts"])].sort((a, b) => a.localeCompare(b));
+  return [...new Set([...STUDIO_ASSET_MANIFEST.filter((asset) => asset.studioUseApproved).map((asset) => studioAssetCategoryGroup(asset.category)), "Fonts"])].sort((a, b) => a.localeCompare(b));
+}
+
+/** Turn source-specific labels into a short, stable set of useful Studio filters. */
+export function studioAssetCategoryGroup(category: string) {
+  const value = category.toLocaleLowerCase();
+  if (/frame|border/.test(value)) return "Frames & borders";
+  if (/pattern|background|texture/.test(value)) return "Patterns & backgrounds";
+  if (/animal|pet|nature|botanical|garden|ocean|outdoor/.test(value)) return "Nature & animals";
+  if (/food|drink|fruit|summer/.test(value)) return "Food & drink";
+  if (/holiday|season|celebration|gift|love|wedding|baby|faith|symbol|celestial/.test(value)) return "Celebrations & symbols";
+  if (/sport|hobb|craft|education|book|music|dance/.test(value)) return "Sports, hobbies & learning";
+  if (/travel|place|people|occupation|family|life|kids|character|expression/.test(value)) return "People & places";
+  if (/accent|object|illustration|decorative/.test(value)) return "Decorative elements";
+  return "Other design elements";
 }
 export function studioAssetUrl(id: string) {
   return `/api/studio/assets/${encodeURIComponent(id)}`;

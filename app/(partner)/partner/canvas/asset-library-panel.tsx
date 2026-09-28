@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { PRODUCT_FONTS } from "@/lib/studio/fonts";
 import { STUDIO_FONT_PROVENANCE } from "@/lib/studio/font-provenance";
 import { STUDIO_ASSET_MANIFEST } from "@/lib/studio/asset-manifest";
-import { matchesStudioAssetQuery, saveStudioLibraryIds, studioAssetCategories, studioAssetOriginLabel, studioAssetQueryScore, studioAssetUrl } from "@/lib/studio/asset-library-client";
+import { matchesStudioAssetQuery, saveStudioLibraryIds, studioAssetCategories, studioAssetCategoryGroup, studioAssetOriginLabel, studioAssetQueryScore, studioAssetUrl } from "@/lib/studio/asset-library-client";
 import { filterStudioCreativeAssets, type StudioCreativeAssetOption } from "@/lib/studio/creative-library-browser";
 
 const FAVORITES_KEY = "sweetoh:studio:favorites:v1";
@@ -55,7 +55,7 @@ export function AssetLibraryPanel({ disabled, creativeAssets = [], onAddCreative
   const visible = entries.filter((entry) => {
     if (filter === "Favorites" && !favorites.includes(entry.id)) return false;
     if (filter === "Recent" && !recent.includes(entry.id)) return false;
-    if (!["All", "Favorites", "Recent"].includes(filter) && entry.category !== filter) return false;
+    if (!["All", "Favorites", "Recent"].includes(filter) && studioAssetCategoryGroup(entry.category) !== filter) return false;
     return matchesStudioAssetQuery(entry, query);
   }).sort((a, b) => filter === "Recent" ? recent.indexOf(a.id) - recent.indexOf(b.id) : studioAssetQueryScore(b, query) - studioAssetQueryScore(a, query) || a.name.localeCompare(b.name));
 

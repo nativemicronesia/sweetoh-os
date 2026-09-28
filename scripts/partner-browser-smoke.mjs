@@ -71,7 +71,9 @@ async function portAvailable(candidate) {
   const server = createServer();
   return new Promise((resolve) => {
     server.once("error", (error) => resolve(error.code ?? String(error)));
-    server.listen(candidate, "127.0.0.1", () => server.close(() => resolve(true)));
+    // Match Next's wildcard/dual-stack listener. Checking only IPv4 can miss
+    // a stale Next process bound to ::: and falsely report the port as free.
+    server.listen(candidate, () => server.close(() => resolve(true)));
   });
 }
 
@@ -116,6 +118,23 @@ let browser;
 let tempDir;
 let appLogs = "";
 const browserErrors = [];
+let cleanupTask;
+
+function cleanup() {
+  cleanupTask ??= (async () => {
+    await browser?.close().catch(() => {});
+    await stopProcess(app);
+    if (tempDir) await rm(tempDir, { recursive: true, force: true });
+  })();
+  return cleanupTask;
+}
+
+for (const [signal, exitCode] of [["SIGINT", 130], ["SIGTERM", 143]]) {
+  process.once(signal, () => {
+    process.exitCode = exitCode;
+    void cleanup().finally(() => process.exit(exitCode));
+  });
+}
 
 try {
   const executablePath = chromeExecutable();
@@ -165,13 +184,20 @@ try {
     // This read-only path adds one asset to the in-memory canvas, checks it in
     // Layers, then undoes it before leaving; it never saves partner data.
     await page.goto(`${origin}/partner/canvas`, { waitUntil: "domcontentloaded", timeout: 90_000 });
-    const assetLibraryButton = page.getByRole("button", { name: "Asset library", exact: true });
+    await page.locator(".pe-stage canvas.lower-canvas").waitFor({ state: "visible", timeout: 60_000 });
+    await page.getByText("Loading product…", { exact: true }).waitFor({ state: "detached", timeout: 45_000 });
+    const assetLibraryButton = page.getByRole("button", { name: "Library", exact: true });
     await assetLibraryButton.waitFor({ state: "visible", timeout: 90_000 });
     await assetLibraryButton.click();
+    await page.getByRole("heading", { name: "Asset library", exact: true }).waitFor({ state: "visible", timeout: 15_000 });
     const search = page.getByPlaceholder("Search elements and fonts");
     await search.fill("tropical leaf");
     const assetButton = page.getByRole("button", { name: "Add Tropical leaf", exact: true });
     await assetButton.waitFor({ state: "visible", timeout: 30_000 });
+    const assetResponse = await page.request.get(`${origin}/api/studio/assets/so-leaf-v1`, { timeout: 90_000 });
+    if (!assetResponse.ok() || !assetResponse.headers()["content-type"]?.startsWith("image/")) {
+      throw new Error(`Rights-approved Tropical leaf asset did not load (${assetResponse.status()}).`);
+    }
     await assetButton.click();
     await page.getByRole("button", { name: "Layers", exact: true }).click();
     const layers = page.locator(".pe-layers");
@@ -269,7 +295,10 @@ try {
     console.log(JSON.stringify({ browser: browser.version(), temporaryReview: "opened by UUID", productionBlankForm: "submitted with explicit confirmation and supplied test geometry", persistedReview: "reopened", studio: "selected exact TEMP QA product; Front blank, print region and canvas restored", pageErrors: browserErrors }));
   }
 
-  if (process.env.PARTNER_BROWSER_SESSION_ONLY === "1") {
+  if (process.env.PARTNER_BROWSER_STUDIO_ONLY === "1") {
+    // The Studio-only branch already emitted its bounded result and closed
+    // the context; do not run the partner-session or fallback Studio journey.
+  } else if (process.env.PARTNER_BROWSER_SESSION_ONLY === "1") {
     console.log(JSON.stringify({
       browser: browser.version(),
       partnerLogin: "passed",
@@ -285,7 +314,7 @@ try {
     await context.close();
   } else {
     await page.goto(`${origin}/partner/canvas`, { waitUntil: "domcontentloaded", timeout: 90_000 });
-    const assetLibraryButton = page.getByRole("button", { name: "Asset library", exact: true });
+    const assetLibraryButton = page.getByRole("button", { name: "Library", exact: true });
     await assetLibraryButton.waitFor({ state: "visible", timeout: 45_000 });
     await assetLibraryButton.click();
     await page.getByPlaceholder("Search elements and fonts").fill("butterfly");
@@ -313,7 +342,5 @@ try {
   if (browserErrors.length) console.error(`Browser page errors: ${browserErrors.join(" | ")}`);
   process.exitCode = 1;
 } finally {
-  await browser?.close().catch(() => {});
-  await stopProcess(app);
-  if (tempDir) await rm(tempDir, { recursive: true, force: true });
+  await cleanup();
 }

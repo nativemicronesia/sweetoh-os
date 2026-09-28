@@ -11,7 +11,7 @@ import type { CreativeLibraryAsset } from "../lib/domains/library/model";
 import { prepareStudioTemplateCopy } from "../lib/domains/catalog/studio-template-copy";
 import { STUDIO_ASSETS, studioAsset, studioAssetUrl } from "../lib/studio/asset-library";
 import { STUDIO_ASSET_MANIFEST } from "../lib/studio/asset-manifest";
-import { STUDIO_ASSET_IDS, saveStudioLibraryIds, studioAssetCategories, studioAssetMetadata, studioAssetOriginLabel, studioAssetQueryScore } from "../lib/studio/asset-library-client";
+import { STUDIO_ASSET_IDS, saveStudioLibraryIds, studioAssetCategories, studioAssetCategoryGroup, studioAssetMetadata, studioAssetOriginLabel, studioAssetQueryScore } from "../lib/studio/asset-library-client";
 import { canSurfaceStudioAsset, findStudioAssets, studioAssetSearchSchema } from "../lib/studio/asset-library-search";
 import { STUDIO_FONT_PROVENANCE, resolveStudioFontKey } from "../lib/studio/font-provenance";
 import { filterStudioCreativeAssets } from "../lib/studio/creative-library-browser";
@@ -57,6 +57,18 @@ test("Studio client index preserves all asset identity while keeping SVG bodies 
   assert.equal(saveStudioLibraryIds({ setItem: (_key, value) => persisted.push(value) }, "recent", ["asset-1"]), true);
   assert.equal(persisted[0], '["asset-1"]');
   assert.equal(saveStudioLibraryIds({ setItem: () => { throw new Error("storage disabled"); } }, "recent", ["asset-1"]), false);
+});
+
+test("Studio browse filters group source-specific categories into a small practical taxonomy", () => {
+  const categories = studioAssetCategories();
+  assert.ok(categories.length <= 12, `expected concise browse filters, got ${categories.length}`);
+  assert.ok(categories.includes("Frames & borders"));
+  assert.ok(categories.includes("Patterns & backgrounds"));
+  assert.equal(studioAssetCategoryGroup("Ocean & Island"), "Nature & animals");
+  assert.equal(studioAssetCategoryGroup("Wedding & Baby"), "Celebrations & symbols");
+  assert.equal(studioAssetCategoryGroup("Food & Fruit"), "Food & drink");
+  assert.equal(studioAssetCategoryGroup("Frames"), "Frames & borders");
+  assert.equal(studioAssetCategoryGroup("Textures & Backgrounds"), "Patterns & backgrounds");
 });
 
 test("Studio search matches multiword creative briefs in any word order across both library modes", () => {
@@ -136,9 +148,9 @@ test("Smithsonian CC0 artwork retains checked rights, source records, searchable
 
 test("Met public-domain surfaces, botanicals, and bird plates keep exact rights evidence, originals, search, and raster insertion", async () => {
   const { assets } = JSON.parse(readFileSync("docs/licenses/third-party/met-open-access/SOURCE-MANIFEST.json", "utf8")) as {
-    assets: Array<{ id: string; objectId: number; publicDomainVerified: boolean; imageRightsBasis: string; sourceImageUrl: string; originalFile: string; originalSha256: string; derivativeFile: string; derivativeSha256: string }>;
+    assets: Array<{ id: string; objectId: number; publicDomainVerified: boolean; imageRightsBasis: string; recommendedCredit: string; sourceImageUrl: string; originalFile: string; originalSha256: string; derivativeFile: string; derivativeSha256: string }>;
   };
-  assert.equal(assets.length, 19);
+  assert.equal(assets.length, 24);
   for (const record of assets) {
     const itemRecord = JSON.parse(readFileSync(`docs/licenses/third-party/met-open-access/records/${record.objectId}.json`, "utf8")) as { objectID: number; isPublicDomain: boolean; primaryImage: string };
     const asset = studioAsset(record.id);
@@ -148,6 +160,8 @@ test("Met public-domain surfaces, botanicals, and bird plates keep exact rights 
     assert.equal(record.publicDomainVerified, true);
     assert.equal(record.sourceImageUrl, itemRecord.primaryImage);
     assert.match(record.imageRightsBasis, /public domain;.*commercial and noncommercial use/);
+    assert.match(record.recommendedCredit, /Public domain; credit recommended, not required\./);
+    assert.doesNotMatch(record.recommendedCredit, /CC0/);
     assert.equal(asset.licenseId, "PUBLIC-DOMAIN-US");
     assert.notEqual(asset.licenseId, "CC0-1.0");
     assert.equal(asset.attributionRequired, false);
@@ -164,6 +178,11 @@ test("Met public-domain surfaces, botanicals, and bird plates keep exact rights 
   assert.ok(findStudioAssets({ query: "Christmas gift tag vintage bird", kind: "any", limit: 50 }).some((asset) => asset.id === "met-768558-v1"));
   assert.ok(findStudioAssets({ query: "Audubon marsh wren nest vintage", kind: "any", limit: 50 }).some((asset) => asset.id === "met-918308-v1"));
   assert.ok(findStudioAssets({ query: "North American bird blossom engraving", kind: "any", limit: 50 }).some((asset) => asset.id === "met-918293-v1"));
+  assert.ok(findStudioAssets({ query: "William Morris Flower Garden textile", kind: "pattern", limit: 50 }).some((asset) => asset.id === "met-221483-v1"));
+  assert.ok(findStudioAssets({ query: "Safavid Persian Iran floral ribbon textile", kind: "pattern", limit: 50 }).some((asset) => asset.id === "met-450738-v1"));
+  assert.ok(findStudioAssets({ query: "French scallop palmette decorative paper", kind: "pattern", limit: 50 }).some((asset) => asset.id === "met-823390-v1"));
+  assert.ok(findStudioAssets({ query: "Japanese bush clover stream stencil", kind: "element", limit: 50 }).some((asset) => asset.id === "met-64389-v1"));
+  assert.ok(findStudioAssets({ query: "scattered 18th century floral decorative paper", kind: "pattern", limit: 50 }).some((asset) => asset.id === "met-824468-v1"));
   const asset = studioAsset("met-384020-v1")!;
   const response = await getStudioAssetResponse(new Request(`https://sweetoh.test${studioAssetUrl(asset.id)}`), { params: Promise.resolve({ id: asset.id }) });
   assert.equal(response.status, 200);

@@ -41,7 +41,7 @@ for (const item of config.records) {
   const dimensions = await sharp(output).metadata();
   const title = record.title || item.name;
   const artist = record.artistDisplayName?.trim() || null;
-  const credit = `${title}${artist ? `, ${artist}` : ""}; The Metropolitan Museum of Art. CC0 1.0; credit recommended, not required.`;
+  const credit = `${title}${artist ? `, ${artist}` : ""}; The Metropolitan Museum of Art. Public domain; credit recommended, not required.`;
 
   const sourceRecord = {
     id: `met-${item.objectId}-v1`,
