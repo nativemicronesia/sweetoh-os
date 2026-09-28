@@ -4,6 +4,7 @@ import { WIKIMEDIA_PACIFIC_CHARTS_STUDIO_ASSETS } from "./wikimedia-commons-paci
 import { FONT_AWESOME_STUDIO_ASSETS } from "./font-awesome-free-assets";
 import { CC0_PLAYING_CARDS_STUDIO_ASSETS } from "./cc0-playing-cards-assets";
 import { WELLCOME_EMBROIDERY_SPRIGS_STUDIO_ASSETS } from "./wellcome-embroidery-sprigs-assets";
+import { WELLCOME_BOTANICAL_PLATES_STUDIO_ASSETS } from "./wellcome-botanical-plates-assets";
 import { PATTERNFILLS_STUDIO_ASSETS } from "./patternfills-assets";
 import { OPEN_CROP_STUDIO_ASSETS } from "./open-crop-assets";
 import { OPENCLIPART_STUDIO_ASSETS } from "./openclipart-assets";
@@ -104,6 +105,7 @@ export const STUDIO_ASSETS: readonly StudioAsset[] = [
   ...FONT_AWESOME_STUDIO_ASSETS,
   ...CC0_PLAYING_CARDS_STUDIO_ASSETS,
   ...WELLCOME_EMBROIDERY_SPRIGS_STUDIO_ASSETS,
+  ...WELLCOME_BOTANICAL_PLATES_STUDIO_ASSETS,
   ...PATTERNFILLS_STUDIO_ASSETS,
   ...OPEN_CROP_STUDIO_ASSETS,
   ...OPENCLIPART_STUDIO_ASSETS,
