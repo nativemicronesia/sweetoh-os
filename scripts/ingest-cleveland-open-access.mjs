@@ -1,0 +1,100 @@
+import { createHash } from "node:crypto";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import path from "node:path";
+import sharp from "sharp";
+
+const root = process.cwd();
+const collection = path.join(root, "docs/licenses/third-party/cleveland-open-access");
+const config = JSON.parse(await readFile(path.join(collection, "assets.json"), "utf8"));
+const metadata = [];
+const sourceManifest = [];
+const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
+
+if (config.schemaVersion !== 1 || config.sourceLicense !== "CC0 1.0 Universal") {
+  throw new Error("Unsupported Cleveland Museum of Art Open Access source/license manifest");
+}
+
+for (const item of config.records) {
+  const recordPath = path.join(collection, "records", `${item.objectId}.json`);
+  const response = JSON.parse(await readFile(recordPath, "utf8"));
+  const record = response.data;
+  if (record?.id !== item.objectId || record.share_license_status !== "CC0") {
+    throw new Error(`Refusing CMA object ${item.objectId}: its bundled object record does not confirm the CC0 share-license status`);
+  }
+  if (!record.url?.startsWith("https://clevelandart.org/art/") || record.images?.print?.url !== item.sourceImageUrl || !item.sourceImageUrl.startsWith("https://openaccess-cdn.clevelandart.org/")) {
+    throw new Error(`Refusing CMA object ${item.objectId}: its object page or exact print-image URL does not match the configured source`);
+  }
+
+  const originalPath = path.join(collection, item.originalFile);
+  const original = await readFile(originalPath);
+  const image = sharp(original, { failOn: "error" });
+  const input = await image.metadata();
+  if (input.format !== "jpeg" || !input.width || !input.height) {
+    throw new Error(`Refusing CMA object ${item.objectId}: bundled print image is not a readable JPEG`);
+  }
+  const outputPath = path.join(root, "public", item.outputFile);
+  await mkdir(path.dirname(outputPath), { recursive: true });
+  const output = await image.rotate().resize({ width: 2400, height: 2400, fit: "inside", withoutEnlargement: true }).webp({ quality: 90, effort: 5 }).toBuffer();
+  await writeFile(outputPath, output);
+  const dimensions = await sharp(output).metadata();
+  const creators = Array.isArray(record.creators) ? record.creators : [];
+  const recommendedCredit = `${creators.map((creator) => `${creator.description}${creator.role ? ` (${creator.role})` : ""}`).join("; ") || "Creator not recorded"}. ${record.title || item.name}, ${record.creation_date || "date not recorded"}. The Cleveland Museum of Art, ${record.accession_number || `object ${item.objectId}`}. CC0 1.0; credit is recommended, not required.`;
+
+  sourceManifest.push({
+    id: `cma-${item.objectId}-v1`,
+    objectId: item.objectId,
+    accessionNumber: record.accession_number,
+    title: record.title,
+    titleInOriginalLanguage: record.title_in_original_language || null,
+    creators,
+    date: record.creation_date || null,
+    culture: record.culture || null,
+    department: record.department || null,
+    collection: record.collection || null,
+    objectType: record.type || null,
+    technique: record.technique || null,
+    medium: record.medium || null,
+    measurements: record.measurements || null,
+    tombstone: record.tombstone || null,
+    objectPage: record.url,
+    sourceRecordUrl: `https://openaccess-api.clevelandart.org/api/artworks/${item.objectId}`,
+    sourceImageUrl: record.images.print.url,
+    shareLicenseStatus: record.share_license_status,
+    license: config.sourceLicense,
+    licenseUrl: config.licenseUrl,
+    attributionRequired: false,
+    recommendedCredit,
+    originalFile: item.originalFile,
+    originalSha256: sha256(original),
+    originalDimensions: { width: input.width, height: input.height },
+    derivativeFile: item.outputFile,
+    derivativeSha256: sha256(output),
+    derivativeDimensions: { width: dimensions.width, height: dimensions.height },
+  });
+
+  metadata.push({
+    id: `cma-${item.objectId}-v1`,
+    name: item.name,
+    kind: item.kind,
+    category: item.category,
+    tags: item.tags,
+    license: config.sourceLicense,
+    source: `Cleveland Museum of Art${record.department ? ` — ${record.department}` : ""}${creators.length ? `; ${creators.map((creator) => creator.description).join("; ")}` : ""}`,
+    sourceUrl: record.url,
+    evidenceUrl: config.rightsEvidence,
+    licenseId: "CC0-1.0",
+    licenseUrl: config.licenseUrl,
+    attributionRequired: false,
+    attributionText: recommendedCredit,
+    commercialUse: true,
+    modificationAllowed: true,
+    redistributionAllowed: true,
+    imageUrl: `/${item.outputFile}`,
+    width: dimensions.width,
+    height: dimensions.height,
+  });
+}
+
+await writeFile(path.join(collection, "SOURCE-MANIFEST.json"), `${JSON.stringify({ schemaVersion: 1, generatedAt: "reproducible from bundled CC0 object records and print images", assets: sourceManifest }, null, 2)}\n`);
+await writeFile(path.join(root, "lib/studio/cleveland-assets.ts"), `/** Generated by scripts/ingest-cleveland-open-access.mjs from bundled object-verified CC0 records and print images. */\nimport type { StudioAsset } from "./asset-library";\n\nexport const CLEVELAND_STUDIO_ASSETS: readonly StudioAsset[] = ${JSON.stringify(metadata, null, 2)};\n`);
+console.log(`Verified and generated ${metadata.length} Cleveland Museum of Art CC0 design assets.`);

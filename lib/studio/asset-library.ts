@@ -13,6 +13,7 @@ import { OPEN_PEEPS_STUDIO_ASSETS } from "./open-peeps-assets";
 import { PHYLOPIC_STUDIO_ASSETS } from "./phylopic-assets";
 import { SMITHSONIAN_STUDIO_ASSETS } from "./smithsonian-assets";
 import { MET_STUDIO_ASSETS } from "./met-assets";
+import { CLEVELAND_STUDIO_ASSETS } from "./cleveland-assets";
 import { STUDIO_ASSET_IDS, studioAssetUrl } from "./asset-library-client";
 
 /**
@@ -96,6 +97,7 @@ export const STUDIO_ASSETS: readonly StudioAsset[] = [
   ...PHYLOPIC_STUDIO_ASSETS,
   ...SMITHSONIAN_STUDIO_ASSETS,
   ...MET_STUDIO_ASSETS,
+  ...CLEVELAND_STUDIO_ASSETS,
 ];
 
 export function studioAsset(id: string) { return STUDIO_ASSETS.find((asset) => asset.id === id); }

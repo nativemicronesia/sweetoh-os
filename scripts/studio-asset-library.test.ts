@@ -163,6 +163,41 @@ test("Met public-domain surfaces, botanicals, and bird plates keep exact rights 
   assert.ok((await sharp(Buffer.from(await response.arrayBuffer())).resize(480, 480).raw().toBuffer()).some((channel) => channel > 0));
 });
 
+test("Cleveland Museum CC0 art keeps record-level rights, creator context, print originals, search, and Studio rendering", async () => {
+  const { assets } = JSON.parse(readFileSync("docs/licenses/third-party/cleveland-open-access/SOURCE-MANIFEST.json", "utf8")) as {
+    assets: Array<{ id: string; objectId: number; shareLicenseStatus: string; sourceImageUrl: string; creators: Array<{ description: string; role: string }>; originalFile: string; originalSha256: string; derivativeFile: string; derivativeSha256: string }>;
+  };
+  assert.equal(assets.length, 15);
+  assert.match(readFileSync("docs/licenses/third-party/cleveland-open-access/CC0-1.0-LEGALCODE.txt", "utf8"), /^CC0 1\.0 Universal\n/);
+  for (const record of assets) {
+    const itemRecord = JSON.parse(readFileSync(`docs/licenses/third-party/cleveland-open-access/records/${record.objectId}.json`, "utf8")).data as { id: number; share_license_status: string; images: { print?: { url: string } } };
+    const asset = studioAsset(record.id);
+    assert.ok(asset);
+    assert.equal(itemRecord.id, record.objectId);
+    assert.equal(itemRecord.share_license_status, "CC0");
+    assert.equal(record.shareLicenseStatus, "CC0");
+    assert.equal(itemRecord.images.print?.url, record.sourceImageUrl);
+    assert.equal(asset.licenseId, "CC0-1.0");
+    assert.equal(asset.attributionRequired, false);
+    assert.equal(asset.commercialUse, true);
+    assert.equal(asset.modificationAllowed, true);
+    assert.equal(asset.redistributionAllowed, true);
+    assert.ok(canSurfaceStudioAsset(asset));
+    assert.equal(studioEditorCommandSchema.safeParse({ type: "add_graphic", assetKey: record.id }).success, true);
+    assert.equal(createHash("sha256").update(readFileSync(`docs/licenses/third-party/cleveland-open-access/${record.originalFile}`)).digest("hex"), record.originalSha256);
+    assert.equal(createHash("sha256").update(readFileSync(`public/${record.derivativeFile}`)).digest("hex"), record.derivativeSha256);
+  }
+  assert.ok(findStudioAssets({ query: "Orange Lily botanical print", kind: "any", limit: 50 }).some((asset) => asset.id === "cma-132620-v1"));
+  assert.ok(findStudioAssets({ query: "Plums Pomona Britannica orchard", kind: "any", limit: 50 }).some((asset) => asset.id === "cma-132850-v1"));
+  assert.ok(findStudioAssets({ query: "Giovanna Garzoni fruit birds", kind: "any", limit: 50 }).some((asset) => asset.id === "cma-132616-v1"));
+  assert.ok(findStudioAssets({ query: "Japanese winter summer flowers screen", kind: "any", limit: 50 }).some((asset) => asset.id === "cma-153736-v1"));
+  const asset = studioAsset("cma-132618-v1")!;
+  const response = await getStudioAssetResponse(new Request(`https://sweetoh.test${studioAssetUrl(asset.id)}`), { params: Promise.resolve({ id: asset.id }) });
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("Content-Type") ?? "", /^image\/webp/);
+  assert.ok((await sharp(Buffer.from(await response.arrayBuffer())).resize(480, 480).raw().toBuffer()).some((channel) => channel > 0));
+});
+
 test("curated Tabler assets keep upstream provenance and commercial-use evidence searchable", () => {
   const tabler = STUDIO_ASSETS.filter((asset) => asset.id.startsWith("tabler-"));
   assert.equal(tabler.length, 112);

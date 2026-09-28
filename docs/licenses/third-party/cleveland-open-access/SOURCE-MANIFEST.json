@@ -1,0 +1,826 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "reproducible from bundled CC0 object records and print images",
+  "assets": [
+    {
+      "id": "cma-115067-v1",
+      "objectId": 115067,
+      "accessionNumber": "1935.233",
+      "title": "Vase of Flowers",
+      "titleInOriginalLanguage": null,
+      "creators": [
+        {
+          "id": 1748,
+          "description": "Odilon Redon (French, 1840–1916)",
+          "extent": null,
+          "qualifier": null,
+          "role": "artist",
+          "biography": "A leader of the symbolist movement in France, Odilon Redon was born in Bordeaux in 1840 and grew up in the surrounding region. During his early years he studied drawing, architecture, and the violin. A friendship with Armand Clavaud, a local botanist and philosopher, stimulated Redon's passion for romantic art and literature. In 1864, after a brief and discouraging period of instruction with Gérôme in Paris, Redon returned to Bordeaux, where he studied printmaking with Rodolphe Bresdin (1825-1885). Deploring the emphasis on rational, phenomenal experience in academic and naturalist art, Redon turned for inspiration to the imaginative paintings of Delacroix, the prints of Francisco José de Goya (1746-1828), and the poetry of Charles Baudelaire. In 1870, after military service in the Franco-Prussian War, Redon settled in Paris and produced his first <em>Noirs</em>. These visionary images, featuring floating eyes and severed heads born aloft on wings, reflect Redon's belief in the superiority of the imagination and fantasy, which he considered \"the messenger of the unconscious.\" After producing his initial <em>Noirs </em>in charcoal, Redon discovered a method of transferring his drawings to lithography in 1876. Throughout the 1880s he continued to use charcoal, etching, and lithography as his primary media, and he produced twelve lithography albums before abandoning the genre in the late 1890s. During the 1880s Redon emerged as a leader of the symbolist reaction against impressionism. The publication in 1879 of his first lithographic album, <em>Dans le rêve</em>, followed by his first solo exhibition in 1881, attracted the admiration of J. K. Huysmans, who included illustrations by Redon in his novel <em>À rebours</em> (1884). Around the same time, Redon developed a personal and artistic relationship with poet Stéphane Mallarmé. Increasingly drawn into the public arena, Redon helped organize the Société des Artistes Indépendants in 1884. In 1886 he participated in the last impressionist exhibition and began showing with Les XX in Brussels. Redon's antinaturalist, visionary, art inspired many symbolist and Nabi artists, including Gauguin and Vuillard. Maurice Denis praised Redon as \"our Mallarmé,\" and in 1892 critic Albert Aurier described Redon as a leader of the new \"idealistic\" tendency in art. After 1890 the focus of Redon's activity shifted from monochromatic drawings and prints toward exploring color in richly worked pastels. His innovations in luminous color, as seen in the pastel and oil paintings he exhibited at the Galeries Durand-Ruel in 1900 were greatly admired by Henri Matisse (1869-1954) and the Fauves. Awarded the Legion of Honor in 1903, Redon continued his leadership role in the avant-garde and in 1904 became a founding member of the Salon d'Automne. In 1913 forty of his works were selected for exhibition in the Armory Show, the most by any artist. Redon died at his home in Paris in the summer of 1916.",
+          "name_in_original_language": null,
+          "birth_year": "1840",
+          "death_year": "1916",
+          "use_in_caption": true,
+          "include_extent": false,
+          "weight": 1
+        }
+      ],
+      "date": "c. 1905",
+      "culture": [
+        "France, late 19th-early 20th Century"
+      ],
+      "department": "Modern European Painting and Sculpture",
+      "collection": "Mod Euro - Painting 1800-1960",
+      "objectType": "Painting",
+      "technique": "oil on fabric",
+      "medium": null,
+      "measurements": "Framed: 90.8 x 62.2 x 10.2 cm (35 3/4 x 24 1/2 x 4 in.); Unframed: 73 x 59 cm (28 3/4 x 23 1/4 in.)",
+      "tombstone": "Vase of Flowers, c. 1905. Odilon Redon (French, 1840–1916). Oil on fabric; framed: 90.8 x 62.2 x 10.2 cm (35 3/4 x 24 1/2 x 4 in.); unframed: 73 x 59 cm (28 3/4 x 23 1/4 in.). The Cleveland Museum of Art, Gift of Roberta Holden Bole, 1935.233",
+      "objectPage": "https://clevelandart.org/art/1935.233",
+      "sourceRecordUrl": "https://openaccess-api.clevelandart.org/api/artworks/115067",
+      "sourceImageUrl": "https://openaccess-cdn.clevelandart.org/1935.233/1935.233_print.jpg",
+      "shareLicenseStatus": "CC0",
+      "license": "CC0 1.0 Universal",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "recommendedCredit": "Odilon Redon (French, 1840–1916) (artist). Vase of Flowers, c. 1905. The Cleveland Museum of Art, 1935.233. CC0 1.0; credit is recommended, not required.",
+      "originalFile": "originals/cma-115067.jpg",
+      "originalSha256": "b1a33dfeee5d02dd013ac20def8e2a804e90341abac34d52060e3f0107a9f388",
+      "originalDimensions": {
+        "width": 2500,
+        "height": 3400
+      },
+      "derivativeFile": "studio-assets/cma/cma-115067-v1.webp",
+      "derivativeSha256": "4d433766d6b8c05a9de3e72303da5e70ceb16516a04c1cd4a2edf7127b0e8014",
+      "derivativeDimensions": {
+        "width": 1765,
+        "height": 2400
+      }
+    },
+    {
+      "id": "cma-136207-v1",
+      "objectId": 136207,
+      "accessionNumber": "1960.108",
+      "title": "Flowers in a Glass",
+      "titleInOriginalLanguage": null,
+      "creators": [
+        {
+          "id": 2653,
+          "description": "Ambrosius Bosschaert (Dutch, 1573–1621)",
+          "extent": null,
+          "qualifier": null,
+          "role": "artist",
+          "biography": null,
+          "name_in_original_language": null,
+          "birth_year": "1573",
+          "death_year": "1621",
+          "use_in_caption": true,
+          "include_extent": false,
+          "weight": 1
+        }
+      ],
+      "date": "1606",
+      "culture": [
+        "Netherlands"
+      ],
+      "department": "European Painting and Sculpture",
+      "collection": "P - Netherlandish-Dutch",
+      "objectType": "Painting",
+      "technique": "oil on copper",
+      "medium": null,
+      "measurements": "Framed: 60.3 x 52.8 x 6.4 cm (23 3/4 x 20 13/16 x 2 1/2 in.); Unframed: 35.6 x 29.3 cm (14 x 11 9/16 in.)",
+      "tombstone": "Flowers in a Glass, 1606. Ambrosius Bosschaert (Dutch, 1573–1621). Oil on copper; framed: 60.3 x 52.8 x 6.4 cm (23 3/4 x 20 13/16 x 2 1/2 in.); unframed: 35.6 x 29.3 cm (14 x 11 9/16 in.). The Cleveland Museum of Art, Gift of Carrie Moss Halle in memory of Salmon Portland Halle, 1960.108",
+      "objectPage": "https://clevelandart.org/art/1960.108",
+      "sourceRecordUrl": "https://openaccess-api.clevelandart.org/api/artworks/136207",
+      "sourceImageUrl": "https://openaccess-cdn.clevelandart.org/1960.108/1960.108_print.jpg",
+      "shareLicenseStatus": "CC0",
+      "license": "CC0 1.0 Universal",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "recommendedCredit": "Ambrosius Bosschaert (Dutch, 1573–1621) (artist). Flowers in a Glass, 1606. The Cleveland Museum of Art, 1960.108. CC0 1.0; credit is recommended, not required.",
+      "originalFile": "originals/cma-136207.jpg",
+      "originalSha256": "e261ee57cbbb19a316c01b8347a86656efb2cb45b8d3a1b8aa42f09481161e3b",
+      "originalDimensions": {
+        "width": 2845,
+        "height": 3400
+      },
+      "derivativeFile": "studio-assets/cma/cma-136207-v1.webp",
+      "derivativeSha256": "883b90143ac3c3c78a775af243b62f08a6988224c20c235e9371c7b5c081a9db",
+      "derivativeDimensions": {
+        "width": 2008,
+        "height": 2400
+      }
+    },
+    {
+      "id": "cma-130391-v1",
+      "objectId": 130391,
+      "accessionNumber": "1953.155",
+      "title": "Spring Flowers",
+      "titleInOriginalLanguage": null,
+      "creators": [
+        {
+          "id": 1844,
+          "description": "Claude Monet (French, 1840–1926)",
+          "extent": null,
+          "qualifier": null,
+          "role": "artist",
+          "biography": "Claude Monet spent his youth in Le Havre in Normandy, where his father worked as a wholesale grocer. By the age of sixteen, he had exhibited some of his caricatures in an art supply store, leading to his acquaintance with Boudin (q.v.). It was Boudin who first encouraged him to paint out of doors. In 1859 Monet traveled to Paris, where he saw Boudin's salon debut and met Constant Troyon (1810-1865). A year later he joined the Académie Suisse, where he was introduced to Pissarro (q.v.), but his studies were interrupted in 1861 when he was drafted for a seven-year stint in the military. His family would pay for his release from military duties only if he gave up painting. Finding this unacceptable, Monet served for one year in Algeria before an early return to France to convalesce after a severe illness. In 1862 he met Jongkind (q.v.), another important influence on the young painter's development. Monet's father then allowed him to pursue his art career in Paris, where he entered the studio of the Swiss painter Charles Gleyre (1806-1874). He studied with Gleyre until 1864 and befriended Frédéric Bazille (1841-1870), Renoir (q.v.), and Sisley (q.v.), with whom he painted in the forest of Fontainebleau (Déjeuner sur l'herbe, 1865, two fragments in Musée d'Orsay, Paris). Monet first exhibited at the Salon of 1865 and would do so again in 1866, 1868, and 1880. In 1868 he shared a studio with Bazille and Renoir but was soon forced to leave Paris to escape his creditors. He took his mistress, Camille Doncieux, and their son, Jean, to Fécamp, then Étretat, and finally Saint-Michel. There Renoir provided hospitality, and the two also painted at the boating and bathing center of La Grenouillère on the Seine. In 1870 Monet married Camille and, to escape the Franco-Prussian War, left for London, where he remained for nine months and met Durand-Ruel, his first dealer. In the summer of 1871 he visited the Netherlands and then settled in Argenteuil, to the west of Paris. He converted a boat into a studio, as Daubigny (q.v.) had done before him, allowing him to explore different viewpoints for his landscapes. He assisted in the organization of the First Impressionist Exhibition in 1874, partly because Durand-Ruel's worsened business situation had prevented the dealer from buying his art. The following year he participated in the Hôtel Drouot sale with Morisot (q.v.), Renoir, and Sisley. In 1878 Monet and his wife moved to Vétheuil with the Hoschedés, who had previously commissioned some works. Camille died the following year, and, while Ernest Hoschedé spent most of his time in Paris trying to settle his precarious financial situation, Monet stayed behind with Ernest's wife, Alice. In 1881 he moved with her and her children to Poissy and within two years was living at Giverny, where he would remain for the rest of his life. He painted some of his famous scenes-the haystack and poplar series, for example- in 1890-91. Ernest Hoschedé died in 1891, and Monet married Alice the following year. At Giverny, Monet explored the themes of his garden and water lilies. He continued to travel, going to Norway in 1895, making three trips to London from 1899 through 1901, and taking Alice to Venice in 1908. The final years of his life were mainly spent working on his Great Decorations, large paintings of a water lily pond designed for two oval rooms at the Paris Orangerie. Monet is generally considered the most typical exponent of impressionism.",
+          "name_in_original_language": null,
+          "birth_year": "1840",
+          "death_year": "1926",
+          "use_in_caption": true,
+          "include_extent": false,
+          "weight": 1
+        }
+      ],
+      "date": "1864",
+      "culture": [
+        "France, 19th century"
+      ],
+      "department": "Modern European Painting and Sculpture",
+      "collection": "Mod Euro - Painting 1800-1960",
+      "objectType": "Painting",
+      "technique": "oil on canvas",
+      "medium": null,
+      "measurements": "Framed: 144.5 x 117.2 x 12.1 cm (56 7/8 x 46 1/8 x 4 3/4 in.); Unframed: 116.8 x 90.5 cm (46 x 35 5/8 in.)",
+      "tombstone": "Spring Flowers, 1864. Claude Monet (French, 1840–1926). Oil on canvas; framed: 144.5 x 117.2 x 12.1 cm (56 7/8 x 46 1/8 x 4 3/4 in.); unframed: 116.8 x 90.5 cm (46 x 35 5/8 in.). The Cleveland Museum of Art, Gift of the Hanna Fund, 1953.155",
+      "objectPage": "https://clevelandart.org/art/1953.155",
+      "sourceRecordUrl": "https://openaccess-api.clevelandart.org/api/artworks/130391",
+      "sourceImageUrl": "https://openaccess-cdn.clevelandart.org/1953.155/1953.155_print.jpg",
+      "shareLicenseStatus": "CC0",
+      "license": "CC0 1.0 Universal",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "recommendedCredit": "Claude Monet (French, 1840–1926) (artist). Spring Flowers, 1864. The Cleveland Museum of Art, 1953.155. CC0 1.0; credit is recommended, not required.",
+      "originalFile": "originals/cma-130391.jpg",
+      "originalSha256": "1ce07a53cbe6c3f60c2b92f0213641be08b3cecbf00119b27d6c90e7d2af79bb",
+      "originalDimensions": {
+        "width": 2589,
+        "height": 3400
+      },
+      "derivativeFile": "studio-assets/cma/cma-130391-v1.webp",
+      "derivativeSha256": "bb4d9d139823895e56b6fa7db4561902a3f86086d65de4b0d2d8a6e800d2ad22",
+      "derivativeDimensions": {
+        "width": 1828,
+        "height": 2400
+      }
+    },
+    {
+      "id": "cma-135469-v1",
+      "objectId": 135469,
+      "accessionNumber": "1958.46",
+      "title": "Vase of Flowers",
+      "titleInOriginalLanguage": null,
+      "creators": [
+        {
+          "id": 1748,
+          "description": "Odilon Redon (French, 1840–1916)",
+          "extent": null,
+          "qualifier": null,
+          "role": "artist",
+          "biography": "A leader of the symbolist movement in France, Odilon Redon was born in Bordeaux in 1840 and grew up in the surrounding region. During his early years he studied drawing, architecture, and the violin. A friendship with Armand Clavaud, a local botanist and philosopher, stimulated Redon's passion for romantic art and literature. In 1864, after a brief and discouraging period of instruction with Gérôme in Paris, Redon returned to Bordeaux, where he studied printmaking with Rodolphe Bresdin (1825-1885). Deploring the emphasis on rational, phenomenal experience in academic and naturalist art, Redon turned for inspiration to the imaginative paintings of Delacroix, the prints of Francisco José de Goya (1746-1828), and the poetry of Charles Baudelaire. In 1870, after military service in the Franco-Prussian War, Redon settled in Paris and produced his first <em>Noirs</em>. These visionary images, featuring floating eyes and severed heads born aloft on wings, reflect Redon's belief in the superiority of the imagination and fantasy, which he considered \"the messenger of the unconscious.\" After producing his initial <em>Noirs </em>in charcoal, Redon discovered a method of transferring his drawings to lithography in 1876. Throughout the 1880s he continued to use charcoal, etching, and lithography as his primary media, and he produced twelve lithography albums before abandoning the genre in the late 1890s. During the 1880s Redon emerged as a leader of the symbolist reaction against impressionism. The publication in 1879 of his first lithographic album, <em>Dans le rêve</em>, followed by his first solo exhibition in 1881, attracted the admiration of J. K. Huysmans, who included illustrations by Redon in his novel <em>À rebours</em> (1884). Around the same time, Redon developed a personal and artistic relationship with poet Stéphane Mallarmé. Increasingly drawn into the public arena, Redon helped organize the Société des Artistes Indépendants in 1884. In 1886 he participated in the last impressionist exhibition and began showing with Les XX in Brussels. Redon's antinaturalist, visionary, art inspired many symbolist and Nabi artists, including Gauguin and Vuillard. Maurice Denis praised Redon as \"our Mallarmé,\" and in 1892 critic Albert Aurier described Redon as a leader of the new \"idealistic\" tendency in art. After 1890 the focus of Redon's activity shifted from monochromatic drawings and prints toward exploring color in richly worked pastels. His innovations in luminous color, as seen in the pastel and oil paintings he exhibited at the Galeries Durand-Ruel in 1900 were greatly admired by Henri Matisse (1869-1954) and the Fauves. Awarded the Legion of Honor in 1903, Redon continued his leadership role in the avant-garde and in 1904 became a founding member of the Salon d'Automne. In 1913 forty of his works were selected for exhibition in the Armory Show, the most by any artist. Redon died at his home in Paris in the summer of 1916.",
+          "name_in_original_language": null,
+          "birth_year": "1840",
+          "death_year": "1916",
+          "use_in_caption": true,
+          "include_extent": false,
+          "weight": 1
+        }
+      ],
+      "date": "1916",
+      "culture": [
+        "France, 20th century"
+      ],
+      "department": "Drawings",
+      "collection": "DR - French",
+      "objectType": "Drawing",
+      "technique": "pastel",
+      "medium": null,
+      "measurements": "Sheet: 84.1 x 58 cm (33 1/8 x 22 13/16 in.)",
+      "tombstone": "Vase of Flowers, 1916. Odilon Redon (French, 1840–1916). Pastel; sheet: 84.1 x 58 cm (33 1/8 x 22 13/16 in.). The Cleveland Museum of Art, Bequest of Leonard C. Hanna Jr., 1958.46",
+      "objectPage": "https://clevelandart.org/art/1958.46",
+      "sourceRecordUrl": "https://openaccess-api.clevelandart.org/api/artworks/135469",
+      "sourceImageUrl": "https://openaccess-cdn.clevelandart.org/1958.46/1958.46_print.jpg",
+      "shareLicenseStatus": "CC0",
+      "license": "CC0 1.0 Universal",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "recommendedCredit": "Odilon Redon (French, 1840–1916) (artist). Vase of Flowers, 1916. The Cleveland Museum of Art, 1958.46. CC0 1.0; credit is recommended, not required.",
+      "originalFile": "originals/cma-135469.jpg",
+      "originalSha256": "b081c7f40e50de0dd1dfae75fd6b4a734384cd99e24276deb1f90e0b946206a8",
+      "originalDimensions": {
+        "width": 2137,
+        "height": 3400
+      },
+      "derivativeFile": "studio-assets/cma/cma-135469-v1.webp",
+      "derivativeSha256": "cff50effbb03ece292865eaae718cba4f335597982b86875e766f87747fadb37",
+      "derivativeDimensions": {
+        "width": 1508,
+        "height": 2400
+      }
+    },
+    {
+      "id": "cma-132618-v1",
+      "objectId": 132618,
+      "accessionNumber": "1955.142",
+      "title": "The Botanical Magazine or Flower Garden Displayed:  White Cape - Coast Lily",
+      "titleInOriginalLanguage": null,
+      "creators": [
+        {
+          "id": 53340,
+          "description": "Sydenham Edwards (British, 1768–1819)",
+          "extent": null,
+          "qualifier": null,
+          "role": "artist",
+          "biography": null,
+          "name_in_original_language": null,
+          "birth_year": "1768",
+          "death_year": "1819",
+          "use_in_caption": true,
+          "include_extent": false,
+          "weight": 0
+        },
+        {
+          "id": 69437,
+          "description": "Thomas Curtis (British, 1846–1920)",
+          "extent": null,
+          "qualifier": null,
+          "role": "publisher",
+          "biography": null,
+          "name_in_original_language": null,
+          "birth_year": "1846",
+          "death_year": "1920",
+          "use_in_caption": false,
+          "include_extent": false,
+          "weight": 1
+        }
+      ],
+      "date": "1806",
+      "culture": [
+        "England, 19th century"
+      ],
+      "department": "Prints",
+      "collection": "PR - Engraving",
+      "objectType": "Print",
+      "technique": "engraving, hand-colored",
+      "medium": null,
+      "measurements": null,
+      "tombstone": "The Botanical Magazine or Flower Garden Displayed:  White Cape - Coast Lily, 1806. Sydenham Edwards (British, 1768–1819). Engraving, hand-colored. The Cleveland Museum of Art, Gift of Mrs. A. B. Leavelle, Stanford, Cal., in memory of her mother, Wilma Ball Morgan (Mrs. Daniel E. Morgan), 1955.142",
+      "objectPage": "https://clevelandart.org/art/1955.142",
+      "sourceRecordUrl": "https://openaccess-api.clevelandart.org/api/artworks/132618",
+      "sourceImageUrl": "https://openaccess-cdn.clevelandart.org/1955.142/1955.142_print.jpg",
+      "shareLicenseStatus": "CC0",
+      "license": "CC0 1.0 Universal",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "recommendedCredit": "Sydenham Edwards (British, 1768–1819) (artist); Thomas Curtis (British, 1846–1920) (publisher). The Botanical Magazine or Flower Garden Displayed:  White Cape - Coast Lily, 1806. The Cleveland Museum of Art, 1955.142. CC0 1.0; credit is recommended, not required.",
+      "originalFile": "originals/cma-132618.jpg",
+      "originalSha256": "80718b5680f2cf1f936ac6516689b80cfa1c998e52f39e81b0a3d563d64f7f3a",
+      "originalDimensions": {
+        "width": 3400,
+        "height": 2753
+      },
+      "derivativeFile": "studio-assets/cma/cma-132618-v1.webp",
+      "derivativeSha256": "d73346a7c5543672b0f89668706338ad9c6a6ea0e7d79434b2b9fd7a8f60be86",
+      "derivativeDimensions": {
+        "width": 2400,
+        "height": 1943
+      }
+    },
+    {
+      "id": "cma-132620-v1",
+      "objectId": 132620,
+      "accessionNumber": "1955.144",
+      "title": "The Botanical Magazine or Flower Garden Displayed:  Umbel-Flowering Bulb-Bearing Orange-Lily",
+      "titleInOriginalLanguage": null,
+      "creators": [
+        {
+          "id": 69437,
+          "description": "Thomas Curtis (British, 1846–1920)",
+          "extent": null,
+          "qualifier": null,
+          "role": "artist",
+          "biography": null,
+          "name_in_original_language": null,
+          "birth_year": "1846",
+          "death_year": "1920",
+          "use_in_caption": true,
+          "include_extent": false,
+          "weight": 1
+        }
+      ],
+      "date": "1807",
+      "culture": [
+        "England, 19th century"
+      ],
+      "department": "Prints",
+      "collection": "PR - Engraving",
+      "objectType": "Print",
+      "technique": "engraving, hand-colored",
+      "medium": null,
+      "measurements": "Platemark: 20.3 x 24.4 cm (8 x 9 5/8 in.)",
+      "tombstone": "The Botanical Magazine or Flower Garden Displayed:  Umbel-Flowering Bulb-Bearing Orange-Lily, 1807. Thomas Curtis (British, 1846–1920). Engraving, hand-colored; platemark: 20.3 x 24.4 cm (8 x 9 5/8 in.). The Cleveland Museum of Art, Gift of Mrs. A. B. Leavelle, Stanford, Cal., in memory of her mother, Wilma Ball Morgan (Mrs. Daniel E. Morgan), 1955.144",
+      "objectPage": "https://clevelandart.org/art/1955.144",
+      "sourceRecordUrl": "https://openaccess-api.clevelandart.org/api/artworks/132620",
+      "sourceImageUrl": "https://openaccess-cdn.clevelandart.org/1955.144/1955.144_print.jpg",
+      "shareLicenseStatus": "CC0",
+      "license": "CC0 1.0 Universal",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "recommendedCredit": "Thomas Curtis (British, 1846–1920) (artist). The Botanical Magazine or Flower Garden Displayed:  Umbel-Flowering Bulb-Bearing Orange-Lily, 1807. The Cleveland Museum of Art, 1955.144. CC0 1.0; credit is recommended, not required.",
+      "originalFile": "originals/cma-132620.jpg",
+      "originalSha256": "7e80cfc2d7a23bf25fbe1024dd0b7f7046844c79c9dee94755cffd9d339d44a8",
+      "originalDimensions": {
+        "width": 3400,
+        "height": 2845
+      },
+      "derivativeFile": "studio-assets/cma/cma-132620-v1.webp",
+      "derivativeSha256": "3029637b0c601ba1eae6a7629833897493c0aea1a470cb36c28afe15615ba11d",
+      "derivativeDimensions": {
+        "width": 2400,
+        "height": 2008
+      }
+    },
+    {
+      "id": "cma-135614-v1",
+      "objectId": 135614,
+      "accessionNumber": "1959.15",
+      "title": "Pasture Rose (Rosa Carolina Corymbosa)",
+      "titleInOriginalLanguage": null,
+      "creators": [
+        {
+          "id": 68798,
+          "description": "Pierre-Joseph Redouté (French, 1759–1840)",
+          "extent": null,
+          "qualifier": null,
+          "role": "artist",
+          "biography": null,
+          "name_in_original_language": null,
+          "use_in_caption": true,
+          "include_extent": false,
+          "weight": 1
+        }
+      ],
+      "date": "1817–24",
+      "culture": [
+        "France, 19th century"
+      ],
+      "department": "Drawings",
+      "collection": "DR - French",
+      "objectType": "Drawing",
+      "technique": "watercolor",
+      "medium": null,
+      "measurements": null,
+      "tombstone": "Pasture Rose (Rosa Carolina Corymbosa), 1817–24. Pierre-Joseph Redouté (French, 1759–1840). Watercolor. The Cleveland Museum of Art, Gift in the name of Warren H. Corning from his wife and children, 1959.15",
+      "objectPage": "https://clevelandart.org/art/1959.15",
+      "sourceRecordUrl": "https://openaccess-api.clevelandart.org/api/artworks/135614",
+      "sourceImageUrl": "https://openaccess-cdn.clevelandart.org/1959.15/1959.15_print.jpg",
+      "shareLicenseStatus": "CC0",
+      "license": "CC0 1.0 Universal",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "recommendedCredit": "Pierre-Joseph Redouté (French, 1759–1840) (artist). Pasture Rose (Rosa Carolina Corymbosa), 1817–24. The Cleveland Museum of Art, 1959.15. CC0 1.0; credit is recommended, not required.",
+      "originalFile": "originals/cma-135614.jpg",
+      "originalSha256": "09f192af5e45d1d15df02cf4c18b5774fb22c581cc171e4edc6f5b5a433af9a4",
+      "originalDimensions": {
+        "width": 2346,
+        "height": 3400
+      },
+      "derivativeFile": "studio-assets/cma/cma-135614-v1.webp",
+      "derivativeSha256": "ce5a3ad5a577068c952267fc334a97e6657778eea8e862e6903b307b94a67222",
+      "derivativeDimensions": {
+        "width": 1656,
+        "height": 2400
+      }
+    },
+    {
+      "id": "cma-127080-v1",
+      "objectId": 127080,
+      "accessionNumber": "1949.412",
+      "title": "(Botanical: Maurándia semperflorens)",
+      "titleInOriginalLanguage": null,
+      "creators": [
+        {
+          "id": 13272,
+          "description": "Pancrace Bessa (French, 1772–1846)",
+          "extent": null,
+          "qualifier": null,
+          "role": "artist",
+          "biography": null,
+          "name_in_original_language": null,
+          "birth_year": "1772",
+          "death_year": "1846",
+          "use_in_caption": true,
+          "include_extent": false,
+          "weight": 1
+        }
+      ],
+      "date": "1836",
+      "culture": [
+        "France, 19th century"
+      ],
+      "department": "Drawings",
+      "collection": "DR - French",
+      "objectType": "Drawing",
+      "technique": "pencil and watercolor",
+      "medium": null,
+      "measurements": null,
+      "tombstone": "(Botanical: Maurándia semperflorens), 1836. Pancrace Bessa (French, 1772–1846). Pencil and watercolor. The Cleveland Museum of Art, Gift of The Print Club of Cleveland, 1949.412",
+      "objectPage": "https://clevelandart.org/art/1949.412",
+      "sourceRecordUrl": "https://openaccess-api.clevelandart.org/api/artworks/127080",
+      "sourceImageUrl": "https://openaccess-cdn.clevelandart.org/1949.412/1949.412_print.jpg",
+      "shareLicenseStatus": "CC0",
+      "license": "CC0 1.0 Universal",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "recommendedCredit": "Pancrace Bessa (French, 1772–1846) (artist). (Botanical: Maurándia semperflorens), 1836. The Cleveland Museum of Art, 1949.412. CC0 1.0; credit is recommended, not required.",
+      "originalFile": "originals/cma-127080.jpg",
+      "originalSha256": "5bcd4401dc137b57cc235bf5a6a645fe070adc48b39e79a398c7ae03ce430992",
+      "originalDimensions": {
+        "width": 2233,
+        "height": 3400
+      },
+      "derivativeFile": "studio-assets/cma/cma-127080-v1.webp",
+      "derivativeSha256": "295870ad2dedf2450f9cc6aa25d7e92b9a60290660e77e31ef5d09d44f650f2b",
+      "derivativeDimensions": {
+        "width": 1576,
+        "height": 2400
+      }
+    },
+    {
+      "id": "cma-127079-v1",
+      "objectId": 127079,
+      "accessionNumber": "1949.411",
+      "title": "Polyanthus or Cluster Narcissus (Botanical: Narcissus tazetta)",
+      "titleInOriginalLanguage": null,
+      "creators": [
+        {
+          "id": 13272,
+          "description": "Pancrace Bessa (French, 1772–1846)",
+          "extent": null,
+          "qualifier": null,
+          "role": "artist",
+          "biography": null,
+          "name_in_original_language": null,
+          "birth_year": "1772",
+          "death_year": "1846",
+          "use_in_caption": true,
+          "include_extent": false,
+          "weight": 1
+        }
+      ],
+      "date": "1836",
+      "culture": [
+        "France, 19th century"
+      ],
+      "department": "Drawings",
+      "collection": "DR - French",
+      "objectType": "Drawing",
+      "technique": "pencil and watercolor",
+      "medium": null,
+      "measurements": null,
+      "tombstone": "Polyanthus or Cluster Narcissus (Botanical: Narcissus tazetta), 1836. Pancrace Bessa (French, 1772–1846). Pencil and watercolor. The Cleveland Museum of Art, Gift of The Print Club of Cleveland, 1949.411",
+      "objectPage": "https://clevelandart.org/art/1949.411",
+      "sourceRecordUrl": "https://openaccess-api.clevelandart.org/api/artworks/127079",
+      "sourceImageUrl": "https://openaccess-cdn.clevelandart.org/1949.411/1949.411_print.jpg",
+      "shareLicenseStatus": "CC0",
+      "license": "CC0 1.0 Universal",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "recommendedCredit": "Pancrace Bessa (French, 1772–1846) (artist). Polyanthus or Cluster Narcissus (Botanical: Narcissus tazetta), 1836. The Cleveland Museum of Art, 1949.411. CC0 1.0; credit is recommended, not required.",
+      "originalFile": "originals/cma-127079.jpg",
+      "originalSha256": "2e8edec73ebc36d2c3ce049a15bcab2fe53fd4f7bd1e8f15c70d3148c988f432",
+      "originalDimensions": {
+        "width": 2233,
+        "height": 3400
+      },
+      "derivativeFile": "studio-assets/cma/cma-127079-v1.webp",
+      "derivativeSha256": "158c5e62eb0b7ad10fab830de201a49ba8b24b5bf682ef72f746cd3ad0fcb204",
+      "derivativeDimensions": {
+        "width": 1576,
+        "height": 2400
+      }
+    },
+    {
+      "id": "cma-132850-v1",
+      "objectId": 132850,
+      "accessionNumber": "1955.310",
+      "title": "Pomona Britannica:  No. 17 - Plums",
+      "titleInOriginalLanguage": null,
+      "creators": [
+        {
+          "id": 26985,
+          "description": "George Brookshaw (British, 1751–1823)",
+          "extent": null,
+          "qualifier": null,
+          "role": "artist",
+          "biography": null,
+          "name_in_original_language": null,
+          "birth_year": "1751",
+          "death_year": "1823",
+          "use_in_caption": true,
+          "include_extent": false,
+          "weight": 1
+        }
+      ],
+      "date": "1806",
+      "culture": [
+        "England, 19th century"
+      ],
+      "department": "Prints",
+      "collection": "PR - Aquatint",
+      "objectType": "Print",
+      "technique": "aquatint",
+      "medium": null,
+      "measurements": null,
+      "tombstone": "Pomona Britannica:  No. 17 - Plums, 1806. George Brookshaw (British, 1751–1823). Aquatint. The Cleveland Museum of Art, Gift of The Print Club of Cleveland in honor of Arnold M. Davis, 1955.310",
+      "objectPage": "https://clevelandart.org/art/1955.310",
+      "sourceRecordUrl": "https://openaccess-api.clevelandart.org/api/artworks/132850",
+      "sourceImageUrl": "https://openaccess-cdn.clevelandart.org/1955.310/1955.310_print.jpg",
+      "shareLicenseStatus": "CC0",
+      "license": "CC0 1.0 Universal",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "recommendedCredit": "George Brookshaw (British, 1751–1823) (artist). Pomona Britannica:  No. 17 - Plums, 1806. The Cleveland Museum of Art, 1955.310. CC0 1.0; credit is recommended, not required.",
+      "originalFile": "originals/cma-132850.jpg",
+      "originalSha256": "471a668b0a60be00792d3ee2d5d2ea67dc15c041498c847fddff451cc5acccb9",
+      "originalDimensions": {
+        "width": 2614,
+        "height": 3400
+      },
+      "derivativeFile": "studio-assets/cma/cma-132850-v1.webp",
+      "derivativeSha256": "14dbd1d2c3dce1bd22a1b3dd01e625e5c9043399e50d98add84a33bf68d2b720",
+      "derivativeDimensions": {
+        "width": 1845,
+        "height": 2400
+      }
+    },
+    {
+      "id": "cma-132616-v1",
+      "objectId": 132616,
+      "accessionNumber": "1955.140",
+      "title": "Still Life with Birds and Fruit",
+      "titleInOriginalLanguage": null,
+      "creators": [
+        {
+          "id": 11930,
+          "description": "Giovanna Garzoni (Italian, 1600–1670)",
+          "extent": null,
+          "qualifier": null,
+          "role": "artist",
+          "biography": null,
+          "name_in_original_language": null,
+          "birth_year": "1600",
+          "death_year": "1670",
+          "use_in_caption": true,
+          "include_extent": false,
+          "weight": 1
+        }
+      ],
+      "date": "c. 1650",
+      "culture": [
+        "Italy"
+      ],
+      "department": "Drawings",
+      "collection": "DR - Italian",
+      "objectType": "Drawing",
+      "technique": "watercolor with graphite, heightened with lead white",
+      "medium": null,
+      "measurements": "Sheet: 25.7 x 41.6 cm (10 1/8 x 16 3/8 in.)",
+      "tombstone": "Still Life with Birds and Fruit, c. 1650. Giovanna Garzoni (Italian, 1600–1670). Watercolor with graphite, heightened with lead white; sheet: 25.7 x 41.6 cm (10 1/8 x 16 3/8 in.). The Cleveland Museum of Art, Bequest of Mrs. Elma M. Schniewind in memory of her parents Mr. and Mrs. Frank Geib, 1955.140",
+      "objectPage": "https://clevelandart.org/art/1955.140",
+      "sourceRecordUrl": "https://openaccess-api.clevelandart.org/api/artworks/132616",
+      "sourceImageUrl": "https://openaccess-cdn.clevelandart.org/1955.140/1955.140_print.jpg",
+      "shareLicenseStatus": "CC0",
+      "license": "CC0 1.0 Universal",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "recommendedCredit": "Giovanna Garzoni (Italian, 1600–1670) (artist). Still Life with Birds and Fruit, c. 1650. The Cleveland Museum of Art, 1955.140. CC0 1.0; credit is recommended, not required.",
+      "originalFile": "originals/cma-132616.jpg",
+      "originalSha256": "7c39322bee443430838a811c77f639277fcfde12cc906b88ace51872d39afed9",
+      "originalDimensions": {
+        "width": 3400,
+        "height": 2136
+      },
+      "derivativeFile": "studio-assets/cma/cma-132616-v1.webp",
+      "derivativeSha256": "75d42e75f94c4f47c607b628d6204cee5eeb1878bb8a40caa747c63d5624e116",
+      "derivativeDimensions": {
+        "width": 2400,
+        "height": 1508
+      }
+    },
+    {
+      "id": "cma-127078-v1",
+      "objectId": 127078,
+      "accessionNumber": "1949.410",
+      "title": "Twelve Months of Fruit:  February",
+      "titleInOriginalLanguage": null,
+      "creators": [
+        {
+          "id": 27095,
+          "description": "Henry Fletcher (British, active 1715–38)",
+          "extent": null,
+          "qualifier": null,
+          "role": "artist",
+          "biography": null,
+          "name_in_original_language": null,
+          "death_year": "1738",
+          "use_in_caption": true,
+          "include_extent": false,
+          "weight": 1
+        }
+      ],
+      "date": "1732",
+      "culture": [
+        "England, 18th century"
+      ],
+      "department": "Prints",
+      "collection": "PR - Engraving",
+      "objectType": "Print",
+      "technique": "engraving, hand-colored",
+      "medium": null,
+      "measurements": "Sheet: 48.4 x 38 cm (19 1/16 x 14 15/16 in.); Platemark: 41.3 x 34.3 cm (16 1/4 x 13 1/2 in.)",
+      "tombstone": "Twelve Months of Fruit:  February, 1732. Henry Fletcher (British, active 1715–38). Engraving, hand-colored; sheet: 48.4 x 38 cm (19 1/16 x 14 15/16 in.); platemark: 41.3 x 34.3 cm (16 1/4 x 13 1/2 in.). The Cleveland Museum of Art, Gift of The Print Club of Cleveland, 1949.410",
+      "objectPage": "https://clevelandart.org/art/1949.410",
+      "sourceRecordUrl": "https://openaccess-api.clevelandart.org/api/artworks/127078",
+      "sourceImageUrl": "https://openaccess-cdn.clevelandart.org/1949.410/1949.410_print.jpg",
+      "shareLicenseStatus": "CC0",
+      "license": "CC0 1.0 Universal",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "recommendedCredit": "Henry Fletcher (British, active 1715–38) (artist). Twelve Months of Fruit:  February, 1732. The Cleveland Museum of Art, 1949.410. CC0 1.0; credit is recommended, not required.",
+      "originalFile": "originals/cma-127078.jpg",
+      "originalSha256": "c0cee57921172305c201ff9f2c00fe219133d8ef10cbc58b6c05822ca69e2539",
+      "originalDimensions": {
+        "width": 2688,
+        "height": 3400
+      },
+      "derivativeFile": "studio-assets/cma/cma-127078-v1.webp",
+      "derivativeSha256": "2e20dafe97eb17d717a14e6bb00f2a82d0f4324efbb334e5dcdce9a6f7351810",
+      "derivativeDimensions": {
+        "width": 1897,
+        "height": 2400
+      }
+    },
+    {
+      "id": "cma-124249-v1",
+      "objectId": 124249,
+      "accessionNumber": "1945.243",
+      "title": "Twelve Months of Fruit:  August",
+      "titleInOriginalLanguage": null,
+      "creators": [
+        {
+          "id": 27095,
+          "description": "Henry Fletcher (British, active 1715–38)",
+          "extent": null,
+          "qualifier": null,
+          "role": "artist",
+          "biography": null,
+          "name_in_original_language": null,
+          "death_year": "1738",
+          "use_in_caption": true,
+          "include_extent": false,
+          "weight": 1
+        }
+      ],
+      "date": "1732",
+      "culture": [
+        "England, 18th century"
+      ],
+      "department": "Prints",
+      "collection": "PR - Engraving",
+      "objectType": "Print",
+      "technique": "engraving, hand-colored",
+      "medium": null,
+      "measurements": null,
+      "tombstone": "Twelve Months of Fruit:  August, 1732. Henry Fletcher (British, active 1715–38). Engraving, hand-colored. The Cleveland Museum of Art, Gift of The Print Club of Cleveland in memory of A. Donald Gray, 1945.243",
+      "objectPage": "https://clevelandart.org/art/1945.243",
+      "sourceRecordUrl": "https://openaccess-api.clevelandart.org/api/artworks/124249",
+      "sourceImageUrl": "https://openaccess-cdn.clevelandart.org/1945.243/1945.243_print.jpg",
+      "shareLicenseStatus": "CC0",
+      "license": "CC0 1.0 Universal",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "recommendedCredit": "Henry Fletcher (British, active 1715–38) (artist). Twelve Months of Fruit:  August, 1732. The Cleveland Museum of Art, 1945.243. CC0 1.0; credit is recommended, not required.",
+      "originalFile": "originals/cma-124249.jpg",
+      "originalSha256": "2df8fa1e35cdbc059f564851894a17b4c44c65b711e727079eb53d93de333b70",
+      "originalDimensions": {
+        "width": 2713,
+        "height": 3400
+      },
+      "derivativeFile": "studio-assets/cma/cma-124249-v1.webp",
+      "derivativeSha256": "588185b281f429084aeeeb4c4fcefdf51fceaabc955be1b37f73c8377005f24e",
+      "derivativeDimensions": {
+        "width": 1915,
+        "height": 2400
+      }
+    },
+    {
+      "id": "cma-153736-v1",
+      "objectId": 153736,
+      "accessionNumber": "1987.40.1",
+      "title": "Winter and Summer Flowers",
+      "titleInOriginalLanguage": "冬夏花図屏風",
+      "creators": [
+        {
+          "id": 35432,
+          "description": "Kaihō Yūshō (Japanese, 1533–1615)",
+          "extent": null,
+          "qualifier": null,
+          "role": "artist",
+          "biography": null,
+          "name_in_original_language": "海北友松",
+          "birth_year": "1533",
+          "death_year": "1615",
+          "use_in_caption": true,
+          "include_extent": false,
+          "weight": 1
+        }
+      ],
+      "date": "c. 1600",
+      "culture": [
+        "Japan, Momoyama period (1573–1615)"
+      ],
+      "department": "Japanese Art",
+      "collection": "ASIAN - Folding screen",
+      "objectType": "Painting",
+      "technique": "One of a pair of six-panel folding screens; ink, color, and gold on paper",
+      "medium": null,
+      "measurements": "Image: 157 x 357.6 cm (61 13/16 x 140 13/16 in.); Overall: 169.6 x 370.2 cm (66 3/4 x 145 3/4 in.); Panel: 169.6 x 61.7 cm (66 3/4 x 24 5/16 in.); with frame: 173.2 x 373.8 cm (68 3/16 x 147 3/16 in.)",
+      "tombstone": "Winter and Summer Flowers (冬夏花図屏風), c. 1600. Kaihō Yūshō (Japanese, 1533–1615). One of a pair of six-panel folding screens; ink, color, and gold on paper; image: 157 x 357.6 cm (61 13/16 x 140 13/16 in.); overall: 169.6 x 370.2 cm (66 3/4 x 145 3/4 in.); panel: 169.6 x 61.7 cm (66 3/4 x 24 5/16 in.); with frame: 173.2 x 373.8 cm (68 3/16 x 147 3/16 in.). The Cleveland Museum of Art, John L. Severance Fund, 1987.40.1",
+      "objectPage": "https://clevelandart.org/art/1987.40.1",
+      "sourceRecordUrl": "https://openaccess-api.clevelandart.org/api/artworks/153736",
+      "sourceImageUrl": "https://openaccess-cdn.clevelandart.org/1987.40.1/1987.40.1_print.jpg",
+      "shareLicenseStatus": "CC0",
+      "license": "CC0 1.0 Universal",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "recommendedCredit": "Kaihō Yūshō (Japanese, 1533–1615) (artist). Winter and Summer Flowers, c. 1600. The Cleveland Museum of Art, 1987.40.1. CC0 1.0; credit is recommended, not required.",
+      "originalFile": "originals/cma-153736.jpg",
+      "originalSha256": "573c7313150747062c5e9f63243e886936d10f23107f5674fe9e1569f8952281",
+      "originalDimensions": {
+        "width": 3400,
+        "height": 1571
+      },
+      "derivativeFile": "studio-assets/cma/cma-153736-v1.webp",
+      "derivativeSha256": "dca2621e9df866d00d7052eea4ffdb243224081368f718ff00c9b49c94668b8b",
+      "derivativeDimensions": {
+        "width": 2400,
+        "height": 1109
+      }
+    },
+    {
+      "id": "cma-153737-v1",
+      "objectId": 153737,
+      "accessionNumber": "1987.40.2",
+      "title": "Winter and Summer Flowers",
+      "titleInOriginalLanguage": "冬夏花図屏風",
+      "creators": [
+        {
+          "id": 35432,
+          "description": "Kaihō Yūshō (Japanese, 1533–1615)",
+          "extent": null,
+          "qualifier": null,
+          "role": "artist",
+          "biography": null,
+          "name_in_original_language": "海北友松",
+          "birth_year": "1533",
+          "death_year": "1615",
+          "use_in_caption": true,
+          "include_extent": false,
+          "weight": 1
+        }
+      ],
+      "date": "c. 1600",
+      "culture": [
+        "Japan, Momoyama period (1573–1615)"
+      ],
+      "department": "Japanese Art",
+      "collection": "ASIAN - Folding screen",
+      "objectType": "Painting",
+      "technique": "One of a pair of six-panel folding screens; ink, color, and gold on paper",
+      "medium": null,
+      "measurements": "Image: 157 x 358.2 cm (61 13/16 x 141 in.); Overall: 169.6 x 370.8 cm (66 3/4 x 146 in.); Panel: 169.6 x 61.6 cm (66 3/4 x 24 1/4 in.); with frame: 173.2 x 374.4 cm (68 3/16 x 147 3/8 in.)",
+      "tombstone": "Winter and Summer Flowers (冬夏花図屏風), c. 1600. Kaihō Yūshō (Japanese, 1533–1615). One of a pair of six-panel folding screens; ink, color, and gold on paper; image: 157 x 358.2 cm (61 13/16 x 141 in.); overall: 169.6 x 370.8 cm (66 3/4 x 146 in.); panel: 169.6 x 61.6 cm (66 3/4 x 24 1/4 in.); with frame: 173.2 x 374.4 cm (68 3/16 x 147 3/8 in.). The Cleveland Museum of Art, John L. Severance Fund, 1987.40.2",
+      "objectPage": "https://clevelandart.org/art/1987.40.2",
+      "sourceRecordUrl": "https://openaccess-api.clevelandart.org/api/artworks/153737",
+      "sourceImageUrl": "https://openaccess-cdn.clevelandart.org/1987.40.2/1987.40.2_print.jpg",
+      "shareLicenseStatus": "CC0",
+      "license": "CC0 1.0 Universal",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "recommendedCredit": "Kaihō Yūshō (Japanese, 1533–1615) (artist). Winter and Summer Flowers, c. 1600. The Cleveland Museum of Art, 1987.40.2. CC0 1.0; credit is recommended, not required.",
+      "originalFile": "originals/cma-153737.jpg",
+      "originalSha256": "fc076224f4cd328b1fa7a7daae600877c5743a4d050078fcfc2000813c65a7db",
+      "originalDimensions": {
+        "width": 3400,
+        "height": 1574
+      },
+      "derivativeFile": "studio-assets/cma/cma-153737-v1.webp",
+      "derivativeSha256": "9b3bebb82fd1ee200d473eb871274a758df363128f3e8902f3b3931e29d0029b",
+      "derivativeDimensions": {
+        "width": 2400,
+        "height": 1111
+      }
+    }
+  ]
+}
