@@ -1,0 +1,103 @@
+import { createHash } from "node:crypto";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import path from "node:path";
+import sharp from "sharp";
+
+const root = process.cwd();
+const collection = path.join(root, "docs/licenses/third-party/met-open-access");
+const config = JSON.parse(await readFile(path.join(collection, "assets.json"), "utf8"));
+const metadata = [];
+const sourceManifest = [];
+const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
+
+if (config.schemaVersion !== 1 || config.sourceLicense !== "Public domain (United States; The Met Open Access)") {
+  throw new Error("Unsupported Met Open Access source manifest");
+}
+
+for (const item of config.records) {
+  const recordPath = path.join(collection, "records", `${item.objectId}.json`);
+  const record = JSON.parse(await readFile(recordPath, "utf8"));
+  if (record.objectID !== item.objectId || record.isPublicDomain !== true) {
+    throw new Error(`Refusing Met object ${item.objectId}: its bundled record does not confirm public-domain status`);
+  }
+  if (!record.primaryImage || record.primaryImage !== item.sourceImageUrl || !record.primaryImage.startsWith("https://images.metmuseum.org/CRDImages/")) {
+    throw new Error(`Refusing Met object ${item.objectId}: its record does not match the configured Met primary image URL`);
+  }
+  if (record.objectURL !== `https://www.metmuseum.org/art/collection/search/${item.objectId}`) {
+    throw new Error(`Refusing Met object ${item.objectId}: its object page does not match the configured identifier`);
+  }
+
+  const originalPath = path.join(collection, item.originalFile);
+  const original = await readFile(originalPath);
+  const image = sharp(original, { failOn: "error" });
+  const input = await image.metadata();
+  if (input.format !== "jpeg" || !input.width || !input.height) {
+    throw new Error(`Refusing Met object ${item.objectId}: bundled primary image is not a readable JPEG`);
+  }
+  const outputPath = path.join(root, "public", item.outputFile);
+  await mkdir(path.dirname(outputPath), { recursive: true });
+  const output = await image.rotate().resize({ width: 2400, height: 2400, fit: "inside", withoutEnlargement: true }).webp({ quality: 90, effort: 5 }).toBuffer();
+  await writeFile(outputPath, output);
+  const dimensions = await sharp(output).metadata();
+  const title = record.title || item.name;
+  const artist = record.artistDisplayName?.trim() || null;
+  const credit = `${title}${artist ? `, ${artist}` : ""}; The Metropolitan Museum of Art. CC0 1.0; credit recommended, not required.`;
+
+  const sourceRecord = {
+    id: `met-${item.objectId}-v1`,
+    objectId: item.objectId,
+    title,
+    objectName: record.objectName || null,
+    creator: artist,
+    creatorDisplayName: record.artistDisplayName || null,
+    artistWikidataUrl: record.artistWikidata_URL || null,
+    date: record.objectDate || null,
+    culture: record.culture || null,
+    period: record.period || null,
+    medium: record.medium || null,
+    dimensionsText: record.dimensions || null,
+    department: record.department || null,
+    classification: record.classification || null,
+    objectPage: record.objectURL,
+    sourceRecordUrl: `https://collectionapi.metmuseum.org/public/collection/v1/objects/${item.objectId}`,
+    sourceImageUrl: record.primaryImage,
+    publicDomainVerified: record.isPublicDomain,
+    imageRightsBasis: "The Met's object record marks this work public domain; its Open Access policy permits commercial and noncommercial use.",
+    license: config.sourceLicense,
+    licenseUrl: config.licenseUrl,
+    attributionRequired: false,
+    recommendedCredit: credit,
+    originalFile: item.originalFile,
+    originalSha256: sha256(original),
+    originalDimensions: { width: input.width, height: input.height },
+    derivativeFile: item.outputFile,
+    derivativeSha256: sha256(output),
+    derivativeDimensions: { width: dimensions.width, height: dimensions.height },
+  };
+  sourceManifest.push(sourceRecord);
+  metadata.push({
+    id: `met-${item.objectId}-v1`,
+    name: item.name,
+    kind: item.kind,
+    category: item.category,
+    tags: item.tags,
+    license: config.sourceLicense,
+    source: `The Metropolitan Museum of Art${record.department ? ` — ${record.department}` : ""}${artist ? `; ${artist}` : ""}`,
+    sourceUrl: record.objectURL,
+    evidenceUrl: config.rightsEvidence,
+    licenseId: "PUBLIC-DOMAIN-US",
+    licenseUrl: config.licenseUrl,
+    attributionRequired: false,
+    attributionText: credit,
+    commercialUse: true,
+    modificationAllowed: true,
+    redistributionAllowed: true,
+    imageUrl: `/${item.outputFile}`,
+    width: dimensions.width,
+    height: dimensions.height,
+  });
+}
+
+await writeFile(path.join(collection, "SOURCE-MANIFEST.json"), `${JSON.stringify({ schemaVersion: 1, generatedAt: "reproducible from bundled object records and public-domain originals", assets: sourceManifest }, null, 2)}\n`);
+await writeFile(path.join(root, "lib/studio/met-assets.ts"), `/** Generated by scripts/ingest-met-open-access.mjs from bundled object-verified public-domain records and originals. */\nimport type { StudioAsset } from "./asset-library";\n\nexport const MET_STUDIO_ASSETS: readonly StudioAsset[] = ${JSON.stringify(metadata, null, 2)};\n`);
+console.log(`Verified and generated ${metadata.length} Met public-domain design assets.`);

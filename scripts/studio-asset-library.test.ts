@@ -126,6 +126,41 @@ test("Smithsonian CC0 artwork retains checked rights, source records, searchable
   assert.equal(canSurfaceStudioAsset({ ...asset, modificationAllowed: false }), false);
 });
 
+test("Met public-domain surfaces and botanical scans keep exact rights evidence, originals, search, and raster insertion", async () => {
+  const { assets } = JSON.parse(readFileSync("docs/licenses/third-party/met-open-access/SOURCE-MANIFEST.json", "utf8")) as {
+    assets: Array<{ id: string; objectId: number; publicDomainVerified: boolean; imageRightsBasis: string; sourceImageUrl: string; originalFile: string; originalSha256: string; derivativeFile: string; derivativeSha256: string }>;
+  };
+  assert.equal(assets.length, 11);
+  for (const record of assets) {
+    const itemRecord = JSON.parse(readFileSync(`docs/licenses/third-party/met-open-access/records/${record.objectId}.json`, "utf8")) as { objectID: number; isPublicDomain: boolean; primaryImage: string };
+    const asset = studioAsset(record.id);
+    assert.ok(asset);
+    assert.equal(itemRecord.objectID, record.objectId);
+    assert.equal(itemRecord.isPublicDomain, true);
+    assert.equal(record.publicDomainVerified, true);
+    assert.equal(record.sourceImageUrl, itemRecord.primaryImage);
+    assert.match(record.imageRightsBasis, /public domain;.*commercial and noncommercial use/);
+    assert.equal(asset.licenseId, "PUBLIC-DOMAIN-US");
+    assert.notEqual(asset.licenseId, "CC0-1.0");
+    assert.equal(asset.attributionRequired, false);
+    assert.equal(asset.commercialUse, true);
+    assert.equal(asset.modificationAllowed, true);
+    assert.equal(asset.redistributionAllowed, true);
+    assert.ok(canSurfaceStudioAsset(asset));
+    assert.equal(studioEditorCommandSchema.safeParse({ type: "add_graphic", assetKey: record.id }).success, true);
+    assert.equal(createHash("sha256").update(readFileSync(`docs/licenses/third-party/met-open-access/${record.originalFile}`)).digest("hex"), record.originalSha256);
+    assert.equal(createHash("sha256").update(readFileSync(`public/${record.derivativeFile}`)).digest("hex"), record.derivativeSha256);
+  }
+  assert.ok(findStudioAssets({ query: "pomegranate autumn wallpaper pattern", kind: "pattern", limit: 50 }).some((asset) => asset.id === "met-365338-v1"));
+  assert.ok(findStudioAssets({ query: "botanical watercolor French vintage", kind: "any", limit: 50 }).some((asset) => asset.id === "met-362554-v1"));
+  assert.ok(findStudioAssets({ query: "Christmas gift tag vintage bird", kind: "any", limit: 50 }).some((asset) => asset.id === "met-768558-v1"));
+  const asset = studioAsset("met-384020-v1")!;
+  const response = await getStudioAssetResponse(new Request(`https://sweetoh.test${studioAssetUrl(asset.id)}`), { params: Promise.resolve({ id: asset.id }) });
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("Content-Type") ?? "", /^image\/webp/);
+  assert.ok((await sharp(Buffer.from(await response.arrayBuffer())).resize(480, 480).raw().toBuffer()).some((channel) => channel > 0));
+});
+
 test("curated Tabler assets keep upstream provenance and commercial-use evidence searchable", () => {
   const tabler = STUDIO_ASSETS.filter((asset) => asset.id.startsWith("tabler-"));
   assert.equal(tabler.length, 112);
