@@ -14,7 +14,8 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const require = createRequire(import.meta.url);
 dotenv.config({ path: path.join(root, ".env.local"), quiet: true });
 
-const port = Number(process.env.PARTNER_BROWSER_PORT ?? 3025);
+// 3042 is the stable local port used by the pre-authorized partner browser path.
+const port = Number(process.env.PARTNER_BROWSER_PORT ?? 3042);
 // Match Next's advertised dev origin so webpack HMR and client resources stay same-origin.
 const origin = `http://localhost:${port}`;
 const email = process.env.FOUNDATION_PARTNER_EMAIL;
@@ -118,6 +119,7 @@ let browser;
 let tempDir;
 let appLogs = "";
 const browserErrors = [];
+const browserNetworkEvents = [];
 let cleanupTask;
 
 function cleanup() {
@@ -139,7 +141,11 @@ for (const [signal, exitCode] of [["SIGINT", 130], ["SIGTERM", 143]]) {
 try {
   const executablePath = chromeExecutable();
   const portCheck = await portAvailable(port);
-  if (portCheck !== true) throw new Error(`Port ${port} is unavailable (${portCheck}). Set PARTNER_BROWSER_PORT to an unused local port.`);
+  if (portCheck === "EPERM" || portCheck === "EACCES") {
+    console.warn(`Port ${port} preflight was denied (${portCheck}); checking availability through the actual Next.js startup instead.`);
+  } else if (portCheck !== true) {
+    throw new Error(`Port ${port} is unavailable (${portCheck}). Set PARTNER_BROWSER_PORT to an unused local port.`);
+  }
   tempDir = await mkdtemp(path.join(os.tmpdir(), "sweetoh-partner-browser-"));
   const fontMocksPath = path.join(tempDir, "google-fonts.cjs");
   await writeFile(fontMocksPath, `module.exports = ${JSON.stringify(mockedGoogleFontResponses())};\n`);
@@ -164,15 +170,21 @@ try {
   const context = await browser.newContext();
   const page = await context.newPage();
   page.on("pageerror", (error) => browserErrors.push(error.message));
+  page.on("requestfailed", (request) => browserNetworkEvents.push(`failed ${request.method()} ${request.url()}: ${request.failure()?.errorText ?? "request failed"}`));
+  page.on("request", (request) => browserNetworkEvents.push(`request ${request.method()} ${request.url()}`));
+  page.on("response", (response) => browserNetworkEvents.push(`response ${response.status()} ${response.url()}`));
 
-  await page.goto(`${origin}/partner/login`, { waitUntil: "domcontentloaded", timeout: 90_000 });
+  // Next's streamed partner page can return HTML while deferred development
+  // resources keep DOMContentLoaded pending. Wait for response commit, then
+  // for the actual login form that the smoke interacts with.
+  await page.goto(`${origin}/partner/login`, { waitUntil: "commit", timeout: 90_000 });
   await page.locator("form.login-form").waitFor({ state: "visible", timeout: 30_000 });
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
 
   try {
-    await page.waitForURL((url) => url.pathname === "/partner", { timeout: 45_000 });
+    await page.waitForURL((url) => url.pathname === "/partner", { timeout: 90_000 });
   } catch {
     const loginError = await page.locator('[role="alert"]').allTextContents().then((items) => items.join(" ").trim()).catch(() => "");
     throw new Error(loginError ? `Partner login was rejected: ${loginError}` : `Partner login did not reach /partner (current path ${new URL(page.url()).pathname}).`);
@@ -181,9 +193,9 @@ try {
   if (process.env.PARTNER_BROWSER_STUDIO_ONLY === "1") {
     // Exercise Studio directly. The home page performs several unrelated
     // operational queries and can be slow in a cold local browser session.
-    // This read-only path adds one asset to the in-memory canvas, checks it in
-    // Layers, then undoes it before leaving; it never saves partner data.
-    await page.goto(`${origin}/partner/canvas`, { waitUntil: "domcontentloaded", timeout: 90_000 });
+    // This path exercises insertion and local crash recovery in an isolated
+    // browser context, without saving a partner asset or product.
+    await page.goto(`${origin}/partner/canvas`, { waitUntil: "commit", timeout: 90_000 });
     await page.locator(".pe-stage canvas.lower-canvas").waitFor({ state: "visible", timeout: 60_000 });
     await page.getByText("Loading product…", { exact: true }).waitFor({ state: "detached", timeout: 45_000 });
     const assetLibraryButton = page.getByRole("button", { name: "Library", exact: true });
@@ -191,21 +203,38 @@ try {
     await assetLibraryButton.click();
     await page.getByRole("heading", { name: "Asset library", exact: true }).waitFor({ state: "visible", timeout: 15_000 });
     const search = page.getByPlaceholder("Search elements and fonts");
-    await search.fill("tropical leaf");
-    const assetButton = page.getByRole("button", { name: "Add Tropical leaf", exact: true });
+    await search.fill("doctor x-ray lungs");
+    const assetButton = page.getByRole("button", { name: "Add Doctor checks X-ray image", exact: true });
     await assetButton.waitFor({ state: "visible", timeout: 30_000 });
-    const assetResponse = await page.request.get(`${origin}/api/studio/assets/so-leaf-v1`, { timeout: 90_000 });
+    const assetResponse = await page.request.get(`${origin}/api/studio/assets/libreclipart-858-v1`, { timeout: 90_000 });
     if (!assetResponse.ok() || !assetResponse.headers()["content-type"]?.startsWith("image/")) {
-      throw new Error(`Rights-approved Tropical leaf asset did not load (${assetResponse.status()}).`);
+      throw new Error(`Rights-approved Doctor checks X-ray image asset did not load (${assetResponse.status()}).`);
     }
     await assetButton.click();
     await page.getByRole("button", { name: "Layers", exact: true }).click();
     const layers = page.locator(".pe-layers");
-    await layers.getByText("Tropical leaf", { exact: true }).waitFor({ state: "visible", timeout: 15_000 });
-    const undo = page.getByRole("button", { name: /undo/i });
-    await undo.waitFor({ state: "visible", timeout: 10_000 });
-    await undo.click();
-    await layers.getByText("Tropical leaf", { exact: true }).waitFor({ state: "detached", timeout: 15_000 });
+    await layers.getByText("Doctor checks X-ray image", { exact: true }).waitFor({ state: "visible", timeout: 15_000 });
+    // Let the editor's debounced recovery snapshot land, then exercise a real
+    // refresh/reopen. The browser context is isolated and discarded afterward,
+    // so this proves persistence without writing a partner asset or product.
+    await page.waitForTimeout(1_500);
+    page.on("dialog", (dialog) => void dialog.accept());
+    await page.reload({ waitUntil: "commit", timeout: 90_000 });
+    await page.locator(".pe-stage canvas.lower-canvas").waitFor({ state: "visible", timeout: 60_000 });
+    await page.getByRole("button", { name: "Restore it", exact: true }).waitFor({ state: "visible", timeout: 15_000 });
+    await page.getByRole("button", { name: "Restore it", exact: true }).click();
+    await page.getByRole("button", { name: "Library", exact: true }).click();
+    await page.getByRole("heading", { name: "Asset library", exact: true }).waitFor({ state: "visible", timeout: 15_000 });
+    await page.getByPlaceholder("Search elements and fonts").fill("butterfly");
+    const continuedAsset = page.getByRole("button", { name: "Add Butterfly", exact: true });
+    await continuedAsset.waitFor({ state: "visible", timeout: 30_000 });
+    await continuedAsset.click();
+    await page.getByRole("button", { name: "Layers", exact: true }).click();
+    await layers.getByText("Doctor checks X-ray image", { exact: true }).waitFor({ state: "visible", timeout: 15_000 });
+    await layers.getByText("Butterfly", { exact: true }).waitFor({ state: "visible", timeout: 15_000 });
+    await page.getByRole("button", { name: /undo/i }).click();
+    await layers.getByText("Butterfly", { exact: true }).waitFor({ state: "detached", timeout: 15_000 });
+    await layers.getByText("Doctor checks X-ray image", { exact: true }).waitFor({ state: "visible", timeout: 15_000 });
     const inspection = await page.evaluate(() => ({
       viewport: { width: innerWidth, height: innerHeight },
       assetCards: document.querySelectorAll(".pe-asset-card").length,
@@ -216,11 +245,13 @@ try {
       browser: browser.version(),
       partnerLogin: "passed",
       studio: "opened directly without changing product data",
-      creativeLibrarySearch: "found Tropical leaf",
-      studioInsertion: "layer appeared",
-      history: "undo removed the inserted layer",
+      creativeLibrarySearch: "found and inserted Doctor checks X-ray image",
+      studioRefreshRecovery: "restored the inserted layer from the isolated browser draft after refresh",
+      continuedEditing: "inserted Butterfly after restore; undo removed it while retaining the recovered layer",
+      partnerData: "unchanged; browser context closed without saving a partner asset or product",
       inspection,
       pageErrors: browserErrors,
+      browserNetworkEvents: browserNetworkEvents.slice(-20),
     }));
     await context.close();
   } else {
@@ -340,6 +371,7 @@ try {
   console.error(`Partner browser smoke failed: ${error instanceof Error ? error.message : String(error)}`);
   if (appLogs) console.error(`Next.js output: ${appLogs.slice(-2500)}`);
   if (browserErrors.length) console.error(`Browser page errors: ${browserErrors.join(" | ")}`);
+  if (browserNetworkEvents.length) console.error(`Browser network events: ${browserNetworkEvents.slice(-30).join(" | ")}`);
   process.exitCode = 1;
 } finally {
   await cleanup();
