@@ -190,6 +190,56 @@ test("Met public-domain surfaces, botanicals, and bird plates keep exact rights 
   assert.ok((await sharp(Buffer.from(await response.arrayBuffer())).resize(480, 480).raw().toBuffer()).some((channel) => channel > 0));
 });
 
+test("Wellcome printer ornaments retain PDM evidence, original scans, searchable crops, and transparent Studio insertion", async () => {
+  const base = "docs/licenses/third-party/wellcome-printers-ornaments";
+  const source = JSON.parse(readFileSync(`${base}/SOURCE-MANIFEST.json`, "utf8")) as {
+    work: { licenseId: string; attributionRequired: boolean; rightsEvidenceSnapshot: string };
+    assets: Array<{ id: string; scanPageIndex: number; sourceScanUrl: string; originalFile: string; originalSha256: string; cropSourcePixels: { left: number; top: number; width: number; height: number }; sourceDimensions: { width: number; height: number }; derivativeFile: string; derivativeSha256: string; sourcePlateCredit: string | null; commercialUse: boolean; modificationAllowed: boolean; redistributionAllowed: boolean; attributionRequired: boolean }>;
+  };
+  const evidence = JSON.parse(readFileSync(`${base}/${source.work.rightsEvidenceSnapshot}`, "utf8")) as {
+    license: string; metadata: Array<{ label: string; value: string }>;
+  };
+  assert.equal(evidence.license, "http://creativecommons.org/publicdomain/mark/1.0/");
+  assert.match(evidence.metadata.find((entry) => entry.label === "Full conditions of use")?.value ?? "", /copy, modify, distribute and perform the work, even for commercial purposes/);
+  assert.equal(source.work.licenseId, "PUBLIC-DOMAIN-MARK-1.0");
+  assert.equal(source.work.attributionRequired, false);
+  assert.equal(source.assets.length, 12);
+  for (const record of source.assets) {
+    const asset = studioAsset(record.id);
+    assert.ok(asset, record.id);
+    assert.equal(asset.licenseId, source.work.licenseId);
+    assert.equal(asset.attributionRequired, false);
+    assert.equal(asset.commercialUse, true);
+    assert.equal(asset.modificationAllowed, true);
+    assert.equal(asset.redistributionAllowed, true);
+    assert.equal(record.commercialUse && record.modificationAllowed && record.redistributionAllowed, true);
+    assert.equal(record.attributionRequired, false);
+    assert.ok(record.sourceScanUrl.includes(`b31347873_${String(record.scanPageIndex).padStart(4, "0")}.jp2`));
+    assert.ok(record.cropSourcePixels.left + record.cropSourcePixels.width <= record.sourceDimensions.width);
+    assert.ok(record.cropSourcePixels.top + record.cropSourcePixels.height <= record.sourceDimensions.height);
+    assert.equal(createHash("sha256").update(readFileSync(`${base}/${record.originalFile}`)).digest("hex"), record.originalSha256);
+    const output = readFileSync(`public/${record.derivativeFile}`);
+    assert.equal(createHash("sha256").update(output).digest("hex"), record.derivativeSha256);
+    assert.equal((await sharp(output).metadata()).hasAlpha, true);
+    assert.ok(canSurfaceStudioAsset(asset));
+    assert.equal(studioEditorCommandSchema.safeParse({ type: "add_graphic", assetKey: record.id }).success, true);
+  }
+  assert.match(source.assets.find((asset) => asset.id === "wellcome-shanks-art-nouveau-leaf-border-v1")?.sourcePlateCredit ?? "", /P\. M\. Shanks & Sons/);
+  assert.ok(findStudioAssets({ query: "vintage floral wedding frame", kind: "any", limit: 50 }).some((asset) => asset.id === "wellcome-plomer-border-35-v1"));
+  assert.ok(findStudioAssets({ query: "Art Nouveau leaf border", kind: "any", limit: 50 }).some((asset) => asset.id === "wellcome-shanks-art-nouveau-leaf-border-v1"));
+  assert.ok(findStudioAssets({ query: "engraved scrolling divider", kind: "any", limit: 50 }).some((asset) => asset.id === "wellcome-plomer-engraved-scroll-divider-2-v1"));
+  const id = "wellcome-plomer-heart-scroll-tailpiece-96-v1";
+  const response = await getStudioAssetResponse(new Request(`https://sweetoh.test${studioAssetUrl(id)}`), { params: Promise.resolve({ id }) });
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("Content-Type") ?? "", /^image\/webp/);
+  const body = Buffer.from(await response.arrayBuffer());
+  assert.equal(createHash("sha256").update(body).digest("hex"), source.assets.find((asset) => asset.id === id)!.derivativeSha256);
+  const alpha = await sharp(body).extractChannel(3).raw().toBuffer();
+  assert.ok(alpha.some((value) => value === 0));
+  assert.ok(alpha.some((value) => value === 255));
+  assert.equal(canSurfaceStudioAsset({ ...studioAsset(id)!, commercialUse: false }), false);
+});
+
 test("Cleveland Museum CC0 art keeps record-level rights, creator context, print originals, search, and Studio rendering", async () => {
   const { assets } = JSON.parse(readFileSync("docs/licenses/third-party/cleveland-open-access/SOURCE-MANIFEST.json", "utf8")) as {
     assets: Array<{ id: string; objectId: number; shareLicenseStatus: string; sourceImageUrl: string; creators: Array<{ description: string; role: string }>; originalFile: string; originalSha256: string; derivativeFile: string; derivativeSha256: string }>;
