@@ -18,6 +18,7 @@ import { WELLCOME_BIRDS_STUDIO_ASSETS } from "./wellcome-birds-assets";
 import { WIKIMEDIA_DUTCH_MARITIME_PAINTINGS_STUDIO_ASSETS } from "./wikimedia-dutch-maritime-paintings-assets";
 import { WELLCOME_FISH_AND_MARINE_MAMMALS_STUDIO_ASSETS } from "./wellcome-fish-and-marine-mammals-assets";
 import { WIKIMEDIA_ORNAMENTAL_ALPHABETS_STUDIO_ASSETS } from "./wikimedia-ornamental-alphabets-assets";
+import { WELLCOME_TROPICAL_FLORA_STUDIO_ASSETS } from "./wellcome-tropical-flora-assets";
 import { PATTERNFILLS_STUDIO_ASSETS } from "./patternfills-assets";
 import { OPEN_CROP_STUDIO_ASSETS } from "./open-crop-assets";
 import { OPENCLIPART_STUDIO_ASSETS } from "./openclipart-assets";
@@ -132,6 +133,7 @@ export const STUDIO_ASSETS: readonly StudioAsset[] = [
   ...WIKIMEDIA_DUTCH_MARITIME_PAINTINGS_STUDIO_ASSETS,
   ...WELLCOME_FISH_AND_MARINE_MAMMALS_STUDIO_ASSETS,
   ...WIKIMEDIA_ORNAMENTAL_ALPHABETS_STUDIO_ASSETS,
+  ...WELLCOME_TROPICAL_FLORA_STUDIO_ASSETS,
   ...PATTERNFILLS_STUDIO_ASSETS,
   ...OPEN_CROP_STUDIO_ASSETS,
   ...OPENCLIPART_STUDIO_ASSETS,

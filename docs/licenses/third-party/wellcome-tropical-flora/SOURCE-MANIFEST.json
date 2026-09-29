@@ -1,0 +1,183 @@
+{
+  "schemaVersion": 1,
+  "source": "Wellcome Collection — tropical/Pacific-relevant staple-crop botanical engravings",
+  "rightsEvidence": "Per-work Wellcome Collection catalogue API license + accessConditions, independently verified live for each item; snapshots in records/.",
+  "assets": [
+    {
+      "id": "wellcome-tropical-flora-hibiscus-flowering-shoot-v1",
+      "workId": "zr22kd3f",
+      "iiifImageId": "V0042667",
+      "title": "China rose or Shoe flower (Hibiscus rosa-sinensis L.): flowering shoot",
+      "creator": "unattributed",
+      "date": "19th century",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/zr22kd3f",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0042667/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 1542,
+      "iiifWidth": 3201,
+      "iiifHeight": 2468,
+      "originalFile": "originals/hibiscus-flowering-shoot.jpg",
+      "originalSha256": "fce0cd368a4c5b55b5c2f09a23af5b3a37d50c8ce26558bbfb427460f3242302",
+      "normalizedOutputSha256": "46965cda44b50faab2a2dafc89e019e0b50dfe8819f20a7a58eb8e163f492f99",
+      "normalizedDimensions": {
+        "width": 2000,
+        "height": 1542
+      }
+    },
+    {
+      "id": "wellcome-tropical-flora-hibiscus-branch-fruit-seeds-v1",
+      "workId": "hrrevd9y",
+      "iiifImageId": "V0042668",
+      "title": "China rose or Shoe flower (Hibiscus rosa-sinensis L.): branch with flowers and fruit and separate flower, dissected fruit and seeds",
+      "creator": "unattributed",
+      "date": "19th century",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/hrrevd9y",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0042668/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 1640,
+      "iiifWidth": 3021,
+      "iiifHeight": 2477,
+      "originalFile": "originals/hibiscus-branch-fruit-seeds.jpg",
+      "originalSha256": "c5dcc419b8707358c705ce653b04d3c0c7d233bec87b9adbcf354a4f5cb2a660",
+      "normalizedOutputSha256": "7db47f3e81169933f0190281e8485a527b46cdf6e7df2c0cfbffe0f5405edd72",
+      "normalizedDimensions": {
+        "width": 2000,
+        "height": 1640
+      }
+    },
+    {
+      "id": "wellcome-tropical-flora-breadfruit-tree-landscape-v1",
+      "workId": "gjxq3xq4",
+      "iiifImageId": "V0043227",
+      "title": "Breadfruit tree (Artocarpus altilis) in tropical landscape",
+      "creator": "William Daniell",
+      "date": "c. 1809",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/gjxq3xq4",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0043227/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 1427,
+      "iiifWidth": 3150,
+      "iiifHeight": 2247,
+      "originalFile": "originals/breadfruit-tree-landscape.jpg",
+      "originalSha256": "dba324442490dfa13eed51c98a989b4466d0cfd6fbb8a1d82e97bd2c59d87c9f",
+      "normalizedOutputSha256": "e41491c33669cd525d343501ae371f4e094f3c658a33b19d1ca055777237f3ea",
+      "normalizedDimensions": {
+        "width": 2000,
+        "height": 1427
+      }
+    },
+    {
+      "id": "wellcome-tropical-flora-coconut-cinnamon-pinang-landscape-v1",
+      "workId": "fz2utq7p",
+      "iiifImageId": "V0043077",
+      "title": "Coconuts and trees (Cocos nucifera), a cinnamon tree (Cinnamomum verum) and pinang tree (Areca catechu), in a tropical landscape",
+      "creator": "Johan Nieuhof",
+      "date": "17th century",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/fz2utq7p",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0043077/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 1575,
+      "iiifWidth": 3000,
+      "iiifHeight": 2362,
+      "originalFile": "originals/coconut-cinnamon-pinang-landscape.jpg",
+      "originalSha256": "0d756ff3023fda59cee2aac4c222e67f29e538b14bdc63c64507ddd222b724b3",
+      "normalizedOutputSha256": "4f324a78c079f2636824560325741586546f9996178e9a65cb65d686c7300df4",
+      "normalizedDimensions": {
+        "width": 2000,
+        "height": 1575
+      }
+    },
+    {
+      "id": "wellcome-tropical-flora-plantain-banana-sections-v1",
+      "workId": "w8w9b59f",
+      "iiifImageId": "V0042994",
+      "title": "Plantain banana (Musa x paradisiaca L.): nine sections of flower and fruit",
+      "creator": "G. D. Ehret",
+      "date": "c. 1750",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/w8w9b59f",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0042994/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 3093,
+      "iiifWidth": 2157,
+      "iiifHeight": 3336,
+      "originalFile": "originals/plantain-banana-sections.jpg",
+      "originalSha256": "1021ac97292863cebf8a1a8a2c145ec02f540620e4bb202df38c791433a00e93",
+      "normalizedOutputSha256": "501420165173f5f492b6a23af2a149d29c76aa2ec8f3e66ecbe756ac30b5f12d",
+      "normalizedDimensions": {
+        "width": 1552,
+        "height": 2400
+      }
+    },
+    {
+      "id": "wellcome-tropical-flora-screwpine-lakeside-v1",
+      "workId": "f35m9nue",
+      "iiifImageId": "V0043200",
+      "title": "Screwpine plants (Pandanus muricatus) on a lakeside",
+      "creator": "unattributed",
+      "date": "c. 1867",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/f35m9nue",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0043200/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 1854,
+      "iiifWidth": 2800,
+      "iiifHeight": 2595,
+      "originalFile": "originals/screwpine-lakeside.jpg",
+      "originalSha256": "9f14971e227108cf8d83746fb0e3ee4894c890329cd91747437ae4462624742f",
+      "normalizedOutputSha256": "7349b1100b66d5e823ac607231e5422eb566ecdbb63799db71a9deec067948b8",
+      "normalizedDimensions": {
+        "width": 2000,
+        "height": 1854
+      }
+    },
+    {
+      "id": "wellcome-tropical-flora-screwpine-madagascar-tent-v1",
+      "workId": "vgqwn83r",
+      "iiifImageId": "V0043199",
+      "title": "Screwpine plants (Pandanus species) of Madagascar, sheltering a tent",
+      "creator": "unattributed",
+      "date": "c. 1867",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/vgqwn83r",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0043199/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 2349,
+      "iiifWidth": 2466,
+      "iiifHeight": 2896,
+      "originalFile": "originals/screwpine-madagascar-tent.jpg",
+      "originalSha256": "3e48b2681d7ec848fe7229af1d51d48fc46227a974b602ef808bb366ab25c7d1",
+      "normalizedOutputSha256": "46ee114fc49c42d9864833206b98f5cce0db2bbda8877315304317350e70f4ef",
+      "normalizedDimensions": {
+        "width": 2000,
+        "height": 2349
+      }
+    },
+    {
+      "id": "wellcome-tropical-flora-banana-plants-date-palm-v1",
+      "workId": "h6scejp4",
+      "iiifImageId": "V0044737",
+      "title": "Two banana plants (Musa species) and a date palm tree",
+      "creator": "unattributed",
+      "date": "c. 1827",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/h6scejp4",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0044737/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 2612,
+      "iiifWidth": 2479,
+      "iiifHeight": 3238,
+      "originalFile": "originals/banana-plants-date-palm.jpg",
+      "originalSha256": "e1f9a9105e1865edce93d34bfcb547753725a5d6819dd0c8618387d8c0ea2a6f",
+      "normalizedOutputSha256": "f98d12a29f891ca79ddb48aab714654496299818af225ddf0b680d717d9e036c",
+      "normalizedDimensions": {
+        "width": 1838,
+        "height": 2400
+      }
+    }
+  ]
+}
