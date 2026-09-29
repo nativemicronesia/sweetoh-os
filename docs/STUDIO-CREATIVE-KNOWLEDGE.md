@@ -42,6 +42,39 @@ Tattoo](https://www.lighthousetattoo.com.au/traditional-flash-sheet/),
 [Big Cat Tattoo](https://www.bigcattattoo.com/blog/what-is-tattoo-flash),
 [Stylecaster](https://stylecaster.com/beauty/skin-care/718688/hand-poke-versus-machine-tattoos/).
 
+**Relief/block printing (linocut, woodcut) — general craft, knowledge
+only, not a production method.** A different craft family from SweetOh's
+confirmed engraving method, but closely related in the design discipline
+it demands: a design is carved as raised areas, since only the raised
+surface holds ink, so it must be planned in reverse and in terms of what
+stays versus what is cut away. Line weight and character are controlled
+by carving-tool choice and cut depth/angle. Multi-color prints require
+precise registration — identical paper position across passes, via
+registration marks, jigs or pin systems — and misregistration shows as
+visible color gaps or halos. Sources are craft-education/retailer sites
+rather than academic references, but the core vocabulary (relief carving,
+registration) is standard across all of them: [Boarding All
+Rows](https://www.boardingallrows.com/lino-printing-artist-techniques),
+[Jackson's Art](https://www.jacksonsart.com/en-us/a-guide-to-printmaking),
+[Groundworks Art
+Lab](https://www.groundworksartlab.org/blog/2024/2/14/an-in-depth-look-at-relief-printmaking-techniques-and-examples-6cs6p).
+
+**Seamless repeat pattern tiling — general design knowledge, directly
+relevant to Studio's existing pattern library.** Four standard industry
+repeat types, each suited to different motif styles: **block** (identical
+grid, simplest, can look mechanical at scale), **half-drop** (each column
+offset vertically by half tile height — the most common choice for
+florals and organic motifs), **brick** (each row offset horizontally by
+half tile width — suits geometric or stripe patterns), and **mirror**
+(alternating reflection — kaleidoscopic, common in damask and border
+patterns). A true seamless tile's left/right and top/bottom edges must
+continue into each other with no visible seam. Sources checked are
+pattern-generation SaaS marketing sites rather than neutral references,
+though the repeat-type terminology matches conventional textile-design
+vocabulary: [Pattern
+Weaver](https://patternweaver.ai/blog/what-is-seamless-repeat-pattern/),
+[Texloom Studio](https://texloom.studio/seamless-pattern).
+
 **Parked — Micronesian/Pacific tatau and other lineage-restricted cultural
 material: do not ingest as generic reusable reference or Creative Library
 stock; this needs an explicit owner decision, not an autonomous one.**
@@ -82,6 +115,34 @@ decision that needs the owner, not an autonomous judgment; genuinely
 non-regalia items (e.g. a plain-woven Navajo blanket pattern) might be
 fine on separate review, but the set was parked as a whole rather than
 picked apart without that conversation.
+
+**Parked — Micronesian outrigger canoe figurehead carving and
+navigation-linked ornamentation: same treatment as tatau, not
+autonomously safe just because it is a different object category.**
+Checked specifically whether canoe decoration is more open than tatau,
+since it is a different kind of object (a vessel, not a body); it is not
+clearly so. Canoe wood carving is documented as traditionally serving
+religious purposes, and Smithsonian collections from Puluwat and Woleai
+group carved canoe ornaments together with items used in navigation
+magic — decoration and navigation practice are entangled with
+ceremonial/spiritual material in the same way tatau and wayfinding
+already are (see below). General hull-construction facts and the
+red/black color convention are plausibly safe generic craft knowledge,
+but figurehead carving and navigation-linked ornamentation specifically
+are parked pending an owner decision on where the line sits. Sources:
+[Pacific Island
+Times](https://www.pacificislandtimes.com/post/keeping-traditional-micronesian-canoe-carving-alive),
+[Smithsonian
+NMNH](https://naturalhistory.si.edu/research/anthropology/programs/recovering-voices/outreach/news-research-updates/canoe-collections-pacific-islands).
+
+**Flagged, not ingested — traditional Pacific wayfinding/star-compass
+navigation knowledge.** Adjacent to the tatau and canoe-carving concerns
+above: navigation chants, star paths and etak systems are
+specific-community-transmitted knowledge in many Micronesian/Polynesian
+traditions (e.g. Satawalese/Pwo navigator lineages), not generic
+public-domain motif stock even where a specific diagram has been
+academically published. Needs the same owner-level judgment call already
+applied to tatau and canoe carving; not researched further or ingested.
 
 ## Safe future structure
 
