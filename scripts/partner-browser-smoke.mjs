@@ -306,7 +306,7 @@ try {
       const card = page.getByText(name, { exact: true }).locator("xpath=ancestor::li[1]");
       if (!(await card.count())) { cleanupResults.push({ name, status: "not present" }); continue; }
       await card.getByRole("button", { name: "Remove", exact: true }).click();
-      await page.waitForURL(/\/partner\/library\?success=/, { timeout: 30_000 });
+      await page.waitForURL(/\/partner\/library\?success=/, { timeout: 30_000, waitUntil: "commit" });
       await page.goto(`${origin}/partner/library`, { waitUntil: "commit", timeout: 90_000 });
       await page.getByRole("heading", { name: "My files", exact: true }).waitFor({ state: "visible", timeout: 30_000 });
       cleanupResults.push({ name, status: "archived through My files" });
@@ -717,6 +717,17 @@ try {
     if (process.env.PARTNER_BROWSER_CAPTURE_STUDIO_SCREENSHOTS === "1") {
       await page.screenshot({ path: "/private/tmp/sweetoh-studio-phone.png" });
     }
+    await page.getByRole("button", { name: "Close panel", exact: true }).click().catch(() => {});
+    await page.getByRole("button", { name: "Library", exact: true }).click();
+    const phoneLibrarySearch = page.getByPlaceholder("Search elements and fonts");
+    await phoneLibrarySearch.fill("butterfly");
+    const phoneAsset = page.getByRole("button", { name: "Add Butterfly", exact: true });
+    await phoneAsset.waitFor({ state: "visible", timeout: 20_000 });
+    await phoneAsset.click();
+    await page.getByRole("button", { name: "Layers", exact: true }).click();
+    await page.locator(".pe-layer-row").filter({ hasText: "Butterfly" }).waitFor({ state: "visible", timeout: 15_000 });
+    const phoneLibraryLayout = await page.evaluate(() => ({ width: innerWidth, horizontalOverflow: document.documentElement.scrollWidth > innerWidth, resultVisible: Boolean(document.querySelector(".pe-layer-row")?.getBoundingClientRect().height) }));
+    if (phoneLibraryLayout.horizontalOverflow || !phoneLibraryLayout.resultVisible) throw new Error(`Creative Library search and insertion are not usable on phone: ${JSON.stringify(phoneLibraryLayout)}`);
 
     // Refresh/reopen the local recovery draft, continue editing, then archive
     // only the two temporary test assets from My files.
@@ -736,7 +747,7 @@ try {
     for (const name of [cutoutName, imageSmokeName]) {
       const card = page.getByText(name, { exact: true }).locator("xpath=ancestor::li[1]");
       await card.getByRole("button", { name: "Remove", exact: true }).click();
-      await page.waitForURL(/\/partner\/library\?success=/, { timeout: 30_000 });
+      await page.waitForURL(/\/partner\/library\?success=/, { timeout: 30_000, waitUntil: "commit" });
       await page.goto(`${origin}/partner/library`, { waitUntil: "commit", timeout: 90_000 });
       await page.getByRole("heading", { name: "My files", exact: true }).waitFor({ state: "visible", timeout: 30_000 });
     }
@@ -763,6 +774,7 @@ try {
       selectionAndHistory: "selected a mixed image/graphic/text set; dragged and resized all three together; grouped/ungrouped, aligned to selection/canvas, changed front/back order, hid/showed and locked/unlocked a layer; undo/redo passed",
       tabletTypography,
       studioRefreshRecovery: "restored the inserted layer from the isolated browser draft after refresh",
+      phoneLibrary: { searched: "butterfly", inserted: "Butterfly", ...phoneLibraryLayout },
       continuedEditing: "inserted Butterfly after restore, undid that insertion, and edited recovered heading text",
       partnerData: "unchanged; browser context closed without saving a partner asset or product",
       inspection,
@@ -893,7 +905,7 @@ try {
         const card = smokePage.getByText(name, { exact: true }).locator("xpath=ancestor::li[1]");
         if (await card.count()) {
           await card.getByRole("button", { name: "Remove", exact: true }).click();
-          await smokePage.waitForURL(/\/partner\/library\?success=/, { timeout: 30_000 });
+          await smokePage.waitForURL(/\/partner\/library\?success=/, { timeout: 30_000, waitUntil: "commit" });
           await smokePage.goto(`${origin}/partner/library`, { waitUntil: "commit", timeout: 45_000 });
           await smokePage.getByRole("heading", { name: "My files", exact: true }).waitFor({ state: "visible", timeout: 30_000 });
         }
