@@ -1,0 +1,42 @@
+[
+  {
+    "id": "huipil-1-geometric-red",
+    "europeanaId": "2048221/europeana_fashion_851655",
+    "imageUrl": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/RV/RV-5946-653.jpg",
+    "title": "Huipil with red and magenta geometric bands",
+    "category": "Patterns",
+    "tags": ["huipil", "Mexican textile", "Guatemalan textile", "Mesoamerican", "indigenous textile", "embroidery", "geometric pattern", "global folk art", "sublimation"]
+  },
+  {
+    "id": "huipil-2-floral-embroidered",
+    "europeanaId": "2048221/europeana_fashion_804358",
+    "imageUrl": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/RV/RV-5075-410.jpg",
+    "title": "Huipil with floral vine embroidery",
+    "category": "Patterns",
+    "tags": ["huipil", "Mexican textile", "Guatemalan textile", "Mesoamerican", "indigenous textile", "embroidery", "floral pattern", "global folk art", "sublimation"]
+  },
+  {
+    "id": "huipil-3-llama-motifs",
+    "europeanaId": "2048221/europeana_fashion_851120",
+    "imageUrl": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/RV/RV-5946-171.jpg",
+    "title": "Huipil with llama and star motifs (natural dye)",
+    "category": "Patterns",
+    "tags": ["huipil", "Guatemalan textile", "Mesoamerican", "indigenous textile", "embroidery", "llama", "animal motif", "natural dye", "global folk art", "sublimation"]
+  },
+  {
+    "id": "huipil-4-triangle-collar",
+    "europeanaId": "2048221/europeana_fashion_851516",
+    "imageUrl": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/RV/RV-5946-528.jpg",
+    "title": "Huipil with colorful triangle-motif collar embroidery",
+    "category": "Patterns",
+    "tags": ["huipil", "Guatemalan textile", "Mesoamerican", "indigenous textile", "embroidery", "triangle motif", "global folk art", "sublimation"]
+  },
+  {
+    "id": "huipil-6-floral-bouquet",
+    "europeanaId": "2048221/europeana_fashion_803999",
+    "imageUrl": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/RV/RV-5075-79.jpg",
+    "title": "Huipil with floral bouquet embroidery",
+    "category": "Patterns",
+    "tags": ["huipil", "Mexican textile", "Guatemalan textile", "Mesoamerican", "indigenous textile", "embroidery", "floral pattern", "global folk art", "sublimation"]
+  }
+]

@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "source": "National Museum of World Cultures (Netherlands) — Mesoamerican huipil textiles, via Europeana",
+  "rightsEvidence": "Per-item Europeana record edmRights + edmIsShownBy, independently verified live for each item; snapshots in records/.",
+  "assets": [
+    {
+      "id": "huipil-huipil-1-geometric-red-v1",
+      "europeanaId": "2048221/europeana_fashion_851655",
+      "title": "Huipil with red and magenta geometric bands",
+      "sourceRecordUrl": "https://www.europeana.eu/item/2048221/europeana_fashion_851655",
+      "license": "CC0 1.0 Universal",
+      "licenseEvidence": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/RV/RV-5946-653.jpg",
+      "originalWidth": 5409,
+      "originalHeight": 6201,
+      "originalFile": "originals/huipil-1-geometric-red.jpg",
+      "originalSha256": "9f19ae637379bbe1d7752de55a40ba0cd48164bafbdaec622c3719405cc36f53",
+      "normalizedOutputSha256": "11463f726d227fb2cf6ac884ec5a70cf89f2db8bc26857c546a042f3fb396d34",
+      "normalizedDimensions": {
+        "width": 2093,
+        "height": 2400
+      }
+    },
+    {
+      "id": "huipil-huipil-2-floral-embroidered-v1",
+      "europeanaId": "2048221/europeana_fashion_804358",
+      "title": "Huipil with floral vine embroidery",
+      "sourceRecordUrl": "https://www.europeana.eu/item/2048221/europeana_fashion_804358",
+      "license": "CC0 1.0 Universal",
+      "licenseEvidence": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/RV/RV-5075-410.jpg",
+      "originalWidth": 3744,
+      "originalHeight": 2841,
+      "originalFile": "originals/huipil-2-floral-embroidered.jpg",
+      "originalSha256": "8dde05eedab98edba8f58ed02fd37098efacb06f0601c710e58366243164e5c1",
+      "normalizedOutputSha256": "af3c7c9688147ac58cf5a5d181be913a900a179e86c95b59b106a7e9ebe5b6c1",
+      "normalizedDimensions": {
+        "width": 2400,
+        "height": 1821
+      }
+    },
+    {
+      "id": "huipil-huipil-3-llama-motifs-v1",
+      "europeanaId": "2048221/europeana_fashion_851120",
+      "title": "Huipil with llama and star motifs (natural dye)",
+      "sourceRecordUrl": "https://www.europeana.eu/item/2048221/europeana_fashion_851120",
+      "license": "CC0 1.0 Universal",
+      "licenseEvidence": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/RV/RV-5946-171.jpg",
+      "originalWidth": 5971,
+      "originalHeight": 4478,
+      "originalFile": "originals/huipil-3-llama-motifs.jpg",
+      "originalSha256": "fa6792c8070c0d65780d6bbf17089acbb92a9ba4a6efb89fcd821b04b08c5c08",
+      "normalizedOutputSha256": "51a2d8e4004b680b63656355b17de4c9dda4893c4eb351e529efce66bfe71c49",
+      "normalizedDimensions": {
+        "width": 2400,
+        "height": 1800
+      }
+    },
+    {
+      "id": "huipil-huipil-4-triangle-collar-v1",
+      "europeanaId": "2048221/europeana_fashion_851516",
+      "title": "Huipil with colorful triangle-motif collar embroidery",
+      "sourceRecordUrl": "https://www.europeana.eu/item/2048221/europeana_fashion_851516",
+      "license": "CC0 1.0 Universal",
+      "licenseEvidence": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/RV/RV-5946-528.jpg",
+      "originalWidth": 5226,
+      "originalHeight": 4181,
+      "originalFile": "originals/huipil-4-triangle-collar.jpg",
+      "originalSha256": "7d6c3e634532b6f5bbf1ffc00bb74f2b96bb6f6e22c0ea9331febc020e5be3d2",
+      "normalizedOutputSha256": "2a31890ea54c4afd5ead62d36ac8a3fc6eb42874d71ab20d9fc8c088d2a786db",
+      "normalizedDimensions": {
+        "width": 2400,
+        "height": 1920
+      }
+    },
+    {
+      "id": "huipil-huipil-6-floral-bouquet-v1",
+      "europeanaId": "2048221/europeana_fashion_803999",
+      "title": "Huipil with floral bouquet embroidery",
+      "sourceRecordUrl": "https://www.europeana.eu/item/2048221/europeana_fashion_803999",
+      "license": "CC0 1.0 Universal",
+      "licenseEvidence": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/RV/RV-5075-79.jpg",
+      "originalWidth": 5742,
+      "originalHeight": 4469,
+      "originalFile": "originals/huipil-6-floral-bouquet.jpg",
+      "originalSha256": "a5fae45b1e375d9855d656d198fe498c00e09581dc7a5290d3e0d555fe97c12b",
+      "normalizedOutputSha256": "567e9c3a259579d8d98157eb1fed4bba7860de5ec57e487f1e8e4b57ff010a5f",
+      "normalizedDimensions": {
+        "width": 2400,
+        "height": 1868
+      }
+    }
+  ]
+}

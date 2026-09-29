@@ -9,6 +9,7 @@ import { WELLCOME_MARINE_LIFE_STUDIO_ASSETS } from "./wellcome-marine-life-asset
 import { WELLCOME_INSECTS_STUDIO_ASSETS } from "./wellcome-insects-assets";
 import { INDONESIAN_TEXTILES_STUDIO_ASSETS } from "./indonesian-textiles-assets";
 import { KENTE_CLOTH_STUDIO_ASSETS } from "./kente-cloth-assets";
+import { HUIPIL_TEXTILES_STUDIO_ASSETS } from "./huipil-textiles-assets";
 import { PATTERNFILLS_STUDIO_ASSETS } from "./patternfills-assets";
 import { OPEN_CROP_STUDIO_ASSETS } from "./open-crop-assets";
 import { OPENCLIPART_STUDIO_ASSETS } from "./openclipart-assets";
@@ -114,6 +115,7 @@ export const STUDIO_ASSETS: readonly StudioAsset[] = [
   ...WELLCOME_INSECTS_STUDIO_ASSETS,
   ...INDONESIAN_TEXTILES_STUDIO_ASSETS,
   ...KENTE_CLOTH_STUDIO_ASSETS,
+  ...HUIPIL_TEXTILES_STUDIO_ASSETS,
   ...PATTERNFILLS_STUDIO_ASSETS,
   ...OPEN_CROP_STUDIO_ASSETS,
   ...OPENCLIPART_STUDIO_ASSETS,
