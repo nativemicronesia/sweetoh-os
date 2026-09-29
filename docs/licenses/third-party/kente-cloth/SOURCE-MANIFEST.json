@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "source": "National Museum of World Cultures (Netherlands) — Ghanaian kente cloth, via Europeana",
+  "rightsEvidence": "Per-item Europeana record edmRights + edmIsShownBy, independently verified live for each item; snapshots in records/.",
+  "assets": [
+    {
+      "id": "kente-kente-1-v1",
+      "europeanaId": "2048221/europeana_fashion_842919",
+      "title": "Kente cloth for a woman",
+      "sourceRecordUrl": "https://www.europeana.eu/item/2048221/europeana_fashion_842919",
+      "license": "CC0 1.0 Universal",
+      "licenseEvidence": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/RV/RV-5899-67.jpg",
+      "originalWidth": 3871,
+      "originalHeight": 2158,
+      "originalFile": "originals/kente-1.jpg",
+      "originalSha256": "c8c0d7b6a22443c5f1be6e0567545df786a3dde74c1c7e0efae37878cce52c21",
+      "normalizedOutputSha256": "122ff4424093416fc6961de4f7e839c287d86a920e1ef6ddfd96d697131885ab",
+      "normalizedDimensions": {
+        "width": 2400,
+        "height": 1338
+      }
+    },
+    {
+      "id": "kente-kente-2-v1",
+      "europeanaId": "2048221/europeana_fashion_842896",
+      "title": "Kente cloth for a man",
+      "sourceRecordUrl": "https://www.europeana.eu/item/2048221/europeana_fashion_842896",
+      "license": "CC0 1.0 Universal",
+      "licenseEvidence": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/RV/RV-5899-44.jpg",
+      "originalWidth": 3519,
+      "originalHeight": 2342,
+      "originalFile": "originals/kente-2.jpg",
+      "originalSha256": "622412cc27a4e80428f9ebcf720110fccb0dd41c57f084ab87348e9d42805251",
+      "normalizedOutputSha256": "6b798ebaac11de8fad68735fddc721f7d28baa3ed92c93a01715a1b927d17b88",
+      "normalizedDimensions": {
+        "width": 2400,
+        "height": 1597
+      }
+    },
+    {
+      "id": "kente-kente-3-v1",
+      "europeanaId": "2048221/europeana_fashion_842862",
+      "title": "Kente cloth for a man (green ground with figurative motifs)",
+      "sourceRecordUrl": "https://www.europeana.eu/item/2048221/europeana_fashion_842862",
+      "license": "CC0 1.0 Universal",
+      "licenseEvidence": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/RV/RV-5899-10.jpg",
+      "originalWidth": 6780,
+      "originalHeight": 3449,
+      "originalFile": "originals/kente-3.jpg",
+      "originalSha256": "1835def24370940a80deda3f67455f464391df83c6703b0ca76eb8ae2dac4b14",
+      "normalizedOutputSha256": "b6834eeacceb7ac29e023fef2ebe60463d06c87744f92788a38d5f9bea1f6f0b",
+      "normalizedDimensions": {
+        "width": 2400,
+        "height": 1221
+      }
+    },
+    {
+      "id": "kente-kente-4-v1",
+      "europeanaId": "2048221/europeana_fashion_842866",
+      "title": "Kente cloth (houndstooth ground with woven stripes)",
+      "sourceRecordUrl": "https://www.europeana.eu/item/2048221/europeana_fashion_842866",
+      "license": "CC0 1.0 Universal",
+      "licenseEvidence": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/RV/RV-5899-14.jpg",
+      "originalWidth": 4916,
+      "originalHeight": 2970,
+      "originalFile": "originals/kente-4.jpg",
+      "originalSha256": "278991b216288c66a784f43993e6b93af68553904af09c2389ce5204c024e720",
+      "normalizedOutputSha256": "9bd61560b9f6fe283839d75cc90268558cce09cfc5ae0c167c6d71ae9cab401d",
+      "normalizedDimensions": {
+        "width": 2400,
+        "height": 1450
+      }
+    },
+    {
+      "id": "kente-kente-5-v1",
+      "europeanaId": "2048221/europeana_fashion_842872",
+      "title": "Kente cloth (navy ground with gold and red bands)",
+      "sourceRecordUrl": "https://www.europeana.eu/item/2048221/europeana_fashion_842872",
+      "license": "CC0 1.0 Universal",
+      "licenseEvidence": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/RV/RV-5899-20.jpg",
+      "originalWidth": 5118,
+      "originalHeight": 2087,
+      "originalFile": "originals/kente-5.jpg",
+      "originalSha256": "8c1f7f9793f885c5573e520cc5fc62276ca366ddbc7692f18e2e310fa31dcee5",
+      "normalizedOutputSha256": "ba2fbc07d2e28f7075d923d4b73b17142364cf6f24ebbf1f91391a93e126ae4d",
+      "normalizedDimensions": {
+        "width": 2400,
+        "height": 979
+      }
+    }
+  ]
+}

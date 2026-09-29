@@ -1,0 +1,42 @@
+[
+  {
+    "id": "kente-1",
+    "europeanaId": "2048221/europeana_fashion_842919",
+    "imageUrl": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/RV/RV-5899-67.jpg",
+    "title": "Kente cloth for a woman",
+    "category": "Patterns",
+    "tags": ["kente", "Ghanaian textile", "Akan", "Ghana", "West African textile", "woven pattern", "geometric", "global folk art", "sublimation"]
+  },
+  {
+    "id": "kente-2",
+    "europeanaId": "2048221/europeana_fashion_842896",
+    "imageUrl": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/RV/RV-5899-44.jpg",
+    "title": "Kente cloth for a man",
+    "category": "Patterns",
+    "tags": ["kente", "Ghanaian textile", "Akan", "Ghana", "West African textile", "woven pattern", "geometric", "global folk art", "sublimation"]
+  },
+  {
+    "id": "kente-3",
+    "europeanaId": "2048221/europeana_fashion_842862",
+    "imageUrl": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/RV/RV-5899-10.jpg",
+    "title": "Kente cloth for a man (green ground with figurative motifs)",
+    "category": "Patterns",
+    "tags": ["kente", "Ghanaian textile", "Akan", "Ghana", "West African textile", "woven pattern", "figurative motif", "global folk art", "sublimation"]
+  },
+  {
+    "id": "kente-4",
+    "europeanaId": "2048221/europeana_fashion_842866",
+    "imageUrl": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/RV/RV-5899-14.jpg",
+    "title": "Kente cloth (houndstooth ground with woven stripes)",
+    "category": "Patterns",
+    "tags": ["kente", "Ghanaian textile", "Akan", "Ghana", "West African textile", "woven pattern", "geometric", "global folk art", "sublimation"]
+  },
+  {
+    "id": "kente-5",
+    "europeanaId": "2048221/europeana_fashion_842872",
+    "imageUrl": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/RV/RV-5899-20.jpg",
+    "title": "Kente cloth (navy ground with gold and red bands)",
+    "category": "Patterns",
+    "tags": ["kente", "Ghanaian textile", "Akan", "Ghana", "West African textile", "woven pattern", "geometric", "global folk art", "sublimation"]
+  }
+]
