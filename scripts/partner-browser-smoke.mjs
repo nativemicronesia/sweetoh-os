@@ -310,10 +310,19 @@ try {
       const dimensionError = await setup.getByRole("alert").innerText();
       if (!dimensionError.includes("actual print width and height")) throw new Error(`Product setup did not require real dimensions: ${dimensionError}`);
       await setup.getByLabel("Production dimensions", { exact: true }).selectOption("none");
+      await setup.getByRole("button", { name: "Save product setup", exact: true }).click();
+      const areaError = await setup.getByRole("alert").innerText();
+      if (!areaError.includes("Check each changed print area against the real product")) throw new Error(`Product setup did not require review of a new print area: ${areaError}`);
+      const areaConfirmation = setup.getByLabel("Confirm print area matches the real product", { exact: true });
+      await areaConfirmation.check();
+      if (!(await areaConfirmation.isChecked())) throw new Error("Product print area confirmation did not remain selected.");
+      await setup.getByLabel("Area width percent", { exact: true }).fill("41");
+      if (await areaConfirmation.isChecked()) throw new Error("Changing print geometry did not require confirmation again.");
+      await areaConfirmation.check();
       await setup.getByRole("button", { name: "Close product setup", exact: true }).click();
       const discard = page.getByRole("alertdialog", { name: "Discard setup changes", exact: true });
       await discard.getByRole("button", { name: "Discard changes", exact: true }).click();
-      productionDimensionsCheck = { selectedInchesStartBlank: true, saveRequiredActualValues: true, dismissedWithoutSaving: true };
+      productionDimensionsCheck = { selectedInchesStartBlank: true, saveRequiredActualValues: true, newAreaRequiredConfirmation: true, geometryChangeRequiresReconfirmation: true, dismissedWithoutSaving: true };
     }
     console.log(JSON.stringify({ browser: browser.version(), productListCounts, privateDraftsInspected: inspected, verifiedStudio, productionDimensionsCheck, persistentWrites: 0, pageErrors: browserErrors }));
     await context.close();

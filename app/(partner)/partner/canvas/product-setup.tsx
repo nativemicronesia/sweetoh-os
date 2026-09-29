@@ -26,6 +26,8 @@ export function ProductSetup({ surfaces, initialId, photoFor, onSave, onClose }:
   const [error, setError] = useState("");
   const [changed, setChanged] = useState(false);
   const [dimensionDrafts, setDimensionDrafts] = useState<Record<string, DimensionDraft>>({});
+  const [areaReviewIds, setAreaReviewIds] = useState<Set<string>>(() => new Set());
+  const [confirmedPrintAreaIds, setConfirmedPrintAreaIds] = useState<Set<string>>(() => new Set());
   const [closing, setClosing] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const svg = useRef<SVGSVGElement>(null);
@@ -46,6 +48,10 @@ export function ProductSetup({ surfaces, initialId, photoFor, onSave, onClose }:
   }
   function patchRegion(patch: Partial<PrintRegion>) {
     if (!region) return;
+    if (patch.bounds || patch.shape || patch.points) {
+      setAreaReviewIds((ids) => new Set(ids).add(region.id));
+      setConfirmedPrintAreaIds((ids) => { const next = new Set(ids); next.delete(region.id); return next; });
+    }
     patchSurface({ printRegions: current.printRegions.map(r => r.id === areaId ? { ...r, ...patch } : r) });
   }
   function dimensionDraftFor(r: PrintRegion): DimensionDraft {
@@ -83,6 +89,7 @@ export function ProductSetup({ surfaces, initialId, photoFor, onSave, onClose }:
   function addRegion() {
     const r: PrintRegion = { id: crypto.randomUUID(), name: `Area ${current.printRegions.length + 1}`, shape: "rectangle", bounds: { x: .3, y: .3, width: .4, height: .4 } };
     patchSurface({ printRegions: [...current.printRegions, r] }); setAreaId(r.id);
+    setAreaReviewIds((ids) => new Set(ids).add(r.id));
   }
   function point(e: React.PointerEvent) {
     const b = svg.current!.getBoundingClientRect();
@@ -114,11 +121,17 @@ export function ProductSetup({ surfaces, initialId, photoFor, onSave, onClose }:
     finally { setBusy(false); }
   }
   async function save() {
+    setError("");
     const currentRegionIds = new Set(draft.flatMap((s) => s.printRegions.map((r) => r.id)));
     const missingDimensions = Object.entries(dimensionDrafts).some(([id, d]) => currentRegionIds.has(id) && d.unit !== "none" &&
       (!d.width.trim() || !d.height.trim() || !Number.isFinite(Number(d.width)) || !Number.isFinite(Number(d.height)) || Number(d.width) <= 0 || Number(d.height) <= 0));
     if (missingDimensions) {
       setError("Enter the actual print width and height, or choose Not set if you don’t know them yet.");
+      return;
+    }
+    const unconfirmedArea = [...areaReviewIds].some((id) => currentRegionIds.has(id) && !confirmedPrintAreaIds.has(id));
+    if (unconfirmedArea) {
+      setError("Check each changed print area against the real product before saving.");
       return;
     }
     setBusy(true); setError("");
@@ -167,6 +180,10 @@ export function ProductSetup({ surfaces, initialId, photoFor, onSave, onClose }:
             {!current.printRegions.length && <p className="pe-muted">No print areas yet. Add one wherever you can print.</p>}
           </div>
           {region && <>
+            {areaReviewIds.has(region.id) && <label className="ps-confirm"><input type="checkbox" aria-label="Confirm print area matches the real product" checked={confirmedPrintAreaIds.has(region.id)} onChange={(event) => {
+              const checked = event.currentTarget.checked;
+              setConfirmedPrintAreaIds((ids) => { const next = new Set(ids); if (checked) next.add(region.id); else next.delete(region.id); return next; });
+            }}/><span>I checked this placement against the real product’s printable area.</span></label>}
             <label className="ps-field">Area name<input className="pe-input" value={region.name} maxLength={60} onChange={e => patchRegion({ name: e.target.value })}/></label>
             <label className="ps-field">Shape<select aria-label="Shape" className="pe-select" value={region.shape} onChange={e => patchRegion({ shape: e.target.value as PrintRegion["shape"], points: e.target.value === "polygon" ? region.points ?? polygon : undefined })}><option value="rectangle">Rectangle</option><option value="ellipse">Circle / oval</option><option value="polygon">Custom shape</option></select></label>
             {region.shape === "polygon" && <div className="pe-row"><button className="pe-btn pe-btn-ghost" disabled={(region.points?.length ?? 0) >= 32} onClick={() => { const ps = region.points!; const a = ps[ps.length - 1], b = ps[0]; patchRegion({ points: [...ps, { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }] }); }}>Add point</button><button className="pe-btn pe-btn-ghost" disabled={region.points!.length <= 3} onClick={() => patchRegion({ points: region.points!.slice(0, -1) })}>Remove point</button></div>}
