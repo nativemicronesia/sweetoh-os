@@ -296,7 +296,26 @@ try {
         studioCanvas: "opened without edits",
       };
     }
-    console.log(JSON.stringify({ browser: browser.version(), productListCounts, privateDraftsInspected: inspected, verifiedStudio, persistentWrites: 0, pageErrors: browserErrors }));
+    let productionDimensionsCheck = null;
+    if (verifiedStudio?.workspaceType === "saved private blank · read only") {
+      await page.getByRole("button", { name: "Product setup", exact: true }).click();
+      const setup = page.getByRole("dialog", { name: "Product setup", exact: true });
+      await setup.waitFor({ state: "visible", timeout: 15_000 });
+      await setup.getByRole("button", { name: "Add print area", exact: true }).click();
+      await setup.getByLabel("Production dimensions", { exact: true }).selectOption("in");
+      const width = await setup.getByLabel("Print width", { exact: true }).inputValue();
+      const height = await setup.getByLabel("Print height", { exact: true }).inputValue();
+      if (width || height) throw new Error(`Choosing a unit invented print dimensions: ${width} × ${height} in.`);
+      await setup.getByRole("button", { name: "Save product setup", exact: true }).click();
+      const dimensionError = await setup.getByRole("alert").innerText();
+      if (!dimensionError.includes("actual print width and height")) throw new Error(`Product setup did not require real dimensions: ${dimensionError}`);
+      await setup.getByLabel("Production dimensions", { exact: true }).selectOption("none");
+      await setup.getByRole("button", { name: "Close product setup", exact: true }).click();
+      const discard = page.getByRole("alertdialog", { name: "Discard setup changes", exact: true });
+      await discard.getByRole("button", { name: "Discard changes", exact: true }).click();
+      productionDimensionsCheck = { selectedInchesStartBlank: true, saveRequiredActualValues: true, dismissedWithoutSaving: true };
+    }
+    console.log(JSON.stringify({ browser: browser.version(), productListCounts, privateDraftsInspected: inspected, verifiedStudio, productionDimensionsCheck, persistentWrites: 0, pageErrors: browserErrors }));
     await context.close();
   } else if (process.env.PARTNER_BROWSER_CLEANUP_ASSET_NAMES) {
     await page.goto(`${origin}/partner/library`, { waitUntil: "commit", timeout: 90_000 });

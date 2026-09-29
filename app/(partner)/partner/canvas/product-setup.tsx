@@ -7,6 +7,7 @@ import { regionPath } from "@/lib/studio/print-regions";
 import { uploadSurfaceAction } from "../actions/builder";
 
 type Surface = StudioLayout["surfaces"][number];
+type DimensionDraft = { unit: "in" | "cm" | "none"; width: string; height: string };
 const clamp = (v: number, lo = 0, hi = 1) => Math.min(hi, Math.max(lo, v));
 const polygon = [{ x: .2, y: 0 }, { x: .8, y: 0 }, { x: 1, y: .5 }, { x: .8, y: 1 }, { x: .2, y: 1 }, { x: 0, y: .5 }];
 
@@ -24,6 +25,7 @@ export function ProductSetup({ surfaces, initialId, photoFor, onSave, onClose }:
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [changed, setChanged] = useState(false);
+  const [dimensionDrafts, setDimensionDrafts] = useState<Record<string, DimensionDraft>>({});
   const [closing, setClosing] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const svg = useRef<SVGSVGElement>(null);
@@ -45,6 +47,38 @@ export function ProductSetup({ surfaces, initialId, photoFor, onSave, onClose }:
   function patchRegion(patch: Partial<PrintRegion>) {
     if (!region) return;
     patchSurface({ printRegions: current.printRegions.map(r => r.id === areaId ? { ...r, ...patch } : r) });
+  }
+  function dimensionDraftFor(r: PrintRegion): DimensionDraft {
+    return dimensionDrafts[r.id] ?? {
+      unit: r.dimensions?.unit ?? "none",
+      width: r.dimensions ? String(r.dimensions.width) : "",
+      height: r.dimensions ? String(r.dimensions.height) : "",
+    };
+  }
+  function updateDimensionDraft(r: PrintRegion, patch: Partial<DimensionDraft>) {
+    const current = dimensionDraftFor(r);
+    const next = { ...current, ...patch };
+    setDimensionDrafts((drafts) => ({ ...drafts, [r.id]: next }));
+    setChanged(true);
+    const width = Number(next.width), height = Number(next.height);
+    if (next.unit !== "none" && next.width.trim() && next.height.trim() && Number.isFinite(width) && Number.isFinite(height) && width > 0 && height > 0) {
+      patchRegion({ dimensions: { width, height, unit: next.unit } });
+    } else if (r.dimensions) {
+      patchRegion({ dimensions: undefined });
+    }
+  }
+  function updateDimensionUnit(r: PrintRegion, unit: DimensionDraft["unit"]) {
+    const current = dimensionDraftFor(r);
+    if (unit === "none") {
+      updateDimensionDraft(r, { unit, width: "", height: "" });
+      patchRegion({ dimensions: undefined });
+      return;
+    }
+    const factor = current.unit !== "none" && unit !== current.unit ? unit === "cm" ? 2.54 : 1 / 2.54 : 1;
+    const next = current.unit === "none"
+      ? { unit, width: "", height: "" }
+      : { unit, width: String(Math.round(Number(current.width) * factor * 100) / 100), height: String(Math.round(Number(current.height) * factor * 100) / 100) };
+    updateDimensionDraft(r, next);
   }
   function addRegion() {
     const r: PrintRegion = { id: crypto.randomUUID(), name: `Area ${current.printRegions.length + 1}`, shape: "rectangle", bounds: { x: .3, y: .3, width: .4, height: .4 } };
@@ -80,6 +114,13 @@ export function ProductSetup({ surfaces, initialId, photoFor, onSave, onClose }:
     finally { setBusy(false); }
   }
   async function save() {
+    const currentRegionIds = new Set(draft.flatMap((s) => s.printRegions.map((r) => r.id)));
+    const missingDimensions = Object.entries(dimensionDrafts).some(([id, d]) => currentRegionIds.has(id) && d.unit !== "none" &&
+      (!d.width.trim() || !d.height.trim() || !Number.isFinite(Number(d.width)) || !Number.isFinite(Number(d.height)) || Number(d.width) <= 0 || Number(d.height) <= 0));
+    if (missingDimensions) {
+      setError("Enter the actual print width and height, or choose Not set if you don’t know them yet.");
+      return;
+    }
     setBusy(true); setError("");
     try {
       const next = draft.map(s => ({ ...s, area: s.printRegions[0]?.bounds ?? s.area, layers: s.layers.map(l => l.printRegionId && !s.printRegions.some(r => r.id === l.printRegionId) ? { ...l, printRegionId: undefined } : l) }));
@@ -134,12 +175,9 @@ export function ProductSetup({ surfaces, initialId, photoFor, onSave, onClose }:
               patchRegion({ bounds: { ...b, [key]: key === 'x' ? clamp(v, 0, 1 - b.width) : key === 'y' ? clamp(v, 0, 1 - b.height) : key === 'width' ? clamp(v, .001, 1 - b.x) : clamp(v, .001, 1 - b.y) } });
             }}/></label>)}</div>
             <button className="pe-btn pe-btn-ghost" onClick={() => patchRegion({ bounds: { x: 0, y: 0, width: 1, height: 1 } })}>Use full surface</button>
-            <label className="ps-field">Production dimensions<select aria-label="Production dimensions" className="pe-select" value={region.dimensions?.unit ?? "none"} onChange={e => {
-              const unit = e.target.value as "in" | "cm" | "none", d = region.dimensions;
-              const factor = d && unit !== d.unit ? unit === "cm" ? 2.54 : 1 / 2.54 : 1;
-              patchRegion({ dimensions: unit === "none" ? undefined : { width: Math.round((d?.width ?? 10) * factor * 100) / 100, height: Math.round((d?.height ?? 10) * factor * 100) / 100, unit } });
-            }}><option value="none">Not set</option><option value="in">Inches</option><option value="cm">Centimeters</option></select></label>
-            {region.dimensions && <div className="pe-grid2">{(["width", "height"] as const).map(key => <label key={key} className="ps-field">Print {key} ({region.dimensions!.unit})<input className="pe-input" type="number" min="0.01" max="1200" step="0.01" value={region.dimensions![key]} onChange={e => patchRegion({ dimensions: { ...region.dimensions!, [key]: Number(e.target.value) } })}/></label>)}</div>}
+            <label className="ps-field">Production dimensions<select aria-label="Production dimensions" className="pe-select" value={dimensionDraftFor(region).unit} onChange={e => updateDimensionUnit(region, e.target.value as DimensionDraft["unit"])}><option value="none">Not set</option><option value="in">Inches</option><option value="cm">Centimeters</option></select></label>
+            <p className="pe-muted pe-small">Use the real printable width and height from your production setup. Leave Not set if you don’t know them.</p>
+            {dimensionDraftFor(region).unit !== "none" && <div className="pe-grid2">{(["width", "height"] as const).map(key => <label key={key} className="ps-field">Print {key} ({dimensionDraftFor(region).unit})<input className="pe-input" aria-label={`Print ${key}`} type="number" min="0.01" max="1200" step="0.01" value={dimensionDraftFor(region)[key]} onChange={e => updateDimensionDraft(region, { [key]: e.target.value })}/></label>)}</div>}
             <button className="pe-btn ps-danger" onClick={() => { patchSurface({ printRegions: current.printRegions.filter(r => r.id !== areaId) }); setAreaId(current.printRegions.find(r => r.id !== areaId)?.id ?? ""); }}><Trash2 size={15}/> Delete print area</button>
           </>}
           {draft.length > 1 && <details><summary className="pe-muted">Remove this surface</summary><p className="pe-muted">Removes this surface and its design layers from this design.</p><button className="pe-btn ps-danger" onClick={() => { const next = draft.filter(s => s.id !== surfaceId); setDraft(next); setSurfaceId(next[0].id); setAreaId(next[0].printRegions[0]?.id ?? ""); setChanged(true); }}>Delete {current.name}</button></details>}
