@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 1,
+  "source": "Wikimedia Commons — ornamental alphabet plates from Lewis Foreman Day's \"Alphabets Old and New\" (1898)",
+  "rightsEvidence": "Per-file Wikimedia Commons extmetadata LicenseShortName + Restrictions fields, independently verified live for each item; snapshots in records/. Original downloads verified against Wikimedia's recorded SHA-1.",
+  "assets": [
+    {
+      "id": "wikimedia-ornamental-alphabets-ornamental-caps-v1",
+      "title": "Ornamental flourished capitals",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Alphabets_old_and_new,_for_the_use_of_craftsmen_-_with_an_introductory_essay_on_Art_in_the_alphabet_(1898)_(14579317108).jpg",
+      "creator": "Lewis Foreman Day",
+      "date": "1898",
+      "license": "No restrictions",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/ornamental-caps-dchklmnpstsz.json",
+      "sha1OfOriginalUpload": "cecb6c89e841cbaf39635449640c3a0e22d137b9",
+      "originalFile": "originals/ornamental-caps-dchklmnpstsz.jpg",
+      "originalSha256": "d61b216887d43a63835c3c2ab183366657654974e66507ec9af91bdca84fe363",
+      "normalizedOutputSha256": "925bb438f21b21f618d7bc2ac97391c6222d87386808123bfec22a94eb5675d2",
+      "normalizedDimensions": {
+        "width": 1401,
+        "height": 2400
+      }
+    },
+    {
+      "id": "wikimedia-ornamental-alphabets-hatched-pattern-v1",
+      "title": "Hatched pattern-fill capitals",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Alphabets_old_and_new,_for_the_use_of_craftsmen_-_with_an_introductory_essay_on_Art_in_the_alphabet_(1898)_(14765652312).jpg",
+      "creator": "Lewis Foreman Day",
+      "date": "1898",
+      "license": "No restrictions",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/hatched-pattern-caps.json",
+      "sha1OfOriginalUpload": "c48301326c79a9156cd8c53d0da996299366bc8e",
+      "originalFile": "originals/hatched-pattern-caps.jpg",
+      "originalSha256": "4407f7087b184e3b9cbb73b231a1d9c7ffd9f83ce851f494c8adac2e96bbbd60",
+      "normalizedOutputSha256": "f29daab7032261834595605ebe46184e1c9f925d6b771f7cf88705c1dbe76ad8",
+      "normalizedDimensions": {
+        "width": 1530,
+        "height": 2400
+      }
+    },
+    {
+      "id": "wikimedia-ornamental-alphabets-roman-serif-v1",
+      "title": "Roman serif alphabet with grid guide",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Alphabets_old_and_new,_for_the_use_of_craftsmen_-_with_an_introductory_essay_on_Art_in_the_alphabet_(1898)_(14579193090).jpg",
+      "creator": "Lewis Foreman Day",
+      "date": "1898",
+      "license": "No restrictions",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/roman-serif-grid.json",
+      "sha1OfOriginalUpload": "6ae756ae5bf9db451953298c73ed7a7252a824c4",
+      "originalFile": "originals/roman-serif-grid.jpg",
+      "originalSha256": "0dd95097f75ced7a1c23552a8083888b2d906cbadfa0d46bcf237278f6ad7894",
+      "normalizedOutputSha256": "f485e6979fafbc1f1d0219c486fd97bd8190882b5052283d35132b58a87ae296",
+      "normalizedDimensions": {
+        "width": 1445,
+        "height": 2400
+      }
+    },
+    {
+      "id": "wikimedia-ornamental-alphabets-gothic-banner-v1",
+      "title": "Gothic blackletter banner alphabet",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Alphabets_old_and_new,_for_the_use_of_craftsmen_-_with_an_introductory_essay_on_Art_in_the_alphabet_(1898)_(14579337009).jpg",
+      "creator": "Lewis Foreman Day",
+      "date": "1898",
+      "license": "No restrictions",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/gothic-blackletter-banner.json",
+      "sha1OfOriginalUpload": "16230dc1c40b4126ba488ea9609914d4efd5eadf",
+      "originalFile": "originals/gothic-blackletter-banner.jpg",
+      "originalSha256": "4b2b3cb7d0555246e264f4846267ed5ed9c9233f0176548bf1f4a25cbc93521f",
+      "normalizedOutputSha256": "70fc7f7760b90dbe0a712c2eda03fd55bea9e0ac2c3d52a34f9f491cfe379ec6",
+      "normalizedDimensions": {
+        "width": 1664,
+        "height": 1940
+      }
+    },
+    {
+      "id": "wikimedia-ornamental-alphabets-bold-roman-v1",
+      "title": "Bold white-on-black Roman capitals",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Alphabets_old_and_new,_for_the_use_of_craftsmen_-_with_an_introductory_essay_on_Art_in_the_alphabet_(1898)_(14742892316).jpg",
+      "creator": "Lewis Foreman Day",
+      "date": "1898",
+      "license": "No restrictions",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/bold-white-on-black-roman.json",
+      "sha1OfOriginalUpload": "6060bc41141e852af49c368ad6f0d9fca4b3829f",
+      "originalFile": "originals/bold-white-on-black-roman.jpg",
+      "originalSha256": "6ca3b5147a438308455d1f985540189441d0664f6a4288e659939c3d7c519bfb",
+      "normalizedOutputSha256": "f19f0ca99d10ffa864b4adf701e82c9424a0fc2f93b4f2894d71f30cfd08fc6e",
+      "normalizedDimensions": {
+        "width": 1708,
+        "height": 1936
+      }
+    },
+    {
+      "id": "wikimedia-ornamental-alphabets-illuminated-initials-v1",
+      "title": "Illuminated initial letters in decorative frames",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Alphabets_old_and_new,_for_the_use_of_craftsmen_-_with_an_introductory_essay_on_Art_in_the_alphabet_(1898)_(14763556974).jpg",
+      "creator": "Lewis Foreman Day",
+      "date": "1898",
+      "license": "No restrictions",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/illuminated-initial-cells.json",
+      "sha1OfOriginalUpload": "4ea26eeff54597629ff20b8e5251fa7bb21dbacc",
+      "originalFile": "originals/illuminated-initial-cells.jpg",
+      "originalSha256": "b245828571b1dc069ce5303599c8c6e44f7e05e1c16a2170befe501974b2cafb",
+      "normalizedOutputSha256": "f42a0a4ae3d43faca65f002a862fbae4c04b6f5661eff0f7ca613a7ddcab161c",
+      "normalizedDimensions": {
+        "width": 1828,
+        "height": 1312
+      }
+    },
+    {
+      "id": "wikimedia-ornamental-alphabets-flourished-script-v1",
+      "title": "Ornate flourished script capitals",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Alphabets_old_and_new,_for_the_use_of_craftsmen_-_with_an_introductory_essay_on_Art_in_the_alphabet_(1898)_(14763564164).jpg",
+      "creator": "Lewis Foreman Day",
+      "date": "1898",
+      "license": "No restrictions",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/ornate-flourished-script.json",
+      "sha1OfOriginalUpload": "973b5fb63ef09d91b5ad915d5f3a938edb475a9a",
+      "originalFile": "originals/ornate-flourished-script.jpg",
+      "originalSha256": "469ed3786f5363e03e845ca1caadcfdd3976a77593f8c8529db15aa972c71304",
+      "normalizedOutputSha256": "fd217d452661a2f6f6f2264dc88dad6a11053c174e55baa55399525866bbfc71",
+      "normalizedDimensions": {
+        "width": 1678,
+        "height": 2400
+      }
+    },
+    {
+      "id": "wikimedia-ornamental-alphabets-geometric-angular-v1",
+      "title": "Geometric angular block capitals",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Alphabets_old_and_new,_for_the_use_of_craftsmen_-_with_an_introductory_essay_on_Art_in_the_alphabet_(1898)_(14765977695).jpg",
+      "creator": "Lewis Foreman Day",
+      "date": "1898",
+      "license": "No restrictions",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/geometric-angular-caps.json",
+      "sha1OfOriginalUpload": "24ba378e7a87cb9b9b162ec5d35e57965a7185ff",
+      "originalFile": "originals/geometric-angular-caps.jpg",
+      "originalSha256": "ba5866f8abcfd47416c2e798ccfa1c42c68243d5641edbe1bc9a944319934865",
+      "normalizedOutputSha256": "7658c2993e42b63eb4a5ef10c2a5dc086691aaf84c25e1918a50a2b5517f988f",
+      "normalizedDimensions": {
+        "width": 1490,
+        "height": 2400
+      }
+    }
+  ]
+}
