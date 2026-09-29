@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 1,
+  "source": "Wikimedia Commons — 17th-century Dutch Golden Age maritime paintings (Rijksmuseum)",
+  "rightsEvidence": "Per-file Wikimedia Commons extmetadata LicenseShortName + Restrictions fields, independently verified live for each item; snapshots in records/. Original downloads verified against Wikimedia's recorded SHA-1.",
+  "assets": [
+    {
+      "id": "wikimedia-dutch-maritime-turbulent-sea-v1",
+      "title": "Turbulent sea with ships",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Woelige_zee_met_schepen_Rijksmuseum_SK-A-2315.jpeg",
+      "creator": "Ludolf Bakhuizen",
+      "date": "1697",
+      "license": "Public domain",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/turbulent-sea-with-ships.json",
+      "sha1OfOriginalUpload": "ffdf149893107edc4b90e15948a69014d94b73d2",
+      "originalFile": "originals/turbulent-sea-with-ships.jpg",
+      "originalSha256": "8862f081d53f13138c913c8002b100e99aa36c901e8b24186e4900e3a4e4872f",
+      "normalizedOutputSha256": "5472ffb34ef4bc2397fe38f527471bc83de385b6322a0b174668f52d53b6d7c0",
+      "normalizedDimensions": {
+        "width": 2400,
+        "height": 1930
+      }
+    },
+    {
+      "id": "wikimedia-dutch-maritime-het-ij-frigate-v1",
+      "title": "The IJ at Amsterdam with the frigate De Ploeg",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Het_IJ_voor_Amsterdam_met_het_fregat_%27De_Ploeg%27._Rijksmuseum_SK-C-91.jpeg",
+      "creator": "Ludolf Bakhuizen",
+      "date": "1690",
+      "license": "Public domain",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/het-ij-frigate-de-ploeg.json",
+      "sha1OfOriginalUpload": "e4cdcf7100e834c403e7c9c3ec4883438421be10",
+      "originalFile": "originals/het-ij-frigate-de-ploeg.jpg",
+      "originalSha256": "d17578b15e08afb2dfecc0cc298d097942482fe0de45c6c7c8ecb52e67167103",
+      "normalizedOutputSha256": "00ffba0c69949bb152df7e72588cb81f6403b057010a27ae7a3d16c66c3c3871",
+      "normalizedDimensions": {
+        "width": 2400,
+        "height": 1949
+      }
+    },
+    {
+      "id": "wikimedia-dutch-maritime-ijselmonde-v1",
+      "title": "Ships before IJselmonde",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Schepen_voor_IJselmonde_Rijksmuseum_SK-A-1446.jpeg",
+      "creator": "Aert Anthoniszoon",
+      "date": "1617",
+      "license": "Public domain",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/ships-before-ijselmonde.json",
+      "sha1OfOriginalUpload": "28a5d12c7d7539ab1aded0593b37b18b923e41df",
+      "originalFile": "originals/ships-before-ijselmonde.jpg",
+      "originalSha256": "0276390d01bc4d9660bfd27afae2630d1266c09b86534bc13636f50e4bdbe8fb",
+      "normalizedOutputSha256": "655551a019b383719e23f2b7e9d1057961a77a8c9e5f50827ec3bc74d768910f",
+      "normalizedDimensions": {
+        "width": 2400,
+        "height": 1186
+      }
+    },
+    {
+      "id": "wikimedia-dutch-maritime-roadstead-texel-v1",
+      "title": "Dutch ships in the roadstead of Texel",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Nederlandse_schepen_op_de_rede_van_Texel;_in_het_midden_de_%27Gouden_Leeuw%27,_het_vlaggeschip_van_Cornelis_Tromp_Rijksmuseum_SK-A-8.jpeg",
+      "creator": "Ludolf Bakhuizen",
+      "date": "1671",
+      "license": "Public domain",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/dutch-ships-roadstead-texel.json",
+      "sha1OfOriginalUpload": "dc8eb77364336a2387af343ca229120a2c8bac8b",
+      "originalFile": "originals/dutch-ships-roadstead-texel.jpg",
+      "originalSha256": "8b9da73af58384d17cfda379f95218a509ec7ac24b80e6fcad9bfc3954f3c462",
+      "normalizedOutputSha256": "08f4ee2670c7673defb05d716ab8a8a591fc4866c2320be97ef84184309a3d42",
+      "normalizedDimensions": {
+        "width": 2400,
+        "height": 1576
+      }
+    },
+    {
+      "id": "wikimedia-dutch-maritime-men-o-war-calm-v1",
+      "title": "Dutch men-o'-war and other shipping in a calm",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Willem_van_de_Velde_II_-_Dutch_men-o%27-war_and_other_shipping_in_a_calm.jpg",
+      "creator": "Willem van de Velde the Younger",
+      "date": "circa 1665",
+      "license": "Public domain",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/men-o-war-shipping-in-a-calm.json",
+      "sha1OfOriginalUpload": "4c76d96b199eb473a6426aded6aa487e09c1a2c9",
+      "originalFile": "originals/men-o-war-shipping-in-a-calm.jpg",
+      "originalSha256": "b4773fff1d96cd7750159b7f39204227189894c63b3343a2b55515c0995d6599",
+      "normalizedOutputSha256": "5e6536c1a56fcc0094b1286d142825168025385ab59cfa8bdc8663c8b77d85ec",
+      "normalizedDimensions": {
+        "width": 2400,
+        "height": 1740
+      }
+    },
+    {
+      "id": "wikimedia-dutch-maritime-off-the-coast-v1",
+      "title": "Ships off the coast",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Schepen_voor_de_kust_Rijksmuseum_SK-A-1430.jpeg",
+      "creator": "Adam Willaerts",
+      "date": "1628",
+      "license": "Public domain",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/ships-off-the-coast.json",
+      "sha1OfOriginalUpload": "ad227d548e85ff3bd252226f6d4e045f15922809",
+      "originalFile": "originals/ships-off-the-coast.jpg",
+      "originalSha256": "0f2da97b5fe808323566548a2f61edd517e1264dce95001a3d19b2b5cfb2dda1",
+      "normalizedOutputSha256": "c1c9436814fec0d9e2c0a4aafebc9d699916a6db189b55543e86f421968cc811",
+      "normalizedDimensions": {
+        "width": 2400,
+        "height": 1279
+      }
+    },
+    {
+      "id": "wikimedia-dutch-maritime-warships-storm-v1",
+      "title": "Warships in a storm",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Oorlogsschepen_tijdens_een_storm_Rijksmuseum_SK-A-4856.jpeg",
+      "creator": "Ludolf Bakhuizen",
+      "date": "1695",
+      "license": "Public domain",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/warships-in-a-storm.json",
+      "sha1OfOriginalUpload": "1881d9d98bd590f2efbdfd73d37b550775970f91",
+      "originalFile": "originals/warships-in-a-storm.jpg",
+      "originalSha256": "d9ba82b89c5713cc144455aeec878cc38dc20c3e80150c92996cfc60267ba928",
+      "normalizedOutputSha256": "1a375a76ced8541d7534f4f1112df1da70bfd9d1651d1bdd3d902728716c0cd3",
+      "normalizedDimensions": {
+        "width": 2400,
+        "height": 1581
+      }
+    },
+    {
+      "id": "wikimedia-dutch-maritime-rocky-coast-v1",
+      "title": "Ships near a rocky coast",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Schepen_bij_een_rotsachtige_kust_Rijksmuseum_SK-A-1927.jpeg",
+      "creator": "Adam Willaerts",
+      "date": "1621",
+      "license": "Public domain",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/ships-near-rocky-coast.json",
+      "sha1OfOriginalUpload": "7f7eb769b1b2334aa0040342662767de139fda08",
+      "originalFile": "originals/ships-near-rocky-coast.jpg",
+      "originalSha256": "5af8b1833c15982b9ac35e3423dd3f2a8ac05d3871efbada14ddab7afce406ec",
+      "normalizedOutputSha256": "a7b2c45446acbbd28ff670091fbc30808c0358989932642d064a80d0f3da18a9",
+      "normalizedDimensions": {
+        "width": 2400,
+        "height": 1189
+      }
+    }
+  ]
+}

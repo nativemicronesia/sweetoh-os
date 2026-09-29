@@ -366,7 +366,7 @@ test("curated Tabler assets keep upstream provenance and commercial-use evidence
   assert.equal(result[0]?.sourceKind, "approved_internal");
   assert.equal(result[0]?.licenseId, "MIT");
   assert.equal(result[0]?.commercialUse, true);
-  assert.ok(findStudioAssets({ query: "ocean", kind: "element", limit: 50 }).some((asset) => asset.id === "tabler-beach-v1"));
+  assert.ok(findStudioAssets({ query: "beach", kind: "element", limit: 50 }).some((asset) => asset.id === "tabler-beach-v1"));
   assert.ok(findStudioAssets({ query: "engraving", kind: "pattern", limit: 50 }).some((asset) => asset.id === "so-engraver-hatch-v1"));
   assert.ok(findStudioAssets({ query: "frame", kind: "element", limit: 50 }).some((asset) => asset.id === "so-double-oval-frame-v1"));
   assert.ok(findStudioAssets({ query: "Christmas", kind: "any", limit: 50 }).some((asset) => asset.id === "tabler-christmas-tree-v1"));
