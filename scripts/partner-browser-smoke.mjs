@@ -198,7 +198,71 @@ try {
     throw new Error(loginError ? `Partner login was rejected: ${loginError}` : `Partner login did not reach /partner (current path ${new URL(page.url()).pathname}).`);
   }
 
-  if (process.env.PARTNER_BROWSER_CLEANUP_ASSET_NAMES) {
+  if (process.env.PARTNER_BROWSER_READONLY_PRODUCT_CHECK === "1") {
+    // Inspect one real private product and reopen its verified Studio surface
+    // without submitting forms or saving any product/design changes.
+    await page.goto(`${origin}/partner/products`, { waitUntil: "commit", timeout: 90_000 });
+    await page.getByRole("heading", { name: "My products", exact: true }).waitFor({ state: "visible", timeout: 30_000 });
+    const productListCounts = await page.evaluate(() => {
+      const rows = [...document.querySelectorAll(".product-table tbody tr")];
+      const states = rows.map((row) => row.querySelector("td:nth-child(2)")?.textContent?.trim() ?? "(no status)");
+      return {
+        rows: rows.length,
+        privateDraftRows: rows.filter((row) => row.textContent?.includes("Private draft")).length,
+        reviewLinks: document.querySelectorAll('a[href^="/partner/review/"]').length,
+        blankLinks: document.querySelectorAll('a[href^="/partner/canvas?blank="]').length,
+        stateCounts: Object.fromEntries([...new Set(states)].map((state) => [state, states.filter((candidate) => candidate === state).length])),
+      };
+    });
+    const blankTargets = await page.locator(".product-table tbody tr").evaluateAll((rows) => rows.flatMap((row) => {
+      const link = row.querySelector('a[href^="/partner/canvas?blank="]');
+      return link ? [{ href: link.href }] : [];
+    }));
+    const privateDrafts = await page.locator(".product-table tbody tr").evaluateAll((rows) => rows.flatMap((row) => {
+      const action = row.querySelector('a[href^="/partner/review/"]');
+      const text = row.innerText;
+      return action && text.includes("Private draft · only you can see it") ? [{ href: action.href, rowText: text }] : [];
+    }));
+    const inspected = [];
+    let verifiedStudio = null;
+    for (const draft of privateDrafts) {
+      const productId = reviewProductId(draft.href);
+      await page.goto(draft.href, { waitUntil: "commit", timeout: 90_000 });
+      await page.getByRole("heading", { name: "Product workspace", exact: true }).waitFor({ state: "visible", timeout: 30_000 });
+      const productionCard = page.locator("article").filter({ hasText: "Production surface & placement" }).first();
+      const verified = await productionCard.getByText("Verified production blank", { exact: true }).count() > 0;
+      inspected.push({ productId, private: true, verifiedProductionBlank: verified });
+      if (!verified) continue;
+      const openSurface = productionCard.getByRole("link", { name: "Open verified surface in Studio", exact: true });
+      if (!(await openSurface.count())) continue;
+      const studioHref = await openSurface.getAttribute("href");
+      if (!studioHref) continue;
+      const productName = draft.rowText.split("Private draft · only you can see it")[0].trim();
+      await page.goto(new URL(studioHref, origin).href, { waitUntil: "commit", timeout: 90_000 });
+      await page.locator(".pe-stage canvas.lower-canvas").waitFor({ state: "visible", timeout: 60_000 });
+      await page.getByText("Verified production blank", { exact: true }).waitFor({ state: "visible", timeout: 30_000 });
+      const selectedDraft = await page.getByRole("combobox", { name: "Choose private product draft" }).locator("option:checked").textContent();
+      if (!selectedDraft?.includes(productName)) throw new Error(`Read-only Studio reopen selected '${selectedDraft}' instead of private product '${productName}'.`);
+      const activeRegion = page.locator('.pe-surface-bar select[aria-label="Active print area"] option:checked');
+      await activeRegion.waitFor({ state: "attached", timeout: 30_000 });
+      verifiedStudio = { productId, productName, selectedDraft, activePrintArea: await activeRegion.textContent(), studio: "read-only open showed this product’s verified production blank and saved print region" };
+      break;
+    }
+    if (!verifiedStudio && blankTargets.length) {
+      await page.goto(blankTargets[0].href, { waitUntil: "commit", timeout: 90_000 });
+      await page.locator(".pe-stage canvas.lower-canvas").waitFor({ state: "visible", timeout: 60_000 });
+      const barText = await page.locator(".pe-surface-bar").innerText();
+      const activeRegion = page.locator('.pe-surface-bar select[aria-label="Active print area"] option:checked');
+      verifiedStudio = {
+        workspaceType: "saved private blank · read only",
+        verifiedProductionBlank: barText.includes("Verified production blank"),
+        printRegion: await activeRegion.count() ? await activeRegion.textContent() : null,
+        studioCanvas: "opened without edits",
+      };
+    }
+    console.log(JSON.stringify({ browser: browser.version(), productListCounts, privateDraftsInspected: inspected, verifiedStudio, persistentWrites: 0, pageErrors: browserErrors }));
+    await context.close();
+  } else if (process.env.PARTNER_BROWSER_CLEANUP_ASSET_NAMES) {
     await page.goto(`${origin}/partner/library`, { waitUntil: "commit", timeout: 90_000 });
     await page.getByRole("heading", { name: "My files", exact: true }).waitFor({ state: "visible", timeout: 30_000 });
     const cleanupNames = process.env.PARTNER_BROWSER_CLEANUP_ASSET_NAMES.split(",").map((name) => name.trim()).filter(Boolean);
