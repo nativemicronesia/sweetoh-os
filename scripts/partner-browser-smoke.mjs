@@ -374,6 +374,19 @@ try {
     await page.getByLabel("Font size", { exact: true }).fill("30");
     await page.getByRole("button", { name: "Add body text", exact: true }).click();
     await textContent.fill("Designed for bright island days");
+    await page.waitForTimeout(1_500);
+    const savedTextStack = await page.evaluate(() => {
+      const key = Object.keys(localStorage).find((item) => item.startsWith("sweetoh:draft:"));
+      const draft = key ? JSON.parse(localStorage.getItem(key) || "null") : null;
+      const layers = draft?.studio?.surfaces?.flatMap((surface) => surface.layers) ?? [];
+      return ["ISLAND DAYS", "Made for slow summer mornings", "Designed for bright island days"].map((text) => {
+        const layer = layers.find((candidate) => candidate.kind === "text" && candidate.text === text);
+        return layer ? { text, y: layer.y, fontSize: layer.fontSize } : null;
+      });
+    });
+    if (savedTextStack.some((item) => !item) || !(savedTextStack[0].y < savedTextStack[1].y && savedTextStack[1].y < savedTextStack[2].y)) {
+      throw new Error(`New text presets did not land as a readable top-to-bottom stack: ${JSON.stringify(savedTextStack)}`);
+    }
     await page.getByRole("button", { name: "Layers", exact: true }).click();
     await page.locator(".pe-layers").getByRole("button", { name: "ISLAND DAYS", exact: true }).waitFor({ state: "visible", timeout: 10_000 });
     await page.locator(".pe-layers").getByRole("button", { name: "Made for slow summer mornings", exact: true }).waitFor({ state: "visible", timeout: 10_000 });
@@ -429,6 +442,12 @@ try {
     await page.getByRole("button", { name: "Layers", exact: true }).click();
     await layers.getByText("Tropical leaf", { exact: true }).waitFor({ state: "visible", timeout: 15_000 });
     await layers.locator(".pe-layer-row").filter({ hasText: "Party confetti" }).waitFor({ state: "visible", timeout: 15_000 });
+    if (process.env.PARTNER_BROWSER_CAPTURE_STUDIO_SCREENSHOTS === "1") {
+      await page.setViewportSize({ width: 1280, height: 720 });
+      await page.waitForTimeout(150);
+      await page.screenshot({ path: "/private/tmp/sweetoh-studio-desktop.png" });
+      await page.setViewportSize({ width: 768, height: 1024 });
+    }
     const multiSelect = page.locator(".pe-layer-select");
     await multiSelect.nth(0).check();
     await multiSelect.nth(1).check();
@@ -445,6 +464,12 @@ try {
     await page.getByLabel("Font", { exact: true }).waitFor({ state: "visible", timeout: 10_000 });
     const tabletTypography = await page.evaluate(() => ({ width: innerWidth, height: innerHeight, horizontalOverflow: document.documentElement.scrollWidth > innerWidth, propertiesVisible: Boolean(document.querySelector(".pe-props select[aria-label='Font']")?.getBoundingClientRect().height) }));
     if (tabletTypography.horizontalOverflow || !tabletTypography.propertiesVisible) throw new Error(`Selected text properties are not usable at tablet size: ${JSON.stringify(tabletTypography)}`);
+    const typographyLabels = await page.evaluate(() => [...document.querySelectorAll(".pe-props .pe-num span")].map((label) => ({ text: label.textContent?.trim(), clipped: label.scrollWidth > label.clientWidth })));
+    if (!["Size", "Wrap", "Outline"].every((text) => typographyLabels.some((label) => label.text === text && !label.clipped))) throw new Error(`Typography control labels are clipped at tablet size: ${JSON.stringify(typographyLabels)}`);
+    await page.getByLabel("Outline width", { exact: true }).waitFor({ state: "visible", timeout: 10_000 });
+    if (process.env.PARTNER_BROWSER_CAPTURE_STUDIO_SCREENSHOTS === "1") {
+      await page.screenshot({ path: "/private/tmp/sweetoh-studio-tablet.png" });
+    }
     // Let the editor's debounced recovery snapshot land, then exercise a real
     // refresh/reopen. The browser context is isolated and discarded afterward,
     // so this proves persistence without writing a partner asset or product.
@@ -689,6 +714,9 @@ try {
     await page.setViewportSize({ width: 390, height: 844 });
     const phoneLayout = await page.evaluate(() => ({ width: innerWidth, height: innerHeight, horizontalOverflow: document.documentElement.scrollWidth > innerWidth, canvasVisible: Boolean(document.querySelector(".pe-stage canvas.lower-canvas")?.getBoundingClientRect().width), propertiesVisible: Boolean(document.querySelector(".pe-props input[type='range']")?.getBoundingClientRect().height) }));
     if (phoneLayout.horizontalOverflow || !phoneLayout.canvasVisible || !phoneLayout.propertiesVisible) throw new Error(`Studio phone layout did not expose the canvas and selected image controls cleanly: ${JSON.stringify(phoneLayout)}`);
+    if (process.env.PARTNER_BROWSER_CAPTURE_STUDIO_SCREENSHOTS === "1") {
+      await page.screenshot({ path: "/private/tmp/sweetoh-studio-phone.png" });
+    }
 
     // Refresh/reopen the local recovery draft, continue editing, then archive
     // only the two temporary test assets from My files.
@@ -725,6 +753,7 @@ try {
       libraryCoverage: { totalAssets, desktopViewport, tabletLayout, reusableShelfResults: reusableResults },
       creativeLibrarySearch: "searched medical, tropical and celebration themes; inserted approved illustration, SweetOh original and pattern assets",
       typography: "created three text layers; edited copy, font, size, alignment, weight and color; duplicate/delete history passed",
+      textPlacement: savedTextStack.map(({ text, y }) => ({ text, y })),
       imageEditing: "uploaded a temporary image; crop, flip, opacity, brightness, contrast, saturation, tint, soft focus and local background removal passed; undo/redo, duplicate/delete and tablet controls passed",
       imageMaskAndShadow: "cycled the original, oval and round masks; added, adjusted and removed a soft shadow",
       drawingAndErasing: "created a styled editable stroke; verified local autosave; erased it and recovered/restored the history state",
