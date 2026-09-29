@@ -1,0 +1,161 @@
+{
+  "schemaVersion": 1,
+  "source": "Wellcome Collection — 19th-century fungi, lichen and moss engravings",
+  "rightsEvidence": "Per-work Wellcome Collection catalogue API license + accessConditions, independently verified live for each item; snapshots in records/.",
+  "assets": [
+    {
+      "id": "wellcome-cryptogams-mushroom-varieties-v1",
+      "workId": "p862u7gt",
+      "iiifImageId": "V0025758",
+      "title": "Varieties of mushrooms and edible fungi (comparative chart)",
+      "creator": "Aristide-Michel Perrot after E. Hocquart and J. C. Perrot",
+      "date": "19th century",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/p862u7gt",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0025758/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 1558,
+      "iiifWidth": 3000,
+      "iiifHeight": 2336,
+      "originalFile": "originals/mushroom-varieties.jpg",
+      "originalSha256": "a04dbb47506119127378d52ddd51f7bef5746b85ef6bf5cd15b6446da1804f44",
+      "normalizedOutputSha256": "e6114eaa5dfd62f37b47e2f83842b86408b3fa4350cf2edeaeee2cabebc3601c",
+      "normalizedDimensions": {
+        "width": 2000,
+        "height": 1558
+      }
+    },
+    {
+      "id": "wellcome-cryptogams-poisonous-plants-fly-agaric-v1",
+      "workId": "gfkfxr9b",
+      "iiifImageId": "V0044746",
+      "title": "Four poisonous plants including fly agaric fungus",
+      "creator": "J. Johnstone",
+      "date": "19th century",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/gfkfxr9b",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0044746/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 3345,
+      "iiifWidth": 2124,
+      "iiifHeight": 3552,
+      "originalFile": "originals/poisonous-plants-fly-agaric.jpg",
+      "originalSha256": "5280b7c385761a5e1bb7a2f990a156b19d5c01e58a7edef96ac9895c9544a0f4",
+      "normalizedOutputSha256": "327a2f8b6d1676954202ce4a5e6dd79d831cec7bab315bfb63deb11ebae76a93",
+      "normalizedDimensions": {
+        "width": 1435,
+        "height": 2400
+      }
+    },
+    {
+      "id": "wellcome-cryptogams-four-lichens-v1",
+      "workId": "uc9y9cy5",
+      "iiifImageId": "V0044318",
+      "title": "Four types of lichen (Parmelia species)",
+      "creator": "J. Pass",
+      "date": "c. 1821",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/uc9y9cy5",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0044318/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 2573,
+      "iiifWidth": 2400,
+      "iiifHeight": 3087,
+      "originalFile": "originals/four-lichens.jpg",
+      "originalSha256": "93518a179e9c58a748c147f621c7c0a84767c20c14ddac7f63fa7dfe7fe097a4",
+      "normalizedOutputSha256": "d5f4c3f1f2921853a2eea9d197a04461203de36ffb496f42611a5d4143f1606f",
+      "normalizedDimensions": {
+        "width": 1866,
+        "height": 2400
+      }
+    },
+    {
+      "id": "wellcome-cryptogams-two-lichens-sectioned-v1",
+      "workId": "h8zgkbt8",
+      "iiifImageId": "V0044192EL",
+      "title": "Two lichens with whole and sectioned thallus",
+      "creator": "James Sowerby",
+      "date": "1796",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/h8zgkbt8",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0044192EL/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 3406,
+      "iiifWidth": 1207,
+      "iiifHeight": 2056,
+      "originalFile": "originals/two-lichens-sectioned.jpg",
+      "originalSha256": "97c584d9ecb26a708949950e0bd11a205fe9f55515183bbc8dddc2822456e07a",
+      "normalizedOutputSha256": "707ca62f472ce9a65eb555d8340829874575e4c73d06f39baa41b7b3e74ed80e",
+      "normalizedDimensions": {
+        "width": 1409,
+        "height": 2400
+      }
+    },
+    {
+      "id": "wellcome-cryptogams-haircap-moss-v1",
+      "workId": "nj88nquj",
+      "iiifImageId": "V0044314ER",
+      "title": "Six types of haircap moss (Polytrichum species)",
+      "creator": "J. Pass",
+      "date": "c. 1825",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/nj88nquj",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0044314ER/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 2746,
+      "iiifWidth": 1254,
+      "iiifHeight": 1722,
+      "originalFile": "originals/haircap-moss.jpg",
+      "originalSha256": "2082adfd2cbe76ecbf5155bc9ddaf244618131ae3a8fd16a811b638ab9f3733f",
+      "normalizedOutputSha256": "8501aeee9db027a20976857419985a02c139287c9cb16ed24a943b2897a9a304",
+      "normalizedDimensions": {
+        "width": 1748,
+        "height": 2400
+      }
+    },
+    {
+      "id": "wellcome-cryptogams-bryum-moss-v1",
+      "workId": "qbfsj95s",
+      "iiifImageId": "V0044178EL",
+      "title": "A moss (Bryum calcareum), growth cycle",
+      "creator": "James Sowerby",
+      "date": "1794",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/qbfsj95s",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0044178EL/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 3487,
+      "iiifWidth": 1228,
+      "iiifHeight": 2141,
+      "originalFile": "originals/bryum-moss.jpg",
+      "originalSha256": "e638d882b9d6c4625b0e350b3f1c3c40bd4d7fb73e65dd03b21f99729dd81d8f",
+      "normalizedOutputSha256": "47ec4e3ef80f877efb40ecac51402b378b5b2d8a5d65a8ae24f8434919554eaf",
+      "normalizedDimensions": {
+        "width": 1377,
+        "height": 2400
+      }
+    },
+    {
+      "id": "wellcome-cryptogams-neckera-moss-beetles-v1",
+      "workId": "cb4rf6dm",
+      "iiifImageId": "V0044320ER",
+      "title": "Three mosses (Neckera species) with carrion beetles",
+      "creator": "J. Pass",
+      "date": "c. 1818",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/cb4rf6dm",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0044320ER/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 2545,
+      "iiifWidth": 1325,
+      "iiifHeight": 1686,
+      "originalFile": "originals/neckera-moss-beetles.jpg",
+      "originalSha256": "0190e7ca947e932d1e95ab9c46b1e5892dadd7e1aacb3b5732ed7a03a58ba8cd",
+      "normalizedOutputSha256": "3d10b1f1b52e28c97dc7b7ff9a5fc0119430d65abf980ae9c05830ceb5f2b269",
+      "normalizedDimensions": {
+        "width": 1886,
+        "height": 2400
+      }
+    }
+  ]
+}

@@ -11,6 +11,7 @@ import { INDONESIAN_TEXTILES_STUDIO_ASSETS } from "./indonesian-textiles-assets"
 import { KENTE_CLOTH_STUDIO_ASSETS } from "./kente-cloth-assets";
 import { HUIPIL_TEXTILES_STUDIO_ASSETS } from "./huipil-textiles-assets";
 import { EAST_ASIAN_TEXTILES_STUDIO_ASSETS } from "./east-asian-textiles-assets";
+import { WELLCOME_CRYPTOGAMS_STUDIO_ASSETS } from "./wellcome-cryptogams-assets";
 import { PATTERNFILLS_STUDIO_ASSETS } from "./patternfills-assets";
 import { OPEN_CROP_STUDIO_ASSETS } from "./open-crop-assets";
 import { OPENCLIPART_STUDIO_ASSETS } from "./openclipart-assets";
@@ -118,6 +119,7 @@ export const STUDIO_ASSETS: readonly StudioAsset[] = [
   ...KENTE_CLOTH_STUDIO_ASSETS,
   ...HUIPIL_TEXTILES_STUDIO_ASSETS,
   ...EAST_ASIAN_TEXTILES_STUDIO_ASSETS,
+  ...WELLCOME_CRYPTOGAMS_STUDIO_ASSETS,
   ...PATTERNFILLS_STUDIO_ASSETS,
   ...OPEN_CROP_STUDIO_ASSETS,
   ...OPENCLIPART_STUDIO_ASSETS,

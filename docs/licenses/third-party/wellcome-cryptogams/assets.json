@@ -1,0 +1,72 @@
+[
+  {
+    "id": "mushroom-varieties",
+    "workId": "p862u7gt",
+    "iiifImageId": "V0025758",
+    "title": "Varieties of mushrooms and edible fungi (comparative chart)",
+    "apiTitleMatch": "Varieties of mushrooms and edible fungi",
+    "creator": "Aristide-Michel Perrot after E. Hocquart and J. C. Perrot",
+    "date": "19th century",
+    "tags": ["mushroom", "fungi", "toadstool", "botanical illustration", "engraving", "hand-colored", "nature", "kitchen gift", "sublimation"]
+  },
+  {
+    "id": "poisonous-plants-fly-agaric",
+    "workId": "gfkfxr9b",
+    "iiifImageId": "V0044746",
+    "title": "Four poisonous plants including fly agaric fungus",
+    "apiTitleMatch": "Four poisonous plants",
+    "creator": "J. Johnstone",
+    "date": "19th century",
+    "tags": ["fly agaric", "mushroom", "fungi", "foxglove", "hellebore", "botanical illustration", "engraving", "hand-colored", "nature", "sublimation"]
+  },
+  {
+    "id": "four-lichens",
+    "workId": "uc9y9cy5",
+    "iiifImageId": "V0044318",
+    "title": "Four types of lichen (Parmelia species)",
+    "apiTitleMatch": "Four types of lichen",
+    "creator": "J. Pass",
+    "date": "c. 1821",
+    "tags": ["lichen", "botanical illustration", "engraving", "hand-colored", "nature", "sublimation"]
+  },
+  {
+    "id": "two-lichens-sectioned",
+    "workId": "h8zgkbt8",
+    "iiifImageId": "V0044192EL",
+    "title": "Two lichens with whole and sectioned thallus",
+    "apiTitleMatch": "Two lichens with whole and sectioned thallus",
+    "creator": "James Sowerby",
+    "date": "1796",
+    "tags": ["lichen", "botanical illustration", "engraving", "hand-colored", "nature", "sublimation"]
+  },
+  {
+    "id": "haircap-moss",
+    "workId": "nj88nquj",
+    "iiifImageId": "V0044314ER",
+    "title": "Six types of haircap moss (Polytrichum species)",
+    "apiTitleMatch": "Six types of haircap moss",
+    "creator": "J. Pass",
+    "date": "c. 1825",
+    "tags": ["moss", "botanical illustration", "engraving", "hand-colored", "nature", "sublimation"]
+  },
+  {
+    "id": "bryum-moss",
+    "workId": "qbfsj95s",
+    "iiifImageId": "V0044178EL",
+    "title": "A moss (Bryum calcareum), growth cycle",
+    "apiTitleMatch": "A moss (Bryum calcareum)",
+    "creator": "James Sowerby",
+    "date": "1794",
+    "tags": ["moss", "botanical illustration", "engraving", "hand-colored", "nature", "sublimation"]
+  },
+  {
+    "id": "neckera-moss-beetles",
+    "workId": "cb4rf6dm",
+    "iiifImageId": "V0044320ER",
+    "title": "Three mosses (Neckera species) with carrion beetles",
+    "apiTitleMatch": "Three mosses (Neckera species)",
+    "creator": "J. Pass",
+    "date": "c. 1818",
+    "tags": ["moss", "beetle", "botanical illustration", "entomology", "engraving", "hand-colored", "nature", "sublimation"]
+  }
+]
