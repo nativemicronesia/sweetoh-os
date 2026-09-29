@@ -64,6 +64,25 @@ If the owner later wants to pursue this, the right shape is almost
 certainly historical/educational description sourced to named ethnographers
 — not motif imagery treated as reusable stock.
 
+**Parked — Native American/First Nations material found via the same
+Europeana textile search that yielded the Indonesian/kente/huipil/East
+Asian packs (bandolier bags, moccasins, headdresses, Navajo blankets and
+saddle blankets, a ceremonial tobacco pouch), all nominally CC0 via the
+source museum: deliberately not ingested, and held to a higher bar than
+kente/batik/huipil, not equal footing.** Unlike those traditions, Native
+American/First Nations design carries a well-documented, high-profile,
+ongoing appropriation controversy specifically in mainstream/fashion
+design contexts, and several of the specific items found (headdresses,
+ceremonial pouches, bandolier bags) read as regalia/status objects with
+tribal-specific significance rather than generic commercial pattern
+stock — a technical CC0 tag from a Dutch ethnographic museum does not
+settle that question, and an AI agent without specific tribal consultation
+should not be the one making that call. This is exactly the class of
+decision that needs the owner, not an autonomous judgment; genuinely
+non-regalia items (e.g. a plain-woven Navajo blanket pattern) might be
+fine on separate review, but the set was parked as a whole rather than
+picked apart without that conversation.
+
 ## Safe future structure
 
 Keep method reference material versioned and source-attributed. Make capability a separate record keyed to an actual shop or approved production partner, method, supported material/product, printable area, color/file constraints, availability and effective dates. Quotes and accepted production orders must snapshot the enabled capability version and validated artwork requirements. Do not infer availability from a knowledge article or an AI response.
