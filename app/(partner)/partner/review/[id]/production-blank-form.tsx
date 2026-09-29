@@ -1,13 +1,11 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { attachProductionSurfaceAction } from "../../actions/production-surface";
 import { CONFIRMED_SHOP_METHODS } from "@/lib/domains/production/methods";
 
 export function ProductionBlankForm({ productId, productName, positions }: { productId: string; productName: string; positions: string[] }) {
   const [result, action, pending] = useActionState(attachProductionSurfaceAction, {});
-  const router = useRouter();
   const [preview, setPreview] = useState("");
   const [ratio, setRatio] = useState(1);
   const previewUrl = useRef<string | null>(null);
@@ -24,7 +22,6 @@ export function ProductionBlankForm({ productId, productName, positions }: { pro
     image.onload = () => { if (image.naturalWidth && image.naturalHeight) setRatio(image.naturalWidth / image.naturalHeight); };
     image.src = url;
   }
-  useEffect(() => { if (result.ok) router.refresh(); }, [result.ok, router]);
   const numbers = Object.values(area).map(Number);
   const showArea = numbers.length === 4 && Object.values(area).every(value => value !== "")
     && numbers.every(value => Number.isFinite(value) && value >= 0 && value <= 100)
