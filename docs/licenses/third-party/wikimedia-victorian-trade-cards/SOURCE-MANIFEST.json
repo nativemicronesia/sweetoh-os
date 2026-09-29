@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "source": "Wikimedia Commons — Victorian trade card / advertising ephemera chromolithographs",
+  "rightsEvidence": "Per-file Wikimedia Commons extmetadata LicenseShortName + Restrictions fields, independently verified live for each item; snapshots in records/. Original downloads verified against Wikimedia's recorded SHA-1.",
+  "assets": [
+    {
+      "id": "wikimedia-trade-cards-christmas-robin-v1",
+      "title": "Victorian Christmas robin trade card",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Victorian_Christmas_Trade_Card.jpg",
+      "creator": "unattributed",
+      "date": "late 19th century",
+      "license": "Public domain",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/victorian-christmas-robin.json",
+      "sha1OfOriginalUpload": "07f1efe247fa3c87b0bd8f4fbff033e340526573",
+      "originalFile": "originals/victorian-christmas-robin.jpg",
+      "originalSha256": "234ef7039e3e765d2c3b5cdacd0fdf0c8d49cd0e54d8dc13a04f9aa9dab39bf0",
+      "normalizedOutputSha256": "f6ce7a424351625ec3fdfe60ce34d5b4e542eb538289e8d0623d55b8d19c7719",
+      "normalizedDimensions": {
+        "width": 1281,
+        "height": 837
+      }
+    },
+    {
+      "id": "wikimedia-trade-cards-hummingbird-christmas-v1",
+      "title": "Hummingbird Christmas trade card",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Hummingbird_Christmas_trade_card_-_circa_1890s.jpg",
+      "creator": "unattributed",
+      "date": "circa 1890s",
+      "license": "Public domain",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/hummingbird-christmas.json",
+      "sha1OfOriginalUpload": "13894a50133550951287f1dcc353fcf9dcc5d0a5",
+      "originalFile": "originals/hummingbird-christmas.jpg",
+      "originalSha256": "96803f30e4f3ba9f5ac6b25821a4610d3c1dfe585d40a5353363fc1cd4ba4a4c",
+      "normalizedOutputSha256": "475be0c2050389463bdfe32dd584ea60c1f22222ddfa53f31ea47743e32f08ed",
+      "normalizedDimensions": {
+        "width": 1733,
+        "height": 900
+      }
+    },
+    {
+      "id": "wikimedia-trade-cards-die-cut-hand-fan-v1",
+      "title": "Die-cut Victorian hand fan advertising card",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Die-cut_Victorian_hand_fan_advertising_card.jpg",
+      "creator": "unattributed",
+      "date": "late 19th century",
+      "license": "Public domain",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/die-cut-hand-fan.json",
+      "sha1OfOriginalUpload": "dd32f60c5c4b4cb65e97cecb3dedbe5b8dc3e5e5",
+      "originalFile": "originals/die-cut-hand-fan.jpg",
+      "originalSha256": "388c114e52876209cba74c3b8caed1b21fb3513ee1ccae24a9a8813d2b937e06",
+      "normalizedOutputSha256": "d4bbdd54ed743ecabc04aca5cf632cd74e7597df13e27f7c05a0595ac4f360fe",
+      "normalizedDimensions": {
+        "width": 1319,
+        "height": 1871
+      }
+    },
+    {
+      "id": "wikimedia-trade-cards-lea-perrins-v1",
+      "title": "Lea & Perrins' Sauce trade card",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Lea_%26_Perrins%27_Sauce_trade_card_front.jpg",
+      "creator": "unattributed",
+      "date": "late 19th century",
+      "license": "Public domain",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/lea-perrins-sauce.json",
+      "sha1OfOriginalUpload": "bd6a28913bbd1c08143f5882ca4f15a29f65f0c3",
+      "originalFile": "originals/lea-perrins-sauce.jpg",
+      "originalSha256": "5774c00f789f866cdad4c5f3b6acd09bfbef66af5a27b122e922f08f4ecb5099",
+      "normalizedOutputSha256": "d023dc768d583857f7fee963c184124d358dacb13f4ed3d59cb6d9680dfc3339",
+      "normalizedDimensions": {
+        "width": 1013,
+        "height": 1500
+      }
+    },
+    {
+      "id": "wikimedia-trade-cards-fishing-party-v1",
+      "title": "Waiting for the fishing party trade card",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Waiting_for_the_fishing_party-front-_trade_card.jpg",
+      "creator": "unattributed",
+      "date": "late 19th century",
+      "license": "Public domain",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/fishing-party.json",
+      "sha1OfOriginalUpload": "0f5eac70f5432f8c18ee33b5ae7be1b208a40ed9",
+      "originalFile": "originals/fishing-party.jpg",
+      "originalSha256": "ac776794143e4302843a27405483a86f8dbd6de6a8779a58c1dc99d8e9d58981",
+      "normalizedOutputSha256": "1450e9e00200fa4ba437ed52f9c8bc009a3d09cebc0dc56f18c8866e66f04493",
+      "normalizedDimensions": {
+        "width": 811,
+        "height": 1500
+      }
+    },
+    {
+      "id": "wikimedia-trade-cards-ornate-border-dentist-v1",
+      "title": "Ornate Victorian business card border (dentist)",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Print,_trade-card_(BM_1983,U.175).jpg",
+      "creator": "unattributed",
+      "date": "19th century",
+      "license": "Public domain",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/ornate-border-dentist.json",
+      "sha1OfOriginalUpload": "afd9b19ab95499b5c5c048ba6b46b75fbb551b49",
+      "originalFile": "originals/ornate-border-dentist.jpg",
+      "originalSha256": "03385eb3a5feb116bd8ed5376b40e86498617014f6d85f4ff4e023773c08d2a9",
+      "normalizedOutputSha256": "0dd2f9c95e22a15dbc34182293d231909199c812fed00951b0daac2710adbe18",
+      "normalizedDimensions": {
+        "width": 1030,
+        "height": 1600
+      }
+    }
+  ]
+}
