@@ -198,7 +198,23 @@ try {
     throw new Error(loginError ? `Partner login was rejected: ${loginError}` : `Partner login did not reach /partner (current path ${new URL(page.url()).pathname}).`);
   }
 
-  if (process.env.PARTNER_BROWSER_STUDIO_ONLY === "1") {
+  if (process.env.PARTNER_BROWSER_CLEANUP_ASSET_NAMES) {
+    await page.goto(`${origin}/partner/library`, { waitUntil: "commit", timeout: 90_000 });
+    await page.getByRole("heading", { name: "My files", exact: true }).waitFor({ state: "visible", timeout: 30_000 });
+    const cleanupNames = process.env.PARTNER_BROWSER_CLEANUP_ASSET_NAMES.split(",").map((name) => name.trim()).filter(Boolean);
+    const cleanupResults = [];
+    for (const name of cleanupNames) {
+      const card = page.getByText(name, { exact: true }).locator("xpath=ancestor::li[1]");
+      if (!(await card.count())) { cleanupResults.push({ name, status: "not present" }); continue; }
+      await card.getByRole("button", { name: "Remove", exact: true }).click();
+      await page.waitForURL(/\/partner\/library\?success=/, { timeout: 30_000 });
+      await page.goto(`${origin}/partner/library`, { waitUntil: "commit", timeout: 90_000 });
+      await page.getByRole("heading", { name: "My files", exact: true }).waitFor({ state: "visible", timeout: 30_000 });
+      cleanupResults.push({ name, status: "archived through My files" });
+    }
+    console.log(JSON.stringify({ browser: browser.version(), temporaryAssetCleanup: cleanupResults, pageErrors: browserErrors }));
+    await context.close();
+  } else if (process.env.PARTNER_BROWSER_STUDIO_ONLY === "1") {
     // Exercise Studio directly. The home page performs several unrelated
     // operational queries and can be slow in a cold local browser session.
     // This path exercises insertion and local crash recovery in an isolated
@@ -348,6 +364,23 @@ try {
     await page.getByRole("button", { name: "Layers", exact: true }).click();
     await layers.getByRole("button", { name: imageSmokeName, exact: true }).waitFor({ state: "visible", timeout: 45_000 });
     await layers.getByRole("button", { name: imageSmokeName, exact: true }).click();
+    // Verify the existing mask and shadow controls affect the selected image.
+    for (const label of ["Oval", "Round", "Original"]) {
+      const maskButton = page.getByRole("button", { name: label, exact: true });
+      await maskButton.click();
+      if (await maskButton.getAttribute("aria-pressed") !== "true") throw new Error(`Image mask '${label}' did not become active.`);
+    }
+    const depthSection = page.locator(".pe-props section.pe-section").filter({ hasText: "Depth and shadow" });
+    await depthSection.getByRole("button", { name: "Add soft shadow", exact: true }).click();
+    await depthSection.getByRole("button", { name: "Remove soft shadow", exact: true }).waitFor({ state: "visible", timeout: 10_000 });
+    const shadowBlur = depthSection.locator("label.pe-slider").filter({ hasText: "Blur" }).locator("input[type='range']");
+    const shadowBlurBefore = await shadowBlur.inputValue();
+    const shadowBlurBounds = await shadowBlur.boundingBox();
+    if (!shadowBlurBounds) throw new Error("The image shadow blur control was not visible.");
+    await page.mouse.click(shadowBlurBounds.x + shadowBlurBounds.width * 0.63, shadowBlurBounds.y + shadowBlurBounds.height / 2);
+    if (await shadowBlur.inputValue() === shadowBlurBefore) throw new Error("The image shadow blur control did not respond.");
+    await depthSection.getByRole("button", { name: "Remove soft shadow", exact: true }).click();
+    await depthSection.getByRole("button", { name: "Add soft shadow", exact: true }).waitFor({ state: "visible", timeout: 10_000 });
     // Exercise the real mixed-object selection controls with an imported image,
     // a reusable graphic and text together. Save snapshots are isolated to this
     // disposable browser context and let the smoke assert that group movement
@@ -484,11 +517,62 @@ try {
     await page.locator(".pe-layer-row").nth(imageRowsBeforeCopy).waitFor({ state: "visible", timeout: 15_000 });
     await page.getByRole("button", { name: "Redo", exact: true }).click();
     await page.waitForFunction((count) => document.querySelectorAll(".pe-layer-row").length === count, imageRowsBeforeCopy, { timeout: 15_000 });
+    // Exercise freehand and erase on the desktop canvas, where the full
+    // drawing surface is in view. Phone canvas visibility is checked below.
+    await page.getByRole("button", { name: "Close panel", exact: true }).click().catch(() => {});
+    await page.getByRole("button", { name: "Shapes", exact: true }).click();
+    await page.getByRole("button", { name: "Draw", exact: true }).click();
+    await page.getByRole("button", { name: "Finish drawing", exact: true }).waitFor({ state: "visible", timeout: 10_000 });
+    await page.getByLabel("Drawing brush").selectOption("marker");
+    const drawCanvasBounds = await page.locator(".pe-stage canvas.upper-canvas").boundingBox();
+    if (!drawCanvasBounds) throw new Error("The drawing canvas was not available.");
+    const strokeStart = { x: drawCanvasBounds.x + drawCanvasBounds.width * 0.45, y: drawCanvasBounds.y + drawCanvasBounds.height * 0.45 };
+    const strokeEnd = { x: drawCanvasBounds.x + drawCanvasBounds.width * 0.62, y: drawCanvasBounds.y + drawCanvasBounds.height * 0.55 };
+    await page.mouse.move(strokeStart.x, strokeStart.y);
+    await page.mouse.down();
+    await page.mouse.move(strokeEnd.x, strokeEnd.y, { steps: 8 });
+    await page.mouse.up();
+    await page.getByRole("button", { name: "Finish drawing", exact: true }).click();
+    await page.getByRole("button", { name: "Layers", exact: true }).click();
+    const strokeRow = page.locator(".pe-layer-row").filter({ hasText: "Freehand stroke" }).first();
+    await strokeRow.waitFor({ state: "visible", timeout: 15_000 });
+    await strokeRow.getByRole("button", { name: "Freehand stroke", exact: true }).click();
+    const strokeStyle = page.locator(".pe-props section.pe-section").filter({ hasText: "Stroke style" });
+    await strokeStyle.waitFor({ state: "visible", timeout: 15_000 });
+    await strokeStyle.locator("label.pe-select select").first().selectOption("dashed");
+    // Studio autosaves locally on a 1.2 second debounce after the command.
+    await page.waitForTimeout(1_500);
+    const storedDrawing = await page.evaluate(() => {
+      const key = Object.keys(localStorage).find((item) => item.startsWith("sweetoh:draft:"));
+      const draft = key ? JSON.parse(localStorage.getItem(key) || "null") : null;
+      return draft?.studio?.surfaces?.flatMap((surface) => surface.layers).find((layer) => layer.kind === "drawing");
+    });
+    if (!storedDrawing || storedDrawing.brush !== "dashed") throw new Error("The finished drawing did not save as an editable, styled Studio layer.");
+    await page.getByRole("button", { name: "Shapes", exact: true }).click();
+    await page.getByRole("button", { name: "Erase strokes", exact: true }).click();
+    const eraseCanvasBounds = await page.locator(".pe-stage canvas.upper-canvas").boundingBox();
+    if (!eraseCanvasBounds) throw new Error("The stroke eraser canvas was not available.");
+    await page.mouse.move(eraseCanvasBounds.x + eraseCanvasBounds.width * 0.45, eraseCanvasBounds.y + eraseCanvasBounds.height * 0.45);
+    await page.mouse.down();
+    await page.mouse.move(eraseCanvasBounds.x + eraseCanvasBounds.width * 0.62, eraseCanvasBounds.y + eraseCanvasBounds.height * 0.55, { steps: 8 });
+    await page.mouse.up();
+    await page.getByRole("button", { name: "Finish erasing", exact: true }).click();
+    await page.getByRole("button", { name: "Undo", exact: true }).click();
+    await page.getByRole("button", { name: "Layers", exact: true }).click();
+    await page.locator(".pe-layer-row").filter({ hasText: "Freehand stroke" }).first().waitFor({ state: "visible", timeout: 15_000 });
+    await page.getByRole("button", { name: "Redo", exact: true }).click();
+    await page.locator(".pe-layer-row").filter({ hasText: "Freehand stroke" }).waitFor({ state: "detached", timeout: 15_000 });
     await page.setViewportSize({ width: 768, height: 1024 });
     await page.locator(".pe-props").scrollIntoViewIfNeeded();
     await adjustByPointer("Contrast", 0.6);
     const tabletImageEditing = await page.evaluate(() => ({ width: innerWidth, height: innerHeight, horizontalOverflow: document.documentElement.scrollWidth > innerWidth, propertiesVisible: Boolean(document.querySelector(".pe-props input[type='range']")?.getBoundingClientRect().height) }));
     if (tabletImageEditing.horizontalOverflow || !tabletImageEditing.propertiesVisible) throw new Error(`Selected image controls are not usable at tablet size: ${JSON.stringify(tabletImageEditing)}`);
+
+    // A narrow phone viewport is the most constrained supported layout. Keep
+    // the selected object and controls visible without horizontal scrolling.
+    await page.setViewportSize({ width: 390, height: 844 });
+    const phoneLayout = await page.evaluate(() => ({ width: innerWidth, height: innerHeight, horizontalOverflow: document.documentElement.scrollWidth > innerWidth, canvasVisible: Boolean(document.querySelector(".pe-stage canvas.lower-canvas")?.getBoundingClientRect().width), propertiesVisible: Boolean(document.querySelector(".pe-props input[type='range']")?.getBoundingClientRect().height) }));
+    if (phoneLayout.horizontalOverflow || !phoneLayout.canvasVisible || !phoneLayout.propertiesVisible) throw new Error(`Studio phone layout did not expose the canvas and selected image controls cleanly: ${JSON.stringify(phoneLayout)}`);
 
     // Refresh/reopen the local recovery draft, continue editing, then archive
     // only the two temporary test assets from My files.
@@ -526,6 +610,9 @@ try {
       creativeLibrarySearch: "searched medical, tropical and celebration themes; inserted approved illustration, SweetOh original and pattern assets",
       typography: "created three text layers; edited copy, font, size, alignment, weight and color; duplicate/delete history passed",
       imageEditing: "uploaded a temporary image; crop, flip, opacity, brightness, contrast, saturation, tint, soft focus and local background removal passed; undo/redo, duplicate/delete and tablet controls passed",
+      imageMaskAndShadow: "cycled the original, oval and round masks; added, adjusted and removed a soft shadow",
+      drawingAndErasing: "created a styled editable stroke; verified local autosave; erased it and recovered/restored the history state",
+      phoneLayout: "canvas and selected-object controls remained visible at 390×844 without horizontal overflow",
       imageRefreshAndCleanup: "restored edited image after refresh, continued editing, then archived both temporary My files records",
       selectionAndHistory: "selected a mixed image/graphic/text set; dragged and resized all three together; grouped/ungrouped, aligned to selection/canvas, changed front/back order, hid/showed and locked/unlocked a layer; undo/redo passed",
       tabletTypography,
