@@ -1,0 +1,183 @@
+{
+  "schemaVersion": 1,
+  "source": "Wellcome Collection — 19th-century fish and marine mammal engravings",
+  "rightsEvidence": "Per-work Wellcome Collection catalogue API license + accessConditions, independently verified live for each item; snapshots in records/.",
+  "assets": [
+    {
+      "id": "wellcome-fish-marine-mammals-whale-dolphin-porpoise-v1",
+      "workId": "adg22vre",
+      "iiifImageId": "V0021598",
+      "title": "A common whale, a dolphin and a porpoise",
+      "creator": "P. Dixon",
+      "date": "ca. 1824",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/adg22vre",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0021598/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 1369,
+      "iiifWidth": 3200,
+      "iiifHeight": 2190,
+      "originalFile": "originals/whale-dolphin-porpoise.jpg",
+      "originalSha256": "10ee1b3824bcdff6628f90174e79d01787efd88907c7812aa15c86bc70c98923",
+      "normalizedOutputSha256": "2ebd3cd36f2805e1730e40259f3f504e357ad784a356974d8c222c5f5a86997c",
+      "normalizedDimensions": {
+        "width": 2000,
+        "height": 1369
+      }
+    },
+    {
+      "id": "wellcome-fish-marine-mammals-three-sharks-v1",
+      "workId": "zzk4887y",
+      "iiifImageId": "V0020779ER",
+      "title": "Above, a lesser spotted shark; middle, a porbeagle; below, a white shark",
+      "creator": "W. H. Lizars",
+      "date": "19th century",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/zzk4887y",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0020779ER/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 3288,
+      "iiifWidth": 1408,
+      "iiifHeight": 2315,
+      "originalFile": "originals/three-sharks.jpg",
+      "originalSha256": "cf38c6fd569bc302724f01a0b97cccf5a8db0209888930d7785956a85f6f963d",
+      "normalizedOutputSha256": "98a5378cee346f40b08842cf84718a732d8a06a4d45bfdcd6202172a8cbb1c2c",
+      "normalizedDimensions": {
+        "width": 1460,
+        "height": 2400
+      }
+    },
+    {
+      "id": "wellcome-fish-marine-mammals-fish-swimming-in-sea-v1",
+      "workId": "yebpuyrw",
+      "iiifImageId": "V0021234",
+      "title": "A fish swimming in the sea",
+      "creator": "J. Heath",
+      "date": "1804",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/yebpuyrw",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0021234/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 3189,
+      "iiifWidth": 2160,
+      "iiifHeight": 3444,
+      "originalFile": "originals/fish-swimming-in-sea.jpg",
+      "originalSha256": "c849f6fcc91b5e58fc4d18553049e89d238033ed4f52fec033b8414eaa972a4b",
+      "normalizedOutputSha256": "59ffb57678460c70b3f990a78f3ededbf4e8679e98ae8b3860492e7a4bf5f8d7",
+      "normalizedDimensions": {
+        "width": 1505,
+        "height": 2400
+      }
+    },
+    {
+      "id": "wellcome-fish-marine-mammals-flying-fish-with-boat-v1",
+      "workId": "zdcdb3z4",
+      "iiifImageId": "V0020511",
+      "title": "A flying fish in the sea with a boat in the background",
+      "creator": "J. W. Whymper",
+      "date": "19th century",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/zdcdb3z4",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0020511/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 1629,
+      "iiifWidth": 2987,
+      "iiifHeight": 2433,
+      "originalFile": "originals/flying-fish-with-boat.jpg",
+      "originalSha256": "84b01b7a5817e0714ea538efc4f4762f598d5d132996d068f387d55b3f78b249",
+      "normalizedOutputSha256": "de83b417e99ed96d23bfba13d3cb2988dc1a6d536ef21986cbb90e2a5eafa968",
+      "normalizedDimensions": {
+        "width": 2000,
+        "height": 1629
+      }
+    },
+    {
+      "id": "wellcome-fish-marine-mammals-flying-fish-and-enemies-v1",
+      "workId": "j35234az",
+      "iiifImageId": "V0022083",
+      "title": "A flying fish and its enemies of the air and water, including an albatros and a dolphin",
+      "creator": "J. Basire",
+      "date": "19th century",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/j35234az",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0022083/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 2742,
+      "iiifWidth": 3569,
+      "iiifHeight": 4893,
+      "originalFile": "originals/flying-fish-and-enemies.jpg",
+      "originalSha256": "35480b4279fc8cb674227869addbcf834e345996c8b8430bed3376c7d77ea74b",
+      "normalizedOutputSha256": "716febd8200ca6b20d47d1247225e7fde35e91dd60610425d66fc21819caf17c",
+      "normalizedDimensions": {
+        "width": 1751,
+        "height": 2400
+      }
+    },
+    {
+      "id": "wellcome-fish-marine-mammals-flying-fish-chinese-seaport-v1",
+      "workId": "dkdn5bhe",
+      "iiifImageId": "V0022823",
+      "title": "Above, a flying fish hovering over the sea; below, a Chinese village sea-port",
+      "creator": "J. Wood",
+      "date": "19th century",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/dkdn5bhe",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0022823/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 2633,
+      "iiifWidth": 2359,
+      "iiifHeight": 3106,
+      "originalFile": "originals/flying-fish-chinese-seaport.jpg",
+      "originalSha256": "9975fcb8f77a6406ff15f2f4b02388a41c5648a46739eeb7f99a388762179e6c",
+      "normalizedOutputSha256": "c6d13a416d0ea0a5e478c478dc692d572a43f477c913d049e6d2d80ea8661904",
+      "normalizedDimensions": {
+        "width": 1823,
+        "height": 2400
+      }
+    },
+    {
+      "id": "wellcome-fish-marine-mammals-swordfish-mid-air-v1",
+      "workId": "x2gqjhng",
+      "iiifImageId": "V0020528",
+      "title": "A swordfish suspended mid-air before a coastal scene",
+      "creator": "J. W. Whymper",
+      "date": "19th century",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/x2gqjhng",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0020528/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 1582,
+      "iiifWidth": 3140,
+      "iiifHeight": 2484,
+      "originalFile": "originals/swordfish-mid-air.jpg",
+      "originalSha256": "d18b553325ea7b0a6972370e69fd646df00f5c0d78001ceaad416123eb79650f",
+      "normalizedOutputSha256": "56f5113cb81b464584789c0e50a03809446e5dcb75138528d484264044dce826",
+      "normalizedDimensions": {
+        "width": 2000,
+        "height": 1582
+      }
+    },
+    {
+      "id": "wellcome-fish-marine-mammals-pike-walrus-manatee-v1",
+      "workId": "un4k82xr",
+      "iiifImageId": "V0048106EL",
+      "title": "Top, two pike fish; bottom right, a walrus; bottom left, a manatee",
+      "creator": "J. Pass",
+      "date": "1828",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/un4k82xr",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0048106EL/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 2583,
+      "iiifWidth": 1347,
+      "iiifHeight": 1740,
+      "originalFile": "originals/pike-walrus-manatee.jpg",
+      "originalSha256": "afae63fc233366c76f920b88d115fa6041e5e34bbd423544719d67dd8692170a",
+      "normalizedOutputSha256": "3ec73673434c1e37f5649d4e7a39454b7d598d766c7363145c3080f5ed5c74ff",
+      "normalizedDimensions": {
+        "width": 1858,
+        "height": 2400
+      }
+    }
+  ]
+}
