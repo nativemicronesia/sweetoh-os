@@ -1,6 +1,8 @@
 import { SubmitButton } from "../../components/submit-button";
 import { DeleteProductButton } from "../../components/delete-product-button";
 import { ProductionBlankForm } from "./production-blank-form";
+import { ProductMediaManager } from "./product-media-manager";
+import { LISTING_MAX_PHOTOS } from "@/lib/domains/catalog/own-listing";
 import { VariantPricing } from "../../components/variant-pricing";
 import Link from "next/link";
 import { CreationSteps } from "../../components/creation-steps";
@@ -224,7 +226,7 @@ export default async function PartnerReviewDetailPage({
             <h2 className="text-sm font-semibold" style={{ color: "var(--so-cream)" }}>Customer listing</h2>
             <div className="mt-3 flex items-center gap-3">
               {imageUrl ? <img src={imageUrl} alt={`${product.name} customer listing image`} className="h-14 w-14 rounded object-cover" /> : <div className="flex h-14 w-14 items-center justify-center rounded border text-xs" style={{ borderColor: "var(--so-border)", color: "var(--so-cream-dim)" }}>No photo</div>}
-              <div className="min-w-0 text-sm"><p className="truncate font-medium" style={{ color: "var(--so-cream)" }}>{product.name}</p><p style={{ color: "var(--so-cream-dim)" }}>{formatPrice(product.priceCents)} · {product.category}</p><p className="truncate text-xs" style={{ color: "var(--so-cream-dim)" }}>/{product.slug}</p></div>
+              <div className="min-w-0 text-sm"><p className="truncate font-medium" style={{ color: "var(--so-cream)" }}>{product.name}</p><p style={{ color: "var(--so-cream-dim)" }}>{product.priceCents > 0 ? formatPrice(product.priceCents) : "Price not set"} · {product.category}</p><p className="truncate text-xs" style={{ color: "var(--so-cream-dim)" }}>/{product.slug}</p></div>
             </div>
             {canEdit && <a href="#listing-settings" className="so-link mt-3 inline-block text-sm">Edit listing details</a>}
           </article>
@@ -304,7 +306,7 @@ export default async function PartnerReviewDetailPage({
                 active={product.active}
               />
               <span style={{ color: "var(--so-cream)" }}>
-                {formatPrice(product.priceCents)}
+                {product.priceCents > 0 ? formatPrice(product.priceCents) : "Price not set"}
               </span>
               <span
                 className="font-mono text-xs"
@@ -402,6 +404,7 @@ export default async function PartnerReviewDetailPage({
             </figure> : null)}
             {gallery.length === 0 && <p className="text-sm" style={{ color: "var(--so-cream-dim)" }}>No product photos saved yet.</p>}
           </div>
+          <ProductMediaManager productId={product.id} productName={product.name} photos={gallery} canEdit={canEdit} maxPhotos={LISTING_MAX_PHOTOS} />
           {product.variantOptions && <div className="space-y-1 text-sm" style={{ color: "var(--so-cream-dim)" }}>
             <p>Colors: {product.variantOptions.colors.length ? product.variantOptions.colors.map((item) => item.name).join(", ") : "No color variants"}</p>
             <p>Sizes: {product.variantOptions.sizes.length ? product.variantOptions.sizes.map((size) => `${size}${product.variantOptions?.sizeUpchargeCents[size] ? ` (+${formatPrice(product.variantOptions.sizeUpchargeCents[size])})` : ""}`).join(", ") : "No size variants"}</p>
@@ -428,7 +431,7 @@ export default async function PartnerReviewDetailPage({
           </div>
           <div>
             <h3 className="text-sm font-medium" style={{ color: "var(--so-cream)" }}>Print areas</h3>
-            {productionSurfaces.length ? <ul className="mt-2 space-y-3 text-sm" style={{ color: "var(--so-cream-dim)" }}>{productionSurfaces.map((surface) => <li key={surface.id} className="flex items-start gap-3">{surface.previewUrl && <img src={surface.previewUrl} alt={`${surface.name} verified production blank`} className="h-14 w-14 rounded border object-contain" style={{ borderColor: "var(--so-border)" }} />}<span><strong style={{ color: surface.isVerifiedBlank ? "var(--so-cream)" : "#dc2626" }}>{surface.name}{surface.position ? ` (${surface.position})` : ""} · {surface.isVerifiedBlank ? "verified production blank" : "production blank invalid"}</strong><br/>Artwork bounds {Math.round(surface.area.x * 100)}%, {Math.round(surface.area.y * 100)}%, {Math.round(surface.area.width * 100)}% × {Math.round(surface.area.height * 100)}%{surface.printRegions?.map((region) => ` · ${region.name} (${region.shape}${region.dimensions ? `, ${region.dimensions.width}×${region.dimensions.height}${region.dimensions.unit}` : ""})`).join("")}</span></li>)}</ul> : <p className="mt-1 text-sm" style={{ color: "var(--so-cream-dim)" }}>No print-area geometry is saved on this product.</p>}
+            {productionSurfaces.length ? <ul className="mt-2 space-y-3 text-sm" style={{ color: "var(--so-cream-dim)" }}>{productionSurfaces.map((surface) => <li key={surface.id} className="flex items-start gap-3">{surface.previewUrl && <img src={surface.previewUrl} alt={`${surface.name} verified production blank`} className="h-14 w-14 rounded border object-contain" style={{ borderColor: "var(--so-border)" }} />}<span><strong style={{ color: surface.isVerifiedBlank ? "var(--so-cream)" : "#dc2626" }}>{surface.name}{surface.position ? ` (${surface.position})` : ""} · {surface.isVerifiedBlank ? "verified production blank" : "production blank invalid"}</strong><br/>Artwork bounds {Math.round(surface.area.x * 100)}%, {Math.round(surface.area.y * 100)}%, {Math.round(surface.area.width * 100)}% × {Math.round(surface.area.height * 100)}%{surface.printRegions?.map((region) => ` · ${region.name}${region.productionMethod ? ` · ${region.productionMethod === "sublimation" ? "Sublimation" : "Engraving"}` : " · production method not recorded"} (${region.shape}${region.dimensions ? `, ${region.dimensions.width}×${region.dimensions.height}${region.dimensions.unit}` : ""})`).join("")}</span></li>)}</ul> : <p className="mt-1 text-sm" style={{ color: "var(--so-cream-dim)" }}>No print-area geometry is saved on this product.</p>}
             {canEdit && !productionSurfaces.some((surface) => surface.isVerifiedBlank) && <ProductionBlankForm productId={product.id} productName={product.name} positions={productionSurfaces.map((surface) => surface.position).filter((position): position is string => Boolean(position))} />}
             {canEdit && productionSurfaces.some((surface) => surface.isVerifiedBlank) && <Link href={studioHref} className="so-link mt-3 inline-block text-sm">Open this saved production surface in Studio</Link>}
           </div>
@@ -487,7 +490,7 @@ export default async function PartnerReviewDetailPage({
                 type="number"
                 min={0}
                 step="0.01"
-                defaultValue={(product.priceCents / 100).toFixed(2)}
+                defaultValue={product.priceCents > 0 ? (product.priceCents / 100).toFixed(2) : ""}
                 className="w-full rounded-lg border px-3 py-2"
                 style={{
                   borderColor: "var(--so-border)",
@@ -495,6 +498,7 @@ export default async function PartnerReviewDetailPage({
                   color: "var(--so-cream)",
                 }}
               />
+              {product.priceCents === 0 && <span className="mt-1 block text-xs" style={{ color: "var(--so-cream-dim)" }}>Leave blank while this stays a private draft. Add a real price before publishing.</span>}
             </label>
 
             <label className="block text-sm md:col-span-2">

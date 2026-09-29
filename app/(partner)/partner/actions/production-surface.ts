@@ -10,6 +10,7 @@ import { builderRecord } from "@/lib/domains/intelligence/product-research-schem
 import { approveAsset, createAssetWithUpload, validateImageUpload } from "@/lib/domains/assets/service";
 import { getProductById, setProductPrintArea } from "@/lib/domains/catalog/service";
 import { areaSchema, PRODUCTION_BLANK_ASSET_NOTES, surfaceSchema } from "@/lib/domains/catalog/studio-layout";
+import { CONFIRMED_SHOP_METHODS } from "@/lib/domains/production/methods";
 import { ValidationError } from "@/lib/shared/errors";
 
 const uuid = z.string().uuid();
@@ -59,6 +60,7 @@ export async function attachProductionSurfaceAction(_previous: AttachSurfaceStat
   const region = {
     id: `partner-print-${crypto.randomUUID().slice(0, 8)}`,
     name: z.string().trim().min(1).max(60).parse(form.get("regionName")),
+    productionMethod: z.enum(CONFIRMED_SHOP_METHODS).parse(form.get("productionMethod")),
     bounds: area, shape: "rectangle" as const, dimensions,
   };
   const existingProduct = await getProductById({ ventureId: session.ventureId, productId });

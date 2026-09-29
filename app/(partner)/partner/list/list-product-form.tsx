@@ -208,10 +208,9 @@ export function ListProductForm({ categories, maxPhotos, designs }: { categories
             <input name="name" required maxLength={180} defaultValue={s?.name ?? ""} placeholder="e.g. Engraved tumbler — hibiscus" className="mt-2 w-full rounded-xl border p-3" style={fieldStyle} />
           </label>
           <label className="block text-sm">
-            Your price (USD){s?.priceCents ? <span style={{ color: "var(--pf-muted)" }}> · Skink suggests ${(s.priceCents / 100).toFixed(2)}</span> : null}
+            Your price (USD){s?.priceCents ? <span style={{ color: "var(--pf-muted)" }}> · Skink suggests ${(s.priceCents / 100).toFixed(2)}</span> : <span style={{ color: "var(--pf-muted)" }}> · optional for a private draft</span>}
             <input
               name="priceDollars"
-              required
               inputMode="decimal"
               defaultValue={s?.priceCents ? (s.priceCents / 100).toFixed(2) : ""}
               placeholder="35.00"
@@ -263,7 +262,7 @@ export function ListProductForm({ categories, maxPhotos, designs }: { categories
           </button>
         </div>
         <p className="text-sm" style={{ color: "var(--pf-muted)" }}>
-          After you publish, Skink also turns your photo into a design blank so you can make new designs on this same product.
+          Publishing is your choice. Set a price before publishing; a private draft can wait until you decide.
         </p>
       </form>
     );

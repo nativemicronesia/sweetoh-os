@@ -50,6 +50,7 @@ import {
 import {
   downloadFromBucket,
   productMediaPublicUrl,
+  removeFromBucket,
   uploadToBucket,
 } from "@/lib/storage/client";
 import {
@@ -650,7 +651,21 @@ export async function removeProductMedia(input: {
     throw new NotFoundError("Product media not found");
   }
 
-  await db.delete(productMedia).where(eq(productMedia.id, input.mediaId));
+  await db.transaction(async (tx) => {
+    await tx.delete(productMedia).where(eq(productMedia.id, input.mediaId));
+    const remaining = await tx.select().from(productMedia)
+      .where(eq(productMedia.productId, input.productId))
+      .orderBy(productMedia.sortOrder);
+    for (const [sortOrder, row] of remaining.entries()) {
+      if (row.sortOrder !== sortOrder) {
+        await tx.update(productMedia).set({ sortOrder }).where(eq(productMedia.id, row.id));
+      }
+    }
+  });
+  if (existing.objectKey) {
+    await removeFromBucket({ bucket: STORAGE_BUCKETS.productMedia, objectKey: existing.objectKey })
+      .catch((error) => logger.warn("product_media_storage_cleanup_failed", { productId: input.productId, mediaId: existing.id, error: String(error) }));
+  }
 
   await recordAuditEvent({
     ventureId: input.ventureId,

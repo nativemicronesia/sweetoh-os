@@ -9,6 +9,7 @@ import { parsePartnerProductFields, validatePartnerProductFields } from "../lib/
 import { colorHex, defaultUpcharges, sortSizes, variantOptionsSchema } from "../lib/domains/catalog/variants";
 import { resolveInactiveDraftStatus } from "../lib/domains/catalog/draft-status";
 import { partnerProductNextAction, partnerProductWorkspaceState } from "../lib/domains/catalog/partner-product-workspace";
+import { printRegionSchema } from "../lib/domains/catalog/studio-layout";
 
 const url = "https://manufacturer.example/products/tee";
 const research = { title: "Cotton tee", description: "A plain tee.", category: "apparel", identity: "matched", brand: "Example", model: "4000", evidence: "Visible label", specifications: [{ label: "Material", value: "Cotton", sourceUrl: url }], sources: [{ title: "Manufacturer", url }], unknowns: [], mockupPrompt: "A plain tee" };
@@ -40,6 +41,18 @@ test("partner prices use dollars without silently accepting fractional cents", (
   assert.equal(parsed.priceCents, 2995); validatePartnerProductFields(parsed);
   form.set("priceDollars", "1.999"); assert.throws(() => parsePartnerProductFields(form), /decimal/);
   form.set("priceDollars", "-4"); assert.throws(() => parsePartnerProductFields(form), /dollars/);
+});
+test("a private new-product draft can wait for real pricing, while publication still needs a price", () => {
+  const form = new FormData(); form.set("name", "First real item"); form.set("category", "custom"); form.set("priceDollars", "");
+  const parsed = parsePartnerProductFields(form);
+  assert.equal(parsed.priceCents, 0);
+  assert.doesNotThrow(() => validatePartnerProductFields(parsed));
+  assert.throws(() => printRegionSchema.parse({ id: "engraving-area", name: "Front engraving", productionMethod: "dtf", bounds: { x: 0, y: 0, width: 1, height: 1 }, shape: "rectangle" }));
+});
+test("production regions preserve the confirmed sublimation and engraving methods", () => {
+  const base = { id: "front-area", name: "Front print", bounds: { x: 0, y: 0, width: 1, height: 1 }, shape: "rectangle" as const };
+  assert.equal(printRegionSchema.parse({ ...base, productionMethod: "sublimation" }).productionMethod, "sublimation");
+  assert.equal(printRegionSchema.parse({ ...base, productionMethod: "engraving" }).productionMethod, "engraving");
 });
 test("partner product edits retain a selected production asset and catalog-compatible options", () => {
   const assetId = "00000000-0000-4000-8000-000000000001";

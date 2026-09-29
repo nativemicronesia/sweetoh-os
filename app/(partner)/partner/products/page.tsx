@@ -18,7 +18,7 @@ import {
 type ProductCard = {
   id: string;
   name: string;
-  priceCents: number;
+  priceCents: number | null;
   image: string | null;
   ownership: "yours" | "shop";
   state: "private" | "ready" | "live" | "review" | "blank" | "archived" | "shop";
@@ -64,7 +64,7 @@ export default async function PartnerProductsPage({
         return {
           id: product.id,
           name: product.name,
-          priceCents: product.priceCents,
+          priceCents: product.priceCents > 0 ? product.priceCents : null,
           image,
           ownership: "yours" as const,
           state,
@@ -83,7 +83,7 @@ export default async function PartnerProductsPage({
         .map(async (p) => ({
           id: p.id,
           name: p.name,
-          priceCents: p.priceCents,
+          priceCents: p.priceCents > 0 ? p.priceCents : null,
           image: await getPrimaryProductImageUrl(p.id),
           ownership: "shop" as const,
           state: "shop" as const,

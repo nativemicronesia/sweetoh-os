@@ -40,10 +40,11 @@ export function parsePartnerProductFields(
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim() || null;
   const dollars = formData.get("priceDollars");
-  if (dollars !== null && !/^\d+(?:\.\d{1,2})?$/.test(String(dollars).trim())) {
+  const trimmedDollars = dollars === null ? null : String(dollars).trim();
+  if (trimmedDollars && !/^\d+(?:\.\d{1,2})?$/.test(trimmedDollars)) {
     throw new ValidationError("Enter a price in dollars, with up to two decimal places.");
   }
-  const priceCents = dollars === null ? Number(formData.get("priceCents") ?? 0) : Math.round(Number(dollars) * 100);
+  const priceCents = dollars === null ? Number(formData.get("priceCents") ?? 0) : trimmedDollars ? Math.round(Number(trimmedDollars) * 100) : 0;
   const category = String(formData.get("category") ?? "") as ProductCategory;
   const shortDescription =
     String(formData.get("shortDescription") ?? "").trim() || null;

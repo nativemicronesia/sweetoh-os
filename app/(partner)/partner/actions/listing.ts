@@ -20,7 +20,9 @@ export async function listOwnProductAction(form: FormData): Promise<ListingResul
   const session = await requirePartnerWorkspace();
   try {
     const dollars = String(form.get("priceDollars") ?? "").trim();
-    if (!/^\d+(?:\.\d{1,2})?$/.test(dollars)) return { ok: false, error: "Enter a price like 24 or 24.50." };
+    const publish = form.get("publish") === "true";
+    if (dollars && !/^\d+(?:\.\d{1,2})?$/.test(dollars)) return { ok: false, error: "Enter a price like 24 or 24.50." };
+    if (publish && !dollars) return { ok: false, error: "Add your price before publishing. You can save the product privately without one." };
     const photos = form
       .getAll("photos")
       .filter((f): f is File => f instanceof File && f.size > 0)
@@ -34,11 +36,11 @@ export async function listOwnProductAction(form: FormData): Promise<ListingResul
       : null;
     const created = await listOwnProduct(session, {
       name: String(form.get("name") ?? ""),
-      priceCents: Math.round(Number(dollars) * 100),
+      priceCents: dollars ? Math.round(Number(dollars) * 100) : 0,
       description: String(form.get("description") ?? "") || null,
       category: z.enum(PRODUCT_CATEGORIES as unknown as [ProductCategory, ...ProductCategory[]]).parse(form.get("category")),
       photos: await Promise.all(photos.map(async (f) => ({ file: Buffer.from(await f.arrayBuffer()), filename: f.name }))),
-      publish: form.get("publish") === "true",
+      publish,
       artworkAssetId: String(form.get("artworkAssetId") ?? "").trim() || null,
       variantOptions,
     });

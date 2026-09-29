@@ -87,7 +87,8 @@ export async function listOwnProduct(
   }
   const name = input.name.trim();
   if (name.length < 2) throw new ValidationError("Give the product a name.");
-  if (!Number.isFinite(input.priceCents) || input.priceCents < 50) throw new ValidationError("Set a price of at least $0.50.");
+  if (!Number.isSafeInteger(input.priceCents) || input.priceCents < 0) throw new ValidationError("Enter a valid price.");
+  if (input.publish && input.priceCents < 50) throw new ValidationError("Set a price of at least $0.50 before publishing.");
   if (!input.photos.length) throw new ValidationError("Add at least one photo.");
   if (input.photos.length > LISTING_MAX_PHOTOS) throw new ValidationError(`Up to ${LISTING_MAX_PHOTOS} photos per product.`);
 

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { STUDIO_ASSET_IDS } from "@/lib/studio/asset-library-client";
 import { studioBrushPresetSchema } from "@/lib/studio/drawing-brushes";
+import { CONFIRMED_SHOP_METHODS } from "@/lib/domains/production/methods";
 
 export const areaSchema = z
   .object({
@@ -17,6 +18,8 @@ export const areaSchema = z
 export const printRegionSchema = z.object({
   id: z.string().min(1).max(80),
   name: z.string().trim().min(1).max(60),
+  /** The partner-confirmed method used for this specific physical region. */
+  productionMethod: z.enum(CONFIRMED_SHOP_METHODS).optional(),
   bounds: areaSchema,
   shape: z.enum(["rectangle", "ellipse", "polygon"]),
   points: z.array(z.object({ x: z.number().min(0).max(1), y: z.number().min(0).max(1) })).min(3).max(32).optional(),

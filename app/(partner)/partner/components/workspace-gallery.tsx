@@ -10,7 +10,7 @@ import { formatPrice } from "@/lib/shared/format";
 type Card = {
   id: string;
   name: string;
-  priceCents: number;
+  priceCents: number | null;
   image: string | null;
   ownership: "yours" | "shop";
   state: "private" | "ready" | "live" | "review" | "blank" | "archived" | "shop";
@@ -111,7 +111,7 @@ export function WorkspaceGallery({ cards, initialFilter }: { cards: Card[]; init
                           </Badge>
                         </td>
                         <td>
-                          {c.priceCents > 0 ? formatPrice(c.priceCents) : "—"}
+                          {c.priceCents === null ? <span style={{ color: "var(--pf-muted)" }}>Price not set</span> : formatPrice(c.priceCents)}
                         </td>
                         <td>
                           <div className="flex flex-wrap items-center gap-3">
@@ -131,7 +131,9 @@ export function WorkspaceGallery({ cards, initialFilter }: { cards: Card[]; init
               <div className="catalog-empty">
                 <Package size={40} strokeWidth={1.5} />
                 <h3>
-                  {search
+                  {!search && cards.length === 0
+                    ? "Your catalog starts here"
+                    : search
                     ? "No matching products"
                     : filter === "live"
                       ? "No published products yet"
@@ -142,18 +144,18 @@ export function WorkspaceGallery({ cards, initialFilter }: { cards: Card[]; init
                       : "Create your first product"}
                 </h3>
                 <p>
-                  {search
+                  {!search && cards.length === 0
+                    ? "Add something you already make, or start from an undecorated product blank. Nothing is public until you choose to publish it."
+                    : search
                     ? "Try another search term."
                     : filter === "shop"
                       ? "Your own products will appear in the other lifecycle groups."
                       : "Choose a product from the catalog and add your design."}
                 </p>
-                <Link
-                  href="/partner/catalog"
-                  className={buttonVariants({ size: "lg" })}
-                >
-                  Browse catalog <ArrowRight size={16} />
-                </Link>
+                {!search && cards.length === 0 ? <div className="flex flex-wrap justify-center gap-3">
+                  <Link href="/partner/list" className={buttonVariants({ size: "lg" })}>Add a product I make</Link>
+                  <Link href="/partner/catalog" className={buttonVariants({ size: "lg", variant: "outline" })}>Start from a blank</Link>
+                </div> : <Link href="/partner/catalog" className={buttonVariants({ size: "lg" })}>Browse catalog <ArrowRight size={16} /></Link>}
               </div>
             )}
           </TabsContent>
