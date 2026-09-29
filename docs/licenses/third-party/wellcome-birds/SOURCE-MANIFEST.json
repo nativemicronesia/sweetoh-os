@@ -1,0 +1,183 @@
+{
+  "schemaVersion": 1,
+  "source": "Wellcome Collection — 18th/19th-century bird engravings",
+  "rightsEvidence": "Per-work Wellcome Collection catalogue API license + accessConditions, independently verified live for each item; snapshots in records/.",
+  "assets": [
+    {
+      "id": "wellcome-birds-cockatoo-on-branch-v1",
+      "workId": "h9fqdzka",
+      "iiifImageId": "V0022861ER",
+      "title": "A cockatoo sitting on the branch of a tree",
+      "creator": "S. T. Edwards after A. Latham",
+      "date": "1789",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/h9fqdzka",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0022861ER/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 2662,
+      "iiifWidth": 1470,
+      "iiifHeight": 1957,
+      "originalFile": "originals/cockatoo-on-branch.jpg",
+      "originalSha256": "414d31ab0bcf09c2c05463c0da220ec5f4c9c18410047ecdc3aa30e1a9c81aaf",
+      "normalizedOutputSha256": "a806c5dc81a3cb055901e234433924e4e5327c4d8b2bde6b41c21ae4908234d9",
+      "normalizedDimensions": {
+        "width": 1803,
+        "height": 2400
+      }
+    },
+    {
+      "id": "wellcome-birds-parrot-rainforest-v1",
+      "workId": "zpf8unnx",
+      "iiifImageId": "V0020531",
+      "title": "A parrot sitting on a branch of a tree in the rainforest",
+      "creator": "J. W. Whymper",
+      "date": "19th century",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/zpf8unnx",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0020531/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 2583,
+      "iiifWidth": 2424,
+      "iiifHeight": 3130,
+      "originalFile": "originals/parrot-rainforest.jpg",
+      "originalSha256": "038b89513f2fca35dd0b893c940eb7368508ed3900d4c1d2bf91b1f8bd4c1af0",
+      "normalizedOutputSha256": "3ee50fb0a1f4d502e0487c7bcb3ca5d59d36ca83b63eaefd8ed26ef300e51839",
+      "normalizedDimensions": {
+        "width": 1858,
+        "height": 2400
+      }
+    },
+    {
+      "id": "wellcome-birds-common-tropic-bird-v1",
+      "workId": "bugqbr9d",
+      "iiifImageId": "V0022254ER",
+      "title": "A common tropic bird",
+      "creator": "unattributed",
+      "date": "19th century",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/bugqbr9d",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0022254ER/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 2987,
+      "iiifWidth": 1264,
+      "iiifHeight": 1888,
+      "originalFile": "originals/common-tropic-bird.jpg",
+      "originalSha256": "c5a0302e7e47b6a388748024c6f0f4de5fcd43830b530a404e3e79bd619ea115",
+      "normalizedOutputSha256": "914aba4aee9c918ddf1af0c97e01ce7fb7a262e4d0c31bde86869c891428817d",
+      "normalizedDimensions": {
+        "width": 1607,
+        "height": 2400
+      }
+    },
+    {
+      "id": "wellcome-birds-racket-tailed-kingfisher-v1",
+      "workId": "zfv92kz2",
+      "iiifImageId": "V0022372EL",
+      "title": "A bird, possibly a raquet-tailed kingfisher",
+      "creator": "unattributed",
+      "date": "19th century",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/zfv92kz2",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0022372EL/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 1375,
+      "iiifWidth": 1688,
+      "iiifHeight": 1161,
+      "originalFile": "originals/racket-tailed-kingfisher.jpg",
+      "originalSha256": "b1fd1094f5154a62d25a26569871a0282894204c28b1c59572ca24a974fd2a9c",
+      "normalizedOutputSha256": "879eaa4944fe0fcfe12c17ed1d4dcebe89253fc53ad54288a50ebf542af309bb",
+      "normalizedDimensions": {
+        "width": 2000,
+        "height": 1375
+      }
+    },
+    {
+      "id": "wellcome-birds-kingfisher-on-stump-v1",
+      "workId": "vavkda2g",
+      "iiifImageId": "V0022864ER",
+      "title": "A kingfisher sitting on a stump of a tree",
+      "creator": "P. Mazell",
+      "date": "1789",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/vavkda2g",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0022864ER/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 2701,
+      "iiifWidth": 1437,
+      "iiifHeight": 1941,
+      "originalFile": "originals/kingfisher-on-stump.jpg",
+      "originalSha256": "68f0f942df1bee7b468b39448629aaff0cddcd559179696c4fd087125bccc96b",
+      "normalizedOutputSha256": "ef090c729ba4b10507b4c4749ec36d68f3520003ae6159a75f4d7aecfb66e9b8",
+      "normalizedDimensions": {
+        "width": 1777,
+        "height": 2400
+      }
+    },
+    {
+      "id": "wellcome-birds-common-heron-v1",
+      "workId": "m9akhf4v",
+      "iiifImageId": "V0022242ER",
+      "title": "A common heron",
+      "creator": "unattributed",
+      "date": "19th century",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/m9akhf4v",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0022242ER/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 2925,
+      "iiifWidth": 1316,
+      "iiifHeight": 1925,
+      "originalFile": "originals/common-heron.jpg",
+      "originalSha256": "e287cf061590a7c2917e683359aac65d9ff003b17d809b710375d7cfa4a94cf9",
+      "normalizedOutputSha256": "d0cc05a3e6c9b2a065b86e0be3b5cd5530856642f0f014b13d714e5142aac222",
+      "normalizedDimensions": {
+        "width": 1641,
+        "height": 2400
+      }
+    },
+    {
+      "id": "wellcome-birds-swallow-in-flight-v1",
+      "workId": "pum4thqp",
+      "iiifImageId": "V0020517",
+      "title": "A swallow sitting on a rock above a town with two other swallows flying in the sky above",
+      "creator": "J. W. Whymper",
+      "date": "19th century",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/pum4thqp",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0020517/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 1666,
+      "iiifWidth": 2996,
+      "iiifHeight": 2495,
+      "originalFile": "originals/swallow-in-flight.jpg",
+      "originalSha256": "88e97a8f7f5e55f447fc08d64e3fd91abe65efe4d31f7e39a1e7534e0965be65",
+      "normalizedOutputSha256": "4322fab5c2028851a721ab1514c3768dbcc2e39d9a95085a9183bf7c529cb851",
+      "normalizedDimensions": {
+        "width": 2000,
+        "height": 1666
+      }
+    },
+    {
+      "id": "wellcome-birds-night-heron-v1",
+      "workId": "bzddxua8",
+      "iiifImageId": "V0022244EL",
+      "title": "A night heron",
+      "creator": "unattributed",
+      "date": "19th century",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/bzddxua8",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0022244EL/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 2906,
+      "iiifWidth": 1360,
+      "iiifHeight": 1976,
+      "originalFile": "originals/night-heron.jpg",
+      "originalSha256": "d0a058e83693f3d0871a48d5d1346d5057a8aa3fd88719c3c3957f00d6eaf9f4",
+      "normalizedOutputSha256": "497559fe5610e6ce513260f785ed0c0a20723d69ae213ba4dae73cd00e2e4086",
+      "normalizedDimensions": {
+        "width": 1652,
+        "height": 2400
+      }
+    }
+  ]
+}
