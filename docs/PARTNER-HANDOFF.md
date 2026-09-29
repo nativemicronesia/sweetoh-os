@@ -2,8 +2,12 @@
 
 ## Start here
 
-Sign in at `/partner/login`. The account must already have an active `app_user`
-assignment with the partner or owner role; ordinary customer signup does not grant access.
+The shop partner signs in at `/partner/login`; the NMH owner uses `/owner/login`.
+Each account must already have its own active app-user assignment. Ordinary
+customer signup does not grant either kind of back-office access.
+The owner account is provisioned through the existing foundation seed settings
+(`FOUNDATION_OWNER_EMAIL` and `FOUNDATION_OWNER_PASSWORD`); those credentials
+must be separate from the partner account.
 
 1. **Create** opens Product Builder. Choose **Research a blank** or **List a finished product**.
 2. Upload a photo, optionally add a supplier link or a label/model hint. AI searches

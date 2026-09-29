@@ -36,8 +36,10 @@ ship a half-integrated experiment.
 
 ## What exists today (don't rebuild it)
 
-Sweet'Oh is a single-partner local POD shop in Lacey, WA. Only the partner logs in
-(`role === "partner"`); the owner uses NMH OS instead of this app.
+Sweet'Oh is a single-partner local POD shop in Lacey, WA. The partner and NMH
+owner have separate accounts and sign-in routes (`/partner/login` and
+`/owner/login`). Both can enter the same Sweet'Oh back office; their user
+identities remain distinct.
 
 | Piece | Where | Notes |
 |---|---|---|
@@ -133,7 +135,7 @@ cost per new product, and licensing.
 - The partner flow stays simple: catalog → design → preview → price →
   publish. New power goes into the editor and preview; don't add steps.
 - Printify is catalog data only.
-- Only the partner can use `/partner` (`requirePartnerWorkspace`).
+- The partner and NMH owner can use `/partner` with separate role-checked logins.
 - Don't break saved layouts, variant data, checkout metadata or orders.
   Extend, don't replace.
 - Prices and variant validity are enforced server-side (see

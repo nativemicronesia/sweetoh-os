@@ -292,6 +292,10 @@ export function getSeedEnv(): SeedEnv {
     );
   }
 
+  if (partnerEmail && partnerEmail.toLowerCase() === parsed.data.FOUNDATION_OWNER_EMAIL.trim().toLowerCase()) {
+    throw new Error("The Sweet'Oh owner and partner must use separate email accounts.");
+  }
+
   if (creatorEmail && !creatorPassword) {
     throw new Error(
       "FOUNDATION_CREATOR_PASSWORD is required when FOUNDATION_CREATOR_EMAIL is set",

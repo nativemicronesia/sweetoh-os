@@ -36,10 +36,33 @@ export async function signInAction(formData: FormData): Promise<void> {
   redirect("/partner");
 }
 
+/** The NMH owner signs in separately from the Sweet'Oh partner. */
+export async function signInOwnerAction(formData: FormData): Promise<void> {
+  const email = String(formData.get("email") ?? "").trim();
+  const password = String(formData.get("password") ?? "");
+
+  if (!email || !password) {
+    redirect("/owner/login?error=Email%20and%20password%20are%20required.");
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) redirect("/owner/login?error=" + encodeURIComponent(error.message));
+
+  const session = await getSessionUser().catch(() => null);
+  if (session?.role !== "owner") {
+    await supabase.auth.signOut();
+    redirect("/owner/login?error=owner_only");
+  }
+
+  redirect("/partner");
+}
+
 export async function signOutAction(): Promise<void> {
+  const session = await getSessionUser().catch(() => null);
   const supabase = await createClient();
   await supabase.auth.signOut();
-  redirect("/partner/login");
+  redirect(session?.role === "owner" ? "/owner/login" : "/partner/login");
 }
 
 export type PasswordFormState = { error?: string; done?: boolean } | null;

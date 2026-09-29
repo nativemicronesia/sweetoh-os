@@ -110,10 +110,7 @@ export async function requireRole(role: AppRole): Promise<SessionUser> {
   return session;
 }
 
-/**
- * Partner back office — the Sweet'Oh partner only. The owner works from
- * NMH OS, not this login.
- */
+/** Sweet'Oh back office — the partner and the separately authenticated NMH owner. */
 export async function requirePartnerWorkspace(): Promise<SessionUser> {
   const session = await getSessionUser();
 
@@ -121,7 +118,7 @@ export async function requirePartnerWorkspace(): Promise<SessionUser> {
     redirect("/partner/login");
   }
 
-  if (session.role !== "partner") {
+  if (session.role !== "partner" && session.role !== "owner") {
     redirect("/partner/login?error=partner_only");
   }
 

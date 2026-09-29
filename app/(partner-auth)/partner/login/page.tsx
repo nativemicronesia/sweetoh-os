@@ -26,7 +26,7 @@ export default async function PartnerLoginPage({
     session = null;
   }
 
-  if (session?.role === "partner") {
+  if (session?.role === "partner" || session?.role === "owner") {
     redirect("/partner");
   }
 
@@ -71,6 +71,9 @@ export default async function PartnerLoginPage({
           </form>
           <Link href="/partner/forgot" className="login-back">
             Forgot your password?
+          </Link>
+          <Link href="/owner/login" className="login-back" style={{ display: "block", marginTop: 10 }}>
+            NMH owner? Sign in with your owner account
           </Link>
           <Link href="/" className="login-back" style={{ display: "block", marginTop: 10 }}>
             ← Back to the storefront
