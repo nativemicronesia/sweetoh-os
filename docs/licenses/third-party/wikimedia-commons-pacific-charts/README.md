@@ -1,6 +1,6 @@
 # Wikimedia Commons — Micronesian/Pacific nautical charts and maps
 
-Seventeen public-domain (and two CC BY-SA, clearly marked) historical and
+Eighteen public-domain (and three CC BY-SA, clearly marked) historical and
 modern maps covering all seven Micronesian entities SweetOh's own community
 draws from — Palau, the Federated States of Micronesia (with Pohnpei, Chuuk,
 Yap and Kosrae states covered individually, including their outer atolls),
@@ -22,6 +22,7 @@ state.
 | FSM — Yap State (Ulithi, outer atoll) | Ulithi Islands, Western Carolines Operation chart | 1944-era | Public domain |
 | FSM — Yap State (Ifaluk, outer atoll) | Ifaluk oder Wilson Inseln | early 20th c. | Public domain |
 | FSM — Chuuk State | Chuuk Islands (Chuuk Lagoon) map | modern | CC BY-SA 4.0 |
+| FSM — Pohnpei State (Nukuoro, Polynesian outlier) | Nukuoro Atoll map | modern | CC BY-SA 3.0 |
 | Palau | Admiralty Chart No. 1103, Peeloo Archipelago | 1796 | Public domain |
 | Guam | Plan of Umatac Bay, with coastal profile views | 1796 | Public domain |
 | Marshall Islands | Marshallese stick chart (Musée du quai Branly) | traditional/photographed | CC BY-SA 4.0 |
@@ -29,13 +30,6 @@ state.
 | Nauru | Nauru detail map with regional locator | 1988 | Public domain |
 | Kiribati | Tarawa Atoll diagram (modern, minimal) | modern | Public domain |
 | Kiribati | South Tarawa labeled satellite-style map | modern | Public domain |
-
-Pohnpei State's `Nukuoro_map.png` (a second Polynesian outlier, alongside
-Kapingamarangi, CC BY-SA 3.0) was identified and its license independently
-verified, but the actual image file repeatedly failed to download (HTTP 429
-rate-limiting from Commons, confirmed via response header, not a rights or
-file-corruption issue) — parked for a future pass rather than retried
-indefinitely.
 
 ## Why these, and not more from the same categories
 
@@ -97,10 +91,13 @@ of Japanese Forces and Gun Installations" material was found during scouting
 for Guam and deliberately excluded as reading like a war-target map rather
 than a navigational chart; this item is not that.)
 
-Kapingamarangi and Nukuoro (the latter not yet ingested) are Polynesian
-exclaves within Pohnpei State — linguistically and culturally Polynesian,
-distinct from the surrounding Chuukic/Pohnpeic Micronesian culture. Tagged
-and captioned as such rather than folded into generic "Micronesian" framing.
+Kapingamarangi and Nukuoro are Polynesian exclaves within Pohnpei State —
+linguistically and culturally Polynesian, distinct from the surrounding
+Chuukic/Pohnpeic Micronesian culture. Tagged and captioned as such rather
+than folded into generic "Micronesian" framing. (Nukuoro's file initially
+failed to download with an HTTP 429 rate-limit response, confirmed via the
+response header rather than a rights or corruption issue; a later retry
+succeeded.)
 
 ## Rights and provenance
 

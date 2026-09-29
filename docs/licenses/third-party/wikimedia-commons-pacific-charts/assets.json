@@ -441,5 +441,24 @@
     "useCredit": "Chuuk islands map. Original author: Wikimedia Commons user Aotearoa. Vectorization: Wikimedia Commons user Skimel. CC BY-SA 4.0.",
     "rotate": 0,
     "crop": null
+  },
+  {
+    "id": "pohnpei-nukuoro-map",
+    "title": "Nukuoro Atoll map (Polynesian outlier, Pohnpei State)",
+    "commonsTitle": "File:Nukuoro_map.png",
+    "commonsUrl": "https://commons.wikimedia.org/wiki/File:Nukuoro_map.png",
+    "recordFile": "records/pohnpei-nukuoro-map.json",
+    "originalFile": "originals/pohnpei-nukuoro-map.png",
+    "outputFile": "studio-assets/wikimedia-commons-pacific-charts/pohnpei-nukuoro-map.webp",
+    "name": "Nukuoro Atoll map, Pohnpei State",
+    "kind": "element",
+    "category": "Maps & Charts",
+    "tags": ["map", "atoll diagram", "Nukuoro", "Pohnpei", "Polynesian outlier", "FSM", "Micronesia", "Pacific", "modern", "print decoration"],
+    "creator": "Peter Minton (original), Wikimedia Commons user Regi51 (derivative)",
+    "date": "modern",
+    "license": "CC BY-SA 3.0",
+    "useCredit": "Nukuoro Atoll map. Original: Peter Minton. Derivative work: Wikimedia Commons user Regi51. CC BY-SA 3.0. Nukuoro is a Polynesian-outlier community within Pohnpei State, culturally and linguistically distinct from the rest of Micronesia.",
+    "rotate": 0,
+    "crop": null
   }
 ]

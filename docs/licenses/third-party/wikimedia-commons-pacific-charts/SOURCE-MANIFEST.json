@@ -291,6 +291,23 @@
         "width": 2400,
         "height": 1869
       }
+    },
+    {
+      "id": "pohnpei-nukuoro-map",
+      "title": "Nukuoro Atoll map (Polynesian outlier, Pohnpei State)",
+      "commonsUrl": "https://commons.wikimedia.org/wiki/File:Nukuoro_map.png",
+      "creator": "Peter Minton (original), Wikimedia Commons user Regi51 (derivative)",
+      "date": "modern",
+      "license": "CC BY-SA 3.0",
+      "licenseEvidence": "Wikimedia Commons extmetadata LicenseShortName field, fetched live and recorded in records/pohnpei-nukuoro-map.json",
+      "sha1OfOriginalUpload": "ac299f056ef058b40a94c049851fa0194ca32149",
+      "originalFile": "originals/pohnpei-nukuoro-map.png",
+      "originalSha256": "2d178c3c583ff3140e0ea3d9243b767c8160eba92c3cbb19ac168c94d624daa9",
+      "normalizedOutputSha256": "e813c3e478a8338c659bb890f960879928da304746ad0d84cda28e18ced2cfb1",
+      "normalizedDimensions": {
+        "width": 1240,
+        "height": 1378
+      }
     }
   ]
 }

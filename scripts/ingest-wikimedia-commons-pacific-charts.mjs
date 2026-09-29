@@ -9,11 +9,12 @@ const items = JSON.parse(await readFile(path.join(collection, "assets.json"), "u
 const publicDir = path.join(root, "public");
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
 
-if (!Array.isArray(items) || items.length !== 17) throw new Error("Wikimedia Commons Pacific charts set changed size unexpectedly");
+if (!Array.isArray(items) || items.length !== 18) throw new Error("Wikimedia Commons Pacific charts set changed size unexpectedly");
 
 const LICENSES = {
   "Public domain": { licenseId: "PD", licenseUrl: "https://en.wikipedia.org/wiki/Public_domain", attributionRequired: false },
   "CC BY-SA 4.0": { licenseId: "CC-BY-SA-4.0", licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/", attributionRequired: true },
+  "CC BY-SA 3.0": { licenseId: "CC-BY-SA-3.0", licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0/", attributionRequired: true },
 };
 
 const metadata = [];
