@@ -301,6 +301,7 @@ try {
       await page.getByRole("button", { name: "Product setup", exact: true }).click();
       const setup = page.getByRole("dialog", { name: "Product setup", exact: true });
       await setup.waitFor({ state: "visible", timeout: 15_000 });
+      await setup.getByRole("status").filter({ hasText: "This photo is a reference only" }).waitFor({ state: "visible", timeout: 10_000 });
       await setup.getByRole("button", { name: "Add print area", exact: true }).click();
       await setup.getByLabel("Production dimensions", { exact: true }).selectOption("in");
       const width = await setup.getByLabel("Print width", { exact: true }).inputValue();

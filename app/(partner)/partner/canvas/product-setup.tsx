@@ -161,6 +161,7 @@ export function ProductSetup({ surfaces, initialId, photoFor, onSave, onClose }:
             <button className="pe-btn pe-btn-ghost" disabled={busy || draft.length >= 12} onClick={() => upload.current?.click()}><Upload size={15}/> Add surface photo</button>
             <input ref={upload} type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" aria-label="New surface photo" onChange={e => { const f = e.target.files?.[0]; e.target.value = ""; if (f) void addSurface(f); }}/>
           </div>
+          {current.imageRole !== "production_blank" && <p className="ps-guidance" role="status">This photo is a reference only. It does not verify a clean production blank. A real blank must be verified before pricing.</p>}
           <svg ref={svg} className="ps-canvas" viewBox="0 0 720 720" aria-label="Print area editor" onPointerMove={move} onPointerUp={() => { drag.current = null; }} onPointerCancel={() => { drag.current = null; }}>
             {src && <image href={src} width="720" height="720" preserveAspectRatio="xMidYMid meet"/>}
             {[...current.printRegions].sort((a, b) => Number(a.id === areaId) - Number(b.id === areaId)).map(r => <g key={r.id}>
