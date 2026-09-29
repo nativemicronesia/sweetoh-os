@@ -198,7 +198,42 @@ try {
     throw new Error(loginError ? `Partner login was rejected: ${loginError}` : `Partner login did not reach /partner (current path ${new URL(page.url()).pathname}).`);
   }
 
-  if (process.env.PARTNER_BROWSER_READONLY_PRODUCT_CHECK === "1") {
+  if (process.env.PARTNER_BROWSER_READONLY_DESIGN_CHECK === "1") {
+    // Reopen an existing private composition and create a local template copy;
+    // neither navigation writes to the saved source design.
+    await page.goto(`${origin}/partner/library`, { waitUntil: "commit", timeout: 90_000 });
+    await page.getByRole("heading", { name: "My files", exact: true }).waitFor({ state: "visible", timeout: 30_000 });
+    const librarySummary = await page.evaluate(() => {
+      const heading = [...document.querySelectorAll("h2")].find((item) => item.textContent?.startsWith("Library ("));
+      const rows = [...document.querySelectorAll("li")];
+      const compositions = rows.flatMap((row) => {
+        const link = row.querySelector('a[href^="/partner/canvas?composition="]');
+        if (!link) return [];
+        const compositionName = row.querySelector("p.text-sm.font-medium")?.textContent?.trim() ?? "Saved design";
+        return [{ href: link.href, name: compositionName }];
+      });
+      return { libraryCount: heading?.textContent ?? "Library count unavailable", visibleCompositions: compositions.length, compositions };
+    });
+    let designJourney = null;
+    const source = librarySummary.compositions[0];
+    if (source) {
+      const sourceId = new URL(source.href).searchParams.get("composition");
+      await page.goto(source.href, { waitUntil: "commit", timeout: 90_000 });
+      await page.locator(".pe-stage canvas.lower-canvas").waitFor({ state: "visible", timeout: 60_000 });
+      await page.getByRole("button", { name: "Layers", exact: true }).click();
+      const sourceLayers = await page.locator(".pe-layer-row").count();
+      if (!sourceId) throw new Error("The saved Studio design link had no composition ID.");
+      await page.goto(`${origin}/partner/canvas?template=${encodeURIComponent(sourceId)}`, { waitUntil: "commit", timeout: 90_000 });
+      await page.locator(".pe-stage canvas.lower-canvas").waitFor({ state: "visible", timeout: 60_000 });
+      const templateFallback = await page.locator(".pe-production-boundary").filter({ hasText: /removed because current rights|unavailable font/i }).count() > 0;
+      await page.getByRole("button", { name: "Layers", exact: true }).click();
+      const templateLayers = await page.locator(".pe-layer-row").count();
+      if (!templateLayers && sourceLayers) throw new Error("Creating an editable Studio template copy dropped every source layer.");
+      designJourney = { sourceReopened: true, sourceLayers, templateOpened: true, templateLayers, currentRightsOrFontFallbackShown: templateFallback, savedSourceMutated: false };
+    }
+    console.log(JSON.stringify({ browser: browser.version(), librarySummary: { libraryCount: librarySummary.libraryCount, visibleCompositions: librarySummary.visibleCompositions }, designJourney, persistentWrites: 0, pageErrors: browserErrors }));
+    await context.close();
+  } else if (process.env.PARTNER_BROWSER_READONLY_PRODUCT_CHECK === "1") {
     // Inspect one real private product and reopen its verified Studio surface
     // without submitting forms or saving any product/design changes.
     await page.goto(`${origin}/partner/products`, { waitUntil: "commit", timeout: 90_000 });
@@ -374,6 +409,23 @@ try {
     await search.fill("party confetti");
     await page.getByRole("button", { name: "Add Party confetti", exact: true }).waitFor({ state: "visible", timeout: 20_000 });
     await page.getByRole("button", { name: "Add Party confetti", exact: true }).click();
+    await page.getByRole("button", { name: "Preview", exact: true }).click();
+    const previewDialog = page.getByRole("dialog", { name: "Preview", exact: true });
+    await previewDialog.getByRole("heading", { name: "Print-area preview", exact: true }).waitFor({ state: "visible", timeout: 20_000 });
+    const previewBoundary = previewDialog.locator(".pe-production-boundary");
+    if (!(await previewBoundary.innerText()).includes("not a product mockup")) throw new Error("Studio did not distinguish print-area artwork from a product mockup when no verified blank is present.");
+    if (!(await previewDialog.getByRole("button", { name: "Continue to pricing", exact: true }).isDisabled())) throw new Error("Studio allowed pricing to continue without a verified production blank.");
+    const printDownload = page.waitForEvent("download", { timeout: 30_000 });
+    await previewDialog.locator(".pe-stack button").first().click();
+    const exported = await printDownload;
+    const printPath = path.join(tempDir, exported.suggestedFilename());
+    await exported.saveAs(printPath);
+    const printMetadata = await sharp(printPath).metadata();
+    if (printMetadata.format !== "png" || !printMetadata.hasAlpha || !printMetadata.width || !printMetadata.height || Math.max(printMetadata.width, printMetadata.height) > 6000) {
+      throw new Error(`Studio print export did not produce a bounded transparent PNG: ${JSON.stringify({ format: printMetadata.format, alpha: printMetadata.hasAlpha, width: printMetadata.width, height: printMetadata.height })}`);
+    }
+    await previewDialog.getByRole("button", { name: "Close preview", exact: true }).click();
+    const printExport = { filename: exported.suggestedFilename(), width: printMetadata.width, height: printMetadata.height, transparentPng: printMetadata.hasAlpha };
     await page.getByRole("button", { name: "Layers", exact: true }).click();
     await layers.getByText("Tropical leaf", { exact: true }).waitFor({ state: "visible", timeout: 15_000 });
     await layers.locator(".pe-layer-row").filter({ hasText: "Party confetti" }).waitFor({ state: "visible", timeout: 15_000 });
@@ -676,6 +728,7 @@ try {
       imageEditing: "uploaded a temporary image; crop, flip, opacity, brightness, contrast, saturation, tint, soft focus and local background removal passed; undo/redo, duplicate/delete and tablet controls passed",
       imageMaskAndShadow: "cycled the original, oval and round masks; added, adjusted and removed a soft shadow",
       drawingAndErasing: "created a styled editable stroke; verified local autosave; erased it and recovered/restored the history state",
+      previewAndExport: { truthfulPrintAreaOnlyPreview: true, pricingBlockedWithoutVerifiedBlank: true, printExport },
       phoneLayout: "canvas and selected-object controls remained visible at 390×844 without horizontal overflow",
       imageRefreshAndCleanup: "restored edited image after refresh, continued editing, then archived both temporary My files records",
       selectionAndHistory: "selected a mixed image/graphic/text set; dragged and resized all three together; grouped/ungrouped, aligned to selection/canvas, changed front/back order, hid/showed and locked/unlocked a layer; undo/redo passed",
