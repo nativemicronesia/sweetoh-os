@@ -124,6 +124,7 @@ const browserErrors = [];
 const browserNetworkEvents = [];
 let cleanupTask;
 let imageSmokeName = null;
+let compositionSmokeName = null;
 
 function cleanup() {
   cleanupTask ??= (async () => {
@@ -465,7 +466,7 @@ try {
     const tabletTypography = await page.evaluate(() => ({ width: innerWidth, height: innerHeight, horizontalOverflow: document.documentElement.scrollWidth > innerWidth, propertiesVisible: Boolean(document.querySelector(".pe-props select[aria-label='Font']")?.getBoundingClientRect().height) }));
     if (tabletTypography.horizontalOverflow || !tabletTypography.propertiesVisible) throw new Error(`Selected text properties are not usable at tablet size: ${JSON.stringify(tabletTypography)}`);
     const typographyLabels = await page.evaluate(() => [...document.querySelectorAll(".pe-props .pe-num span")].map((label) => ({ text: label.textContent?.trim(), clipped: label.scrollWidth > label.clientWidth })));
-    if (!["Size", "Wrap", "Outline"].every((text) => typographyLabels.some((label) => label.text === text && !label.clipped))) throw new Error(`Typography control labels are clipped at tablet size: ${JSON.stringify(typographyLabels)}`);
+    if (!["Size", "Text width", "Outline"].every((text) => typographyLabels.some((label) => label.text === text && !label.clipped))) throw new Error(`Typography control labels are clipped at tablet size: ${JSON.stringify(typographyLabels)}`);
     await page.getByLabel("Outline width", { exact: true }).waitFor({ state: "visible", timeout: 10_000 });
     if (process.env.PARTNER_BROWSER_CAPTURE_STUDIO_SCREENSHOTS === "1") {
       await page.screenshot({ path: "/private/tmp/sweetoh-studio-tablet.png" });
@@ -728,20 +729,48 @@ try {
     await page.locator(".pe-layer-row").filter({ hasText: "Butterfly" }).waitFor({ state: "visible", timeout: 15_000 });
     const phoneLibraryLayout = await page.evaluate(() => ({ width: innerWidth, horizontalOverflow: document.documentElement.scrollWidth > innerWidth, resultVisible: Boolean(document.querySelector(".pe-layer-row")?.getBoundingClientRect().height) }));
     if (phoneLibraryLayout.horizontalOverflow || !phoneLibraryLayout.resultVisible) throw new Error(`Creative Library search and insertion are not usable on phone: ${JSON.stringify(phoneLibraryLayout)}`);
-
-    // Refresh/reopen the local recovery draft, continue editing, then archive
-    // only the two temporary test assets from My files.
-    await page.waitForTimeout(1_500);
-    await page.reload({ waitUntil: "commit", timeout: 90_000 });
-    await page.locator(".pe-stage canvas.lower-canvas").waitFor({ state: "visible", timeout: 60_000 });
-    await page.getByRole("button", { name: "Restore it", exact: true }).waitFor({ state: "visible", timeout: 15_000 });
-    await page.getByRole("button", { name: "Restore it", exact: true }).click();
-    await page.getByRole("button", { name: "Layers", exact: true }).click();
-    await layers.getByRole("button", { name: cutoutName, exact: true }).waitFor({ state: "visible", timeout: 15_000 });
-    await layers.getByRole("button", { name: cutoutName, exact: true }).click();
     await page.getByRole("button", { name: "Close panel", exact: true }).click();
-    await page.getByRole("button", { name: "Flip", exact: true }).first().waitFor({ state: "visible", timeout: 10_000 });
-    await page.getByRole("button", { name: "Flip", exact: true }).first().click();
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.getByRole("button", { name: "Layers", exact: true }).click();
+
+    // Remove the temporary cutout before saving, so the
+    // real persisted test composition references only approved reusable assets.
+    const temporaryCutoutLayer = page.getByRole("button", { name: cutoutName, exact: true });
+    await temporaryCutoutLayer.click();
+    await page.getByRole("button", { name: "Delete", exact: true }).click();
+    await temporaryCutoutLayer.waitFor({ state: "detached", timeout: 15_000 });
+    compositionSmokeName = `Studio smoke ${Date.now()}`;
+    await page.getByLabel("Product name", { exact: true }).fill(compositionSmokeName);
+    await page.getByRole("button", { name: "Save reusable design", exact: true }).click();
+    await page.waitForURL(/\/partner\/library\?success=/, { timeout: 60_000, waitUntil: "commit" });
+    await page.getByRole("heading", { name: "My files", exact: true }).waitFor({ state: "visible", timeout: 30_000 });
+    const savedCompositionLinks = await page.locator("li").evaluateAll((rows, name) => rows.flatMap((row) => {
+      const link = row.querySelector('a[href^="/partner/canvas?composition="]');
+      const rowName = row.querySelector("p.text-sm.font-medium")?.textContent?.trim();
+      return link && rowName === name ? [{ href: link.getAttribute("href"), name: rowName }] : [];
+    }), compositionSmokeName);
+    if (savedCompositionLinks.length !== 1) throw new Error(`Expected exactly one newly saved disposable composition, found ${savedCompositionLinks.length}.`);
+    await page.goto(new URL(savedCompositionLinks[0].href, origin).href, { waitUntil: "commit", timeout: 90_000 });
+    await page.locator(".pe-stage canvas.lower-canvas").waitFor({ state: "visible", timeout: 60_000 });
+    await page.getByRole("button", { name: "Layers", exact: true }).click();
+    const reopenedLayerNames = await page.locator(".pe-layer-row").allTextContents();
+    if (!reopenedLayerNames.some((name) => name.includes("Butterfly")) || !reopenedLayerNames.some((name) => name.includes("Tropical leaf"))) {
+      const rightsFallback = await page.locator(".pe-production-boundary").filter({ hasText: /removed because current rights|unavailable font/i }).allTextContents();
+      throw new Error(`Saved composition reopened without its expected Creative Library layers: ${JSON.stringify({ reopenedLayerNames, rightsFallback })}`);
+    }
+    const savedCompositionHref = savedCompositionLinks[0].href;
+
+    // Make a small edit on the reopened copy, then archive only the new
+    // disposable composition and two temporary test assets.
+    await page.getByRole("button", { name: "ISLAND DAYS · KEEP CREATING", exact: true }).click();
+    await page.getByRole("button", { name: "Text", exact: true }).click();
+    await textContent.fill("ISLAND DAYS · STILL CREATING");
+    if (await textContent.inputValue() !== "ISLAND DAYS · STILL CREATING") throw new Error("The reopened saved composition could not be edited.");
+    await page.goto(`${origin}/partner/library`, { waitUntil: "commit", timeout: 90_000 });
+    await page.getByRole("heading", { name: "My files", exact: true }).waitFor({ state: "visible", timeout: 30_000 });
+    const compositionCard = page.locator("li").filter({ has: page.locator(`a[href="${savedCompositionHref}"]`) });
+    await compositionCard.getByRole("button", { name: "Remove", exact: true }).click();
+    await page.waitForURL(/\/partner\/library\?success=/, { timeout: 30_000, waitUntil: "commit" });
     await page.goto(`${origin}/partner/library`, { waitUntil: "commit", timeout: 90_000 });
     await page.getByRole("heading", { name: "My files", exact: true }).waitFor({ state: "visible", timeout: 30_000 });
     for (const name of [cutoutName, imageSmokeName]) {
@@ -775,6 +804,7 @@ try {
       tabletTypography,
       studioRefreshRecovery: "restored the inserted layer from the isolated browser draft after refresh",
       phoneLibrary: { searched: "butterfly", inserted: "Butterfly", ...phoneLibraryLayout },
+      savedDesign: "saved one composition, reopened it from My files with its layers intact, edited its heading locally, then removed only that disposable composition",
       continuedEditing: "inserted Butterfly after restore, undid that insertion, and edited recovered heading text",
       partnerData: "unchanged; browser context closed without saving a partner asset or product",
       inspection,
@@ -901,6 +931,15 @@ try {
     try {
       await smokePage.goto(`${origin}/partner/library`, { waitUntil: "commit", timeout: 45_000 });
       await smokePage.getByRole("heading", { name: "My files", exact: true }).waitFor({ state: "visible", timeout: 30_000 });
+      if (compositionSmokeName) {
+        const card = smokePage.getByText(compositionSmokeName, { exact: true }).locator("xpath=ancestor::li[1]");
+        if (await card.count()) {
+          await card.getByRole("button", { name: "Remove", exact: true }).click();
+          await smokePage.waitForURL(/\/partner\/library\?success=/, { timeout: 30_000, waitUntil: "commit" });
+          await smokePage.goto(`${origin}/partner/library`, { waitUntil: "commit", timeout: 45_000 });
+          await smokePage.getByRole("heading", { name: "My files", exact: true }).waitFor({ state: "visible", timeout: 30_000 });
+        }
+      }
       for (const name of [`${imageSmokeName} (no background)`, imageSmokeName]) {
         const card = smokePage.getByText(name, { exact: true }).locator("xpath=ancestor::li[1]");
         if (await card.count()) {
