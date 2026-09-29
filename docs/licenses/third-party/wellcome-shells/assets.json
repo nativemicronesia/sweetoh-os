@@ -1,0 +1,42 @@
+[
+  {
+    "id": "shells-table-105",
+    "workId": "aprq82su",
+    "iiifImageId": "V0020482EL",
+    "title": "A table with 105 different shells",
+    "apiTitleMatch": "A table with 105 different shells",
+    "creator": "R. Scott after Captain T. Brown",
+    "date": "19th century",
+    "tags": ["shells", "conchology", "seashell", "marine life", "ocean", "engraving", "line art", "coastal", "nautical", "sublimation"]
+  },
+  {
+    "id": "shells-table-79",
+    "workId": "xypmd3ay",
+    "iiifImageId": "V0020482ER",
+    "title": "A table with 79 different shells",
+    "apiTitleMatch": "A table with 79 different shells",
+    "creator": "R. Scott after Captain T. Brown",
+    "date": "19th century",
+    "tags": ["shells", "conchology", "seashell", "marine life", "ocean", "engraving", "line art", "coastal", "nautical", "sublimation"]
+  },
+  {
+    "id": "shells-table-163",
+    "workId": "cf8p5874",
+    "iiifImageId": "V0020487ER",
+    "title": "A table with 163 different shells (Organic Remains)",
+    "apiTitleMatch": "A table with 163 different shells",
+    "creator": "R. Scott after Captain T. Brown",
+    "date": "19th century",
+    "tags": ["shells", "conchology", "seashell", "fossil", "marine life", "ocean", "engraving", "line art", "coastal", "nautical", "sublimation"]
+  },
+  {
+    "id": "heart-shaped-shells",
+    "workId": "pze62svc",
+    "iiifImageId": "V0021999",
+    "title": "A variety of heart-shaped shells (conche cordiformes)",
+    "apiTitleMatch": "A variety of heart-shaped shells",
+    "creator": "unattributed",
+    "date": "19th century",
+    "tags": ["shells", "conchology", "seashell", "cockle", "marine life", "ocean", "engraving", "line art", "coastal", "nautical", "sublimation"]
+  }
+]

@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "source": "Wellcome Collection — 19th-century shell/conchology engravings",
+  "rightsEvidence": "Per-work Wellcome Collection catalogue API license + accessConditions, independently verified live for each item; snapshots in records/.",
+  "assets": [
+    {
+      "id": "wellcome-shells-shells-table-105-v1",
+      "workId": "aprq82su",
+      "iiifImageId": "V0020482EL",
+      "title": "A table with 105 different shells",
+      "creator": "R. Scott after Captain T. Brown",
+      "date": "19th century",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/aprq82su",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0020482EL/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 3153,
+      "iiifWidth": 1380,
+      "iiifHeight": 2176,
+      "originalFile": "originals/shells-table-105.jpg",
+      "originalSha256": "fbc111f02a95f883beb12c7c728a6189f117931a9960bf86306acb642e0b34c9",
+      "normalizedOutputSha256": "e369a198efb24dca5fee9b3c9b467e52a69bb15299e7fcd51561d70043c894a9",
+      "normalizedDimensions": {
+        "width": 1522,
+        "height": 2400
+      }
+    },
+    {
+      "id": "wellcome-shells-shells-table-79-v1",
+      "workId": "xypmd3ay",
+      "iiifImageId": "V0020482ER",
+      "title": "A table with 79 different shells",
+      "creator": "R. Scott after Captain T. Brown",
+      "date": "19th century",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/xypmd3ay",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0020482ER/info.json",
+      "originalWidth": 1600,
+      "originalHeight": 2534,
+      "iiifWidth": 1368,
+      "iiifHeight": 2167,
+      "originalFile": "originals/shells-table-79.jpg",
+      "originalSha256": "16d4146ae8c6cfe9b54cd4da8512cc02f7aab78cfa57c109b8b80acc771b6f70",
+      "normalizedOutputSha256": "d97a47a89f40478d3f077a3ca2b3c8d4d1812ccc4ce31e2e8f3d66b17e3e3793",
+      "normalizedDimensions": {
+        "width": 1515,
+        "height": 2400
+      }
+    },
+    {
+      "id": "wellcome-shells-shells-table-163-v1",
+      "workId": "cf8p5874",
+      "iiifImageId": "V0020487ER",
+      "title": "A table with 163 different shells (Organic Remains)",
+      "creator": "R. Scott after Captain T. Brown",
+      "date": "19th century",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/cf8p5874",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0020487ER/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 3208,
+      "iiifWidth": 1468,
+      "iiifHeight": 2355,
+      "originalFile": "originals/shells-table-163.jpg",
+      "originalSha256": "d8af4496d84d4d75c0a80b2ad556ff6a4d4863d962be81cdf194798fc217d259",
+      "normalizedOutputSha256": "a476053ff0a023e8d9d53f45806a87a3004847ef508c321e656f03c7c981f202",
+      "normalizedDimensions": {
+        "width": 1496,
+        "height": 2400
+      }
+    },
+    {
+      "id": "wellcome-shells-heart-shaped-shells-v1",
+      "workId": "pze62svc",
+      "iiifImageId": "V0021999",
+      "title": "A variety of heart-shaped shells (conche cordiformes)",
+      "creator": "unattributed",
+      "date": "19th century",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/pze62svc",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0021999/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 3304,
+      "iiifWidth": 2361,
+      "iiifHeight": 3900,
+      "originalFile": "originals/heart-shaped-shells.jpg",
+      "originalSha256": "ee41d5e5eb35082cbf107d5d6078c296c100da6899baf5d93678ab8b417063aa",
+      "normalizedOutputSha256": "108fc715983827387f027fe43df67d57cc622a605788c0fb3edaeadf1e731379",
+      "normalizedDimensions": {
+        "width": 1453,
+        "height": 2400
+      }
+    }
+  ]
+}
