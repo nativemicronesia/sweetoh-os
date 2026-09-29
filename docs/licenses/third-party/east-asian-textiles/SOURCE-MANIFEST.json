@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "source": "National Museum of World Cultures (Netherlands) — East/Central Asian textiles, via Europeana",
+  "rightsEvidence": "Per-item Europeana record edmRights + edmIsShownBy, independently verified live for each item; snapshots in records/.",
+  "assets": [
+    {
+      "id": "east-asian-textile-manchu-dragon-robe-v1",
+      "europeanaId": "2048221/europeana_fashion_760029",
+      "title": "Manchu dragon robe (Qing dynasty style, blue silk with gold embroidery)",
+      "sourceRecordUrl": "https://www.europeana.eu/item/2048221/europeana_fashion_760029",
+      "license": "CC0 1.0 Universal",
+      "licenseEvidence": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/RV/RV-3159-4.jpg",
+      "originalWidth": 4328,
+      "originalHeight": 2864,
+      "originalFile": "originals/manchu-dragon-robe.jpg",
+      "originalSha256": "969ed456107ddff752d18a4c2ecc1f5811d658bd7128c7301f87e5949aa932a8",
+      "normalizedOutputSha256": "d9a2e8e0f2c547dcd30a265006c33dee51bd72742d909891040a737105b997e5",
+      "normalizedDimensions": {
+        "width": 2400,
+        "height": 1588
+      }
+    },
+    {
+      "id": "east-asian-textile-gold-thread-shoulder-cloth-v1",
+      "europeanaId": "2048221/europeana_fashion_599979",
+      "title": "Shoulder cloth with typical Chinese embroidery of gold thread",
+      "sourceRecordUrl": "https://www.europeana.eu/item/2048221/europeana_fashion_599979",
+      "license": "CC0 1.0 Universal",
+      "licenseEvidence": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/RV/300-325.jpg",
+      "originalWidth": 707,
+      "originalHeight": 1000,
+      "originalFile": "originals/gold-thread-shoulder-cloth.jpg",
+      "originalSha256": "a404690ecd7ce4b291f6ab5407a9ce376d3c5890a3043afb123e8a7a4f0f5724",
+      "normalizedOutputSha256": "1064c92c8fcf2695f9fc900140c58960e1ce11c0dc7fdfe82451bd82f9872bca",
+      "normalizedDimensions": {
+        "width": 707,
+        "height": 1000
+      }
+    },
+    {
+      "id": "east-asian-textile-brocade-jacket-v1",
+      "europeanaId": "2048221/europeana_fashion_656345",
+      "title": "Red silk brocade jacket with gold star motifs",
+      "sourceRecordUrl": "https://www.europeana.eu/item/2048221/europeana_fashion_656345",
+      "license": "CC0 1.0 Universal",
+      "licenseEvidence": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/RV/RV-370-2871.jpg",
+      "originalWidth": 5120,
+      "originalHeight": 2296,
+      "originalFile": "originals/brocade-jacket.jpg",
+      "originalSha256": "49ec7a102f2c48111d261fced29a2fc7604a359cb0bcf1621f5ffbff0ec0ec01",
+      "normalizedOutputSha256": "4ac84e0ef17efca2150447e215279ec35abb8e08f97e61f248c54d1f55d297fd",
+      "normalizedDimensions": {
+        "width": 2400,
+        "height": 1076
+      }
+    }
+  ]
+}

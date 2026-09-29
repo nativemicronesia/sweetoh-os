@@ -1,0 +1,26 @@
+[
+  {
+    "id": "manchu-dragon-robe",
+    "europeanaId": "2048221/europeana_fashion_760029",
+    "imageUrl": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/RV/RV-3159-4.jpg",
+    "title": "Manchu dragon robe (Qing dynasty style, blue silk with gold embroidery)",
+    "category": "Illustrations",
+    "tags": ["dragon robe", "Manchu", "Qing dynasty", "Chinese textile", "silk embroidery", "dragon motif", "historical costume", "global folk art", "sublimation"]
+  },
+  {
+    "id": "gold-thread-shoulder-cloth",
+    "europeanaId": "2048221/europeana_fashion_599979",
+    "imageUrl": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/RV/300-325.jpg",
+    "title": "Shoulder cloth with typical Chinese embroidery of gold thread",
+    "category": "Patterns",
+    "tags": ["ikat-style weave", "paisley border", "gold thread embroidery", "shoulder cloth", "Chinese textile", "global folk art", "sublimation"]
+  },
+  {
+    "id": "brocade-jacket",
+    "europeanaId": "2048221/europeana_fashion_656345",
+    "imageUrl": "http://collectie.wereldculturen.nl/cc/imageproxy.ashx?server=localhost&port=17581&filename=images//Images/RV/RV-370-2871.jpg",
+    "title": "Red silk brocade jacket with gold star motifs",
+    "category": "Patterns",
+    "tags": ["brocade", "silk", "star motif", "floral pattern", "Chinese textile", "global folk art", "sublimation"]
+  }
+]
