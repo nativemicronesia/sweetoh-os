@@ -157,7 +157,7 @@ export function PartnerFrame({
   useEffect(() => setMenuOpen(false), [path]);
 
   // The product editor is full screen with its own top bar, like Printify's.
-  if (editor) return <div className="sweetoh-studio pf-root pf-editor-root"><div className="pf-editor-feedback"><FeedbackCapture /></div>{children}</div>;
+  if (editor) return <div className="sweetoh-studio pf-root pf-editor-root">{children}</div>;
 
   const link = (item: NavItem) => {
     const Icon = item.icon;

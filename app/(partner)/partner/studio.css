@@ -155,6 +155,7 @@
 .pe-title{display:flex;flex-direction:column;min-width:0;flex:1}.pe-title input{font-size:16px;font-weight:700;letter-spacing:-.01em;border:1px solid transparent;border-radius:6px;padding:2px 6px;margin-left:-6px;max-width:460px;background:transparent;color:var(--pf-text)}.pe-title input:hover{border-color:var(--pf-border)}.pe-title input:focus{outline:none;border-color:var(--pf-primary);background:#fff}
 .pe-title span{font-size:12px;color:var(--pf-muted);padding-left:1px}
 .pe-top-actions{display:flex;align-items:center;gap:8px}
+.pe-top-feedback{flex:none}
 .pe-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:38px;padding:0 16px;border-radius:8px;font-size:13px;font-weight:600;white-space:nowrap;transition:background .15s,border-color .15s,opacity .15s}
 .pe-btn:disabled{opacity:.45;cursor:default}
 .pe-btn-primary{background:var(--pf-primary);color:#fff}.pe-btn-primary:not(:disabled):hover{background:var(--pf-primary-hover)}

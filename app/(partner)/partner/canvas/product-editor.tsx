@@ -113,6 +113,7 @@ import { ProductSetup } from "./product-setup";
 import { CropDialog, type CropPixels } from "./crop-dialog";
 import { AssetLibraryPanel } from "./asset-library-panel";
 import type { StudioCreativeAssetOption } from "@/lib/studio/creative-library-browser";
+import { FeedbackCapture } from "../components/feedback-capture";
 
 type Area = StudioSurface["area"];
 type Surface = StudioLayout["surfaces"][number];
@@ -2250,6 +2251,7 @@ export function ProductEditor({
               Continue to pricing
             </button>
           )}
+          <div className="pe-top-feedback"><FeedbackCapture /></div>
         </div>
       </header>
 

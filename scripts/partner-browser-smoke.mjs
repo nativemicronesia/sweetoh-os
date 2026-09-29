@@ -351,6 +351,16 @@ try {
     await page.goto(`${origin}/partner/canvas`, { waitUntil: "commit", timeout: 90_000 });
     await page.locator(".pe-stage canvas.lower-canvas").waitFor({ state: "visible", timeout: 60_000 });
     await page.getByText("Loading product…", { exact: true }).waitFor({ state: "detached", timeout: 45_000 });
+    const desktopToolbarLayout = await page.evaluate(() => {
+      const feedback = document.querySelector(".pe-top-feedback")?.getBoundingClientRect();
+      const primary = [...document.querySelectorAll(".pe-top-actions button")].find((button) => button.textContent?.includes("Continue to pricing"))?.getBoundingClientRect();
+      const actions = document.querySelector(".pe-top-actions")?.getBoundingClientRect();
+      const overlaps = Boolean(feedback && primary && feedback.left < primary.right && feedback.right > primary.left && feedback.top < primary.bottom && feedback.bottom > primary.top);
+      return { width: innerWidth, horizontalOverflow: document.documentElement.scrollWidth > innerWidth, feedbackInToolbar: Boolean(feedback && actions && feedback.left >= actions.left && feedback.right <= actions.right), primaryActionVisible: Boolean(primary && primary.width > 0), overlaps };
+    });
+    if (!desktopToolbarLayout.feedbackInToolbar || !desktopToolbarLayout.primaryActionVisible || desktopToolbarLayout.overlaps || desktopToolbarLayout.horizontalOverflow) {
+      throw new Error(`Studio feedback or pricing controls are obstructed in the desktop toolbar: ${JSON.stringify(desktopToolbarLayout)}`);
+    }
     const desktopViewport = await page.evaluate(() => ({ width: innerWidth, height: innerHeight, horizontalOverflow: document.documentElement.scrollWidth > innerWidth }));
     const assetLibraryButton = page.getByRole("button", { name: "Library", exact: true });
     await assetLibraryButton.waitFor({ state: "visible", timeout: 90_000 });
