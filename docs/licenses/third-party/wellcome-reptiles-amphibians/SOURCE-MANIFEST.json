@@ -1,0 +1,183 @@
+{
+  "schemaVersion": 1,
+  "source": "Wellcome Collection — 18th/19th-century reptile and amphibian engravings",
+  "rightsEvidence": "Per-work Wellcome Collection catalogue API license + accessConditions, independently verified live for each item; snapshots in records/.",
+  "assets": [
+    {
+      "id": "wellcome-reptiles-amphibians-edible-frog-tadpole-v1",
+      "workId": "zate8uc2",
+      "iiifImageId": "V0022773EL",
+      "title": "The edible frog with tadpole, tree frog with tadpole and horned frog",
+      "creator": "J. W. Lowry after C. Bone",
+      "date": "19th century",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/zate8uc2",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0022773EL/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 2935,
+      "iiifWidth": 1470,
+      "iiifHeight": 2157,
+      "originalFile": "originals/edible-frog-tadpole.jpg",
+      "originalSha256": "962c78c51d8453b859381d5761476a53430e4bc3b4687d90aa55672d0f9eebbd",
+      "normalizedOutputSha256": "e9083125fe2ae6d47e376483c6017392fe5277abf0fd6ba25d98d9f22c814cc5",
+      "normalizedDimensions": {
+        "width": 1635,
+        "height": 2400
+      }
+    },
+    {
+      "id": "wellcome-reptiles-amphibians-bull-frog-v1",
+      "workId": "zjhtrdjh",
+      "iiifImageId": "V0021245",
+      "title": "A bull frog",
+      "creator": "J. Heath",
+      "date": "1802",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/zjhtrdjh",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0021245/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 1429,
+      "iiifWidth": 3303,
+      "iiifHeight": 2360,
+      "originalFile": "originals/bull-frog.jpg",
+      "originalSha256": "27cea32e9fbdec7e872bc5d26e0af4b5eb3515addf35025f7d21c58f265f9339",
+      "normalizedOutputSha256": "d7c1ce207766ecd894ff6333fdb567cf0389cd8c84c6d60d6a86dc515d058cd2",
+      "normalizedDimensions": {
+        "width": 2000,
+        "height": 1429
+      }
+    },
+    {
+      "id": "wellcome-reptiles-amphibians-laced-lizard-australia-v1",
+      "workId": "wp5z86uw",
+      "iiifImageId": "V0022868",
+      "title": "A laced lizard in Australia",
+      "creator": "S. T. Edwards",
+      "date": "1789",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/wp5z86uw",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0022868/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 1496,
+      "iiifWidth": 3108,
+      "iiifHeight": 2324,
+      "originalFile": "originals/laced-lizard-australia.jpg",
+      "originalSha256": "7e79a3aa59dba894b2e894978b8144f54576a8a64b75057665107afc39d9afd5",
+      "normalizedOutputSha256": "3e4e2be972a8a00f995e810b7a51b8ee77b0641f0a0702198ae14df5a5de6980",
+      "normalizedDimensions": {
+        "width": 2000,
+        "height": 1496
+      }
+    },
+    {
+      "id": "wellcome-reptiles-amphibians-lizard-on-stone-v1",
+      "workId": "xffxxs7d",
+      "iiifImageId": "V0020515",
+      "title": "A lizard sitting on a stone",
+      "creator": "J. W. Whymper",
+      "date": "19th century",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/xffxxs7d",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0020515/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 2517,
+      "iiifWidth": 2454,
+      "iiifHeight": 3088,
+      "originalFile": "originals/lizard-on-stone.jpg",
+      "originalSha256": "1281087eeacb641853b127ae625412e3a3b425acfa8c25a0a2c853e0eb6537f1",
+      "normalizedOutputSha256": "ec146cab874d9bf8fcdbde8ee37fa662de877bc6e378e7041060e1a9a78a91ee",
+      "normalizedDimensions": {
+        "width": 1907,
+        "height": 2400
+      }
+    },
+    {
+      "id": "wellcome-reptiles-amphibians-snake-expanded-neck-v1",
+      "workId": "z6v69rju",
+      "iiifImageId": "V0022457",
+      "title": "A snake with expanded neck",
+      "creator": "unattributed",
+      "date": "ca. 1791",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/z6v69rju",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0022457/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 1276,
+      "iiifWidth": 3380,
+      "iiifHeight": 2156,
+      "originalFile": "originals/snake-expanded-neck.jpg",
+      "originalSha256": "21e76fd11c01b93e0502d9b10fb21d835e0b427f98bfe6c0f16cae6c6212246c",
+      "normalizedOutputSha256": "d405e65be29ca8db2ade18daa7296038a384cfd89e869c149b7b7d947849d0af",
+      "normalizedDimensions": {
+        "width": 2000,
+        "height": 1276
+      }
+    },
+    {
+      "id": "wellcome-reptiles-amphibians-indian-snake-bodroo-pam-v1",
+      "workId": "am2wj2s7",
+      "iiifImageId": "V0022452",
+      "title": "An Indian snake, Bodroo Pam",
+      "creator": "W. Skelton after Patrick Russell",
+      "date": "ca. 1796",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/am2wj2s7",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0022452/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 973,
+      "iiifWidth": 3800,
+      "iiifHeight": 1848,
+      "originalFile": "originals/indian-snake-bodroo-pam.jpg",
+      "originalSha256": "fa2de400f5ba11048626700d6283006bae173147fd7a2f26b2da81ee2bcfc7fe",
+      "normalizedOutputSha256": "65a5398471aa94ce84984374134324509f28606dc67b2cd24e2519cff1506894",
+      "normalizedDimensions": {
+        "width": 2000,
+        "height": 973
+      }
+    },
+    {
+      "id": "wellcome-reptiles-amphibians-indian-boa-snake-v1",
+      "workId": "y9ufz8dh",
+      "iiifImageId": "V0022453",
+      "title": "An Indian snake of the Boa genus, Gedi Paragoodoo",
+      "creator": "W. Skelton after Patrick Russell",
+      "date": "ca. 1796",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/y9ufz8dh",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0022453/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 1252,
+      "iiifWidth": 3353,
+      "iiifHeight": 2098,
+      "originalFile": "originals/indian-boa-snake.jpg",
+      "originalSha256": "60f5689dcf9261cdd5506709da5d54c2b327b3a00da3d434c90342a281fe03cc",
+      "normalizedOutputSha256": "5ca9d02e63c7c6dae0321dfe9007ffa5c8704c1b88b128991cd5166069ad6df5",
+      "normalizedDimensions": {
+        "width": 2000,
+        "height": 1252
+      }
+    },
+    {
+      "id": "wellcome-reptiles-amphibians-horned-viper-v1",
+      "workId": "f72jqpv3",
+      "iiifImageId": "V0022456",
+      "title": "A horned viper",
+      "creator": "unattributed",
+      "date": "ca. 1792",
+      "sourceWorkUrl": "https://wellcomecollection.org/works/f72jqpv3",
+      "license": "Public Domain Mark",
+      "licenseEvidence": "https://iiif.wellcomecollection.org/image/V0022456/info.json",
+      "originalWidth": 2000,
+      "originalHeight": 995,
+      "iiifWidth": 3778,
+      "iiifHeight": 1879,
+      "originalFile": "originals/horned-viper.jpg",
+      "originalSha256": "6e66dd7f968e0e5a9d33a045144628bf929fcef90578661ef7ccf08f5554256c",
+      "normalizedOutputSha256": "f68a6f2e6b404c3438f7a8666b58304a931240b1b7134fb924dc9309db08a6dc",
+      "normalizedDimensions": {
+        "width": 2000,
+        "height": 995
+      }
+    }
+  ]
+}
