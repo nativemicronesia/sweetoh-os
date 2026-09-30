@@ -38,13 +38,23 @@ export default async function PartnerLayout({
   });
   const isShop = pack.id !== "sweetoh_creator";
 
-  const [unread, newRequests, jobs] = isShop
-    ? await Promise.all([
-        countUnread(session.ventureId).catch(() => 0),
-        countNewRequests(session).catch(() => 0),
-        listFulfillmentJobs({ ventureId: session.ventureId, path: "sweetoh", statuses: ["new", "in_production", "ready_to_ship"] }).catch(() => []),
-      ])
-    : [0, 0, []];
+  let unread = 0;
+  let newRequests = 0;
+  let jobs: Awaited<ReturnType<typeof listFulfillmentJobs>> = [];
+  let updatesUnavailable = false;
+  if (isShop) {
+    const [unreadResult, requestResult, jobsResult] = await Promise.all([
+      countUnread(session.ventureId).then((value) => ({ value })).catch(() => ({ unavailable: true as const })),
+      countNewRequests(session).then((value) => ({ value })).catch(() => ({ unavailable: true as const })),
+      listFulfillmentJobs({ ventureId: session.ventureId, path: "sweetoh", statuses: ["new", "in_production", "ready_to_ship"] })
+        .then((value) => ({ value }))
+        .catch(() => ({ unavailable: true as const })),
+    ]);
+    unread = "value" in unreadResult ? unreadResult.value : 0;
+    newRequests = "value" in requestResult ? requestResult.value : 0;
+    jobs = "value" in jobsResult ? jobsResult.value : [];
+    updatesUnavailable = [unreadResult, requestResult, jobsResult].some((result) => "unavailable" in result);
+  }
   const onPress = jobs.filter(({ job }) => ["new", "in_production"].includes(job.status)).length;
   const toShip = jobs.filter(({ job }) => job.status === "ready_to_ship").length;
   const greeting = greetingOfTheDay();
@@ -55,7 +65,8 @@ export default async function PartnerLayout({
         ...(onPress > 0 ? [{ text: `${onPress} ${onPress === 1 ? "order" : "orders"} to make`, href: "/partner/orders" }] : []),
         ...(toShip > 0 ? [{ text: `${toShip} ready to ship`, href: "/partner/orders" }] : []),
         ...(newRequests > 0 ? [{ text: `${newRequests} new custom ${newRequests === 1 ? "request" : "requests"}`, href: "/partner/custom-requests" }] : []),
-        ...(!unread && !onPress && !toShip && !newRequests ? [{ text: "Everything is up to date" }] : []),
+        ...(updatesUnavailable ? [{ text: "Some shop updates couldn't load. Refresh to check." }] : []),
+        ...(!updatesUnavailable && !unread && !onPress && !toShip && !newRequests ? [{ text: "Everything is up to date" }] : []),
       ]
     : [];
 
