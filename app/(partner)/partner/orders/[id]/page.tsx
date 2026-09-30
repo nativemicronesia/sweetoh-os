@@ -10,6 +10,7 @@ import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
 import { formatPrice } from "@/lib/shared/format";
 import { ForbiddenError, NotFoundError } from "@/lib/shared/errors";
 import { updatePartnerFulfillmentJobStatusAction } from "../../actions/fulfillment";
+import { SubmitButton } from "../../components/submit-button";
 
 type PartnerOrderJobPageProps = {
   params: Promise<{ id: string }>;
@@ -191,13 +192,7 @@ export default async function PartnerOrderJobPage({
             />
           </label>
           <div className="md:col-span-2">
-            <button
-              type="submit"
-              className="rounded-full px-5 py-2.5 text-sm font-medium"
-              style={{ background: "var(--so-gold)", color: "var(--so-ink)" }}
-            >
-              Save
-            </button>
+            <SubmitButton className="h-10 rounded-full px-5" pendingLabel="Saving…">Save</SubmitButton>
           </div>
         </form>
       </section>

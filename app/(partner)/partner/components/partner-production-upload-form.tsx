@@ -1,3 +1,5 @@
+import { SubmitButton } from "./submit-button";
+
 type PartnerProductionUploadFormProps = {
   action: (formData: FormData) => Promise<void>;
 };
@@ -25,12 +27,7 @@ export function PartnerProductionUploadForm({
           JPEG, PNG, WebP, or GIF — max 10 MB
         </span>
       </label>
-      <button
-        type="submit"
-        className="rounded bg-emerald-800 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-900"
-      >
-        Upload
-      </button>
+      <SubmitButton className="rounded px-4" pendingLabel="Uploading…">Upload</SubmitButton>
     </form>
   );
 }
