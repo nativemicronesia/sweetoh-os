@@ -51,17 +51,11 @@ export default async function PartnerLayout({
 
   const pulse: PulseItem[] = isShop
     ? [
-        { text: `${greeting.greeting} — ${greeting.place}` },
-        unread > 0
-          ? { text: `${unread} new ${unread === 1 ? "message" : "messages"} in your inbox`, href: "/partner/inbox" }
-          : { text: "Inbox is all caught up", href: "/partner/inbox" },
-        onPress > 0 ? { text: `${onPress} ${onPress === 1 ? "order" : "orders"} to press`, href: "/partner/orders" } : { text: "No orders waiting on the press" },
+        ...(unread > 0 ? [{ text: `${unread} new ${unread === 1 ? "message" : "messages"}`, href: "/partner/inbox" }] : []),
+        ...(onPress > 0 ? [{ text: `${onPress} ${onPress === 1 ? "order" : "orders"} to make`, href: "/partner/orders" }] : []),
         ...(toShip > 0 ? [{ text: `${toShip} ready to ship`, href: "/partner/orders" }] : []),
-        ...(newRequests > 0
-          ? [{ text: `${newRequests} new custom ${newRequests === 1 ? "request" : "requests"}`, href: "/partner/custom-requests" }]
-          : []),
-        { text: "Made to order in Lacey, Washington" },
-        ...ISLAND_GREETINGS.filter((g) => g !== greeting).map((g) => ({ text: `${g.greeting} — ${g.place}` })),
+        ...(newRequests > 0 ? [{ text: `${newRequests} new custom ${newRequests === 1 ? "request" : "requests"}`, href: "/partner/custom-requests" }] : []),
+        ...(!unread && !onPress && !toShip && !newRequests ? [{ text: "Everything is up to date" }] : []),
       ]
     : [];
 

@@ -14,6 +14,7 @@ import {
   generatePartnerPieIntakeAction,
 } from "../actions/intelligence";
 import { bulkUploadLibraryDesignsAction } from "../actions/library";
+import { SubmitButton } from "../components/submit-button";
 
 /**
  * One Create screen. Photo lane and text lane share the same PIE pipeline
@@ -153,14 +154,9 @@ export default async function PartnerCreatePage({
               }}
             />
           </label>
-          <button
-            type="submit"
-            disabled={!photoReady}
-            className="rounded-full px-5 py-2.5 text-sm font-medium disabled:opacity-60"
-            style={{ background: "var(--so-gold)", color: "var(--so-ink)" }}
-          >
+          <SubmitButton pendingLabel="Preparing your draft…" disabled={!photoReady}>
             Prepare listing from photo
-          </button>
+          </SubmitButton>
         </form>
       </section>
 
@@ -194,14 +190,9 @@ export default async function PartnerCreatePage({
               }}
             />
           </label>
-          <button
-            type="submit"
-            disabled={!aiReady}
-            className="rounded-full border px-5 py-2.5 text-sm font-medium disabled:opacity-60"
-            style={{ borderColor: "var(--so-gold-dim)", color: "var(--so-gold)" }}
-          >
+          <SubmitButton pendingLabel="Drafting your listing…" disabled={!aiReady} variant="outline">
             Prepare listing from text
-          </button>
+          </SubmitButton>
         </form>
       </section>
 
@@ -239,13 +230,9 @@ export default async function PartnerCreatePage({
               from the filename.
             </span>
           </label>
-          <button
-            type="submit"
-            className="rounded-full px-5 py-2.5 text-sm font-medium"
-            style={{ background: "var(--so-violet)", color: "var(--so-ink)" }}
-          >
+          <SubmitButton pendingLabel="Uploading designs…">
             Upload to library
-          </button>
+          </SubmitButton>
         </form>
       </section>
 

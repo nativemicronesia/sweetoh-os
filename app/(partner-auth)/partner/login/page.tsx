@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/domains/identity/service";
 import { signInAction } from "@/app/(partner)/partner/actions/auth";
-import { listBestsellerBlueprints } from "@/lib/integrations/printify/catalog";
+import { listBestsellerBlueprints, type Blueprint } from "@/lib/integrations/printify/catalog";
 import { MadeToOrderSticker } from "@/app/(store)/components/store-hero";
 import { ISLAND_GREETINGS } from "@/lib/shared/island-greetings";
 import "./login.css";
@@ -10,6 +10,21 @@ import "./login.css";
 type PartnerLoginPageProps = {
   searchParams: Promise<{ error?: string }>;
 };
+
+/** Login must remain available when the optional storefront collage/API is slow or unconfigured. */
+async function loadOptionalLoginPicks(): Promise<Blueprint[]> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      listBestsellerBlueprints().catch(() => []),
+      new Promise<Blueprint[]>((resolve) => {
+        timer = setTimeout(() => resolve([]), 900);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
 
 /**
  * Public partner login — outside the authed partner layout so unauthenticated
@@ -38,7 +53,7 @@ export default async function PartnerLoginPage({
         ? decodeURIComponent(params.error)
         : null;
 
-  const picks = await listBestsellerBlueprints();
+  const picks = await loadOptionalLoginPicks();
   const greeting = ISLAND_GREETINGS[Math.floor(Date.now() / 86_400_000) % ISLAND_GREETINGS.length];
 
   return (

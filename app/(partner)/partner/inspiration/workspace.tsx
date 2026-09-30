@@ -8,35 +8,37 @@ type Item = { id: string; name: string; note: string | null; previewUrl: string;
 export function InspirationWorkspace({ initialItems, initialError }: { initialItems: Item[]; initialError: string | null }) {
   const [items, setItems] = useState(initialItems);
   const [message, setMessage] = useState(initialError ?? "");
+  const [messageIsError, setMessageIsError] = useState(Boolean(initialError));
   const [busy, setBusy] = useState(false);
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
-    setBusy(true); setMessage("");
+    setBusy(true); setMessage(""); setMessageIsError(false);
     try {
       const result = await addPartnerInspirationAction(new FormData(form));
-      if (!result.ok) { setMessage(result.error); return; }
+      if (!result.ok) { setMessage(result.error); setMessageIsError(true); return; }
       setItems(current => [result.item, ...current.filter(item => item.id !== result.item.id)]);
       form.reset();
       setMessage("Saved privately as inspiration. It is not a Studio asset or approved artwork.");
     } catch {
       setMessage("Couldn’t save that image. Please try again.");
+      setMessageIsError(true);
     } finally {
       setBusy(false);
     }
   }
   return <section>
     <header className="studio-page-heading"><div><p className="studio-kicker">PRIVATE WORKSPACE</p><h1>Inspiration</h1><p>Keep screenshots and images that help explain what you like or want to make. References stay private and are never published or added to your reusable asset library.</p></div></header>
-    <form method="post" onSubmit={submit} className="pf-card" style={{ maxWidth: 720, display: "grid", gap: 12, padding: 20 }}>
+    <form method="post" onSubmit={submit} aria-busy={busy} className="pf-card" style={{ maxWidth: 720, display: "grid", gap: 12, padding: 20 }}>
       <label>Image or screenshot<input name="photo" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif" required /></label>
       <label>Optional note<textarea name="note" maxLength={1000} rows={3} placeholder="What do you like, want to learn from, or hope to create?" /></label>
-      <button type="submit" className="pf-btn pf-btn-primary" disabled={busy}>{busy ? "Saving…" : "Save inspiration"}</button>
-      {message && <p role="status" aria-live="polite">{message}</p>}
+      <button type="submit" className="pf-btn pf-btn-primary" disabled={busy} aria-busy={busy}>{busy ? "Saving…" : "Save inspiration"}</button>
+      {message && <p role={messageIsError ? "alert" : "status"} aria-live={messageIsError ? "assertive" : "polite"}>{message}</p>}
       <small>Private reference only · not approved Creative Library material · not used as artwork automatically</small>
     </form>
     <h2 style={{ marginTop: 28 }}>Saved references</h2>
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(180px,1fr))", gap: 14 }}>
-      {items.map(item => <article className="pf-card" key={item.id} style={{ overflow: "hidden" }}><img src={item.previewUrl} alt={`Private inspiration: ${item.name}`} style={{ width: "100%", height: 150, objectFit: "cover" }} /><div style={{ padding: 12 }}><strong>{item.name}</strong>{item.note && <p>{item.note}</p>}<small>Private reference</small></div></article>)}
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(min(100%, 180px),1fr))", gap: 14 }}>
+      {items.map(item => <article className="pf-card" key={item.id} style={{ overflow: "hidden" }}><img src={item.previewUrl} alt={`Private inspiration: ${item.name}`} loading="lazy" decoding="async" style={{ width: "100%", height: 150, objectFit: "contain", background: "var(--pf-bg)" }} /><div style={{ padding: 12, overflowWrap: "anywhere" }}><strong>{item.name}</strong>{item.note && <p>{item.note}</p>}<small>Private reference</small></div></article>)}
       {!items.length && <p>No inspiration saved yet.</p>}
     </div>
   </section>;

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ImageIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
+import { SubmitButton } from "../components/submit-button";
 import { FlashBanner } from "@/app/(owner)/owner/components/flash-banner";
 import { listPartnerLibraryDesigns } from "@/lib/domains/catalog/partner-design-library";
 import { canModerateListings } from "@/lib/domains/catalog/partner-listings";
@@ -73,13 +74,9 @@ export default async function PartnerLibraryPage({ searchParams }: PageProps) {
             File
             <input name="file" type="file" accept="image/*" required className="mt-1 w-full text-sm" />
           </label>
-          <button
-            type="submit"
-            className="rounded-lg px-4 py-2 text-sm font-medium"
-            style={{ background: "var(--so-gold)", color: "var(--so-ink)" }}
-          >
+          <SubmitButton pendingLabel="Uploading…">
             {canApprove ? "Upload to library" : "Upload draft"}
-          </button>
+          </SubmitButton>
         </form>
       </details>
 
@@ -113,6 +110,8 @@ export default async function PartnerLibraryPage({ searchParams }: PageProps) {
                       src={design.previewUrl}
                       alt={design.name}
                       className="h-full w-full object-contain"
+                      loading="lazy"
+                      decoding="async"
                     />
                   ) : (
                     <div
@@ -158,19 +157,12 @@ export default async function PartnerLibraryPage({ searchParams }: PageProps) {
                     {canApprove && design.status === "draft" ? (
                       <form action={approveLibraryDesignAction}>
                         <input type="hidden" name="assetId" value={design.id} />
-                        <button
-                          type="submit"
-                          className={buttonVariants({ size: "sm", variant: "outline" })}
-                        >
-                          Approve
-                        </button>
+                        <SubmitButton pendingLabel="Approving…" variant="outline">Approve</SubmitButton>
                       </form>
                     ) : null}
                     <form action={removeLibraryDesignAction}>
                       <input type="hidden" name="assetId" value={design.id} />
-                      <button type="submit" className={buttonVariants({ size: "sm", variant: "outline" })}>
-                        Remove
-                      </button>
+                      <SubmitButton pendingLabel="Hiding…" variant="outline">Hide file</SubmitButton>
                     </form>
                   </div>
                 </div>

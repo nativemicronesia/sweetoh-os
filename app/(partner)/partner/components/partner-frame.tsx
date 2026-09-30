@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -98,19 +98,16 @@ function creatorNav(): NavItem[] {
   }));
 }
 
-/** Thin lagoon ticker of live shop facts — the back-office twin of the shop's announcement bar. */
+/** Compact shop updates that link directly to the work needing attention. */
 function PulseBar({ items }: { items: PulseItem[] }) {
   if (!items.length) return null;
-  const row = items.map((item, i) => (
-    <span key={`${item.text}-${i}`}>
-      {item.href ? <Link href={item.href} tabIndex={-1}>{item.text}</Link> : item.text}
-      <i aria-hidden>✦</i>
-    </span>
-  ));
   return (
-    <div className="pf-pulse so-marquee" aria-label={items.map((i) => i.text).join(". ")}>
-      <div className="so-marquee-track" aria-hidden>{row}</div>
-      <div className="so-marquee-track" aria-hidden>{row}</div>
+    <div className="pf-pulse" role="group" aria-label="Shop updates">
+      {items.map((item, i) => (
+        <span key={`${item.text}-${i}`}>
+          {item.href ? <Link href={item.href}>{item.text}</Link> : item.text}
+        </span>
+      ))}
     </div>
   );
 }
@@ -151,10 +148,21 @@ export function PartnerFrame({
   const path = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [assistantOpen, setAssistantOpen] = useState(false);
+  const menuButton = useRef<HTMLButtonElement>(null);
   const nav = packId === "sweetoh_creator" ? creatorNav() : PARTNER_NAV;
   const editor = path === "/partner/canvas";
 
   useEffect(() => setMenuOpen(false), [path]);
+  useEffect(() => {
+    if (!menuOpen) return;
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key !== "Escape") return;
+      setMenuOpen(false);
+      menuButton.current?.focus();
+    }
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [menuOpen]);
 
   // The product editor is full screen with its own top bar, like Printify's.
   if (editor) return <div className="sweetoh-studio pf-root pf-editor-root">{children}</div>;
@@ -186,6 +194,7 @@ export function PartnerFrame({
       <PulseBar items={pulse} />
       <header className="pf-topbar">
         <button
+          ref={menuButton}
           className="pf-icon-btn pf-menu-btn"
           aria-label={menuOpen ? "Close menu" : "Open menu"}
           aria-expanded={menuOpen}
@@ -197,9 +206,9 @@ export function PartnerFrame({
           Sweet&apos;Oh <em>Creations</em>
           <span className="pf-logo-tag pf-hide-sm">Back office</span>
         </Link>
-        <Link href="/" target="_blank" className="pf-store" title="Your shop is live — open it">
-          <span className="pf-store-dot" aria-hidden="true" />
-          {storeName} is live
+        <Link href="/" target="_blank" rel="noreferrer" className="pf-store" title={`Open ${storeName} storefront in a new tab`}>
+          <ExternalLink size={14} aria-hidden="true" />
+          <span>View storefront</span>
         </Link>
         <div className="pf-topbar-actions">
           <button
