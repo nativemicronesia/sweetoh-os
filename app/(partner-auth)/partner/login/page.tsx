@@ -51,7 +51,7 @@ export default async function PartnerLoginPage({
     params.error === "partner_only"
       ? "This login is only for the Sweet’Oh partner."
       : params.error
-        ? decodeURIComponent(params.error)
+        ? params.error
         : null;
 
   const picks = await loadOptionalLoginPicks();

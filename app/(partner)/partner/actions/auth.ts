@@ -16,18 +16,33 @@ export async function signInAction(formData: FormData): Promise<void> {
   const password = String(formData.get("password") ?? "");
 
   if (!email || !password) {
-    redirectLoginError("Email and password are required.");
+    redirectLoginError("Enter your email and password to sign in.");
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  let authError: { status?: number } | null;
+  try {
+    ({ error: authError } = await supabase.auth.signInWithPassword({ email, password }));
+  } catch {
+    redirectLoginError("We couldn't connect to sign in. Check your connection and try again.");
+  }
 
-  if (error) {
-    redirectLoginError(error.message);
+  if (authError) {
+    redirectLoginError(
+      authError.status === 400
+        ? "That email and password didn't match. Check your details and try again."
+        : "Sign-in couldn't be completed just now. Please try again in a moment.",
+    );
   }
 
   // Only the Sweet'Oh partner may use this login; don't leave anyone else signed in.
-  const session = await getSessionUser().catch(() => null);
+  let session;
+  try {
+    session = await getSessionUser();
+  } catch {
+    await supabase.auth.signOut().catch(() => undefined);
+    redirectLoginError("We couldn't verify your account just now. Please try signing in again.");
+  }
   if (session?.role !== "partner") {
     await supabase.auth.signOut();
     redirect("/partner/login?error=partner_only");
