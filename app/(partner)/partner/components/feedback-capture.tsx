@@ -21,7 +21,7 @@ export function FeedbackCapture() {
         <label htmlFor="partner-feedback-note">Your note</label><textarea id="partner-feedback-note" name="message" aria-label="Your note" required minLength={3} maxLength={3000} rows={4} placeholder="What happened or what would help?" />
         <label>Workflow context (optional)<input name="workflowContext" maxLength={500} placeholder="For example: editing a product design" /></label>
         <small>Current page is attached automatically: {path}</small>
-        <SubmitButton pendingLabel="Sending…">Send feedback</SubmitButton>
+        <SubmitButton className="pf-btn pf-btn-primary" pendingLabel="Sending…">Send feedback</SubmitButton>
         {notice === "sent" && <p role="status">Sent to the improvement inbox. No AI was used.</p>}
         {notice === "error" && <p role="alert">{search.get("feedbackMessage") ?? "Couldn’t save that. Please try again."}</p>}
       </form>

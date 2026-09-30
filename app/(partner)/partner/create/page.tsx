@@ -154,7 +154,7 @@ export default async function PartnerCreatePage({
               }}
             />
           </label>
-          <SubmitButton pendingLabel="Preparing your draft…" disabled={!photoReady}>
+          <SubmitButton className="h-10 rounded-full px-5" pendingLabel="Preparing your draft…" disabled={!photoReady}>
             Prepare listing from photo
           </SubmitButton>
         </form>
@@ -190,7 +190,7 @@ export default async function PartnerCreatePage({
               }}
             />
           </label>
-          <SubmitButton pendingLabel="Drafting your listing…" disabled={!aiReady} variant="outline">
+          <SubmitButton className="h-10 rounded-full px-5" pendingLabel="Drafting your listing…" disabled={!aiReady} variant="outline">
             Prepare listing from text
           </SubmitButton>
         </form>
@@ -230,7 +230,7 @@ export default async function PartnerCreatePage({
               from the filename.
             </span>
           </label>
-          <SubmitButton pendingLabel="Uploading designs…">
+          <SubmitButton className="h-10 rounded-full px-5" pendingLabel="Uploading designs…">
             Upload to library
           </SubmitButton>
         </form>

@@ -342,17 +342,17 @@ export default async function PartnerReviewDetailPage({
             {canModerate && isPending && !isOwn ? (
               <>
                 <form action={approveListing}>
-                  <SubmitButton pendingLabel="Approving & publishing…">Approve &amp; publish</SubmitButton>
+                  <SubmitButton className="rounded-full px-4 py-2" pendingLabel="Approving & publishing…">Approve &amp; publish</SubmitButton>
                 </form>
                 <form action={rejectListing}>
-                  <SubmitButton variant="outline" pendingLabel="Rejecting…">Reject</SubmitButton>
+                  <SubmitButton className="rounded-full px-4 py-2" variant="outline" pendingLabel="Rejecting…">Reject</SubmitButton>
                 </form>
               </>
             ) : null}
 
             {isOwn && !product.active && !canModerate ? (
               <form action={submitForReview}>
-                <SubmitButton pendingLabel="Submitting…">Submit for review</SubmitButton>
+                <SubmitButton className="rounded-full px-4 py-2" pendingLabel="Submitting…">Submit for review</SubmitButton>
               </form>
             ) : null}
 

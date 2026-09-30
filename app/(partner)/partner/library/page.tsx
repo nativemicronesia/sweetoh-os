@@ -74,7 +74,7 @@ export default async function PartnerLibraryPage({ searchParams }: PageProps) {
             File
             <input name="file" type="file" accept="image/*" required className="mt-1 w-full text-sm" />
           </label>
-          <SubmitButton pendingLabel="Uploading…">
+          <SubmitButton className="rounded-full px-4" pendingLabel="Uploading…">
             {canApprove ? "Upload to library" : "Upload draft"}
           </SubmitButton>
         </form>
@@ -157,12 +157,12 @@ export default async function PartnerLibraryPage({ searchParams }: PageProps) {
                     {canApprove && design.status === "draft" ? (
                       <form action={approveLibraryDesignAction}>
                         <input type="hidden" name="assetId" value={design.id} />
-                        <SubmitButton pendingLabel="Approving…" variant="outline">Approve</SubmitButton>
+                        <SubmitButton size="sm" pendingLabel="Approving…" variant="outline">Approve</SubmitButton>
                       </form>
                     ) : null}
                     <form action={removeLibraryDesignAction}>
                       <input type="hidden" name="assetId" value={design.id} />
-                      <SubmitButton pendingLabel="Hiding…" variant="outline">Hide file</SubmitButton>
+                      <SubmitButton size="sm" pendingLabel="Hiding…" variant="outline">Hide file</SubmitButton>
                     </form>
                   </div>
                 </div>

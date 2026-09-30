@@ -8,6 +8,8 @@ export function SubmitButton({
   name,
   value,
   variant = "default",
+  size = "lg",
+  className,
 }: {
   children: React.ReactNode;
   pendingLabel?: string;
@@ -15,15 +17,18 @@ export function SubmitButton({
   name?: string;
   value?: string;
   variant?: "default" | "outline";
+  size?: "sm" | "lg";
+  className?: string;
 }) {
   const { pending } = useFormStatus();
   return (
     <Button
       type="submit"
-      size="lg"
+      size={size}
       name={name}
       value={value}
       variant={variant}
+      className={className}
       disabled={disabled || pending}
       aria-busy={pending}
     >
