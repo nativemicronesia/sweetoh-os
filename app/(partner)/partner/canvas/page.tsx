@@ -18,7 +18,7 @@ import { inferSurfaceImageRole, studioMatchesProductPrintArea } from "@/lib/doma
 export const maxDuration = 180;
 
 type PageProps = {
-  searchParams: Promise<{ design?: string; blank?: string; composition?: string; template?: string; targetDraft?: string; error?: string }>;
+  searchParams: Promise<{ design?: string; blank?: string; composition?: string; template?: string; targetDraft?: string; returnTo?: string; orderId?: string; error?: string }>;
 };
 
 export default async function PartnerCanvasPage({ searchParams }: PageProps) {
@@ -90,6 +90,26 @@ export default async function PartnerCanvasPage({ searchParams }: PageProps) {
   const compatibleProductDrafts = privateProductDrafts.filter((draft) =>
     draft.id === query.targetDraft || Boolean(designGeometry && studioMatchesProductPrintArea(designGeometry, draft.printArea))
   );
+  const returnToProductId = compatibleProductDrafts.some((draft) => draft.id === query.targetDraft)
+    ? query.targetDraft
+    : null;
+  const returnToOrderId = query.returnTo === "order" && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(query.orderId ?? "")
+    ? query.orderId
+    : null;
+  const returnHref = returnToProductId
+    ? `/partner/review/${returnToProductId}`
+    : returnToOrderId
+      ? `/partner/orders/${returnToOrderId}`
+      : query.composition || query.template || query.design
+      ? "/partner/library"
+      : "/partner/catalog";
+  const returnLabel = returnToProductId
+    ? "Back to product"
+    : returnToOrderId
+      ? "Back to order"
+      : query.composition || query.template || query.design
+      ? "Back to My files"
+      : "Back to catalog";
   const sourceDesign = query.template ? designs.find((design) => design.id === query.template) : null;
   const fallbackNotice = preparedCopy && (preparedCopy.removedAssetCount || preparedCopy.fontFallbackCount)
     ? [
@@ -143,6 +163,8 @@ export default async function PartnerCanvasPage({ searchParams }: PageProps) {
           rightsFallbackNotice={fallbackNotice}
           initialDesignId={savedComposition?.designAssetId ?? query.design ?? null}
           initialBlankId={query.targetDraft ?? savedComposition?.blankProductId ?? query.blank ?? null}
+          returnHref={returnHref}
+          returnLabel={returnLabel}
           initialTransform={
             savedComposition
               ? {

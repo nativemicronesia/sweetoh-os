@@ -172,6 +172,8 @@ type Props = {
   privateProductDrafts?: { id: string; name: string }[];
   initialApplyTargetId?: string | null;
   creativeAssets?: StudioCreativeAssetOption[];
+  returnHref?: string;
+  returnLabel?: string;
 };
 type Selected =
   | null
@@ -343,6 +345,8 @@ export function ProductEditor({
   privateProductDrafts = [],
   initialApplyTargetId = null,
   creativeAssets = [],
+  returnHref: requestedReturnHref,
+  returnLabel: requestedReturnLabel,
   mode = "partner",
   initialName = null,
   draftScope = "fresh",
@@ -351,6 +355,8 @@ export function ProductEditor({
   PublishPanel,
 }: Props) {
   const base = mode === "creator" ? { catalog: "/studio/catalog", canvas: "/studio/design" } : { catalog: "/partner/catalog", canvas: "/partner/canvas" };
+  const returnHref = requestedReturnHref ?? base.catalog;
+  const returnLabel = requestedReturnLabel ?? "Back to catalog";
   const [publishOpen, setPublishOpen] = useState(false);
   /** Local autosave, so a closed tab or a crash never costs someone their work. */
   const draftKey = `sweetoh:draft:${initialBlankId ?? blanks[0]?.id ?? "new"}:${draftScope}`;
@@ -2217,7 +2223,7 @@ export function ProductEditor({
   return (
     <div className="pe">
       <header className="pe-top">
-        <Link href={base.catalog} className="pe-icon-btn" aria-label="Back to catalog" title="Back to catalog">
+        <Link href={returnHref} className="pe-icon-btn" aria-label={returnLabel} title={returnLabel}>
           <ArrowLeft size={18} />
         </Link>
         <div className="pe-title">

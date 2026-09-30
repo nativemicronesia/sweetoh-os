@@ -96,7 +96,7 @@ export default async function PartnerOrderJobPage({
             {lineItem.size ? <div><dt>Size</dt><dd>{lineItem.size}</dd></div> : null}
             <div><dt>Quantity</dt><dd>{lineItem.quantity}</dd></div>
           </dl>
-          {source?.compositionLayout ? <Link className="studio-primary" href={`/partner/canvas?composition=${source.id}`}>Open design & download print files</Link> : sourceUrl ? <a href={sourceUrl} target="_blank" rel="noreferrer" className="so-link">Open source artwork ↗</a> : <p className="text-sm so-muted">No artwork attached to this product.</p>}
+          {source?.compositionLayout ? <Link className="studio-primary" href={`/partner/canvas?composition=${source.id}&returnTo=order&orderId=${job.id}`}>Open design &amp; download print files</Link> : sourceUrl ? <a href={sourceUrl} target="_blank" rel="noreferrer" className="so-link">Open source artwork ↗</a> : <p className="text-sm so-muted">No artwork attached to this product.</p>}
         </div>
       </section>
       <section className="rounded-xl border bg-white p-6" style={{ borderColor: "var(--so-border)" }}>
