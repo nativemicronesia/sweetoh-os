@@ -287,7 +287,7 @@ export function buildStudioChatTools(session: SessionUser): ConversationTool[] {
         const row = await updatePartnerJobStatus(session, {
           jobId: orderId,
           status,
-          trackingNumber,
+          trackingNumber: typeof input.trackingNumber === "string" ? trackingNumber : undefined,
         });
 
         return ok(`Order marked ${row.status.replaceAll("_", " ")}`, {

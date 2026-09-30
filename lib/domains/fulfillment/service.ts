@@ -1,12 +1,12 @@
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import {
+  auditEvent,
   fulfillmentEvent,
   fulfillmentJob,
   order,
   orderLineItem,
 } from "@/lib/db/schema";
-import { recordAuditEvent } from "@/lib/domains/audit/service";
 import { NotFoundError } from "@/lib/shared/errors";
 
 export type FulfillmentPath = "dropship" | "sweetoh";
@@ -17,6 +17,25 @@ export type FulfillmentJobStatus =
   | "shipped"
   | "delivered"
   | "cancelled";
+
+/** Omitted fields preserve existing shipping details; explicit null clears them. */
+export function buildFulfillmentJobStatusUpdate(
+  input: {
+    status: FulfillmentJobStatus;
+    trackingNumber?: string | null;
+    trackingUrl?: string | null;
+    notes?: string | null;
+  },
+  updatedAt = new Date(),
+) {
+  return {
+    status: input.status,
+    updatedAt,
+    ...(input.trackingNumber !== undefined ? { trackingNumber: input.trackingNumber } : {}),
+    ...(input.trackingUrl !== undefined ? { trackingUrl: input.trackingUrl } : {}),
+    ...(input.notes !== undefined ? { notes: input.notes } : {}),
+  };
+}
 
 export async function listFulfillmentJobs(input: {
   ventureId: string;
@@ -85,44 +104,40 @@ export async function updateFulfillmentJobStatus(input: {
 }) {
   const db = getDb();
 
-  const [row] = await db
-    .update(fulfillmentJob)
-    .set({
+  return db.transaction(async (tx) => {
+    const [row] = await tx
+      .update(fulfillmentJob)
+      .set(buildFulfillmentJobStatusUpdate(input))
+      .where(
+        and(
+          eq(fulfillmentJob.id, input.jobId),
+          eq(fulfillmentJob.ventureId, input.ventureId),
+        ),
+      )
+      .returning();
+
+    if (!row) {
+      throw new NotFoundError("Fulfillment job not found");
+    }
+
+    await tx.insert(fulfillmentEvent).values({
+      fulfillmentJobId: row.id,
       status: input.status,
-      trackingNumber: input.trackingNumber ?? null,
-      trackingUrl: input.trackingUrl ?? null,
-      notes: input.notes ?? null,
-      updatedAt: new Date(),
-    })
-    .where(
-      and(
-        eq(fulfillmentJob.id, input.jobId),
-        eq(fulfillmentJob.ventureId, input.ventureId),
-      ),
-    )
-    .returning();
+      note: input.notes ?? null,
+      actorUserId: input.actorUserId,
+    });
 
-  if (!row) {
-    throw new NotFoundError("Fulfillment job not found");
-  }
+    await tx.insert(auditEvent).values({
+      ventureId: input.ventureId,
+      actorUserId: input.actorUserId,
+      action: "fulfillment_job.status_updated",
+      entityType: "fulfillment_job",
+      entityId: row.id,
+      metadata: { status: input.status },
+    });
 
-  await db.insert(fulfillmentEvent).values({
-    fulfillmentJobId: row.id,
-    status: input.status,
-    note: input.notes ?? null,
-    actorUserId: input.actorUserId,
+    return row;
   });
-
-  await recordAuditEvent({
-    ventureId: input.ventureId,
-    actorUserId: input.actorUserId,
-    action: "fulfillment_job.status_updated",
-    entityType: "fulfillment_job",
-    entityId: row.id,
-    metadata: { status: input.status },
-  });
-
-  return row;
 }
 
 export async function countPartnerSweetohJobs(input: {

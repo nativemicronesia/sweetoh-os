@@ -4,6 +4,7 @@ import { groundResearch, safeSourceUrl, builderRecord } from "../lib/domains/int
 import { assertBuilderRole } from "../lib/domains/intelligence/partner-builder";
 import { publishPartnerDraft, assertPartnerPublishReadyStatus, unpublishPartnerProduct, assertProductCanBeUnpublished } from "../lib/domains/catalog/partner-listings";
 import { updatePartnerJobStatus } from "../lib/domains/fulfillment/partner-jobs";
+import { buildFulfillmentJobStatusUpdate } from "../lib/domains/fulfillment/service";
 import type { SessionUser } from "../lib/domains/identity/types";
 import { parsePartnerProductFields, validatePartnerProductFields } from "../lib/domains/catalog/product-form";
 import { colorHex, defaultUpcharges, sortSizes, variantOptionsSchema } from "../lib/domains/catalog/variants";
@@ -13,6 +14,20 @@ import { printRegionSchema } from "../lib/domains/catalog/studio-layout";
 
 const url = "https://manufacturer.example/products/tee";
 const research = { title: "Cotton tee", description: "A plain tee.", category: "apparel", identity: "matched", brand: "Example", model: "4000", evidence: "Visible label", specifications: [{ label: "Material", value: "Cotton", sourceUrl: url }], sources: [{ title: "Manufacturer", url }], unknowns: [], mockupPrompt: "A plain tee" };
+
+test("status-only fulfillment updates preserve existing tracking and notes", () => {
+  const updatedAt = new Date("2026-01-01T00:00:00.000Z");
+  assert.deepEqual(buildFulfillmentJobStatusUpdate({ status: "shipped" }, updatedAt), {
+    status: "shipped",
+    updatedAt,
+  });
+  assert.deepEqual(buildFulfillmentJobStatusUpdate({ status: "shipped", trackingUrl: null, notes: "" }, updatedAt), {
+    status: "shipped",
+    updatedAt,
+    trackingUrl: null,
+    notes: "",
+  });
+});
 
 test("research retains retrieved sources and their specifications", () => {
   const result = groundResearch(research, [url]);
