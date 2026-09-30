@@ -294,12 +294,12 @@ export default async function PartnerReviewDetailPage({
 
         <div className="min-w-0 space-y-3">
           <div>
-            <h1
+            <h2
               className="text-xl font-semibold"
               style={{ color: "var(--so-cream)" }}
             >
               {product.name}
-            </h1>
+            </h2>
             <p className="mt-2 flex flex-wrap items-center gap-2 text-sm">
               <DraftStatusBadge
                 draftStatus={product.draftStatus}

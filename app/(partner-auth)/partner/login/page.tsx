@@ -5,6 +5,7 @@ import { signInAction } from "@/app/(partner)/partner/actions/auth";
 import { listBestsellerBlueprints, type Blueprint } from "@/lib/integrations/printify/catalog";
 import { MadeToOrderSticker } from "@/app/(store)/components/store-hero";
 import { ISLAND_GREETINGS } from "@/lib/shared/island-greetings";
+import { SubmitButton } from "@/app/(partner)/partner/components/submit-button";
 import "./login.css";
 
 type PartnerLoginPageProps = {
@@ -82,7 +83,7 @@ export default async function PartnerLoginPage({
               <span>Password</span>
               <input type="password" name="password" required autoComplete="current-password" placeholder="••••••••" />
             </label>
-            <button type="submit">Sign in</button>
+            <SubmitButton pendingLabel="Signing in…">Sign in</SubmitButton>
           </form>
           <Link href="/partner/forgot" className="login-back">
             Forgot your password?
