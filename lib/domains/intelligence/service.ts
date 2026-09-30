@@ -472,6 +472,7 @@ export async function createProductDraftFromVisualIntake(input: {
     filename: input.filename,
     mimeType: input.mimeType,
     assetId: intakeAsset.id,
+    privateSourceAssetId: intakeAsset.id,
   });
 
   await applyMockDraftPublishFixtures({

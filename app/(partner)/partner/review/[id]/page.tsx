@@ -19,6 +19,7 @@ import {
 import { getAssetById, getAssetSignedUrl } from "@/lib/domains/assets/service";
 import { isApprovedAssetStatus } from "@/lib/domains/assets/types";
 import { productMediaPublicUrl } from "@/lib/storage/client";
+import { productMediaAccessUrl } from "@/lib/domains/catalog/product-media-access";
 import { canModerateListings } from "@/lib/domains/catalog/partner-listings";
 import type { ProductCategory } from "@/lib/domains/catalog/publish";
 import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
@@ -121,7 +122,7 @@ export default async function PartnerReviewDetailPage({
       url: media.objectKey
         ? productMediaPublicUrl(media.objectKey)
         : media.assetId
-          ? await getAssetSignedUrl({ ventureId: session.ventureId, assetId: media.assetId }).catch(() => null)
+          ? productMediaAccessUrl(media.id)
           : null,
     }))),
     product.sourceAssetId

@@ -193,7 +193,7 @@ export type AssetCompositionLayout = {
 export async function createAssetWithUpload(input: {
   ventureId: string;
   ventureSlug: string;
-  uploadedById: string;
+  uploadedById: string | null;
   name: string;
   assetType: AssetType;
   file: Buffer | Uint8Array;

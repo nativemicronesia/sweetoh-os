@@ -6,6 +6,7 @@ import {
 import { getDefaultVenture } from "@/lib/domains/identity/service";
 import { NotFoundError } from "@/lib/shared/errors";
 import { productMediaPublicUrl } from "@/lib/storage/client";
+import { productMediaAccessUrl } from "@/lib/domains/catalog/product-media-access";
 import { ProductBuy } from "../../components/product-buy";
 
 type ProductPageProps = {
@@ -29,12 +30,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const media = await getProductMedia(product.id);
   // Color-tagged mockups switch with the color picker; the rest form the gallery.
   const images = media
-    .filter((item) => item.objectKey && !item.color)
-    .map((item) => productMediaPublicUrl(item.objectKey!));
+    .filter((item) => (item.objectKey || item.assetId) && !item.color)
+    .map((item) => item.objectKey ? productMediaPublicUrl(item.objectKey) : productMediaAccessUrl(item.id));
   const colorImages = Object.fromEntries(
     media
-      .filter((item) => item.objectKey && item.color)
-      .map((item) => [item.color!, productMediaPublicUrl(item.objectKey!)]),
+      .filter((item) => (item.objectKey || item.assetId) && item.color)
+      .map((item) => [item.color!, item.objectKey ? productMediaPublicUrl(item.objectKey) : productMediaAccessUrl(item.id)]),
   );
 
   return (

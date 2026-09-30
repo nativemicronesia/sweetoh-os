@@ -91,7 +91,8 @@ export async function preparePartnerProduct(session: SessionUser, input: {
   // Finished products use the real photograph. Blank previews stay private assets.
   if (input.purpose === "finished") await addProductMediaUpload({ ventureId: session.ventureId,
     ventureSlug: session.ventureSlug, productId: saved.product.id, actorUserId: session.appUser.id,
-    file: image, filename: "product.png", mimeType: "image/png", assetId: source.id });
+    file: image, filename: "product.png", mimeType: "image/png", assetId: source.id,
+    privateSourceAssetId: source.id });
   return saved.product;
 }
 

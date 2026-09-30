@@ -144,6 +144,7 @@ export async function listOwnProduct(
       file: photo.bytes,
       filename: `photo-${index + 1}.jpg`,
       mimeType: photo.mimeType,
+      ...(index === 0 ? { privateSourceAssetId: source.id } : {}),
     });
   }
 

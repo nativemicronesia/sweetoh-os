@@ -11,6 +11,7 @@ import { AUTOMATIC_COLLECTIONS } from "./collections-config";
 import { getDb } from "@/lib/db/client";
 import {
   aiCreationSession,
+  asset,
   collection,
   collectionProduct,
   orderLineItem,
@@ -21,7 +22,7 @@ import {
 import { recordAuditEvent } from "@/lib/domains/audit/service";
 import { aiTimestampAuditFields } from "@/lib/domains/audit/timestamp";
 import { resolveAiUserAuditFields } from "@/lib/domains/audit/user";
-import { getAssetById } from "@/lib/domains/assets/service";
+import { createAssetWithUpload, getAssetById } from "@/lib/domains/assets/service";
 import { isApprovedAssetStatus } from "@/lib/domains/assets/types";
 import { getCreativeLibraryAsset, getCreativeLibraryAssets } from "@/lib/domains/library/service";
 import { studioLayoutSchema } from "./studio-layout";
@@ -51,12 +52,9 @@ import {
   downloadFromBucket,
   productMediaPublicUrl,
   removeFromBucket,
-  uploadToBucket,
 } from "@/lib/storage/client";
-import {
-  productMediaObjectKey,
-  STORAGE_BUCKETS,
-} from "@/lib/storage/paths";
+import { STORAGE_BUCKETS } from "@/lib/storage/paths";
+import { productMediaAccessUrl } from "./product-media-access";
 
 export type Product = typeof product.$inferSelect;
 
@@ -105,13 +103,27 @@ export async function getProductMedia(productId: string) {
     .orderBy(productMedia.sortOrder);
 }
 
+export async function getProductMediaAccessRecord(mediaId: string) {
+  const db = getDb();
+  const [row] = await db
+    .select({ media: productMedia, product, asset })
+    .from(productMedia)
+    .innerJoin(product, eq(productMedia.productId, product.id))
+    .leftJoin(asset, eq(productMedia.assetId, asset.id))
+    .where(eq(productMedia.id, mediaId))
+    .limit(1);
+  return row ?? null;
+}
+
 export async function getPrimaryProductImageUrl(
   productId: string,
 ): Promise<string | null> {
   const media = await getProductMedia(productId);
   const primary = media[0];
 
-  return primary?.objectKey ? productMediaPublicUrl(primary.objectKey) : null;
+  if (primary?.objectKey) return productMediaPublicUrl(primary.objectKey);
+  if (primary?.assetId) return productMediaAccessUrl(primary.id);
+  return null;
 }
 
 /** Bytes for the blank's primary catalog image — used by Studio mockup compositing. */
@@ -120,9 +132,21 @@ export async function getPrimaryProductImageBuffer(
 ): Promise<Buffer | null> {
   const media = await getProductMedia(productId);
   const primary = media[0];
-  if (!primary?.objectKey) return null;
+  if (!primary) return null;
 
   try {
+    if (!primary.objectKey && primary.assetId) {
+      const db = getDb();
+      const [productRow] = await db
+        .select({ ventureId: product.ventureId })
+        .from(product)
+        .where(eq(product.id, productId))
+        .limit(1);
+      if (!productRow) return null;
+      const source = await getAssetById({ ventureId: productRow.ventureId, assetId: primary.assetId });
+      return await downloadFromBucket({ bucket: source.bucket, objectKey: source.objectKey });
+    }
+    if (!primary.objectKey) return null;
     return await downloadFromBucket({
       bucket: STORAGE_BUCKETS.productMedia,
       objectKey: primary.objectKey,
@@ -574,35 +598,46 @@ export async function addProductMediaUpload(input: {
   filename: string;
   mimeType: string;
   assetId?: string | null;
+  /** Use only when this existing private asset is the exact uploaded image. */
+  privateSourceAssetId?: string | null;
   color?: string | null;
 }) {
-  await getProductById({
+  const productRow = await getProductById({
     ventureId: input.ventureId,
     productId: input.productId,
   });
 
   const db = getDb();
   const existingMedia = await getProductMedia(input.productId);
-  const objectKey = productMediaObjectKey(
-    input.ventureSlug,
-    input.productId,
-    input.filename,
-  );
+  let privateAsset = input.privateSourceAssetId
+    ? await getAssetById({ ventureId: input.ventureId, assetId: input.privateSourceAssetId })
+    : null;
 
-  await uploadToBucket({
-    bucket: STORAGE_BUCKETS.productMedia,
-    objectKey,
-    body: input.file,
-    contentType: input.mimeType,
-    upsert: true,
-  });
+  // A legacy public asset is never reused as a private source. Make a private
+  // copy instead; the existing published URL remains compatible until cleanup.
+  if (privateAsset?.bucket === STORAGE_BUCKETS.productMedia) privateAsset = null;
+  if (!privateAsset) {
+    privateAsset = await createAssetWithUpload({
+      ventureId: input.ventureId,
+      ventureSlug: input.ventureSlug,
+      uploadedById: input.actorUserId,
+      name: `${productRow.name} — private product media`,
+      assetType: "product_asset",
+      file: input.file,
+      filename: input.filename,
+      mimeType: input.mimeType,
+      notes: input.assetId
+        ? `Private product media; originating asset ${input.assetId}.`
+        : "Private product media source.",
+    });
+  }
 
   const [row] = await db
     .insert(productMedia)
     .values({
       productId: input.productId,
-      objectKey,
-      assetId: input.assetId ?? null,
+      objectKey: null,
+      assetId: privateAsset.id,
       color: input.color ?? null,
       sortOrder: existingMedia.length,
     })
@@ -618,7 +653,7 @@ export async function addProductMediaUpload(input: {
     action: "product.media_added",
     entityType: "product",
     entityId: input.productId,
-    metadata: { mediaId: row.id, objectKey },
+    metadata: { mediaId: row.id, privateAssetId: privateAsset.id, sourceAssetId: input.assetId ?? null },
   });
 
   return row;
@@ -1589,8 +1624,8 @@ export async function getProductColorImageUrls(
   const media = await getProductMedia(productId);
   return Object.fromEntries(
     media
-      .filter((m) => m.color && m.objectKey)
-      .map((m) => [m.color!, productMediaPublicUrl(m.objectKey!)]),
+      .filter((m) => m.color && (m.objectKey || m.assetId))
+      .map((m) => [m.color!, m.objectKey ? productMediaPublicUrl(m.objectKey) : productMediaAccessUrl(m.id)]),
   );
 }
 
