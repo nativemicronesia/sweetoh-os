@@ -149,10 +149,14 @@ export function PartnerFrame({
   const [menuOpen, setMenuOpen] = useState(false);
   const [assistantOpen, setAssistantOpen] = useState(false);
   const menuButton = useRef<HTMLButtonElement>(null);
+  const accountMenu = useRef<HTMLDetailsElement>(null);
   const nav = packId === "sweetoh_creator" ? creatorNav() : PARTNER_NAV;
   const editor = path === "/partner/canvas";
 
-  useEffect(() => setMenuOpen(false), [path]);
+  useEffect(() => {
+    setMenuOpen(false);
+    if (accountMenu.current) accountMenu.current.open = false;
+  }, [path]);
   useEffect(() => {
     if (!menuOpen) return;
     function closeOnEscape(event: KeyboardEvent) {
@@ -220,7 +224,17 @@ export function PartnerFrame({
             <span className="pf-hide-sm">Sweet&apos;Oh AI</span>
           </button>
           <FeedbackCapture />
-          <details className="pf-account">
+          <details
+            ref={accountMenu}
+            className="pf-account"
+            onKeyDown={(event) => {
+              if (event.key !== "Escape") return;
+              const menu = accountMenu.current;
+              if (!menu) return;
+              menu.open = false;
+              menu.querySelector("summary")?.focus();
+            }}
+          >
             <summary aria-label="Account menu" className="pf-avatar">
               {initials(displayName)}
             </summary>

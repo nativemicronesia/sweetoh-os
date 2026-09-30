@@ -6,11 +6,15 @@
 export default function PartnerLoginLoading() {
   return (
     <div
+      role="status"
+      aria-busy="true"
       className="flex min-h-screen items-center justify-center px-6"
       style={{ background: "var(--so-black)" }}
     >
+      <span className="sr-only">Checking your sign-in</span>
       <div
-        className="w-full max-w-md animate-pulse space-y-4 rounded-xl border p-8"
+        aria-hidden="true"
+        className="motion-safe:animate-pulse w-full max-w-md space-y-4 rounded-xl border p-8"
         style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}
       >
         <div className="h-4 w-20 rounded" style={{ background: "var(--so-border)" }} />
