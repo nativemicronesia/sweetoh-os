@@ -143,8 +143,8 @@ export function ListProductForm({ categories, maxPhotos, designs }: { categories
   if (done) {
     return (
       <div className="rounded-2xl border bg-white p-6" style={{ borderColor: "var(--pf-border)" }}>
-        <p style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 600, fontSize: 17 }}>
-          <Check size={20} color="var(--pf-primary)" /> {done.published ? `“${done.name}” is live in your shop.` : `“${done.name}” is saved as a draft.`}
+        <p role="status" aria-live="polite" style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 600, fontSize: 17 }}>
+          <Check size={20} color="var(--pf-primary)" aria-hidden="true" /> {done.published ? `“${done.name}” is live in your shop.` : `“${done.name}” is saved as a draft.`}
         </p>
         <p className="text-sm" style={{ color: "var(--pf-muted)", marginTop: 6 }}>
           {done.published ? "Customers can buy it now." : "Publish it any time from My products."}
