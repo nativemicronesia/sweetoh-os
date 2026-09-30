@@ -89,15 +89,20 @@ export function ListProductForm({ categories, maxPhotos, designs }: { categories
     setError(null);
     setBusy("Skink is writing your listing and making a clean shop photo… (about a minute)");
     start(async () => {
-      const result = await prepareListingAction(data);
-      setBusy(null);
-      if (!result.ok) {
-        setError(result.error);
-        return;
+      try {
+        const result = await prepareListingAction(data);
+        if (!result.ok) {
+          setError(result.error);
+          return;
+        }
+        setPrepared(result);
+        setManualEntry(false);
+        setUseShot(Boolean(result.productShot));
+      } catch {
+        setError("Couldn't prepare this listing. Your photos are still here — try again or enter the details yourself.");
+      } finally {
+        setBusy(null);
       }
-      setPrepared(result);
-      setManualEntry(false);
-      setUseShot(Boolean(result.productShot));
     });
   }
 
@@ -108,22 +113,29 @@ export function ListProductForm({ categories, maxPhotos, designs }: { categories
     setError(null);
     setBusy(publish ? "Publishing to your shop…" : "Saving…");
     start(async () => {
-      data.delete("photos");
-      if (useShot && prepared.productShot) {
-        const blob = await (await fetch(prepared.productShot)).blob();
-        data.append("photos", new File([blob], "shop-photo.jpg", { type: "image/jpeg" }));
+      try {
+        data.delete("photos");
+        if (useShot && prepared.productShot) {
+          const response = await fetch(prepared.productShot);
+          if (!response.ok) throw new Error("The prepared shop photo couldn't be read.");
+          const blob = await response.blob();
+          data.append("photos", new File([blob], "shop-photo.jpg", { type: "image/jpeg" }));
+        }
+        const room = maxPhotos - data.getAll("photos").length;
+        for (const p of photos.slice(0, room)) data.append("photos", p.file);
+        data.set("publish", String(publish));
+        const result = await listOwnProductAction(data);
+        if (!result.ok) {
+          setError(result.error);
+          return;
+        }
+        setDone({ productId: result.productId, published: result.published, name: String(data.get("name") ?? "Your product").trim() });
+        router.refresh();
+      } catch {
+        setError("Couldn't save this product. Your photos and details are still here — try again.");
+      } finally {
+        setBusy(null);
       }
-      const room = maxPhotos - data.getAll("photos").length;
-      for (const p of photos.slice(0, room)) data.append("photos", p.file);
-      data.set("publish", String(publish));
-      const result = await listOwnProductAction(data);
-      setBusy(null);
-      if (!result.ok) {
-        setError(result.error);
-        return;
-      }
-      setDone({ productId: result.productId, published: result.published, name: String(data.get("name") ?? "Your product").trim() });
-      router.refresh();
     });
   }
 
@@ -140,7 +152,7 @@ export function ListProductForm({ categories, maxPhotos, designs }: { categories
 
         <div className="rounded-xl border p-4" style={{ ...fieldStyle, marginTop: 16 }}>
           {blank?.status === "working" && (
-            <p className="text-sm"><Loader2 size={14} className="pe-spin" /> Skink is making a design blank from your photo — your design is erased so you can print new ones on the same product…</p>
+            <p role="status" aria-live="polite" className="text-sm"><Loader2 size={14} className="pe-spin" /> Skink is making a design blank from your photo — your design is erased so you can print new ones on the same product…</p>
           )}
           {blank?.status === "ready" && (
             <p className="text-sm" style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -248,7 +260,7 @@ export function ListProductForm({ categories, maxPhotos, designs }: { categories
         </div>
 
         {error && <p role="alert" className="print-error">{error}</p>}
-        {busy && <p className="text-sm" style={{ color: "var(--pf-muted)" }}><Loader2 size={14} className="pe-spin" /> {busy}</p>}
+        {busy && <p role="status" aria-live="polite" className="text-sm" style={{ color: "var(--pf-muted)" }}><Loader2 size={14} className="pe-spin" /> {busy}</p>}
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
           <button type="submit" className="pe-btn pe-btn-primary" disabled={pending}>
@@ -306,7 +318,7 @@ export function ListProductForm({ categories, maxPhotos, designs }: { categories
       </div>
 
       {error && <p role="alert" className="print-error">{error}</p>}
-      {busy && <p className="text-sm" style={{ color: "var(--pf-muted)" }}><Loader2 size={14} className="pe-spin" /> {busy}</p>}
+      {busy && <p role="status" aria-live="polite" className="text-sm" style={{ color: "var(--pf-muted)" }}><Loader2 size={14} className="pe-spin" /> {busy}</p>}
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
         <button type="button" className="pe-btn pe-btn-primary" disabled={pending || !photos.length} onClick={prepare}>
