@@ -23,7 +23,7 @@ import { listActiveProducts } from "@/lib/domains/catalog/service";
 import { listFulfillmentJobs } from "@/lib/domains/fulfillment";
 import { listCustomerCustomizationRequests } from "@/lib/domains/studio/service";
 import { isPartnerProductionJobStatus } from "@/lib/domains/studio/customer-request";
-import { listBestsellerBlueprints } from "@/lib/integrations/printify/catalog";
+import { listBestsellerBlueprints, type Blueprint } from "@/lib/integrations/printify/catalog";
 import { formatPrice } from "@/lib/shared/format";
 import { OperationsOverview } from "./components/operations-overview";
 import { countOpenShopRequests } from "@/lib/domains/creator/print-requests";
@@ -38,6 +38,21 @@ const JOB_LABEL: Record<string, string> = {
   delivered: "Delivered",
 };
 
+/** The optional catalog showcase must never delay the operator's workspace. */
+async function loadOptionalBestsellerPicks(): Promise<Blueprint[]> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      listBestsellerBlueprints().catch(() => []),
+      new Promise<Blueprint[]>((resolve) => {
+        timer = setTimeout(() => resolve([]), 900);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
 export default async function PartnerHomePage() {
   const session = await requirePartnerWorkspace();
   if (session.role === "creator") return <OperationsOverview />;
@@ -51,7 +66,7 @@ export default async function PartnerHomePage() {
       listActiveProducts(session.ventureId),
       listFulfillmentJobs({ ventureId: session.ventureId, path: "sweetoh" }),
       listCustomerCustomizationRequests(session.ventureId),
-      listBestsellerBlueprints(),
+      loadOptionalBestsellerPicks(),
       countOpenShopRequests(session.ventureId).catch(() => 0),
       countNewRequests(session).catch(() => 0),
       latestThreads(session.ventureId, 5).catch(() => []),
