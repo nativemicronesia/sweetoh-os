@@ -1,16 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { PRODUCT_FONTS } from "@/lib/studio/fonts";
-import { STUDIO_FONT_PROVENANCE } from "@/lib/studio/font-provenance";
-import { STUDIO_ASSET_MANIFEST } from "@/lib/studio/asset-manifest";
-import { matchesStudioAssetQuery, saveStudioLibraryIds, studioAssetCategories, studioAssetCategoryGroup, studioAssetOriginLabel, studioAssetQueryScore, studioAssetUrl } from "@/lib/studio/asset-library-client";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ArrowLeft, Heart, Search, X } from "lucide-react";
+import { studioAssetUrl, saveStudioLibraryIds } from "@/lib/studio/asset-library-client";
+import { LIBRARY_SHELVES, LIBRARY_TYPES, LIBRARY_TOPICS, filterLibrary, libraryAssets, type LibraryAsset, type LibraryShelf, type LibraryTopic, type LibraryType } from "@/lib/studio/library-taxonomy";
 import { filterStudioCreativeAssets, type StudioCreativeAssetOption } from "@/lib/studio/creative-library-browser";
 
 const FAVORITES_KEY = "sweetoh:studio:favorites:v1";
 const RECENTS_KEY = "sweetoh:studio:recent:v1";
-const PAGE_SIZE = 48;
-const STUDIO_ASSET_CATEGORIES = studioAssetCategories();
+const CHUNK = 36;
+const SHELF_SIZE = 14;
+const MIN_SHELF = 8;
 
 function readIds(key: string): string[] {
   try {
@@ -18,129 +18,194 @@ function readIds(key: string): string[] {
     return Array.isArray(value) ? value.filter((id): id is string => typeof id === "string").slice(0, 50) : [];
   } catch { return []; }
 }
-
 function writeIds(key: string, ids: string[]) {
-  try { saveStudioLibraryIds(window.localStorage, key, ids); } catch {}
+  try { saveStudioLibraryIds(window.localStorage, key, ids); } catch { /* preferences are optional */ }
 }
 
-export function AssetLibraryPanel({ disabled, creativeAssets = [], onAddCreativeAsset, onAddGraphic, onAddFont }: {
+type Tab = "browse" | LibraryType | "mine";
+
+function Tile({ asset, favorite, disabled, onAdd, onFavorite }: { asset: LibraryAsset; favorite: boolean; disabled: boolean; onAdd: (id: string) => void; onFavorite: (id: string) => void }) {
+  const rights = `${asset.name} · ${asset.origin} · ${asset.licenseId ?? asset.license}`;
+  return (
+    <div className="el-tile" draggable={!disabled} onDragStart={(e) => { e.dataTransfer.setData("application/x-sweetoh-graphic", asset.id); e.dataTransfer.effectAllowed = "copy"; }}>
+      <button type="button" className="el-add" disabled={disabled} onClick={() => onAdd(asset.id)} aria-label={`Add ${asset.name}`} title={rights}>
+        {/* Same-origin Studio asset route. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={studioAssetUrl(asset.id)} alt="" loading="lazy" decoding="async" draggable={false} onLoad={(e) => { e.currentTarget.dataset.loaded = "1"; }} />
+      </button>
+      <button type="button" className="el-heart" data-on={favorite} onClick={() => onFavorite(asset.id)} aria-pressed={favorite} aria-label={`${favorite ? "Remove" : "Add"} ${asset.name} ${favorite ? "from" : "to"} favorites`}>
+        <Heart size={13} fill={favorite ? "currentColor" : "none"} />
+      </button>
+    </div>
+  );
+}
+
+function Grid({ assets, ...tile }: { assets: readonly LibraryAsset[] } & Omit<Parameters<typeof Tile>[0], "asset" | "favorite"> & { favorites: string[] }) {
+  const [limit, setLimit] = useState(CHUNK);
+  const sentinel = useRef<HTMLDivElement>(null);
+  useEffect(() => { setLimit(CHUNK); }, [assets]);
+  useEffect(() => {
+    const el = sentinel.current;
+    if (!el) return;
+    const io = new IntersectionObserver((entries) => { if (entries.some((entry) => entry.isIntersecting)) setLimit((n) => n + CHUNK); }, { rootMargin: "300px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [assets, limit]);
+  const shown = assets.slice(0, limit);
+  return (
+    <>
+      <div className="el-grid">{shown.map((asset) => <Tile key={asset.id} asset={asset} favorite={tile.favorites.includes(asset.id)} disabled={tile.disabled} onAdd={tile.onAdd} onFavorite={tile.onFavorite} />)}</div>
+      {shown.length < assets.length && <div ref={sentinel} className="el-more" aria-hidden>Loading more…</div>}
+    </>
+  );
+}
+
+export function AssetLibraryPanel({ disabled, creativeAssets = [], onAddCreativeAsset, onAddGraphic }: {
   disabled: boolean;
   creativeAssets?: StudioCreativeAssetOption[];
   onAddCreativeAsset: (id: string) => void;
   onAddGraphic: (id: string) => void;
-  onAddFont: (key: string) => void;
+  /** Fonts live in the Text panel now; kept so existing callers still compile. */
+  onAddFont?: (key: string) => void;
 }) {
-  const [collection, setCollection] = useState<"originals" | "workspace">("originals");
-  const [filter, setFilter] = useState("All");
+  const all = useMemo(() => libraryAssets(), []);
+  const byId = useMemo(() => new Map(all.map((asset) => [asset.id, asset])), [all]);
+  const [tab, setTab] = useState<Tab>("browse");
   const [query, setQuery] = useState("");
-  const [creativeKind, setCreativeKind] = useState("");
-  const [creativeCategory, setCreativeCategory] = useState("");
-  const [creativeTag, setCreativeTag] = useState("");
-  const [productionMethod, setProductionMethod] = useState("");
-  const [visibleLimit, setVisibleLimit] = useState(PAGE_SIZE);
+  const [topic, setTopic] = useState<LibraryTopic | null>(null);
+  const [origin, setOrigin] = useState<string | null>(null);
+  const [title, setTitle] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [recent, setRecent] = useState<string[]>([]);
+  const [mineQuery, setMineQuery] = useState("");
+  const [mineKind, setMineKind] = useState("");
   useEffect(() => {
     const sync = () => { setFavorites(readIds(FAVORITES_KEY)); setRecent(readIds(RECENTS_KEY)); };
     queueMicrotask(sync);
     window.addEventListener("storage", sync);
     return () => window.removeEventListener("storage", sync);
   }, []);
-  useEffect(() => setVisibleLimit(PAGE_SIZE), [collection, filter, query, creativeKind, creativeCategory, creativeTag, productionMethod]);
 
-  const entries = useMemo(() => [
-    ...STUDIO_ASSET_MANIFEST.filter((asset) => asset.studioUseApproved).map((asset) => ({ id: asset.id, name: asset.name, category: asset.category, tags: asset.tags.join(" "), kind: asset.kind, preview: studioAssetUrl(asset.id), font: null as string | null, license: asset.license, source: asset.source, licenseId: asset.licenseId ?? "SweetOh original", sourceUrl: asset.sourceUrl ?? "", evidenceUrl: asset.evidenceUrl ?? "", attributionText: asset.attributionText ?? "" })),
-    ...PRODUCT_FONTS.map((font) => ({ id: `font:${font.key}`, name: font.label, category: "Fonts", tags: "text typography lettering", kind: "font", preview: "", font: font.family as string | null, license: STUDIO_FONT_PROVENANCE[font.key].license, source: STUDIO_FONT_PROVENANCE[font.key].source, licenseId: STUDIO_FONT_PROVENANCE[font.key].license.includes("Apache") ? "Apache 2.0" : "OFL 1.1", sourceUrl: STUDIO_FONT_PROVENANCE[font.key].source, evidenceUrl: STUDIO_FONT_PROVENANCE[font.key].notice, attributionText: "" })),
-  ], []);
-  const visible = entries.filter((entry) => {
-    if (filter === "Favorites" && !favorites.includes(entry.id)) return false;
-    if (filter === "Recent" && !recent.includes(entry.id)) return false;
-    if (!["All", "Favorites", "Recent"].includes(filter) && studioAssetCategoryGroup(entry.category) !== filter) return false;
-    return matchesStudioAssetQuery(entry, query);
-  }).sort((a, b) => filter === "Recent" ? recent.indexOf(a.id) - recent.indexOf(b.id) : studioAssetQueryScore(b, query) - studioAssetQueryScore(a, query) || a.name.localeCompare(b.name));
-
-  function use(id: string, creative = false) {
+  function add(id: string) {
     const next = [id, ...recent.filter((value) => value !== id)].slice(0, 24);
     setRecent(next);
     writeIds(RECENTS_KEY, next);
-    if (creative) onAddCreativeAsset(id);
-    else if (id.startsWith("font:")) onAddFont(id.slice(5));
-    else onAddGraphic(id);
+    onAddGraphic(id);
   }
-  function favorite(id: string) {
-    const next = favorites.includes(id) ? favorites.filter((value) => value !== id) : [...favorites, id];
+  function toggleFavorite(id: string) {
+    const next = favorites.includes(id) ? favorites.filter((value) => value !== id) : [id, ...favorites];
     setFavorites(next);
     writeIds(FAVORITES_KEY, next);
   }
+  function openShelf(shelf: LibraryShelf) {
+    setTab(shelf.filter.type ?? "browse");
+    setTopic(shelf.filter.topic ?? null);
+    setOrigin(shelf.filter.origin ?? null);
+    setTitle(shelf.title);
+    setQuery("");
+  }
+  function reset(next: Tab) {
+    setTab(next);
+    setTopic(null);
+    setOrigin(null);
+    setTitle(null);
+  }
 
-  const creativeKinds = [...new Set(creativeAssets.map((asset) => asset.kind))].sort();
-  const creativeCategories = [...new Set(creativeAssets.map((asset) => asset.category))].sort();
-  const creativeTags = [...new Set(creativeAssets.flatMap((asset) => asset.tags))].sort();
-  const productionMethods = [...new Set(creativeAssets.flatMap((asset) => asset.productionMethods))].sort();
-  const visibleCreative = filterStudioCreativeAssets(creativeAssets, {
-    query, kind: creativeKind, category: creativeCategory, tag: creativeTag, productionMethod,
-  }).sort((a, b) => {
-    const score = (asset: StudioCreativeAssetOption) => studioAssetQueryScore({ name: asset.name, category: asset.category, tags: [asset.kind, ...asset.tags, ...asset.productionMethods, asset.sourceName ?? ""] }, query);
-    return score(b) - score(a) || a.name.localeCompare(b.name);
-  });
-  const visibleEntries = visible.slice(0, visibleLimit);
-  const visibleCreativeEntries = visibleCreative.slice(0, visibleLimit);
+  const searching = query.trim().length > 0;
+  const drilled = tab !== "browse" || topic !== null || origin !== null || searching;
+  const typeFilter = LIBRARY_TYPES.includes(tab as LibraryType) ? (tab as LibraryType) : undefined;
+  const results = useMemo(
+    () => (drilled && tab !== "mine" ? filterLibrary(all, { type: typeFilter, topic: topic ?? undefined, origin: origin ?? undefined, query }) : []),
+    [all, drilled, tab, typeFilter, topic, origin, query],
+  );
+  const topicCounts = useMemo(() => {
+    if (!typeFilter) return [];
+    const inType = all.filter((asset) => asset.type === typeFilter);
+    return LIBRARY_TOPICS.map((name) => ({ name, count: inType.filter((asset) => asset.topic === name).length })).filter((entry) => entry.count > 0);
+  }, [all, typeFilter]);
+  const shelves = useMemo(
+    () => LIBRARY_SHELVES.map((shelf) => ({ shelf, assets: filterLibrary(all, shelf.filter) })).filter((entry) => entry.assets.length >= MIN_SHELF),
+    [all],
+  );
+  const favoriteAssets = favorites.map((id) => byId.get(id)).filter((asset): asset is LibraryAsset => Boolean(asset));
+  const recentAssets = recent.map((id) => byId.get(id)).filter((asset): asset is LibraryAsset => Boolean(asset));
 
-  return <div className="pe-panel-body pe-asset-library">
-    <div className="pe-asset-filters" aria-label="Library source">
-      <button type="button" aria-pressed={collection === "originals"} onClick={() => setCollection("originals")}>Originals &amp; fonts</button>
-      <button type="button" aria-pressed={collection === "workspace"} onClick={() => setCollection("workspace")}>My reusable assets ({creativeAssets.length})</button>
-    </div>
-    {collection === "originals" ? <>
-      <label className="sr-only" htmlFor="studio-asset-search">Search Studio assets</label>
-      <input id="studio-asset-search" className="pe-search" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search elements and fonts" />
-      <label className="pe-small">Category<select className="pe-search" aria-label="Studio asset category" value={filter} onChange={(event) => setFilter(event.target.value)}>
-        <option value="All">All assets ({entries.length})</option>
-        <option value="Favorites">Favorites</option>
-        <option value="Recent">Recent</option>
-        <optgroup label="Categories">{STUDIO_ASSET_CATEGORIES.map((category) => <option key={category} value={category}>{category}</option>)}</optgroup>
-      </select></label>
-      <p className="pe-muted pe-small">SweetOh originals, rights-cleared open artwork, and fonts. Add a graphic, then resize, rotate, layer, and print.</p>
-      {visible.length ? <>
-      <p className="pe-muted pe-small">Showing {visibleEntries.length} of {visible.length} matches.</p>
-      <div className="pe-asset-grid">{visibleEntries.map((entry) => <div key={entry.id} className="pe-asset-card">
-        <button type="button" disabled={disabled} onClick={() => use(entry.id)} aria-label={`Add ${entry.name}`}>
-          {entry.font ? <span className="pe-asset-font" style={{ fontFamily: entry.font }}>Aa</span> : (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={entry.preview} alt="" loading="lazy" />
-          )}
-          <span>{entry.name}</span>
-        </button>
-        <button type="button" className="pe-asset-favorite" onClick={() => favorite(entry.id)} aria-label={`${favorites.includes(entry.id) ? "Remove" : "Add"} ${entry.name} ${favorites.includes(entry.id) ? "from" : "to"} favorites`} aria-pressed={favorites.includes(entry.id)}>★</button>
-        <small tabIndex={0} aria-label={`${entry.source}. License: ${entry.license}. ${entry.attributionText}`} title={`${entry.source}\n${entry.license}\nSource: ${entry.sourceUrl}\nEvidence: ${entry.evidenceUrl}\n${entry.attributionText}`}>{studioAssetOriginLabel(entry)}</small>
-      </div>)}</div>
-      {visibleEntries.length < visible.length && <button type="button" className="pe-btn pe-btn-ghost" onClick={() => setVisibleLimit((count) => count + PAGE_SIZE)}>Show more ({visible.length - visibleEntries.length} remaining)</button>}
-      </> : <p className="pe-muted">No matching assets.</p>}
-    </> : <>
-      <label className="sr-only" htmlFor="studio-creative-search">Search reusable assets</label>
-      <input id="studio-creative-search" className="pe-search" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search names, tags, source or method" />
-      <div className="grid grid-cols-2 gap-2 py-2">
-        <label className="pe-small">Kind<select className="pe-search" value={creativeKind} onChange={(event) => setCreativeKind(event.target.value)}><option value="">All kinds</option>{creativeKinds.map((kind) => <option key={kind} value={kind}>{kind.replaceAll("_", " ")}</option>)}</select></label>
-        <label className="pe-small">Category<select className="pe-search" value={creativeCategory} onChange={(event) => setCreativeCategory(event.target.value)}><option value="">All categories</option>{creativeCategories.map((category) => <option key={category}>{category}</option>)}</select></label>
-        <label className="pe-small">Tag<select className="pe-search" value={creativeTag} onChange={(event) => setCreativeTag(event.target.value)}><option value="">All tags</option>{creativeTags.map((tag) => <option key={tag}>{tag}</option>)}</select></label>
-        <label className="pe-small">Useful for<select className="pe-search" value={productionMethod} onChange={(event) => setProductionMethod(event.target.value)}><option value="">Any method</option>{productionMethods.map((method) => <option key={method} value={method}>{method.replaceAll("_", " ")}</option>)}</select></label>
+  const mine = useMemo(() => filterStudioCreativeAssets(creativeAssets, { query: mineQuery, kind: mineKind, category: "", tag: "", productionMethod: "" }), [creativeAssets, mineQuery, mineKind]);
+  const mineKinds = [...new Set(creativeAssets.map((asset) => asset.kind))].sort();
+  const tile = { disabled, favorites, onAdd: add, onFavorite: toggleFavorite };
+
+  return (
+    <div className="pe-panel-body el">
+      <label className="el-search">
+        <Search size={15} aria-hidden />
+        <input type="search" value={query} onChange={(e) => { setQuery(e.target.value); if (tab === "mine") setMineQuery(e.target.value); }} placeholder={tab === "mine" ? "Search your library" : `Search ${all.length.toLocaleString()} elements`} aria-label="Search elements" />
+        {query && <button type="button" onClick={() => { setQuery(""); setMineQuery(""); }} aria-label="Clear search"><X size={14} /></button>}
+      </label>
+      <div className="el-tabs" role="tablist" aria-label="Element types">
+        {(["browse", ...LIBRARY_TYPES, "mine"] as Tab[]).map((value) => (
+          <button key={value} type="button" role="tab" aria-selected={tab === value} onClick={() => reset(value)}>
+            {value === "browse" ? "For you" : value === "mine" ? `My library${creativeAssets.length ? ` ${creativeAssets.length}` : ""}` : value}
+          </button>
+        ))}
       </div>
-      <p className="pe-muted pe-small">Only assets cleared for Studio use appear here. Adding one references its existing file; changes stay editable and undoable.</p>
-      {visibleCreative.length ? <>
-      <p className="pe-muted pe-small">Showing {visibleCreativeEntries.length} of {visibleCreative.length} matches.</p>
-      <div className="pe-asset-grid">{visibleCreativeEntries.map((entry) => <div key={entry.id} className="pe-asset-card">
-        <button type="button" disabled={disabled} onClick={() => use(entry.id, true)} aria-label={`Add ${entry.name}`}>
-          {/* Existing venture asset, served through its signed preview URL. */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={entry.previewUrl} alt="" loading="lazy" />
-          <span>{entry.name}</span>
-        </button>
-        <button type="button" className="pe-asset-favorite" onClick={() => favorite(entry.id)} aria-label={`${favorites.includes(entry.id) ? "Remove" : "Add"} ${entry.name} ${favorites.includes(entry.id) ? "from" : "to"} favorites`} aria-pressed={favorites.includes(entry.id)}>★</button>
-        <small>{entry.category} · {entry.productionMethods.length ? entry.productionMethods.join(", ") : entry.kind.replaceAll("_", " ")}</small>
-        <small title={entry.licenseId ?? "No license ID recorded"}>{entry.sourceName ?? "Source not recorded"} · {entry.licenseId ?? "Rights cleared for Studio"}</small>
-      </div>)}</div>
-      {visibleCreativeEntries.length < visibleCreative.length && <button type="button" className="pe-btn pe-btn-ghost" onClick={() => setVisibleLimit((count) => count + PAGE_SIZE)}>Show more ({visibleCreative.length - visibleCreativeEntries.length} remaining)</button>}
-      </> : <p className="pe-muted">No rights-approved assets match these filters.</p>}
-    </>}
-  </div>;
+
+      {tab === "mine" ? (
+        <>
+          {mineKinds.length > 1 && (
+            <div className="el-topics" role="group" aria-label="Kind">
+              <button type="button" aria-pressed={!mineKind} onClick={() => setMineKind("")}>All</button>
+              {mineKinds.map((kind) => <button key={kind} type="button" aria-pressed={mineKind === kind} onClick={() => setMineKind(kind)}>{kind.replaceAll("_", " ")}</button>)}
+            </div>
+          )}
+          {mine.length ? (
+            <div className="el-grid">{mine.map((asset) => (
+              <div key={asset.id} className="el-tile">
+                <button type="button" className="el-add" disabled={disabled} onClick={() => onAddCreativeAsset(asset.id)} aria-label={`Add ${asset.name}`} title={`${asset.name} · ${asset.sourceName ?? "Your file"} · ${asset.licenseId ?? "Cleared for Studio"}`}>
+                  {/* Signed preview of an existing workspace asset. */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={asset.previewUrl} alt="" loading="lazy" decoding="async" draggable={false} />
+                </button>
+              </div>
+            ))}</div>
+          ) : <p className="el-empty">{creativeAssets.length ? "Nothing matches these filters." : "Artwork you save to your library shows up here, ready to reuse."}</p>}
+        </>
+      ) : drilled ? (
+        <>
+          {(title || topic || origin) && !searching ? (
+            <button type="button" className="el-back" onClick={() => reset("browse")}><ArrowLeft size={14} /> {title ?? "Back"}</button>
+          ) : null}
+          {typeFilter && !searching && !origin && topicCounts.length > 1 && (
+            <div className="el-topics" role="group" aria-label="Topic">
+              <button type="button" aria-pressed={topic === null} onClick={() => setTopic(null)}>All</button>
+              {topicCounts.map((entry) => <button key={entry.name} type="button" aria-pressed={topic === entry.name} onClick={() => setTopic(entry.name)}>{entry.name} <i>{entry.count}</i></button>)}
+            </div>
+          )}
+          {results.length ? (
+            <>
+              <p className="el-count">{results.length.toLocaleString()} {results.length === 1 ? "element" : "elements"}</p>
+              <Grid assets={results} {...tile} />
+            </>
+          ) : <p className="el-empty">No elements match “{query}”. Try a simpler word like “palm” or “wave”.</p>}
+        </>
+      ) : (
+        <div className="el-shelves">
+          {favoriteAssets.length > 0 && <Shelf title="Favorites" assets={favoriteAssets.slice(0, SHELF_SIZE)} {...tile} />}
+          {recentAssets.length > 0 && <Shelf title="Recently used" assets={recentAssets.slice(0, SHELF_SIZE)} {...tile} />}
+          {shelves.map(({ shelf, assets }) => <Shelf key={shelf.id} title={shelf.title} subtitle={shelf.subtitle} assets={assets.slice(0, SHELF_SIZE)} total={assets.length} onSeeAll={() => openShelf(shelf)} {...tile} />)}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Shelf({ title, subtitle, assets, total, onSeeAll, ...tile }: { title: string; subtitle?: string; assets: LibraryAsset[]; total?: number; onSeeAll?: () => void } & Omit<Parameters<typeof Tile>[0], "asset" | "favorite"> & { favorites: string[] }) {
+  return (
+    <section className="el-shelf" aria-label={title}>
+      <header>
+        <div><h3>{title}</h3>{subtitle && <small>{subtitle}</small>}</div>
+        {onSeeAll && <button type="button" onClick={onSeeAll}>See all{total ? ` ${total.toLocaleString()}` : ""}</button>}
+      </header>
+      <div className="el-row">{assets.map((asset) => <Tile key={asset.id} asset={asset} favorite={tile.favorites.includes(asset.id)} disabled={tile.disabled} onAdd={tile.onAdd} onFavorite={tile.onFavorite} />)}</div>
+    </section>
+  );
 }

@@ -37,6 +37,7 @@ import {
   Staatliches,
   Lilita_One,
 } from "next/font/google";
+import { FONT_CATALOG, catalogFont, type FontCategory, type FontMood } from "./font-catalog";
 
 /**
  * Fonts for text on products. Layouts store the stable key, never the
@@ -122,13 +123,74 @@ export const PRODUCT_FONTS = [
 
 export type ProductFontKey = (typeof PRODUCT_FONTS)[number]["key"];
 
+/** Category and mood for the bundled families, so one picker can browse everything. */
+const BUNDLED_META: Record<string, { category: FontCategory; mood: FontMood }> = {
+  inter: { category: "Sans", mood: "Modern sans" }, montserrat: { category: "Sans", mood: "Modern sans" },
+  anton: { category: "Display", mood: "Bold & impact" }, bebas: { category: "Display", mood: "Bold & impact" },
+  oswald: { category: "Sans", mood: "Bold & impact" }, playfair: { category: "Serif", mood: "Elegant serif" },
+  pacifico: { category: "Handwriting", mood: "Script & signature" }, marker: { category: "Handwriting", mood: "Handwritten" },
+  caveat: { category: "Handwriting", mood: "Handwritten" }, lobster: { category: "Display", mood: "Script & signature" },
+  barlow: { category: "Sans", mood: "Bold & impact" }, space: { category: "Sans", mood: "Modern sans" },
+  fraunces: { category: "Serif", mood: "Elegant serif" }, kalam: { category: "Handwriting", mood: "Handwritten" },
+  tiltWarp: { category: "Display", mood: "Playful & rounded" }, poppins: { category: "Sans", mood: "Modern sans" },
+  raleway: { category: "Sans", mood: "Modern sans" }, lato: { category: "Sans", mood: "Modern sans" },
+  opensans: { category: "Sans", mood: "Modern sans" }, nunito: { category: "Sans", mood: "Playful & rounded" },
+  rubik: { category: "Sans", mood: "Modern sans" }, workSans: { category: "Sans", mood: "Modern sans" },
+  dmSans: { category: "Sans", mood: "Modern sans" }, dmSerif: { category: "Serif", mood: "Elegant serif" },
+  abril: { category: "Display", mood: "Elegant serif" }, bangers: { category: "Display", mood: "Retro & groovy" },
+  righteous: { category: "Display", mood: "Retro & groovy" }, fredoka: { category: "Sans", mood: "Playful & rounded" },
+  dancing: { category: "Handwriting", mood: "Script & signature" }, greatVibes: { category: "Handwriting", mood: "Script & signature" },
+  sacramento: { category: "Handwriting", mood: "Script & signature" }, shadows: { category: "Handwriting", mood: "Handwritten" },
+  archivoBlack: { category: "Sans", mood: "Bold & impact" }, alfaSlab: { category: "Serif", mood: "Bold & impact" },
+  cinzel: { category: "Serif", mood: "Elegant serif" }, staatliches: { category: "Display", mood: "Bold & impact" },
+  lilita: { category: "Display", mood: "Playful & rounded" },
+};
+
+export type StudioFontOption = { key: string; label: string; family: string; bold: boolean; category: FontCategory; mood: FontMood; origin: "bundled" | "catalog" };
+
+/** Every font a person can pick: the bundled families plus the on-demand catalog. */
+export const STUDIO_FONTS: readonly StudioFontOption[] = [
+  ...PRODUCT_FONTS.map((font): StudioFontOption => ({ key: font.key, label: font.label, family: font.family, bold: font.bold, origin: "bundled", ...(BUNDLED_META[font.key] ?? { category: "Sans" as const, mood: "Modern sans" as const }) })),
+  ...FONT_CATALOG.map((font): StudioFontOption => ({ key: font.key, label: font.family, family: `so-${font.id}`, bold: font.bold, category: font.category, mood: font.mood, origin: "catalog" })),
+];
+const FONT_BY_KEY = new Map(STUDIO_FONTS.map((font) => [font.key, font]));
+
+export function studioFont(key: string | undefined): StudioFontOption {
+  return (key && FONT_BY_KEY.get(key)) || FONT_BY_KEY.get("inter")!;
+}
+export function fontSupportsBold(key: string | undefined): boolean {
+  return studioFont(key).bold;
+}
+
 export function fontFamily(key: string | undefined): string {
-  return (PRODUCT_FONTS.find((f) => f.key === key) ?? PRODUCT_FONTS[0]).family;
+  return studioFont(key).family;
+}
+
+const catalogLoads = new Map<string, Promise<void>>();
+/** Fetch one catalog family weight from the Fontsource CDN and register it with the document. */
+export function loadCatalogFont(key: string, bold = false): Promise<void> {
+  const font = catalogFont(key);
+  if (!font || typeof document === "undefined" || !("fonts" in document)) return Promise.resolve();
+  const weight = bold && font.bold ? 700 : 400;
+  const id = `${font.id}:${weight}`;
+  const hit = catalogLoads.get(id);
+  if (hit) return hit;
+  const load = (async () => {
+    const face = new FontFace(`so-${font.id}`, `url(https://cdn.jsdelivr.net/fontsource/fonts/${font.id}@latest/latin-${weight}-normal.woff2) format("woff2")`, { weight: String(weight), display: "swap" });
+    await face.load();
+    document.fonts.add(face);
+  })().catch(() => { catalogLoads.delete(id); });
+  catalogLoads.set(id, load);
+  return load;
 }
 
 /** Waits for a font to be usable on a canvas (canvas text won't wait on its own). */
 export async function ensureFont(key: string | undefined, bold = false): Promise<void> {
   if (typeof document === "undefined" || !document.fonts) return;
+  if (key && catalogFont(key)) {
+    await loadCatalogFont(key, bold);
+    return;
+  }
   try {
     await document.fonts.load(`${bold ? 700 : 400} 40px ${fontFamily(key)}`);
   } catch {

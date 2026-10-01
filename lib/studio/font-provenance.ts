@@ -1,3 +1,4 @@
+import { catalogFont } from "./font-catalog";
 /** Stable font keys and the license notice shipped with this application. */
 const ofl = (directory: string) => ({
   license: "SIL Open Font License 1.1",
@@ -51,10 +52,11 @@ export const STUDIO_FONT_LABELS: Record<keyof typeof STUDIO_FONT_PROVENANCE, str
 };
 
 export type StudioFontKey = keyof typeof STUDIO_FONT_PROVENANCE;
-export function isStudioFontKey(key: string | undefined): key is StudioFontKey {
-  return Boolean(key && Object.hasOwn(STUDIO_FONT_PROVENANCE, key));
+/** Bundled families (with their license files above) or an entry in the open-licensed on-demand catalog. */
+export function isStudioFontKey(key: string | undefined): key is string {
+  return Boolean(key && (Object.hasOwn(STUDIO_FONT_PROVENANCE, key) || catalogFont(key)));
 }
 /** Saved fonts removed from this build fall back to the bundled Inter family. */
-export function resolveStudioFontKey(key: string | undefined): StudioFontKey {
+export function resolveStudioFontKey(key: string | undefined): string {
   return isStudioFontKey(key) ? key : "inter";
 }

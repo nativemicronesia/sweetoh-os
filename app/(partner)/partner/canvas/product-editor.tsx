@@ -21,6 +21,7 @@ import {
   Shadow,
   filters,
   Gradient,
+  cache as fabricCache,
 } from "fabric";
 import { initAligningGuidelines } from "fabric/extensions";
 import { drawingDashPattern, STUDIO_DRAW_BRUSHES, STUDIO_DRAW_TEXTURES, studioBrushPresetSchema, studioBrushTextureCanvas, studioDrawBrush, type StudioBrushPreset, type StudioDrawBrush } from "@/lib/studio/drawing-brushes";
@@ -99,7 +100,10 @@ import {
 import { isLightColor, type CatalogSource, type VariantOptions } from "@/lib/domains/catalog/variants";
 import { analyzePhoto, tintGarment } from "@/lib/studio/tint";
 import { sizedPhoto } from "@/lib/studio/photo";
-import { PRODUCT_FONTS, ensureFont, fontFamily } from "@/lib/studio/fonts";
+import { ensureFont, fontFamily, fontSupportsBold } from "@/lib/studio/fonts";
+import { FontBrowser, FontPickerButton } from "./font-browser";
+import { TextStylesGallery } from "./text-styles-gallery";
+import { presetTextColor, type TextStylePreset } from "@/lib/studio/text-styles";
 import { isStudioFontKey, resolveStudioFontKey } from "@/lib/studio/font-provenance";
 import { studioAssetMetadata, studioAssetUrl } from "@/lib/studio/asset-library-client";
 import { buildStudioEditorState, parseStudioTextNumber, studioEditorCommandSchema, studioEditorProposalSchema, type StudioEditorCommand, type StudioTextNumberField } from "@/lib/studio/editor-commands";
@@ -344,6 +348,23 @@ function round(n: number, d = 2) {
   return Math.round(n * f) / f;
 }
 
+/**
+ * Studio SVGs often declare only a viewBox, which gives a canvas image no usable size (it draws nothing).
+ * Give the root element explicit dimensions from its viewBox before handing it to Fabric.
+ */
+async function loadStudioGraphic(assetKey: string): Promise<FabricImage> {
+  const url = studioAssetUrl(assetKey);
+  const response = await fetch(url);
+  if (!response.ok || !(response.headers.get("content-type") ?? "").includes("svg")) return FabricImage.fromURL(url);
+  let svg = await response.text();
+  const root = svg.match(/<svg\b[^>]*>/)?.[0];
+  if (root && !/\swidth\s*=/.test(root)) {
+    const box = root.match(/viewBox\s*=\s*"([^"]+)"/)?.[1]?.trim().split(/[\s,]+/).map(Number);
+    if (box && box.length === 4 && box.every(Number.isFinite) && box[2] > 0 && box[3] > 0) svg = svg.replace(root, root.replace("<svg", `<svg width="${box[2]}" height="${box[3]}"`));
+  }
+  return FabricImage.fromURL(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`);
+}
+
 /** Lay a text object along an arc: curve > 0 arches up, < 0 bows down, 0 restores straight text. */
 function applyTextCurve(o: IText | Textbox, curve: number) {
   if (!curve) {
@@ -465,6 +486,7 @@ export function ProductEditor({
   const [library, setLibrary] = useState(designs);
   const [colorName, setColorName] = useState<string | null>(colors[0]?.name ?? null);
   const [panel, setPanel] = useState<Panel>(null);
+  const [textTab, setTextTab] = useState<"styles" | "fonts">("styles");
   const [zoom, setZoom] = useState(1);
   const [panMode, setPanMode] = useState(false);
   const [drawing, setDrawing] = useState(false);
@@ -752,7 +774,7 @@ export function ProductEditor({
     } else if (layer.kind === "graphic") {
       const asset = studioAssetMetadata(layer.assetKey);
       if (!asset) throw new Error(`Studio graphic is unavailable: ${layer.assetKey}`);
-      obj = await FabricImage.fromURL(studioAssetUrl(layer.assetKey));
+      obj = await loadStudioGraphic(layer.assetKey);
     } else if (layer.kind === "drawing") {
       const brush = studioDrawBrush(layer.brushPreset?.baseBrush ?? layer.brush);
       obj = layer.pressurePoints?.length ? makePressureDrawingGroup(layer.pressurePoints, layer.strokeWidth, layer.stroke, brush, layer.brushPreset ?? null) : new Path(layer.pathData, { fill: "", stroke: layer.stroke, strokeWidth: layer.strokeWidth, strokeDashArray: drawingDashPattern(brush, layer.strokeWidth), strokeLineCap: brush === "marker" ? "butt" : "round", strokeLineJoin: "round", objectCaching: false });
@@ -768,9 +790,11 @@ export function ProductEditor({
     } else {
       const bold = layer.bold ?? true;
       const font = resolveStudioFontKey(layer.font);
-      const supportsBold = PRODUCT_FONTS.find((item) => item.key === font)?.bold ?? false;
+      const supportsBold = fontSupportsBold(font);
       const effectiveBold = bold && supportsBold;
       await ensureFont(font, effectiveBold);
+      // Widths measured before a web font finished loading are for the fallback font; drop them.
+      fabricCache.clearFontCache(fontFamily(font));
       const textOptions = {
         fontSize: layer.fontSize,
         fill: layer.color,
@@ -1327,7 +1351,7 @@ export function ProductEditor({
       setBusy(null);
     }
   }
-  async function addText(preset: { text: string; size: number; font?: string; bold?: boolean } = { text: "Your text", size: 48 }) {
+  async function addText(preset: { text: string; size: number; font?: string; bold?: boolean; italic?: boolean; color?: string; letterSpacing?: number; curve?: number; outline?: string; outlineWidth?: number; textAlign?: "left" | "center" | "right"; shadow?: { color: string; opacity: number; blur: number; offsetX: number; offsetY: number } } = { text: "Your text", size: 48 }) {
     if (!canDesign()) return;
     if (locked) return;
     checkpoint();
@@ -1343,9 +1367,15 @@ export function ProductEditor({
       scaleY: 1,
       angle: 0,
       fontSize: preset.size,
-      color: isLightColor(colorRef.current ?? "#ffffff") ? "#101828" : "#ffffff",
+      color: preset.color ?? (isLightColor(colorRef.current ?? "#ffffff") ? "#101828" : "#ffffff"),
       font: preset.font ?? "inter",
       bold: preset.bold ?? true,
+      ...(preset.italic ? { italic: true } : {}),
+      ...(preset.letterSpacing ? { letterSpacing: preset.letterSpacing } : {}),
+      ...(preset.curve ? { curve: preset.curve } : {}),
+      ...(preset.outline ? { outline: preset.outline, outlineWidth: preset.outlineWidth ?? 4 } : {}),
+      ...(preset.textAlign ? { textAlign: preset.textAlign } : {}),
+      ...(preset.shadow ? { shadow: preset.shadow } : {}),
     };
     const obj = await makeLayer(layer);
     // Start inside the print area: shrink long text to fit its width.
@@ -1371,6 +1401,22 @@ export function ProductEditor({
     capture();
     readSelection();
     editor.current!.requestRenderAll();
+  }
+  /** Drop an element from the Elements panel: add it, then center it where it was released. */
+  async function dropGraphic(assetKey: string, clientX: number, clientY: number) {
+    if (!canDesign() || locked) return;
+    await executeEditorCommand({ type: "add_graphic", assetKey });
+    const canvas = editor.current;
+    const obj = canvas?.getActiveObject();
+    if (!canvas || !obj) return;
+    const rect = canvas.upperCanvasEl.getBoundingClientRect();
+    const x = ((clientX - rect.left) / rect.width) * SIZE;
+    const y = ((clientY - rect.top) / rect.height) * SIZE;
+    obj.set({ left: x - obj.getScaledWidth() / 2, top: y - obj.getScaledHeight() / 2 });
+    obj.setCoords();
+    capture();
+    readSelection();
+    canvas.requestRenderAll();
   }
   function bringGuideToTop() {
     if (!editor.current) return;
@@ -1576,19 +1622,22 @@ export function ProductEditor({
     if (!asset || !canDesign() || locked) return;
     checkpoint();
     const a = surface().area;
-    const intrinsicWidth = asset.width ?? 200;
-    const intrinsicHeight = asset.height ?? 200;
-    const displayScale = Math.min(Math.min(a.width * SIZE * 0.55, 220) / intrinsicWidth, 220 / intrinsicHeight);
-    const displayWidth = intrinsicWidth * displayScale;
-    const displayHeight = intrinsicHeight * displayScale;
     const layer: StudioLayer = {
       id: crypto.randomUUID(), kind: "graphic", assetKey,
       printRegionId: surface().printRegions ? activeRegionId ?? surface().printRegions?.[0]?.id : undefined,
-      x: a.x * SIZE + (a.width * SIZE - displayWidth) / 2,
-      y: a.y * SIZE + (a.height * SIZE - displayHeight) / 2,
-      scaleX: displayScale, scaleY: displayScale, angle: 0,
+      x: 0, y: 0, scaleX: 1, scaleY: 1, angle: 0,
     };
     const object = await makeLayer(layer);
+    // Size from what actually loaded, so every asset starts at a sensible size inside the print area.
+    const intrinsicWidth = object.width || asset.width || 200;
+    const intrinsicHeight = object.height || asset.height || 200;
+    const displayScale = Math.min((a.width * SIZE * 0.5) / intrinsicWidth, (a.height * SIZE * 0.5) / intrinsicHeight);
+    object.set({
+      scaleX: displayScale, scaleY: displayScale,
+      left: a.x * SIZE + (a.width * SIZE - intrinsicWidth * displayScale) / 2,
+      top: a.y * SIZE + (a.height * SIZE - intrinsicHeight * displayScale) / 2,
+    });
+    object.setCoords();
     editor.current!.add(object);
     bringGuideToTop();
     editor.current!.setActiveObject(object);
@@ -1651,9 +1700,9 @@ export function ProductEditor({
       case "set_shape_gradient": return setShapeGradient(action.from, action.to, action.direction);
       case "set_text_style": {
         const currentFont = action.font ?? selected?.font ?? "inter";
-        const supportsBold = PRODUCT_FONTS.find((font) => font.key === currentFont)?.bold ?? false;
+        const supportsBold = fontSupportsBold(currentFont);
         const effectiveBold = Boolean(action.bold ?? selected?.bold) && supportsBold;
-        if (action.font) { await ensureFont(action.font, effectiveBold); setFontFallbackNotice(false); }
+        if (action.font) { await ensureFont(action.font, effectiveBold); fabricCache.clearFontCache(fontFamily(action.font)); setFontFallbackNotice(false); }
         return changeSelected((o) => {
           if (!(o instanceof IText)) return;
           const base = meta.current.get(o);
@@ -2510,7 +2559,7 @@ export function ProductEditor({
               ["files", Upload, "Uploads"],
               ["text", Type, "Text"],
               ["shapes", Shapes, "Shapes"],
-              ["assets", Library, "Library"],
+              ["assets", Library, "Elements"],
               ["ai", Sparkles, "Create"],
               ["inspiration", Lightbulb, "Ideas"],
               ["layers", Layers, "Layers"],
@@ -2534,7 +2583,7 @@ export function ProductEditor({
           <aside className="pe-panel">
             <div className="pe-panel-head">
               <h2>
-                {{ files: "Uploads", text: "Text", shapes: "Shapes", assets: "Asset library", ai: "Create with AI", inspiration: "Inspiration", layers: "Layers" }[panel]}
+                {{ files: "Uploads", text: "Text", shapes: "Shapes", assets: "Elements", ai: "Create with AI", inspiration: "Inspiration", layers: "Layers" }[panel]}
               </h2>
               <button className="pe-icon-btn" aria-label="Close panel" onClick={() => setPanel(null)}>
                 <X size={16} />
@@ -2664,7 +2713,7 @@ export function ProductEditor({
             )}
 
             {panel === "text" && (
-              <div className="pe-panel-body">
+              <div className="pe-panel-body pe-text-panel">
                 <button className="pe-text-preset pe-text-h" disabled={locked} onClick={() => void addText({ text: "Add a heading", size: 64, font: "anton", bold: false })}>
                   Add a heading
                 </button>
@@ -2674,14 +2723,21 @@ export function ProductEditor({
                 <button className="pe-text-preset pe-text-b" disabled={locked} onClick={() => void addText({ text: "Add body text", size: 28, font: "inter", bold: false })}>
                   Add body text
                 </button>
-                <p className="pe-label">Font styles</p>
-                <div className="pe-fonts">
-                  {PRODUCT_FONTS.map((f) => (
-                    <button key={f.key} disabled={locked} style={{ fontFamily: f.family }} onClick={() => void addText({ text: f.label, size: 52, font: f.key, bold: f.bold })}>
-                      {f.label}
-                    </button>
-                  ))}
+                <div className="pe-seg" role="tablist" aria-label="Text library">
+                  <button role="tab" aria-selected={textTab === "styles"} onClick={() => setTextTab("styles")}>Text styles</button>
+                  <button role="tab" aria-selected={textTab === "fonts"} onClick={() => setTextTab("fonts")}>Fonts</button>
                 </div>
+                {textTab === "styles" ? (
+                  <TextStylesGallery disabled={locked} onPick={(preset: TextStylePreset) => void addText({ text: preset.sample, size: preset.size, font: preset.font, bold: preset.bold, italic: preset.italic, color: presetTextColor(preset, colorRef.current), letterSpacing: preset.letterSpacing, curve: preset.curve, outline: preset.outline, outlineWidth: preset.outlineWidth, textAlign: preset.textAlign, shadow: preset.shadow })} />
+                ) : (
+                  <FontBrowser
+                    value={selected?.kind === "text" ? selected.font : undefined}
+                    onPick={(key) => {
+                      if (selected?.kind === "text") void executeEditorCommand({ type: "set_text_style", font: key });
+                      else void addText({ text: "Your text", size: 52, font: key, bold: fontSupportsBold(key) });
+                    }}
+                  />
+                )}
               </div>
             )}
 
@@ -2775,7 +2831,13 @@ export function ProductEditor({
             <span><strong>Flat product view.</strong> Drawn at real size from the product&apos;s printable dimensions. Add your own clean blank photo for customer-facing mockups.</span>
             <button className="pe-btn pe-btn-ghost" disabled={locked} onClick={() => setViewPicker({ mode: "replace", position: current.position ?? "front" })}>Add blank photo</button>
           </div>}
-          <div className="pe-stage" ref={stage} data-pan={panMode} onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = "copy"; }} onDrop={e => { e.preventDefault(); if (!busy) void upload(e.dataTransfer.files[0]); }}
+          <div className="pe-stage" ref={stage} data-pan={panMode} onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = "copy"; }} onDrop={e => {
+              e.preventDefault();
+              if (busy) return;
+              const graphic = e.dataTransfer.getData("application/x-sweetoh-graphic");
+              if (graphic) { void dropGraphic(graphic, e.clientX, e.clientY); return; }
+              void upload(e.dataTransfer.files[0]);
+            }}
             onPointerDown={(e) => {
               gesture.current.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
               gesture.current.lastX = e.clientX; gesture.current.lastY = e.clientY;
@@ -2926,19 +2988,13 @@ export function ProductEditor({
                     aria-label="Text"
                   />
                   <div className="pe-row">
-                    <select value={selected.font} onChange={(e) => { if (isStudioFontKey(e.target.value)) void executeEditorCommand({ type: "set_text_style", font: e.target.value }); }} aria-label="Font" className="pe-select">
-                      {PRODUCT_FONTS.map((f) => (
-                        <option key={f.key} value={f.key}>
-                          {f.label}
-                        </option>
-                      ))}
-                    </select>
+                    <FontPickerButton value={selected.font} disabled={locked} onPick={(key) => void executeEditorCommand({ type: "set_text_style", font: key })} />
                     <button
                       className="pe-toggle"
                       aria-pressed={selected.bold}
                       aria-label="Bold"
-                      title={PRODUCT_FONTS.find((font) => font.key === selected.font)?.bold ? "Bold" : "This font has no bundled bold weight"}
-                      disabled={!PRODUCT_FONTS.find((font) => font.key === selected.font)?.bold}
+                      title={fontSupportsBold(selected.font) ? "Bold" : "This font has no bold weight"}
+                      disabled={!fontSupportsBold(selected.font)}
                       onClick={() => void executeEditorCommand({ type: "set_text_style", bold: !selected.bold })}
                     >
                       <Bold size={15} />
