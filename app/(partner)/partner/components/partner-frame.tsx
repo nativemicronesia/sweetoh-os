@@ -15,6 +15,7 @@ import {
   Package,
   Settings,
   MessageSquareText,
+  Palette,
   ShoppingBag,
   Sparkles,
   X,
@@ -40,6 +41,7 @@ export type PulseItem = { text: string; href?: string };
 
 const PARTNER_NAV: NavItem[] = [
   { href: "/partner", label: "Home", icon: House, match: (p) => p === "/partner" },
+  { href: "/partner/studio", label: "Studio", icon: Palette, match: (p) => /^\/partner\/(studio|canvas)/.test(p) },
   {
     href: "/partner/inbox",
     label: "Inbox",
@@ -51,7 +53,7 @@ const PARTNER_NAV: NavItem[] = [
     href: "/partner/catalog",
     label: "Catalog",
     icon: BookOpen,
-    match: (p) => /^\/partner\/(catalog|builder|canvas)/.test(p),
+    match: (p) => /^\/partner\/(catalog|builder)/.test(p),
   },
   {
     href: "/partner/products",

@@ -63,7 +63,7 @@ function buildSystemPrompt(session: SessionUser, memories: string): string {
     "- Photos cannot be attached through chat. For a photo-based listing, point her at List a product (/partner/list).",
     "- Never suggest designs that copy logos, trademarks, sports teams, characters or someone else's art.",
     "",
-    "The workspace: Home (/partner), List a product (/partner/list), Catalog (/partner/catalog), Design studio (/partner/canvas), My products (/partner/products), Orders (/partner/orders), Creator requests (/partner/creator-requests), My files (/partner/library), Settings (/partner/settings). Link with these paths.",
+    "The workspace: Home (/partner), List a product (/partner/list), Catalog (/partner/catalog), Studio (/partner/studio — standalone designs; products open it in Product Design context), My products (/partner/products), Orders (/partner/orders), Creator requests (/partner/creator-requests), My files (/partner/library), Settings (/partner/settings). Link with these paths.",
     "Blanks are private reusable tools, never shop listings. Don't claim an exact brand/model or print dimensions without evidence; she confirms the details.",
     "",
     "Style: warm, short, plain English. Island-proud, never corny. No markdown headers, no bullet walls. A sentence or two, then the facts that matter.",

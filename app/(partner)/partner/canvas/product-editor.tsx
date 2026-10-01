@@ -81,6 +81,8 @@ import {
   saveCanvasCompositionAction,
   saveBlankSurfacesAction,
 } from "../actions/library";
+import { saveStudioDesignAction } from "../actions/studio-design";
+import { physicalToPixels, describeProductionSize } from "@/lib/domains/catalog/production-geometry";
 import {
   defaultArea,
   regionsFor,
@@ -133,7 +135,7 @@ export type CanvasBlankOption = {
   catalogSource?: CatalogSource | null;
 };
 export type CanvasDesignOption = { id: string; name: string; previewUrl: string | null };
-export type SavedDesignOption = { id: string; name: string; previewUrl: string | null };
+export type SavedDesignOption = { id: string; name: string; previewUrl: string | null; kind?: "standalone" | "product" | null };
 /** What the creator-side "Sell it" panel can ask the editor for. */
 export type PrintFile = { surfaceId: string; surfaceName: string; position: string; region: string; blob: Blob; width: number; height: number };
 export type EditorPublishApi = {
@@ -151,6 +153,10 @@ export type EditorPublishApi = {
 type Props = {
   /** "creator" = Create with Sweet'Oh: save + sell panel instead of shop pricing. */
   mode?: "partner" | "creator";
+  /** Standalone Studio design: a sized artboard with no product, saved/reopened on its own. */
+  standalone?: boolean;
+  /** The saved design this standalone session reopened, if any. */
+  savedDesignId?: string | null;
   /** Name of a reopened saved design. */
   initialName?: string | null;
   /** Distinguishes an original, a template copy, and a fresh local draft. */
@@ -333,6 +339,16 @@ function round(n: number, d = 2) {
   return Math.round(n * f) / f;
 }
 
+/** A view's thumbnail drawn from its real print geometry. Supplier photos are never a stand-in for the product. */
+function SurfaceGlyph({ surface }: { surface: Surface }) {
+  return (
+    <svg width="40" height="40" viewBox="0 0 40 40" role="img" aria-label={`${surface.name} print area`}>
+      <rect x="0.5" y="0.5" width="39" height="39" rx="4" fill="#fff" stroke="#d9d4c6" />
+      {regionsFor(surface).map((r) => <path key={r.id} d={regionPath(r, 40)} fill="rgba(31,112,72,0.12)" stroke="#173e39" strokeWidth="1" strokeDasharray="3 2" />)}
+    </svg>
+  );
+}
+
 export function ProductEditor({
   blanks,
   designs,
@@ -348,6 +364,8 @@ export function ProductEditor({
   returnHref: requestedReturnHref,
   returnLabel: requestedReturnLabel,
   mode = "partner",
+  standalone = false,
+  savedDesignId = null,
   initialName = null,
   draftScope = "fresh",
   rightsFallbackNotice = null,
@@ -358,6 +376,8 @@ export function ProductEditor({
   const returnHref = requestedReturnHref ?? base.catalog;
   const returnLabel = requestedReturnLabel ?? "Back to catalog";
   const [publishOpen, setPublishOpen] = useState(false);
+  const [designId, setDesignId] = useState<string | null>(savedDesignId);
+  const [savedNote, setSavedNote] = useState<string | null>(null);
   /** Local autosave, so a closed tab or a crash never costs someone their work. */
   const draftKey = `sweetoh:draft:${initialBlankId ?? blanks[0]?.id ?? "new"}:${draftScope}`;
   const draftTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -496,8 +516,7 @@ export function ProductEditor({
   const spec = (s: Surface = surface()) => {
     const region = regionsFor(s).find(r => s.id === currentId.current && r.id === activeRegionRef.current) ?? regionsFor(s).find(r => r.bounds.x === s.area.x && r.bounds.y === s.area.y && r.bounds.width === s.area.width && r.bounds.height === s.area.height) ?? regionsFor(s)[0];
     if (region?.dimensions) {
-      const d = region.dimensions, factor = d.unit === "cm" ? DPI / 2.54 : DPI;
-      return { position: s.position ?? s.id, width: Math.round(d.width * factor), height: Math.round(d.height * factor) };
+      return { position: s.position ?? s.id, ...physicalToPixels(region.dimensions) };
     }
     if (s.printRegions !== undefined) return undefined;
     return specs.find(a => a.position === s.position) ?? (s.id === doc.current.surfaces[0].id ? specs.find(a => a.position === "front") : undefined);
@@ -1968,6 +1987,7 @@ export function ProductEditor({
   /* ---------- views & print area ---------- */
 
   async function persistViews() {
+    if (standalone) return;
     const result = await saveBlankSurfacesAction(
       blank.id,
       doc.current.surfaces.map((s) => ({
@@ -2099,7 +2119,7 @@ export function ProductEditor({
     // Physical size: the area's own dimensions, else the catalog print area for this view.
     // (Look it up on the untouched surface — narrowing it to one region first hides the catalog spec.)
     const sp = region.dimensions
-      ? { width: Math.round(region.dimensions.width * (region.dimensions.unit === "cm" ? DPI / 2.54 : DPI)), height: Math.round(region.dimensions.height * (region.dimensions.unit === "cm" ? DPI / 2.54 : DPI)) }
+      ? physicalToPixels(region.dimensions)
       : regionsFor(s).length === 1 ? spec(s) : undefined;
     s = { ...s, area: region.bounds, printRegions: [region] };
     const canvas = new StaticCanvas(document.createElement("canvas"), { width: SIZE, height: SIZE });
@@ -2166,7 +2186,44 @@ export function ProductEditor({
       };
     },
   });
+  async function saveStandalone() {
+    setBusy("Saving design…");
+    setError("");
+    try {
+      capture();
+      const artboard = doc.current.surfaces[0];
+      const print = await renderPrint(artboard, regionsFor(artboard)[0]);
+      if (!print) throw new Error("Couldn’t render this design.");
+      // The saved file is a preview of the artboard; the editable layers live in the layout.
+      const scale = Math.min(1, 1600 / Math.max(print.width, print.height));
+      const thumb = document.createElement("canvas");
+      thumb.width = Math.max(1, Math.round(print.width * scale));
+      thumb.height = Math.max(1, Math.round(print.height * scale));
+      const bitmap = await createImageBitmap(print.blob);
+      thumb.getContext("2d")!.drawImage(bitmap, 0, 0, thumb.width, thumb.height);
+      const preview = await new Promise<Blob | null>((resolve) => thumb.toBlob(resolve, "image/png"));
+      if (!preview) throw new Error("Couldn’t render this design.");
+      const form = new FormData();
+      form.set("name", name.trim() || "Untitled design");
+      if (designId) form.set("designId", designId);
+      form.set("studioLayout", JSON.stringify(doc.current));
+      form.set("file", new File([preview], "design.png", { type: "image/png" }));
+      const result = await saveStudioDesignAction(form);
+      if ("error" in result) throw new Error(result.error);
+      dirty.current = false;
+      clearDraft();
+      setDesignId(result.saved.id);
+      setSavedNote(`Saved ${new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`);
+      window.history.replaceState(null, "", `/partner/canvas?composition=${result.saved.id}`);
+    } catch (e) {
+      dirty.current = true;
+      setError(e instanceof Error ? e.message : "Couldn’t save. Your design is still here.");
+    } finally {
+      setBusy(null);
+    }
+  }
   async function save(asProduct: boolean, applyToProductDraft = false) {
+    if (standalone) return saveStandalone();
     setBusy(asProduct ? "Preparing your product…" : applyToProductDraft ? "Saving artwork to this product draft…" : "Saving to My files…");
     setError("");
     try {
@@ -2227,28 +2284,28 @@ export function ProductEditor({
           <ArrowLeft size={18} />
         </Link>
         <div className="pe-title">
-          <input value={name} onChange={(e) => setName(e.target.value)} maxLength={180} aria-label="Product name" />
-          <span>{blank.catalogSource ? [blank.catalogSource.brand, blank.catalogSource.model].filter(Boolean).join(" ") : blank.name}</span>
+          <input value={name} onChange={(e) => setName(e.target.value)} maxLength={180} aria-label={standalone ? "Design name" : "Product name"} />
+          <span>{standalone ? [describeProductionSize(regionsFor(doc.current.surfaces[0])[0].dimensions!), savedNote].filter(Boolean).join(" · ") : `Product design · ${blank.catalogSource ? [blank.catalogSource.brand, blank.catalogSource.model].filter(Boolean).join(" ") : blank.name}`}</span>
         </div>
         <div className="pe-top-actions">
-          <button className="pe-btn pe-btn-ghost pe-setup-button" disabled={locked} onClick={() => { capture(); setSetupOpen(true); }}><Crop size={16}/> Product setup</button>
+          {!standalone && <button className="pe-btn pe-btn-ghost pe-setup-button" disabled={locked} onClick={() => { capture(); setSetupOpen(true); }}><Crop size={16}/> Product setup</button>}
           <button className="pe-icon-btn" onClick={() => void undo()} disabled={!undoCount || locked} aria-label="Undo" title="Undo (⌘Z)">
             <Undo2 size={17} />
           </button>
           <button className="pe-icon-btn" onClick={() => void redo()} disabled={!redoCount || locked} aria-label="Redo" title="Redo"><Redo2 size={17}/></button>
           <button className="pe-btn pe-btn-ghost" onClick={() => void save(false)} disabled={!hasDesign || locked}>
-            {mode === "creator" ? "Save design" : "Save reusable design"}
+            {mode === "creator" || standalone ? "Save design" : "Save reusable design"}
           </button>
-          {mode === "partner" && privateProductDrafts.length > 0 && <>
+          {!standalone && mode === "partner" && privateProductDrafts.length > 0 && <>
             <label className="pe-select"><span>Apply to private product draft</span><select value={applyTargetId} onChange={(event) => setApplyTargetId(event.target.value)} aria-label="Choose private product draft">{privateProductDrafts.map((draft) => <option key={draft.id} value={draft.id}>{draft.name}</option>)}</select></label>
             <button className="pe-btn pe-btn-ghost" onClick={() => void save(false, true)} disabled={!hasDesign || locked || !applyTargetId || !photoFor(doc.current.surfaces[0])} title={!photoFor(doc.current.surfaces[0]) ? "A verified clean production blank is required." : "Save a new editable design and link it to the selected private product draft."}>
               Apply design to draft
             </button>
           </>}
-          <button className="pe-btn pe-btn-ghost" onClick={() => void openPreview()} disabled={!hasDesign || locked}>
+          {!standalone && <button className="pe-btn pe-btn-ghost" onClick={() => void openPreview()} disabled={!hasDesign || locked}>
             <Eye size={16} /> Preview
-          </button>
-          {mode === "creator" ? (
+          </button>}
+          {standalone ? null : mode === "creator" ? (
             <button className="pe-btn pe-btn-primary" onClick={() => { capture(); setPublishOpen(true); }} disabled={!hasDesign || locked || !PublishPanel || !photoFor(doc.current.surfaces[0])} title={!photoFor(doc.current.surfaces[0]) ? "Prepare a verified clean blank before publishing." : undefined}>
               Sell it →
             </button>
@@ -2334,12 +2391,14 @@ export function ProductEditor({
                       Saved designs <span>open or use as a template</span>
                     </p>
                     <div className="pe-files">
-                      {savedDesigns.map((d) => (
+                      {savedDesigns.filter((d) => !standalone || d.kind === "standalone").map((d) => (
                         <div key={d.id} className="pe-saved">
                           {d.previewUrl ? <img src={d.previewUrl} alt="" loading="lazy" /> : <FolderOpen size={20} />}
                           <span>{d.name}</span>
                           <Link href={`${base.canvas}?composition=${d.id}`} title={`Open ${d.name} to keep editing`}>Open</Link>
-                          <Link href={`${base.canvas}?template=${d.id}`} title={`Create a new composition from ${d.name}`}>Use as template</Link>
+                          {d.kind === "standalone" && !standalone
+                            ? <Link href={`${base.canvas}?blank=${blank.id}&template=${d.id}`} title={`Place ${d.name} on this product's print area`}>Use on this product</Link>
+                            : <Link href={`${base.canvas}?template=${d.id}`} title={`Create a new copy of ${d.name}`}>{standalone ? "Duplicate" : "Use as template"}</Link>}
                         </div>
                       ))}
                     </div>
@@ -2522,13 +2581,13 @@ export function ProductEditor({
         )}
 
         <main className="pe-stage-wrap">
-          <div className="pe-surface-bar"><span><strong>{current.name}</strong><small>{photoFor(current) ? setupSaved ? "Product setup saved" : "Verified production blank" : "Print-area surface only · no clean blank photo"}</small></span>
+          <div className="pe-surface-bar"><span><strong>{current.name}</strong><small>{standalone ? "Artboard" : photoFor(current) ? setupSaved ? "Product setup saved" : "Verified production blank" : "Print-area surface only · no clean blank photo"}{!standalone && currentSpec ? ` · ${describeProductionSize({ width: currentSpec.width / DPI, height: currentSpec.height / DPI, unit: "in" })}` : ""}</small></span>
             {currentRegions.length > 0 ? <label>Print area <select aria-label="Active print area" value={activeRegionId ?? currentRegions[0]?.id} onChange={e => {
               const r = currentRegions.find(r => r.id === e.target.value)!;
               capture(); editor.current?.discardActiveObject(); surface().area = r.bounds; setActiveRegionId(r.id); setSurfaces([...doc.current.surfaces]); readSelection();
-            }}>{currentRegions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}</select></label> : <button className="pe-btn pe-btn-primary" onClick={() => setSetupOpen(true)}>Add a print area</button>}
+            }}>{currentRegions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}</select></label> : standalone ? null : <button className="pe-btn pe-btn-primary" onClick={() => setSetupOpen(true)}>Add a print area</button>}
           </div>
-          {!photoFor(current) && <div className="pe-production-boundary" role="status" style={{ margin: "8px 12px 0", padding: "10px 12px", border: "1px solid #e8c887", borderRadius: 8, background: "#fff9e9", color: "#72551d", fontSize: 12 }}>
+          {!standalone && !photoFor(current) && <div className="pe-production-boundary" role="status" style={{ margin: "8px 12px 0", padding: "10px 12px", border: "1px solid #e8c887", borderRadius: 8, background: "#fff9e9", color: "#72551d", fontSize: 12 }}>
             <strong>No verified clean blank for this view.</strong> Artwork is placed on the saved print-area surface only. Supplier photos and generated mockups stay references and are not used as the production canvas.
           </div>}
           <div className="pe-stage" ref={stage} data-pan={panMode} onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = "copy"; }} onDrop={e => { e.preventDefault(); if (!busy) void upload(e.dataTransfer.files[0]); }}
@@ -2579,7 +2638,7 @@ export function ProductEditor({
             {outside && ready && <div className="pe-warn">Artwork outside the print areas is clipped in previews and print files.</div>}
           </div>
 
-          <div className="pe-views" role="tablist" aria-label="Product views">
+          <div className="pe-views" role="tablist" aria-label={standalone ? "Artboard" : "Product views"}>
             {surfaces.map((s) => (
               <button
                 key={s.id}
@@ -2594,14 +2653,14 @@ export function ProductEditor({
                   void loadSurface(s.id);
                 }}
               >
-                {viewThumbs[s.id] || referencePhotoFor(s) ? <img src={viewThumbs[s.id] ?? referencePhotoFor(s)!} alt="" /> : <ImageIcon size={18} />}
+                {viewThumbs[s.id] ? <img src={viewThumbs[s.id]} alt="" /> : <SurfaceGlyph surface={s} />}
                 <span>
                   {s.name}
                   {s.layers.length ? <i aria-label="Has design" /> : null}
                 </span>
               </button>
             ))}
-            {surfaces.length < 12 && (
+            {!standalone && surfaces.length < 12 && (
               <button
                 className="pe-view-add"
                 disabled={locked}
@@ -2921,7 +2980,7 @@ export function ProductEditor({
                 </section>
               )}
               <section className="pe-section">
-                <p className="pe-label">{current.name} print area</p>
+                <p className="pe-label">{standalone ? "Artboard size" : `${current.name} print area`}</p>
                 {currentSpec ? (
                   <p className="pe-spec">
                     {round(currentSpec.width / DPI, 1)} × {round(currentSpec.height / DPI, 1)} in
@@ -2930,15 +2989,15 @@ export function ProductEditor({
                     </span>
                   </p>
                 ) : (
-                  <p className="pe-muted">Set optional production dimensions in Product setup.</p>
+                  <p className="pe-muted">{standalone ? "This artboard has no fixed size." : "Set optional production dimensions in Product setup."}</p>
                 )}
                 <div className="pe-stack">
-                  <button className="pe-btn pe-btn-ghost pe-block" disabled={locked} onClick={() => { capture(); setSetupOpen(true); }}>
+                  {!standalone && <button className="pe-btn pe-btn-ghost pe-block" disabled={locked} onClick={() => { capture(); setSetupOpen(true); }}>
                     <Crop size={15} /> Edit surfaces & print areas
-                  </button>
-                  <button className="pe-btn pe-btn-ghost pe-block" disabled={locked} onClick={() => setViewPicker({ mode: "replace", position: current.position ?? "front" })}>
-                    <ImageIcon size={15} /> Change photo
-                  </button>
+                  </button>}
+                  {!standalone && <button className="pe-btn pe-btn-ghost pe-block" disabled={locked} onClick={() => setViewPicker({ mode: "replace", position: current.position ?? "front" })}>
+                    <ImageIcon size={15} /> Set blank or reference photo
+                  </button>}
                   {current.layers.length > 0 && (
                     <button className="pe-btn pe-btn-ghost pe-block" disabled={locked} onClick={() => void downloadPrint(current, currentRegions.find(r => r.id === activeRegionId) ?? currentRegions[0])}>
                       <Download size={15} /> Download print file

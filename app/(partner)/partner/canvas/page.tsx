@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { getAssetById, getAssetSignedUrl } from "@/lib/domains/assets/service";
 import { listPartnerCatalog } from "@/lib/domains/catalog/partner-catalog";
 import { FlashBanner } from "@/app/(owner)/owner/components/flash-banner";
@@ -10,20 +11,32 @@ import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
 import { getCreativeLibraryAssets, searchCreativeLibrary } from "@/lib/domains/library/service";
 import { canInsertCreativeLibraryAsset } from "@/lib/domains/library/model";
 import { prepareStudioTemplateCopy } from "@/lib/domains/catalog/studio-template-copy";
-import { ProductEditor } from "./product-editor";
+import { ProductEditor, type CanvasBlankOption } from "./product-editor";
+import { DESIGN_TYPES, designCanvasSurface, designTypeById, isStandaloneDesign, parseDesignSize, type DesignSize } from "@/lib/studio/design-canvas";
+import { applyDesignToRegion } from "@/lib/studio/design-apply";
 import { listActorProductDrafts } from "@/lib/domains/intelligence/service";
 import { builderRecord } from "@/lib/domains/intelligence/product-research-schema";
-import { inferSurfaceImageRole, studioMatchesProductPrintArea } from "@/lib/domains/catalog/studio-layout";
+import { defaultArea, inferSurfaceImageRole, regionsFor, studioMatchesProductPrintArea, type StudioLayout } from "@/lib/domains/catalog/studio-layout";
 
 export const maxDuration = 180;
 
 type PageProps = {
-  searchParams: Promise<{ design?: string; blank?: string; composition?: string; template?: string; targetDraft?: string; returnTo?: string; orderId?: string; error?: string }>;
+  searchParams: Promise<{ new?: string; w?: string; h?: string; unit?: string; design?: string; blank?: string; composition?: string; template?: string; targetDraft?: string; returnTo?: string; orderId?: string; error?: string }>;
 };
 
 export default async function PartnerCanvasPage({ searchParams }: PageProps) {
   const session = await requirePartnerWorkspace();
   const query = await searchParams;
+  // Studio is a workspace in its own right: with nothing to open, send people to its home.
+  if (!query.new && !query.blank && !query.design && !query.composition && !query.template && !query.targetDraft) redirect("/partner/studio");
+  let newSize: DesignSize | null = null;
+  if (query.new) {
+    const parsed = query.new === "custom"
+      ? parseDesignSize({ width: query.w, height: query.h, unit: query.unit })
+      : designTypeById(query.new) ? { size: designTypeById(query.new)!.size } : { error: "Choose a design type." };
+    if ("error" in parsed) redirect(`/partner/studio?error=${encodeURIComponent(parsed.error)}`);
+    newSize = parsed.size;
+  }
 
   const compositionId = query.template ?? query.composition;
   const [blanks, ownDraftRows, designs, savedComposition, creativeAssets] = await Promise.all([
@@ -73,13 +86,33 @@ export default async function PartnerCanvasPage({ searchParams }: PageProps) {
   const preparedCopy = savedComposition?.studio
     ? prepareStudioTemplateCopy(savedComposition.studio, allowedSavedLayerIds)
     : null;
-  const safeSavedStudio = preparedCopy?.layout;
+  const savedIsStandalone = isStandaloneDesign(preparedCopy?.layout);
+  const savedAsset = compositionId && savedIsStandalone ? await getAssetById({ ventureId: session.ventureId, assetId: compositionId }).catch(() => null) : null;
+  // A standalone design opened with ?blank= is Product Design context: the design is applied to that product.
+  const applyToProduct = savedIsStandalone && Boolean(query.template) && Boolean(query.blank);
+  const standalone = Boolean(newSize) || (savedIsStandalone && !applyToProduct);
+  let safeSavedStudio: StudioLayout | undefined = standalone && !savedIsStandalone ? undefined : preparedCopy?.layout;
 
   const editorBlanks = [
     ...blanks,
     ...privateProductDrafts.filter((draft) => !blanks.some((blank) => blank.id === draft.id)),
   ];
   const sourceBlank = editorBlanks.find((blank) => blank.id === (query.targetDraft ?? savedComposition?.blankProductId ?? query.blank)) ?? editorBlanks[0];
+  let designBlank: CanvasBlankOption | null = null;
+  if (standalone) {
+    const artboard = savedIsStandalone ? preparedCopy!.layout.surfaces[0] : { ...designCanvasSurface(newSize!), layers: [] };
+    safeSavedStudio = savedIsStandalone ? preparedCopy!.layout : { version: 1, surfaces: [artboard] };
+    const { layers: _layers, ...geometry } = artboard;
+    designBlank = { id: "design", name: "Design", imageUrl: null, printArea: { ...geometry.area, surfaces: [geometry] }, variantOptions: null, catalogSource: null };
+  } else if (applyToProduct && sourceBlank && preparedCopy) {
+    // Product Design context: the saved design is scaled onto this product's real print region.
+    const productSurfaces = sourceBlank.printArea?.surfaces ?? [{ id: "front", name: "Front", position: "front", assetId: null, area: sourceBlank.printArea ?? defaultArea }];
+    const region = regionsFor(productSurfaces[0])[0];
+    safeSavedStudio = {
+      version: 1,
+      surfaces: productSurfaces.map((surface, index) => ({ ...surface, layers: index === 0 && region ? applyDesignToRegion(preparedCopy.layout.surfaces[0], region) : [] })),
+    };
+  }
   const designGeometry = safeSavedStudio ?? (sourceBlank?.printArea?.surfaces?.length
     ? { version: 1 as const, surfaces: sourceBlank.printArea.surfaces.map((surface) => ({ ...surface, layers: [] })) }
     : undefined);
@@ -96,14 +129,18 @@ export default async function PartnerCanvasPage({ searchParams }: PageProps) {
   const returnToOrderId = query.returnTo === "order" && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(query.orderId ?? "")
     ? query.orderId
     : null;
-  const returnHref = returnToProductId
+  const returnHref = standalone || applyToProduct
+    ? "/partner/studio"
+    : returnToProductId
     ? `/partner/review/${returnToProductId}`
     : returnToOrderId
       ? `/partner/orders/${returnToOrderId}`
       : query.composition || query.template || query.design
       ? "/partner/library"
       : "/partner/catalog";
-  const returnLabel = returnToProductId
+  const returnLabel = standalone || applyToProduct
+    ? "Back to Studio"
+    : returnToProductId
     ? "Back to product"
     : returnToOrderId
       ? "Back to order"
@@ -121,7 +158,7 @@ export default async function PartnerCanvasPage({ searchParams }: PageProps) {
   const savedDesigns = designs
     .filter((item) => item.isComposition)
     .slice(0, 24)
-    .map((item) => ({ id: item.id, name: item.name, previewUrl: item.previewUrl }));
+    .map((item) => ({ id: item.id, name: item.name, previewUrl: item.previewUrl, kind: item.compositionKind }));
   const designOptions = designs
     .filter((item) => !item.isComposition && (item.status === "approved" || item.status === "licensed" || item.status === "draft"))
     .map((item) => ({
@@ -139,7 +176,7 @@ export default async function PartnerCanvasPage({ searchParams }: PageProps) {
     <div className="space-y-4">
       <FlashBanner message={query.error} variant="error" />
 
-      {editorBlanks.length === 0 ? (
+      {!standalone && editorBlanks.length === 0 ? (
         <p className="text-sm" style={{ color: "var(--so-cream-dim)" }}>
           Start by preparing a reusable blank.{" "}
           <Link href="/partner/catalog" className="underline" style={{ color: "var(--so-cream)" }}>
@@ -151,18 +188,23 @@ export default async function PartnerCanvasPage({ searchParams }: PageProps) {
         <ProductEditor
           initialStudio={safeSavedStudio}
           surfaceImages={Object.fromEntries(Object.entries(surfaceImages).filter((entry): entry is [string,string]=>Boolean(entry[1])))}
-          blanks={editorBlanks}
+          standalone={standalone}
+          savedDesignId={standalone && savedIsStandalone && !query.template ? compositionId ?? null : null}
+          blanks={designBlank ? [designBlank] : editorBlanks}
           designs={designOptions}
           creativeAssets={reusableAssets}
           savedDesigns={savedDesigns}
           privateProductDrafts={compatibleProductDrafts.map(({ id, name }) => ({ id, name }))}
           initialApplyTargetId={compatibleProductDrafts.some((draft) => draft.id === query.targetDraft) ? query.targetDraft ?? null : null}
           initialCompositionAssetId={query.composition ?? null}
-          initialName={sourceDesign ? `Copy of ${sourceDesign.name}` : null}
-          draftScope={query.template ? `template-${query.template}` : query.composition ? `composition-${query.composition}` : "fresh"}
+          initialName={standalone
+            ? (query.template ? `Copy of ${savedAsset?.name ?? "design"}` : savedAsset?.name ?? "Untitled design")
+            : applyToProduct ? null
+            : sourceDesign ? `Copy of ${sourceDesign.name}` : null}
+          draftScope={query.template ? `template-${query.template}` : query.composition ? `composition-${query.composition}` : newSize ? `new-${query.new}-${newSize.width}x${newSize.height}${newSize.unit}` : "fresh"}
           rightsFallbackNotice={fallbackNotice}
           initialDesignId={savedComposition?.designAssetId ?? query.design ?? null}
-          initialBlankId={query.targetDraft ?? savedComposition?.blankProductId ?? query.blank ?? null}
+          initialBlankId={designBlank ? designBlank.id : query.targetDraft ?? savedComposition?.blankProductId ?? query.blank ?? null}
           returnHref={returnHref}
           returnLabel={returnLabel}
           initialTransform={

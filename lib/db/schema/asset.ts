@@ -46,8 +46,9 @@ export const asset = pgTable("asset", {
   compositionLayout: jsonb("composition_layout").$type<{
     text?: { value: string; x: number; y: number; size: number; color: string };
     studio?: import("@/lib/domains/catalog/studio-layout").StudioLayout;
-    blankProductId: string;
-    designAssetId: string;
+    /** Absent for a standalone Studio design that is not tied to a product. */
+    blankProductId?: string | null;
+    designAssetId?: string | null;
     offsetX: number;
     offsetY: number;
     scale: number;

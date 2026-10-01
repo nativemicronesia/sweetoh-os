@@ -111,7 +111,7 @@ export const SWEETOH_PARTNER_PACK: WorkspacePack = {
   nav: [
     NAV_OVERVIEW,
     NAV_CREATE,
-    { id: "canvas", label: "Design studio", href: "/partner/canvas", note: "Create on your blanks" },
+    { id: "canvas", label: "Studio", href: "/partner/studio", note: "Design on any canvas, then on your products" },
     { id: "library", label: "Artwork library", href: "/partner/library", note: "Your reusable designs" },
     NAV_REVIEW,
     NAV_ORDERS,

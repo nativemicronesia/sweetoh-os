@@ -8,6 +8,7 @@ import {
 } from "@/lib/domains/assets/service";
 import { getDb } from "@/lib/db/client";
 import { asset } from "@/lib/db/schema";
+import { isStandaloneDesign } from "@/lib/studio/design-canvas";
 import { creativeLibraryEntry } from "@/lib/db/schema";
 import { canUseCreativeLibraryAsset, type CreativeLibraryMetadata } from "@/lib/domains/library/model";
 import { normalizeCreativeLibraryAsset, registerCreativeLibraryEntry } from "@/lib/domains/library/service";
@@ -23,6 +24,8 @@ export type PartnerLibraryDesign = {
   previewUrl: string | null;
   /** Saved from the partner Canvas with its placement — reopenable for editing. */
   isComposition: boolean;
+  /** "standalone" = made in Studio with no product; "product" = composed on a product blank. */
+  compositionKind: "standalone" | "product" | null;
   libraryMetadata: CreativeLibraryMetadata | null;
 };
 
@@ -50,6 +53,7 @@ export async function listPartnerLibraryDesigns(
       status: row.status,
       notes: row.notes,
       isComposition: row.compositionLayout != null,
+      compositionKind: row.compositionLayout == null ? null : isStandaloneDesign(row.compositionLayout.studio) ? "standalone" as const : "product" as const,
       libraryMetadata: normalizeCreativeLibraryAsset(row, entry).metadata,
       createdAt: row.createdAt,
       previewUrl: await getAssetSignedUrl({

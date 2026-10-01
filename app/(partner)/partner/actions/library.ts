@@ -273,8 +273,9 @@ export async function saveCanvasCompositionAction(formData: FormData): Promise<{
         if (count >= plan.savedDesigns) throw new ValidationError(`The ${plan.name} plan saves up to ${plan.savedDesigns} designs. Upgrade on the Plans page to save unlimited designs — or delete an old one.`);
       }
     }
-    // A creator's blank lives in their own workspace, so they own its print setup too.
-    if (studio && !applyTarget && (canModerateListings(session) || session.role === "creator")) {
+    // Saving a design never rewrites an existing product's production geometry; that is owned by
+    // product setup (saveBlankSurfacesAction). It only initializes geometry for a blank that has none.
+    if (studio && !applyTarget && !blank.printArea?.surfaces?.length && (canModerateListings(session) || session.role === "creator")) {
       const surfaces = studio.surfaces.map(({layers,...surface})=>surface);
       await setProductPrintArea({ventureId:session.ventureId,productId:blank.id,printArea:{...surfaces[0].area,...{surfaces}}});
     }
