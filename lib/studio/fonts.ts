@@ -27,7 +27,6 @@ import {
   Bangers,
   Righteous,
   Fredoka,
-  Baloo_2,
   Dancing_Script,
   Great_Vibes,
   Sacramento,
@@ -71,7 +70,6 @@ const abril = Abril_Fatface({ subsets: ["latin"], weight: "400", display: "swap"
 const bangers = Bangers({ subsets: ["latin"], weight: "400", display: "swap", preload: false });
 const righteous = Righteous({ subsets: ["latin"], weight: "400", display: "swap", preload: false });
 const fredoka = Fredoka({ subsets: ["latin"], weight: ["400","700"], display: "swap", preload: false });
-const baloo = Baloo_2({ subsets: ["latin"], weight: ["400","700"], display: "swap", preload: false });
 const dancing = Dancing_Script({ subsets: ["latin"], weight: ["400","700"], display: "swap", preload: false });
 const greatVibes = Great_Vibes({ subsets: ["latin"], weight: "400", display: "swap", preload: false });
 const sacramento = Sacramento({ subsets: ["latin"], weight: "400", display: "swap", preload: false });
@@ -111,7 +109,6 @@ export const PRODUCT_FONTS = [
   { key: "bangers", label: "Bangers", family: bangers.style.fontFamily, bold: false },
   { key: "righteous", label: "Righteous", family: righteous.style.fontFamily, bold: false },
   { key: "fredoka", label: "Fredoka", family: fredoka.style.fontFamily, bold: true },
-  { key: "baloo", label: "Baloo 2", family: baloo.style.fontFamily, bold: true },
   { key: "dancing", label: "Dancing Script", family: dancing.style.fontFamily, bold: true },
   { key: "greatVibes", label: "Great Vibes", family: greatVibes.style.fontFamily, bold: false },
   { key: "sacramento", label: "Sacramento", family: sacramento.style.fontFamily, bold: false },
