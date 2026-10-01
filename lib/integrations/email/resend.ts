@@ -280,6 +280,27 @@ export async function sendPartnerPasswordResetEmail(input: { to: string; name?: 
   });
 }
 
+/** NMH owner sign-in link (see lib/domains/identity/password.ts). */
+export async function sendOwnerSignInEmail(input: { to: string; url: string }) {
+  const text = [
+    "Hi,",
+    "",
+    "Here's your one-time link to sign in to the Sweet'Oh owner account:",
+    input.url,
+    "",
+    "The link works once and expires in an hour. If you didn't ask for this, ignore this email.",
+    "",
+    "— Sweet'Oh",
+  ].join("\n");
+  await sendSweetohWorkflowEmail({
+    to: input.to,
+    subject: "Your Sweet'Oh owner sign-in link",
+    text,
+    failureLogKey: "owner_signin_email_failed",
+    context: {},
+  });
+}
+
 /** Tells the partner a signed-up shopper sent a custom request (see lib/domains/customers). */
 export async function sendPartnerNewCustomRequestEmail(input: {
   to: string;

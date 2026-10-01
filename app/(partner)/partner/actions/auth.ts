@@ -4,8 +4,9 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/auth/supabase/server";
 import { getPublicEnv } from "@/lib/config/env";
 import { getSessionUser, requirePartnerWorkspace } from "@/lib/domains/identity/service";
-import { changePassword, completePasswordReset, requestPasswordReset } from "@/lib/domains/identity/password";
+import { changePassword, completePasswordReset, provisionOwnerSignIn, redeemOwnerSignIn, requestPasswordReset } from "@/lib/domains/identity/password";
 import { AppError } from "@/lib/shared/errors";
+import { logger } from "@/lib/shared/logger";
 
 function redirectLoginError(message: string): never {
   redirect(`/partner/login?error=${encodeURIComponent(message)}`);
@@ -73,6 +74,24 @@ export async function signInOwnerAction(formData: FormData): Promise<void> {
   redirect("/partner");
 }
 
+/**
+ * Owner email-link sign-in, gated to the single address in FOUNDATION_OWNER_EMAIL.
+ * Always answers the same way, so it never reveals whether an address matched.
+ */
+export async function signUpOwnerAction(_prev: PasswordFormState, form: FormData): Promise<PasswordFormState> {
+  const email = String(form.get("email") ?? "").trim().toLowerCase();
+  if (!email) return { error: "Enter your email." };
+  try {
+    const allowed = (process.env.FOUNDATION_OWNER_EMAIL ?? "").trim().toLowerCase();
+    if (allowed && email === allowed) {
+      await provisionOwnerSignIn(email, getPublicEnv().siteUrl);
+    }
+  } catch (error) {
+    logger.error("owner_signup_action_failed", { error: error instanceof Error ? error.message : String(error) });
+  }
+  return { done: true };
+}
+
 export async function signOutAction(): Promise<void> {
   const session = await getSessionUser().catch(() => null);
   const supabase = await createClient();
@@ -118,6 +137,24 @@ export async function resetPasswordAction(_prev: PasswordFormState, form: FormDa
     );
   } catch (error) {
     return { error: passwordProblem(error) };
+  }
+  redirect("/partner");
+}
+
+/** Completes the emailed owner link (a click, so mail scanners can't burn it). */
+export async function verifyOwnerAction(formData: FormData): Promise<void> {
+  const token = String(formData.get("token") ?? "");
+  if (!token) redirect("/owner/login?error=" + encodeURIComponent("That sign-in link is incomplete. Ask for a new one."));
+  try {
+    await redeemOwnerSignIn(token);
+  } catch (error) {
+    redirect("/owner/login?error=" + encodeURIComponent(error instanceof AppError ? error.message : "Sign-in couldn't be completed. Ask for a new link."));
+  }
+  const supabase = await createClient();
+  const session = await getSessionUser().catch(() => null);
+  if (session?.role !== "owner") {
+    await supabase.auth.signOut().catch(() => undefined);
+    redirect("/owner/login?error=owner_only");
   }
   redirect("/partner");
 }

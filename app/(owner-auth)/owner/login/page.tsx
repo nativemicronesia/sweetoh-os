@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/domains/identity/service";
-import { signInOwnerAction } from "@/app/(partner)/partner/actions/auth";
+import { OwnerSignupForm } from "../../../(partner-auth)/partner/password-forms";
 import "@/app/(partner-auth)/partner/login/login.css";
 
 export const metadata = { title: "NMH owner sign in · Sweet’Oh" };
@@ -31,14 +31,9 @@ export default async function OwnerLoginPage({ searchParams }: OwnerLoginPagePro
         <div className="login-form-wrap">
           <p className="login-kicker">NMH owner access</p>
           <h1>Welcome to your shop.</h1>
-          <p className="login-sub">Sign in with your own owner account to manage Sweet&apos;Oh. Your partner keeps her separate login and workspace identity.</p>
+          <p className="login-sub">Enter your email and we&apos;ll send a one-time sign-in link. Your partner keeps her separate login and workspace identity.</p>
           {message && <p role="alert" className="login-error">{message}</p>}
-          <form action={signInOwnerAction} className="login-form">
-            <label><span>Email</span><input type="email" name="email" required autoComplete="username" placeholder="you@example.com" /></label>
-            <label><span>Password</span><input type="password" name="password" required autoComplete="current-password" placeholder="••••••••" /></label>
-            <button type="submit">Sign in as owner</button>
-          </form>
-          <Link href="/partner/forgot" className="login-back">Forgot your password?</Link>
+          <OwnerSignupForm />
           <Link href="/partner/login" className="login-back" style={{ display: "block", marginTop: 10 }}>Partner sign-in →</Link>
         </div>
       </section>

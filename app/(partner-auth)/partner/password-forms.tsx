@@ -5,6 +5,7 @@ import { useActionState } from "react";
 import {
   forgotPasswordAction,
   resetPasswordAction,
+  signUpOwnerAction,
   type PasswordFormState,
 } from "@/app/(partner)/partner/actions/auth";
 
@@ -24,6 +25,26 @@ export function ForgotForm() {
         <input type="email" name="email" required autoComplete="email" placeholder="you@example.com" />
       </label>
       <button type="submit" disabled={pending}>{pending ? "Sending…" : "Email me a reset link"}</button>
+    </form>
+  );
+}
+
+export function OwnerSignupForm() {
+  const [state, action, pending] = useActionState<PasswordFormState, FormData>(signUpOwnerAction, null);
+  if (state?.done) {
+    return (
+      <p className="login-note" role="status">
+        If that&apos;s the owner address, a sign-in link is on its way. Check your inbox (and spam) — it works once and expires in an hour.
+      </p>
+    );
+  }
+  return (
+    <form action={action} className="login-form">
+      <label>
+        <span>Email</span>
+        <input type="email" name="email" required autoComplete="email" placeholder="you@example.com" />
+      </label>
+      <button type="submit" disabled={pending}>{pending ? "Sending…" : "Email me a sign-in link"}</button>
     </form>
   );
 }
