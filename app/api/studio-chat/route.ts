@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  if (session.role !== "partner") {
+  if (session.role !== "partner" && session.role !== "owner") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

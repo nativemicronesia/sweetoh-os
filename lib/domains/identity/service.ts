@@ -126,14 +126,14 @@ export async function requirePartnerWorkspace(): Promise<SessionUser> {
 }
 
 /**
- * The design Studio is shared: the partner uses it from her back office and
+ * The design Studio is shared: the partner and the NMH owner use it from the back office and
  * creators use it from Create with Sweet'Oh. Every query below it is scoped to
  * session.ventureId, so a creator only ever touches their own workspace.
  */
 export async function requireStudioWorkspace(): Promise<SessionUser> {
   const session = await getSessionUser();
   if (!session) redirect("/studio/login");
-  if (session.role !== "partner" && session.role !== "creator") redirect("/studio/login?error=creators_only");
+  if (session.role !== "partner" && session.role !== "owner" && session.role !== "creator") redirect("/studio/login?error=creators_only");
   return session;
 }
 
