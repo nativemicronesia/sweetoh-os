@@ -85,6 +85,7 @@ import { saveStudioDesignAction } from "../actions/studio-design";
 import { physicalToPixels, describeProductionSize } from "@/lib/domains/catalog/production-geometry";
 import { DESIGN_REGION_ID, DESIGN_TYPES, designCanvasSurface, parseDesignSize, type DesignUnit } from "@/lib/studio/design-canvas";
 import { applyDesignToRegion } from "@/lib/studio/design-apply";
+import { flatBlankDataUrl, flatBlankKindFor } from "@/lib/studio/flat-blanks";
 import {
   defaultArea,
   regionsFor,
@@ -94,7 +95,7 @@ import {
   type StudioSurface,
   productionSurfacePhoto,
 } from "@/lib/domains/catalog/studio-layout";
-import type { CatalogSource, VariantOptions } from "@/lib/domains/catalog/variants";
+import { isLightColor, type CatalogSource, type VariantOptions } from "@/lib/domains/catalog/variants";
 import { analyzePhoto, tintGarment } from "@/lib/studio/tint";
 import { sizedPhoto } from "@/lib/studio/photo";
 import { PRODUCT_FONTS, ensureFont, fontFamily } from "@/lib/studio/fonts";
@@ -228,7 +229,7 @@ type Selected =
 type Panel = "files" | "text" | "shapes" | "assets" | "ai" | "inspiration" | "layers" | null;
 type InspirationItem = { id: string; name: string; previewUrl: string };
 type Mockup = { color: string; hex: string; url: string };
-type PreviewData = { views: { name: string; url: string; hasProductionBlank: boolean }[]; colors: Mockup[] };
+type PreviewData = { views: { name: string; url: string; hasProductionBlank: boolean }[]; colors: Mockup[]; flat?: boolean };
 type TextNumberDraft = { layerId: string; field: StudioTextNumberField; value: string };
 
 /** Extend Fabric's PencilBrush input lifecycle and keep the completed drawing
@@ -799,6 +800,15 @@ export function ProductEditor({
     return obj;
   }
 
+  /** A clean flat product blank at real size, used when there is no verified photo. Never for standalone designs. */
+  function flatFor(s: Surface, hex: string | null): string | null {
+    if (standalone) return null;
+    const sp = spec(s);
+    if (!sp) return null;
+    return flatBlankDataUrl(flatBlankKindFor({ name: blank.name, model: blank.catalogSource?.model, position: s.position }), {
+      zone: s.area, widthIn: sp.width / DPI, heightIn: sp.height / DPI, color: hex ?? "#ffffff", position: s.position,
+    });
+  }
   function photoFor(s: Surface) {
     const photo = productionSurfacePhoto(s, urls.current);
     return photo ? sizedPhoto(photo) : null;
@@ -829,14 +839,13 @@ export function ProductEditor({
   async function paint(canvas: StaticCanvas, s: Surface, withGuide = false, hex: string | null = colorRef.current) {
     canvas.clear();
     const original = photoFor(s);
-    // With no product photo the print surface itself is the page: white shapes on the workspace, like a Canva page.
-    const board = withGuide && !original;
-    canvas.backgroundColor = board ? "" : "#ffffff";
+    const flat = original ? null : flatFor(s, hex);
+    // With no photo and no known size the print surface itself is the page: white shapes on the workspace, like a Canva page.
+    const board = withGuide && !original && !flat;
+    canvas.backgroundColor = board ? "" : flat ? "#f1f3f2" : "#ffffff";
     if (withGuide && canvas === editor.current) {
-      // A bare print surface fills the workspace, like a Canva page; a product photo keeps the full stage.
-      const a = s.area;
-      const k = board ? Math.min(2.4, 0.92 / Math.max(a.width, a.height)) : 1;
-      canvas.setViewportTransform([k, 0, 0, k, board ? SIZE * (0.5 - k * (a.x + a.width / 2)) : 0, board ? SIZE * (0.5 - k * (a.y + a.height / 2)) : 0]);
+      boardRef.current = board;
+      fitRef.current?.();
     }
     if (board) {
       // The surface lives on the background layer so artwork layers always stack above it.
@@ -857,6 +866,12 @@ export function ProductEditor({
       });
       canvas.backgroundImage = image;
     }
+    if (flat) {
+      const image = await FabricImage.fromURL(flat);
+      if (withGuide && canvas !== editor.current) return;
+      image.set({ left: 0, top: 0, scaleX: SIZE / image.width, scaleY: SIZE / image.height });
+      canvas.backgroundImage = image;
+    }
     for (const layer of s.layers) {
       const object = await makeLayer(layer);
       object.set({ visible: !layer.hidden, selectable: !layer.locked, evented: !layer.locked });
@@ -875,7 +890,7 @@ export function ProductEditor({
         top: a.y * SIZE,
         width: a.width * SIZE,
         height: a.height * SIZE,
-        fill: original ? "rgba(31,112,72,0.04)" : "rgba(31,112,72,0.08)",
+        fill: original || flat ? "rgba(31,112,72,0.04)" : "rgba(31,112,72,0.08)",
         stroke: INK,
         strokeWidth: 1.2,
         strokeDashArray: [6, 5],
@@ -893,10 +908,14 @@ export function ProductEditor({
       guide.current = rect;
       if (board) { /* the surface is drawn as the page above */ }
       else if (s.printRegions === undefined) canvas.add(rect);
-      else for (const region of regionsFor(s)) canvas.add(new Path(regionPath(region), {
-        fill: "rgba(31,112,72,0.025)", stroke: INK, strokeWidth: 1.2, strokeDashArray: [6, 5],
-        selectable: false, evented: false, excludeFromExport: true,
-      }));
+      else for (const region of regionsFor(s)) {
+        // On a flat blank the outline needs to read on any garment color: a dark ring under white dashes.
+        if (flat) canvas.add(new Path(regionPath(region), { fill: "", stroke: "rgba(16,24,40,0.45)", strokeWidth: 3, strokeUniform: true, selectable: false, evented: false, excludeFromExport: true }));
+        canvas.add(new Path(regionPath(region), {
+          fill: "rgba(31,112,72,0.025)", stroke: flat ? "#ffffff" : INK, strokeWidth: 1.2, strokeDashArray: [6, 5],
+          selectable: false, evented: false, excludeFromExport: true,
+        }));
+      }
     }
     canvas.renderAll();
   }
@@ -953,6 +972,7 @@ export function ProductEditor({
       for (const s of surfaces) {
         const src = photoFor(s);
         if (src) next[s.id] = (await recolored(src, colorRef.current, s.area)) ?? src;
+        else { const flat = flatFor(s, colorRef.current); if (flat) next[s.id] = flat; }
       }
       if (live) setViewThumbs(next);
     })();
@@ -1121,6 +1141,19 @@ export function ProductEditor({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Ctrl/⌘ + wheel (and trackpad pinch) zooms the workspace, like Canva.
+  useEffect(() => {
+    const el = stage.current;
+    if (!el) return;
+    const onWheel = (event: WheelEvent) => {
+      if (!event.ctrlKey && !event.metaKey) return;
+      event.preventDefault();
+      setZoom((z) => Math.max(0.25, Math.min(3, round(z * (1 - event.deltaY * 0.004), 3))));
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, []);
+
   // Fit the canvas to the stage, then apply zoom.
   useEffect(() => {
     const el = stage.current;
@@ -1128,15 +1161,33 @@ export function ProductEditor({
     if (!el || !canvas) return;
     const fit = () => {
       const box = el.getBoundingClientRect();
-      const side = Math.max(240, Math.min(box.width - 48, box.height - 48));
-      const px = Math.round(side * zoom);
-      canvas.setDimensions({ width: `${px}px`, height: `${px}px` }, { cssOnly: true });
+      const availW = Math.max(200, box.width - 48), availH = Math.max(200, box.height - 48);
+      const wrapper = canvas.wrapperEl;
+      const hostEl = wrapper?.parentElement;
+      if (boardRef.current && wrapper && hostEl) {
+        // A page is cropped out of the square stage and fills the workspace, with a margin for overhanging artwork.
+        const a = surface().area, m = 0.06;
+        const cx = Math.max(0, a.x - m), cy = Math.max(0, a.y - m);
+        const vw = Math.min(1, a.x + a.width + m) - cx, vh = Math.min(1, a.y + a.height + m) - cy;
+        const side = Math.min(availW / vw, availH / vh) * zoom;
+        canvas.setDimensions({ width: `${Math.round(side)}px`, height: `${Math.round(side)}px` }, { cssOnly: true });
+        hostEl.style.cssText = `width:${Math.round(vw * side)}px;height:${Math.round(vh * side)}px;overflow:hidden;position:relative`;
+        wrapper.style.cssText += `;position:absolute;left:${-Math.round(cx * side)}px;top:${-Math.round(cy * side)}px`;
+      } else if (wrapper && hostEl) {
+        hostEl.style.cssText = "";
+        wrapper.style.position = "";
+        wrapper.style.left = "";
+        wrapper.style.top = "";
+        const px = Math.round(Math.max(240, Math.min(availW, availH)) * zoom);
+        canvas.setDimensions({ width: `${px}px`, height: `${px}px` }, { cssOnly: true });
+      }
       canvas.calcOffset();
     };
+    fitRef.current = fit;
     fit();
     const ro = new ResizeObserver(fit);
     ro.observe(el);
-    return () => ro.disconnect();
+    return () => { ro.disconnect(); fitRef.current = null; };
   }, [zoom]);
 
   useEffect(() => {
@@ -1268,7 +1319,7 @@ export function ProductEditor({
       scaleY: 1,
       angle: 0,
       fontSize: preset.size,
-      color: isWhite(colorRef.current) ? "#101828" : "#ffffff",
+      color: isLightColor(colorRef.current ?? "#ffffff") ? "#101828" : "#ffffff",
       font: preset.font ?? "inter",
       bold: preset.bold ?? true,
     };
@@ -2105,8 +2156,8 @@ export function ProductEditor({
     const photo = photoFor(front);
     const renderer = getMockupRenderer();
     for (const c of colors) {
-      if (!photo) break;
-      const base = (await recolored(photo, c.hex, front.area)) ?? photo;
+      const base = photo ? ((await recolored(photo, c.hex, front.area)) ?? photo) : flatFor(front, c.hex);
+      if (!base) break;
       const url = await renderer.render({
         photo: base,
         design,
@@ -2116,7 +2167,7 @@ export function ProductEditor({
       });
       perColor.push({ color: c.name, hex: c.hex, url });
     }
-    return { views, colors: perColor };
+    return { views, colors: perColor, flat: !photo && Boolean(flatFor(front, "#ffffff")) };
   }
   async function openPreview() {
     setBusy("Rendering mockups…");
@@ -2203,6 +2254,8 @@ export function ProductEditor({
       };
     },
   });
+  const boardRef = useRef(false);
+  const fitRef = useRef<(() => void) | null>(null);
   const autosave = useRef<() => void>(() => undefined);
   useEffect(() => {
     if (!standalone) return;
@@ -2623,14 +2676,14 @@ export function ProductEditor({
         )}
 
         <main className="pe-stage-wrap">
-          <div className="pe-surface-bar"><span><strong>{current.name}</strong><small>{standalone ? "Artboard" : photoFor(current) ? setupSaved ? "Product setup saved" : "Verified production blank" : "Print-area surface only · no clean blank photo"}{!standalone && currentSpec ? ` · ${describeProductionSize({ width: currentSpec.width / DPI, height: currentSpec.height / DPI, unit: "in" })}` : ""}</small></span>
+          <div className="pe-surface-bar"><span><strong>{current.name}</strong><small>{standalone ? "Artboard" : photoFor(current) ? setupSaved ? "Product setup saved" : "Verified production blank" : flatFor(current, colorRef.current) ? "Flat product blank" : "Print-area surface only"}{!standalone && currentSpec ? ` · ${describeProductionSize({ width: currentSpec.width / DPI, height: currentSpec.height / DPI, unit: "in" })}` : ""}</small></span>
             {standalone ? null : currentRegions.length > 0 ? <label>Print area <select aria-label="Active print area" value={activeRegionId ?? currentRegions[0]?.id} onChange={e => {
               const r = currentRegions.find(r => r.id === e.target.value)!;
               capture(); editor.current?.discardActiveObject(); surface().area = r.bounds; setActiveRegionId(r.id); setSurfaces([...doc.current.surfaces]); readSelection();
             }}>{currentRegions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}</select></label> : standalone ? null : <button className="pe-btn pe-btn-primary" onClick={() => setSetupOpen(true)}>Add a print area</button>}
           </div>
           {!standalone && !photoFor(current) && <div className="pe-surface-note" role="status">
-            <span><strong>Print surface view.</strong> This is the product&apos;s true print area to scale. Add a clean blank photo to design on the product itself — supplier photos and mockups are references only.</span>
+            <span><strong>Flat product view.</strong> Drawn at real size from the product&apos;s printable dimensions. Add your own clean blank photo for customer-facing mockups.</span>
             <button className="pe-btn pe-btn-ghost" disabled={locked} onClick={() => setViewPicker({ mode: "replace", position: current.position ?? "front" })}>Add blank photo</button>
           </div>}
           <div className="pe-stage" ref={stage} data-pan={panMode} onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = "copy"; }} onDrop={e => { e.preventDefault(); if (!busy) void upload(e.dataTransfer.files[0]); }}
@@ -2667,7 +2720,7 @@ export function ProductEditor({
             )}
             <div className="pe-zoom">
               <button onClick={() => setPanMode((value) => !value)} aria-label="Pan canvas" aria-pressed={panMode} title="Drag to pan"><Hand size={15} /></button>
-              <button onClick={() => setZoom((z) => Math.max(0.5, round(z - 0.25)))} aria-label="Zoom out">
+              <button onClick={() => setZoom((z) => Math.max(0.25, round(z - 0.25)))} aria-label="Zoom out">
                 <Minus size={15} />
               </button>
               <span>{Math.round(zoom * 100)}%</span>
@@ -3099,7 +3152,8 @@ export function ProductEditor({
             <div className="pe-preview-body">
               <div className="pe-preview-main">{previewImage && <img src={previewImage} alt={previewHasProductionBlank ? "Product mockup" : "Artwork on the saved print-area surface"} />}</div>
               <div className="pe-preview-side">
-                {!previewHasProductionBlank && <p className="pe-production-boundary" role="status"><strong>No verified clean production blank for this view.</strong> This is artwork over the saved print-area geometry, not a product mockup. Supplier photos and generated previews remain references.</p>}
+                {!previewHasProductionBlank && !preview?.flat && <p className="pe-production-boundary" role="status"><strong>No verified clean production blank for this view.</strong> This is artwork over the saved print-area geometry, not a product mockup. Supplier photos and generated previews remain references.</p>}
+                {preview?.flat && <p className="pe-production-boundary" role="status"><strong>Flat blank preview.</strong> Colors show the design on a flat product drawn at real size. Add your own clean blank photo for customer-facing mockups.</p>}
                 <p className="pe-label">Views</p>
                 <div className="pe-preview-thumbs">
                   {preview.views.map((v, i) => (

@@ -21,8 +21,9 @@ import {
   setProductVariantSetup,
   updateProduct,
 } from "@/lib/domains/catalog/service";
-import { defaultPrintAreaFor, defaultUpcharges, sortSizes } from "@/lib/domains/catalog/variants";
-import { areaSchema } from "@/lib/domains/catalog/studio-layout";
+import { defaultUpcharges, sortSizes } from "@/lib/domains/catalog/variants";
+import { flatBlankKindFor, flatBlankZone } from "@/lib/studio/flat-blanks";
+import { pixelsToInches } from "@/lib/domains/catalog/production-geometry";
 import { ValidationError } from "@/lib/shared/errors";
 import { getProductById } from "@/lib/domains/catalog/service";
 
@@ -63,19 +64,27 @@ export async function startCatalogDesign(form: FormData) {
       availableSizes: options?.sizes ?? [],
       images: blueprint.images,
     };
-    // The photo she designs on becomes the Front view, with the print area
-    // the catalog page placed on the garment (or a proportional default).
-    const detected = areaSchema.safeParse(
-      (() => {
-        try {
-          return JSON.parse(String(form.get("area") ?? ""));
-        } catch {
-          return null;
-        }
-      })(),
-    );
-    const frontArea = detected.success ? detected.data : defaultPrintAreaFor(catalogSource.printAreas);
-    const frontView = { id: "front", name: "Front", position: "front", assetId: null, imageUrl: url, imageRole: "catalog_reference" as const, area: frontArea };
+    // Every printable surface the supplier lists, each with its real printable size as structured geometry.
+    const POSITION_NAME: Record<string, string> = { front: "Front", back: "Back", left_sleeve: "Left sleeve", right_sleeve: "Right sleeve", neck: "Neck label" };
+    const kindFor = (position: string) => flatBlankKindFor({ name: `${blueprint.title} ${name}`, model: blueprint.model, position });
+    const surfaceFor = (spec: { position: string; width: number; height: number }) => {
+      const size = pixelsToInches(spec);
+      const area = flatBlankZone(kindFor(spec.position), size.width, size.height);
+      return {
+        id: spec.position,
+        name: POSITION_NAME[spec.position] ?? spec.position.replace(/_/g, " "),
+        position: spec.position,
+        assetId: null,
+        area,
+        printRegions: [{ id: `${spec.position}-main`, name: `${POSITION_NAME[spec.position] ?? spec.position} print area`, bounds: area, shape: "rectangle" as const, dimensions: size }],
+      };
+    };
+    const specs = catalogSource.printAreas.length ? catalogSource.printAreas : [{ position: "front", width: 3600, height: 4800 }];
+    const rank = (position: string) => { const i = ["front", "back"].indexOf(position); return i === -1 ? 9 : i; };
+    const ordered = [...specs].sort((a, b) => rank(a.position) - rank(b.position));
+    const allSurfaces = ordered.map(surfaceFor).map((surface, index) => index === 0 ? { ...surface, imageUrl: url, imageRole: "catalog_reference" as const } : surface);
+    const frontArea = allSurfaces[0].area;
+    const frontView = allSurfaces[0];
     // Reuse the local blank if this catalog product was already chosen.
     const existing = (await listBuilderBlanks(session)).find(
       (b) => b.catalogSource?.blueprintId === id || b.name === name,
@@ -94,7 +103,7 @@ export async function startCatalogDesign(form: FormData) {
         await setProductPrintArea({
           ventureId: session.ventureId,
           productId: existing.id,
-          printArea: { ...frontArea, surfaces: [frontView, ...others] },
+          printArea: { ...frontArea, surfaces: [...allSurfaces, ...others] },
         });
       }
       redirect(`${paths.canvas}?blank=${existing.id}`);
@@ -124,7 +133,7 @@ export async function startCatalogDesign(form: FormData) {
     await setProductPrintArea({
       ventureId: session.ventureId,
       productId: product.id,
-      printArea: { ...frontArea, surfaces: [frontView] },
+      printArea: { ...frontArea, surfaces: allSurfaces },
     });
     await confirmBuilderProduct(session, product.id);
     revalidatePath(paths.catalog);

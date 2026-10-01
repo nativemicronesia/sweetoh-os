@@ -1,7 +1,8 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
-import { Check, MapPin, Ruler, Sparkles } from "lucide-react";
-import { analyzePhoto, printAreaInBox, type PhotoInfo } from "@/lib/studio/tint";
+import { useState } from "react";
+import { Check, MapPin, Ruler } from "lucide-react";
+import { flatBlankDataUrl, flatBlankKindFor, flatBlankZone } from "@/lib/studio/flat-blanks";
+import { describeProductionSize, pixelsToInches } from "@/lib/domains/catalog/production-geometry";
 import { Badge } from "@/components/ui/badge";
 import { isLightColor, type VariantColor } from "@/lib/domains/catalog/variants";
 import { SubmitButton } from "../components/submit-button";
@@ -42,33 +43,7 @@ export function CatalogProduct({
   /** Who produces it — the partner prints locally; creators use Printify or request Sweet'Oh. */
   provider?: { title: string; text: string };
 }) {
-  const [index, setIndex] = useState(0);
-  const [best, setBest] = useState<number | null>(null);
-  const picked = useRef(false);
-  const [info, setInfo] = useState<Record<number, PhotoInfo>>({});
-  // Find the cleanest flat photo to design on, like Printify's editor view.
-  useEffect(() => {
-    let live = true;
-    (async () => {
-      const found: Record<number, PhotoInfo> = {};
-      for (const [i, src] of product.images.slice(0, 12).entries()) {
-        found[i] = await analyzePhoto(src).catch(() => ({ score: -2, box: null }));
-        if (!live) return;
-      }
-      const top = Object.entries(found).sort((a, b) => b[1].score - a[1].score)[0];
-      setInfo(found);
-      if (top && top[1].score > 0) {
-        setBest(Number(top[0]));
-        if (!picked.current) setIndex(Number(top[0]));
-      }
-    })();
-    return () => {
-      live = false;
-    };
-  }, [product.images]);
-  const front = options?.printAreas.find((a) => a.position === "front") ?? options?.printAreas[0];
-  const box = info[index]?.box;
-  const area = box ? printAreaInBox(box, front ? front.height / front.width : 1) : null;
+  const [referenceIndex, setReferenceIndex] = useState<number | null>(null);
   const [more, setMore] = useState(false);
   const colorNames = options?.colors.map((c) => c.name) ?? [];
   const basics = colorNames.filter((c) => c === "White" || c === "Black");
@@ -88,46 +63,55 @@ export function CatalogProduct({
       Object.keys(AREA_LABEL).indexOf(a.position) - Object.keys(AREA_LABEL).indexOf(b.position),
   );
 
+  const [surface, setSurface] = useState<string | null>(null);
+  const active = areas.find((a) => a.position === surface) ?? areas[0] ?? { position: "front", width: 3600, height: 4800 };
+  const size = pixelsToInches(active);
+  const kind = flatBlankKindFor({ name: product.name, model: product.model, position: active.position });
+  const zone = flatBlankZone(kind, size.width, size.height);
+  const previewHex = options?.colors.find((c) => c.name === colors[colors.length - 1])?.hex ?? "#ffffff";
+  const blankImage = flatBlankDataUrl(kind, { zone, widthIn: size.width, heightIn: size.height, color: previewHex, position: active.position });
+
   return (
     <section className="catalog-detail">
       <div>
-        <div className="catalog-detail-image">
-          <img key={product.images[index]} src={sizedPhoto(product.images[index])} alt={product.name} />
-          {area && (
-            <span
-              className="detail-print-area"
-              style={{
-                left: `${area.x * 100}%`,
-                top: `${area.y * 100}%`,
-                width: `${area.width * 100}%`,
-                height: `${area.height * 100}%`,
-              }}
-            >
-              Print area
-            </span>
-          )}
+        {areas.length > 1 && (
+          <div className="catalog-surface-tabs" role="tablist" aria-label="Print areas">
+            {areas.map((a) => (
+              <button key={a.position} type="button" role="tab" aria-selected={active.position === a.position} onClick={() => setSurface(a.position)}>
+                {AREA_LABEL[a.position] ?? a.position.replace(/_/g, " ")}
+              </button>
+            ))}
+          </div>
+        )}
+        <div className="catalog-detail-image catalog-blank">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={blankImage} alt={`${product.name} — ${AREA_LABEL[active.position] ?? active.position}, flat blank`} />
+          <span
+            className="detail-print-area"
+            style={{ left: `${zone.x * 100}%`, top: `${zone.y * 100}%`, width: `${zone.width * 100}%`, height: `${zone.height * 100}%` }}
+          >
+            <em>{describeProductionSize(size)}</em>
+          </span>
         </div>
-        <div className="catalog-thumbnails" aria-label="Product images">
-          {product.images.map((src, i) => (
-            <button
-              key={src}
-              type="button"
-              aria-label={`Product view ${i + 1}`}
-              aria-pressed={index === i}
-              onClick={() => {
-                picked.current = true;
-                setIndex(i);
-              }}
-            >
-              <img src={sizedPhoto(src, 400)} alt="" loading="lazy" />
-              {best === i && (
-                <span className="thumb-best" title="Best photo for designing">
-                  <Sparkles size={11} />
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
+        <p className="catalog-blank-note">Flat blank drawn at real size from the printable dimensions. Colors preview the variant you pick.</p>
+        {product.images.length > 0 && (
+          <details className="catalog-references">
+            <summary>Supplier photos (reference only)</summary>
+            <p>These can show sample artwork and are never used as the product in Studio.</p>
+            <div className="catalog-thumbnails" aria-label="Supplier photos">
+              {product.images.map((src, i) => (
+                <button key={src} type="button" aria-label={`Supplier photo ${i + 1}`} aria-pressed={referenceIndex === i} onClick={() => setReferenceIndex(i)}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={sizedPhoto(src, 400)} alt="" loading="lazy" />
+                </button>
+              ))}
+            </div>
+            {referenceIndex !== null && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img className="catalog-reference-large" src={sizedPhoto(product.images[referenceIndex])} alt="Supplier reference" />
+            )}
+          </details>
+        )}
       </div>
       <div className="space-y-6 py-2">
         <div className="space-y-3">
@@ -234,8 +218,7 @@ export function CatalogProduct({
 
         <form action={startCatalogDesign} className="space-y-3">
           <input type="hidden" name="blueprintId" value={product.id} />
-          <input type="hidden" name="imageIndex" value={index} />
-          <input type="hidden" name="area" value={area ? JSON.stringify(area) : ""} />
+          <input type="hidden" name="imageIndex" value={referenceIndex ?? 0} />
           <input type="hidden" name="colors" value={JSON.stringify(colors)} />
           <input type="hidden" name="sizes" value={JSON.stringify(sizes)} />
           <SubmitButton pendingLabel="Preparing your product…" disabled={needsColor || needsSize}>
@@ -246,9 +229,7 @@ export function CatalogProduct({
               ? "Pick at least one color."
               : needsSize
                 ? "Pick at least one size."
-                : best === index
-                  ? "This flat photo is best for designing. You’ll set prices after designing."
-                  : "The selected photo is what you’ll design on. You’ll set prices after designing."}
+                : "Studio opens on this product’s real print areas. You’ll set prices after designing."}
           </p>
         </form>
 

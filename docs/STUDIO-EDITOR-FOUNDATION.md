@@ -42,4 +42,7 @@ This phase adds original SweetOh vector elements (confetti, scallop border, rain
 - **Production geometry.** `lib/domains/catalog/production-geometry.ts` is the one place that converts a region's physical size to print pixels (300 DPI; Printify placeholders are pixel sizes at that DPI) and maps editor stage coordinates to print-file coordinates and back. Saving a design never rewrites an existing product's geometry; product setup owns it.
 - **Mockups** are previews rendered from the print file and a production blank; they never define geometry.
 
-Not yet built: artboard resize after creation, batch apply to many products, a verified clean-blank source for every catalog product (the existing background-removal setup creates them per product), and per-blank perspective mockup templates.
+- **Flat product blanks.** `lib/studio/flat-blanks.ts` draws a clean, neutral flat product (tee, hoodie, tote, flat panel) at real size from a surface's printable dimensions and recolors it per variant. Catalog products create every supplier print surface up front with real dimensions (`actions/catalog.ts`), and the catalog product page shows the flat blank, not the supplier's marketing photo. Supplier photos are reference-only and can carry sample artwork. Flat blanks are for placing artwork in context; a verified clean blank photo is still required for customer-facing mockups and listings.
+- **Workspace.** Standalone artboards and bare print surfaces render as a page on a workspace, cropped and fitted to the stage; artboards resize with artwork scaling and autosave.
+
+Not yet built: batch apply to many products, per-blank perspective mockup templates, multi-page designs.
