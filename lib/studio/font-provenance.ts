@@ -21,11 +21,34 @@ export const STUDIO_FONT_PROVENANCE = {
   fraunces: ofl("fraunces"),
   kalam: ofl("kalam"),
   tiltWarp: ofl("tiltwarp"),
+  poppins: ofl("poppins"),
+  raleway: ofl("raleway"),
+  lato: ofl("lato"),
+  opensans: ofl("opensans"),
+  nunito: ofl("nunito"),
+  rubik: ofl("rubik"),
+  workSans: ofl("worksans"),
+  dmSans: ofl("dmsans"),
+  dmSerif: ofl("dmserifdisplay"),
+  abril: ofl("abrilfatface"),
+  bangers: ofl("bangers"),
+  righteous: ofl("righteous"),
+  fredoka: ofl("fredoka"),
+  baloo: ofl("baloo2"),
+  dancing: ofl("dancingscript"),
+  greatVibes: ofl("greatvibes"),
+  sacramento: ofl("sacramento"),
+  shadows: ofl("shadowsintolight"),
+  archivoBlack: ofl("archivoblack"),
+  alfaSlab: ofl("alfaslabone"),
+  cinzel: ofl("cinzel"),
+  staatliches: ofl("staatliches"),
+  lilita: ofl("lilitaone"),
 } as const;
 
 /** Stable names/rights for catalog search without loading fonts into the canvas. */
 export const STUDIO_FONT_LABELS: Record<keyof typeof STUDIO_FONT_PROVENANCE, string> = {
-  inter: "Inter", montserrat: "Montserrat", anton: "Anton", bebas: "Bebas Neue", oswald: "Oswald", playfair: "Playfair Display", pacifico: "Pacifico", marker: "Permanent Marker", caveat: "Caveat", lobster: "Lobster", barlow: "Barlow Condensed", space: "Space Grotesk", fraunces: "Fraunces", kalam: "Kalam", tiltWarp: "Tilt Warp",
+  inter: "Inter", montserrat: "Montserrat", anton: "Anton", bebas: "Bebas Neue", oswald: "Oswald", playfair: "Playfair Display", pacifico: "Pacifico", marker: "Permanent Marker", caveat: "Caveat", lobster: "Lobster", barlow: "Barlow Condensed", space: "Space Grotesk", fraunces: "Fraunces", kalam: "Kalam", tiltWarp: "Tilt Warp", poppins: "Poppins", raleway: "Raleway", lato: "Lato", opensans: "Open Sans", nunito: "Nunito", rubik: "Rubik", workSans: "Work Sans", dmSans: "DM Sans", dmSerif: "DM Serif Display", abril: "Abril Fatface", bangers: "Bangers", righteous: "Righteous", fredoka: "Fredoka", baloo: "Baloo 2", dancing: "Dancing Script", greatVibes: "Great Vibes", sacramento: "Sacramento", shadows: "Shadows Into Light", archivoBlack: "Archivo Black", alfaSlab: "Alfa Slab One", cinzel: "Cinzel", staatliches: "Staatliches", lilita: "Lilita One"
 };
 
 export type StudioFontKey = keyof typeof STUDIO_FONT_PROVENANCE;

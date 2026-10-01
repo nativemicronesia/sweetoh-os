@@ -53,7 +53,7 @@ export function StudioHome({ designs, products, error }: { designs: StudioHomeDe
   const standalone = designs.filter((d) => d.compositionKind === "standalone");
   const onProducts = designs.filter((d) => d.compositionKind === "product");
   return (
-    <div className="sh">
+    <div className="sh so-reveal">
       <FlashBanner message={error} variant="error" />
 
       <header className="sh-head">

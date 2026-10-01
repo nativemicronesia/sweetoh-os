@@ -5,7 +5,7 @@ import { recordAuditEvent } from "@/lib/domains/audit/service";
 import { compoundPilOnAssetApprove } from "@/lib/domains/intelligence/pil-service";
 import { NotFoundError, ValidationError } from "@/lib/shared/errors";
 import { logger } from "@/lib/shared/logger";
-import { createSignedUrl, productMediaPublicUrl, uploadToBucket } from "@/lib/storage/client";
+import { createSignedUrl, productMediaPublicUrl, removeFromBucket, uploadToBucket } from "@/lib/storage/client";
 import {
   customerUploadObjectKey,
   designLibraryObjectKey,
@@ -251,6 +251,50 @@ export async function createAssetWithUpload(input: {
 
   logger.info("asset_created", { assetId: row.id, ventureId: input.ventureId });
 
+  return row;
+}
+
+/**
+ * Overwrite a saved composition in place (same asset id): new preview file and layout.
+ * The new file goes to a fresh object key so cached signed URLs never serve a stale
+ * preview, and the previous object is removed so repeated saves don't pile up storage.
+ */
+export async function replaceCompositionAsset(input: {
+  ventureId: string;
+  ventureSlug: string;
+  assetId: string;
+  name: string;
+  file: Buffer | Uint8Array;
+  filename: string;
+  mimeType: string;
+  compositionLayout: AssetCompositionLayout;
+}) {
+  const db = getDb();
+  const existing = await getAssetById({ ventureId: input.ventureId, assetId: input.assetId });
+  if (existing.assetType !== "sweetoh_design" || !existing.compositionLayout) {
+    throw new ValidationError("Only a saved design can be updated this way.");
+  }
+  if (existing.status === "archived") throw new ValidationError("This design was removed.");
+  const objectKey = designLibraryObjectKey(input.ventureSlug, existing.id, `${Date.now()}-${input.filename}`);
+  await uploadToBucket({ bucket: existing.bucket, objectKey, body: input.file, contentType: input.mimeType });
+  const [row] = await db
+    .update(asset)
+    .set({
+      name: input.name,
+      objectKey,
+      mimeType: input.mimeType,
+      fileSizeBytes: input.file.length,
+      compositionLayout: input.compositionLayout,
+      updatedAt: new Date(),
+    })
+    .where(and(eq(asset.id, existing.id), eq(asset.ventureId, input.ventureId)))
+    .returning();
+  if (!row) throw new NotFoundError("Asset not found");
+  if (existing.objectKey && existing.objectKey !== objectKey) {
+    await removeFromBucket({ bucket: existing.bucket, objectKey: existing.objectKey }).catch((error) =>
+      logger.warn("asset_old_object_cleanup_failed", { assetId: existing.id, error: error instanceof Error ? error.message : String(error) }),
+    );
+  }
   return row;
 }
 

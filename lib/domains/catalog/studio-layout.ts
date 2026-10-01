@@ -133,6 +133,8 @@ export const layerSchema = z.discriminatedUnion("kind", [
     lineHeight: z.number().min(0.8).max(3).optional(),
     textBoxWidth: z.number().positive().max(1440).optional(),
     letterSpacing: z.number().min(-100).max(500).optional(),
+    /** Text on an arc: positive arches up, negative bows down, 0 is straight. */
+    curve: z.number().min(-100).max(100).optional(),
     outline: hexColor.optional(),
     outlineWidth: z.number().min(0).max(24).optional(),
   }),

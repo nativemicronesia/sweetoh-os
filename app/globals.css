@@ -452,3 +452,24 @@ body {
   background: color-mix(in srgb, #e0664a 18%, transparent);
   color: var(--so-cream);
 }
+
+/* ── Sweet'Oh wave loader ────────────────────────────────────────────── */
+.so-wave-loader { display: grid; justify-items: center; gap: 14px; color: var(--so-gold, #246d5b); }
+.so-wave-sea { position: relative; width: 168px; height: 44px; overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); }
+.so-wave { position: absolute; left: 0; width: 200%; height: 36px; will-change: transform; }
+.so-wave-0 { top: 4px; opacity: 1; animation: so-wave 2.6s linear infinite; }
+.so-wave-1 { top: 12px; opacity: 0.55; animation: so-wave 3.8s linear infinite reverse; }
+.so-wave-2 { top: 20px; opacity: 0.3; animation: so-wave 5.2s linear infinite; }
+.so-wave-label { font-size: 13px; font-weight: 500; letter-spacing: 0.01em; color: var(--so-cream-dim, #6b7770); animation: so-fade-up 0.6s var(--so-ease, ease) both; }
+.so-wave-compact .so-wave-sea { width: 96px; height: 28px; }
+.so-wave-compact .so-wave { height: 22px; }
+@keyframes so-wave { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+/* Staggered reveal for sections as they arrive. */
+.so-reveal > * { animation: so-fade-up 0.7s var(--so-ease, ease) both; }
+.so-reveal > *:nth-child(2) { animation-delay: 0.08s; }
+.so-reveal > *:nth-child(3) { animation-delay: 0.16s; }
+.so-reveal > *:nth-child(4) { animation-delay: 0.24s; }
+.so-reveal > *:nth-child(5) { animation-delay: 0.32s; }
+@media (prefers-reduced-motion: reduce) {
+  .so-wave, .so-wave-label, .so-reveal > * { animation: none !important; }
+}

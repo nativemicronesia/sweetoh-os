@@ -81,6 +81,7 @@ import {
   saveCanvasCompositionAction,
   saveBlankSurfacesAction,
 } from "../actions/library";
+import { WaveLoader } from "@/components/brand/wave-loader";
 import { saveStudioDesignAction } from "../actions/studio-design";
 import { physicalToPixels, describeProductionSize } from "@/lib/domains/catalog/production-geometry";
 import { DESIGN_REGION_ID, DESIGN_TYPES, designCanvasSurface, parseDesignSize, type DesignUnit } from "@/lib/studio/design-canvas";
@@ -204,6 +205,7 @@ type Selected =
       mask?: "circle" | "rounded";
       shadow?: { color: string; opacity: number; blur: number; offsetX: number; offsetY: number };
       letterSpacing?: number;
+      curve?: number;
       outline?: string;
       outlineWidth?: number;
       tile?: number;
@@ -340,6 +342,25 @@ function isWhite(hex: string | null) {
 function round(n: number, d = 2) {
   const f = 10 ** d;
   return Math.round(n * f) / f;
+}
+
+/** Lay a text object along an arc: curve > 0 arches up, < 0 bows down, 0 restores straight text. */
+function applyTextCurve(o: IText | Textbox, curve: number) {
+  if (!curve) {
+    o.set({ path: undefined });
+    if (o instanceof Textbox) o.initDimensions();
+    return;
+  }
+  const probe = new IText(o.text, { fontSize: o.fontSize, fontFamily: o.fontFamily, fontWeight: o.fontWeight, fontStyle: o.fontStyle, charSpacing: o.charSpacing });
+  const length = Math.max(20, probe.width);
+  const theta = Math.max(0.12, (Math.abs(curve) / 100) * Math.PI * 1.5);
+  const r = length / theta;
+  const up = curve > 0;
+  const a0 = up ? -Math.PI / 2 - theta / 2 : Math.PI / 2 + theta / 2;
+  const a1 = up ? -Math.PI / 2 + theta / 2 : Math.PI / 2 - theta / 2;
+  const d = `M ${r * Math.cos(a0)} ${r * Math.sin(a0)} A ${r} ${r} 0 ${theta > Math.PI ? 1 : 0} ${up ? 1 : 0} ${r * Math.cos(a1)} ${r * Math.sin(a1)}`;
+  o.set({ width: length + 4, path: new Path(d, { visible: false }), pathSide: "left", pathAlign: "center", pathStartOffset: 0 });
+  if (o instanceof Textbox) o.initDimensions();
 }
 
 /** A view's thumbnail drawn from its real print geometry. Supplier photos are never a stand-in for the product. */
@@ -571,6 +592,7 @@ export function ProductEditor({
                 lineHeight: o.lineHeight,
                 textBoxWidth: o.width,
                 letterSpacing: o.charSpacing,
+                ...(base.kind === "text" && base.curve ? { curve: base.curve } : {}),
                 outline: typeof o.stroke === "string" ? o.stroke : undefined,
                 outlineWidth: o.strokeWidth || undefined,
               }
@@ -710,6 +732,7 @@ export function ProductEditor({
             lineHeight: (o as IText).lineHeight,
             textBoxWidth: o.width,
             letterSpacing: (o as IText).charSpacing,
+            curve: base.kind === "text" ? base.curve ?? 0 : 0,
             outline: typeof (o as IText).stroke === "string" ? String((o as IText).stroke) : undefined,
             outlineWidth: (o as IText).strokeWidth,
           }
@@ -767,6 +790,7 @@ export function ProductEditor({
         ...textOptions,
         width: layer.textBoxWidth ?? Math.min(1440, Math.max(20, naturalWidth)),
       });
+      if (layer.curve) applyTextCurve(obj as IText, layer.curve);
     }
     if (layer.kind === "image" && layer.mask === "circle") {
       obj.clipPath = new Ellipse({ rx: obj.width / 2, ry: obj.height / 2, originX: "center", originY: "center" });
@@ -804,7 +828,7 @@ export function ProductEditor({
   function flatFor(s: Surface, hex: string | null): string | null {
     if (standalone) return null;
     const sp = spec(s);
-    if (!sp) return null;
+    if (!sp || sp.width <= 0 || sp.height <= 0) return null;
     return flatBlankDataUrl(flatBlankKindFor({ name: blank.name, model: blank.catalogSource?.model, position: s.position }), {
       zone: s.area, widthIn: sp.width / DPI, heightIn: sp.height / DPI, color: hex ?? "#ffffff", position: s.position,
     });
@@ -1635,7 +1659,8 @@ export function ProductEditor({
           const base = meta.current.get(o);
           o.set({ ...(action.text !== undefined ? { text: action.text } : {}), ...(action.font ? { fontFamily: fontFamily(action.font) } : {}), ...(action.fontSize !== undefined ? { fontSize: action.fontSize } : {}), ...(action.color ? { fill: action.color } : {}), ...(action.letterSpacing !== undefined ? { charSpacing: action.letterSpacing } : {}), ...(action.bold !== undefined || action.font !== undefined ? { fontWeight: effectiveBold ? "bold" : "normal" } : {}), ...(action.italic !== undefined ? { fontStyle: action.italic ? "italic" : "normal" } : {}), ...(action.textAlign !== undefined ? { textAlign: action.textAlign } : {}), ...(action.lineHeight !== undefined ? { lineHeight: action.lineHeight } : {}), ...(action.textBoxWidth !== undefined ? { width: action.textBoxWidth } : {}), ...(action.outline !== undefined ? { stroke: action.outline ?? undefined } : {}), ...(action.outlineWidth !== undefined ? { strokeWidth: action.outlineWidth } : {}) });
           if (o instanceof Textbox) o.initDimensions();
-          if (base?.kind === "text") meta.current.set(o, { ...base, ...(action.font ? { font: action.font } : {}), ...(action.bold !== undefined || action.font !== undefined ? { bold: effectiveBold } : {}), ...(action.italic !== undefined ? { italic: action.italic } : {}), ...(action.textAlign !== undefined ? { textAlign: action.textAlign } : {}), ...(action.lineHeight !== undefined ? { lineHeight: action.lineHeight } : {}), ...(action.textBoxWidth !== undefined ? { textBoxWidth: action.textBoxWidth } : {}) });
+          if (action.curve !== undefined || (base?.kind === "text" && base.curve && (action.text !== undefined || action.fontSize !== undefined || action.font || action.letterSpacing !== undefined))) applyTextCurve(o, action.curve ?? (base?.kind === "text" ? base.curve ?? 0 : 0));
+          if (base?.kind === "text") meta.current.set(o, { ...base, ...(action.curve !== undefined ? { curve: action.curve || undefined } : {}), ...(action.font ? { font: action.font } : {}), ...(action.bold !== undefined || action.font !== undefined ? { bold: effectiveBold } : {}), ...(action.italic !== undefined ? { italic: action.italic } : {}), ...(action.textAlign !== undefined ? { textAlign: action.textAlign } : {}), ...(action.lineHeight !== undefined ? { lineHeight: action.lineHeight } : {}), ...(action.textBoxWidth !== undefined ? { textBoxWidth: action.textBoxWidth } : {}) });
         }, record);
       }
       case "set_image_adjustment": return setImageAdjustment(action.field, action.value, record);
@@ -2209,6 +2234,55 @@ export function ProductEditor({
       await canvas.dispose();
     }
   }
+  const exportMenu = useRef<HTMLDetailsElement>(null);
+  /** Download the active print area as a PNG (transparent), JPG, or print-size PDF. */
+  async function exportCurrent(format: "png" | "jpg" | "pdf") {
+    if (exportMenu.current) exportMenu.current.open = false;
+    const s = surface();
+    const region = regionsFor(s).find((r) => r.id === activeRegionId) ?? regionsFor(s)[0];
+    if (!region) return;
+    capture();
+    setBusy(`Preparing ${format.toUpperCase()}…`);
+    setError("");
+    try {
+      const file = await renderPrint(s, region);
+      if (!file) throw new Error("Nothing to export yet.");
+      let blob = file.blob;
+      let ext = "png";
+      if (format !== "png") {
+        const flat = document.createElement("canvas");
+        flat.width = file.width;
+        flat.height = file.height;
+        const g = flat.getContext("2d")!;
+        g.fillStyle = "#ffffff";
+        g.fillRect(0, 0, flat.width, flat.height);
+        g.drawImage(await createImageBitmap(file.blob), 0, 0);
+        if (format === "jpg") {
+          const jpg = await new Promise<Blob | null>((resolve) => flat.toBlob(resolve, "image/jpeg", 0.95));
+          if (!jpg) throw new Error("Couldn’t prepare the JPG.");
+          blob = jpg;
+          ext = "jpg";
+        } else {
+          const { jsPDF } = await import("jspdf");
+          const px = region.dimensions ? physicalToPixels(region.dimensions) : { width: file.width, height: file.height };
+          const w = px.width / DPI, h = px.height / DPI;
+          const pdf = new jsPDF({ unit: "in", format: [w, h], orientation: w > h ? "landscape" : "portrait" });
+          pdf.addImage(flat.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, w, h);
+          blob = pdf.output("blob");
+          ext = "pdf";
+        }
+      }
+      const link = document.createElement("a");
+      link.download = `${(name || blank.name).trim().replace(/[^\w-]+/g, "-")}-${s.name}-${region.name}.${ext}`.replace(/-+/g, "-");
+      link.href = URL.createObjectURL(blob);
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(link.href), 10_000);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn’t export.");
+    } finally {
+      setBusy(null);
+    }
+  }
   async function downloadPrint(s: Surface, region = regionsFor(s)[0]) {
     if (!region) return;
     capture();
@@ -2278,7 +2352,13 @@ export function ProductEditor({
     setSurfaces([...doc.current.surfaces]);
     await loadSurface(next.id);
   }
+  const savingRef = useRef(false);
+  const lastSaveAt = useRef(0);
   async function saveStandalone(silent = false) {
+    // One save at a time; edits made while a save runs set dirty again and are picked up next round.
+    if (savingRef.current) return;
+    savingRef.current = true;
+    dirty.current = false;
     if (!silent) setBusy("Saving design…");
     setError("");
     try {
@@ -2302,8 +2382,8 @@ export function ProductEditor({
       form.set("file", new File([preview], "design.png", { type: "image/png" }));
       const result = await saveStudioDesignAction(form);
       if ("error" in result) throw new Error(result.error);
-      dirty.current = false;
       clearDraft();
+      lastSaveAt.current = Date.now();
       setDesignId(result.saved.id);
       setSavedNote(`${silent ? "Autosaved" : "Saved"} ${new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`);
       window.history.replaceState(null, "", `/partner/canvas?composition=${result.saved.id}`);
@@ -2311,11 +2391,12 @@ export function ProductEditor({
       dirty.current = true;
       if (!silent) setError(e instanceof Error ? e.message : "Couldn’t save. Your design is still here.");
     } finally {
+      savingRef.current = false;
       if (!silent) setBusy(null);
     }
   }
   autosave.current = () => {
-    if (dirty.current && !busy && ready && doc.current.surfaces[0].layers.length) void saveStandalone(true);
+    if (dirty.current && !busy && ready && Date.now() - lastSaveAt.current > 10_000 && doc.current.surfaces[0].layers.length) void saveStandalone(true);
   };
   async function save(asProduct: boolean, applyToProductDraft = false) {
     if (standalone) return saveStandalone();
@@ -2388,6 +2469,14 @@ export function ProductEditor({
             <Undo2 size={17} />
           </button>
           <button className="pe-icon-btn" onClick={() => void redo()} disabled={!redoCount || locked} aria-label="Redo" title="Redo"><Redo2 size={17}/></button>
+          <details className="pe-menu" ref={exportMenu}>
+            <summary className={`pe-btn pe-btn-ghost${!hasDesign || locked ? " is-disabled" : ""}`} onClick={(e) => { if (!hasDesign || locked) e.preventDefault(); }}><Download size={16} /> Download</summary>
+            <div role="menu">
+              <button role="menuitem" onClick={() => void exportCurrent("png")}><strong>PNG</strong><small>Transparent, print resolution</small></button>
+              <button role="menuitem" onClick={() => void exportCurrent("jpg")}><strong>JPG</strong><small>White background, smaller file</small></button>
+              <button role="menuitem" onClick={() => void exportCurrent("pdf")}><strong>PDF</strong><small>Real print size</small></button>
+            </div>
+          </details>
           <button className="pe-btn pe-btn-ghost" onClick={() => void save(false)} disabled={!hasDesign || locked}>
             {mode === "creator" || standalone ? "Save design" : "Save reusable design"}
           </button>
@@ -2715,7 +2804,7 @@ export function ProductEditor({
             {ready && !layers.length && <div className="pe-start"><button onClick={() => setPanel("files")}><Upload size={15}/> Add artwork</button><button onClick={() => setPanel("text")}><Type size={15}/> Add text</button><span>or drop an image here</span></div>}
             {!ready && !error && (
               <div className="pe-loading">
-                <Loader2 size={22} className="pe-spin" /> Loading product…
+                <WaveLoader compact label={standalone ? "Loading your design…" : "Loading product…"} />
               </div>
             )}
             <div className="pe-zoom">
@@ -2861,6 +2950,7 @@ export function ProductEditor({
                   <p className="pe-label">Text alignment</p><div className="pe-row">{(["left", "center", "right", "justify"] as const).map((textAlign) => <button key={textAlign} className="pe-btn pe-btn-ghost pe-grow" aria-pressed={(selected.textAlign ?? "left") === textAlign} onClick={() => void executeEditorCommand({ type: "set_text_style", textAlign })}>{textAlign}</button>)}</div>
                   <label className="pe-slider"><span>Line height <b>{(selected.lineHeight ?? 1.16).toFixed(2)}</b></span><input type="range" min={0.8} max={3} step={0.05} value={selected.lineHeight ?? 1.16} onPointerDown={() => checkpoint()} onChange={(e) => void executeEditorCommand({ type: "set_text_style", lineHeight: Number(e.target.value) }, false)} /></label>
                   <label className="pe-slider"><span>Letter spacing <b>{selected.letterSpacing ?? 0}</b></span><input type="range" min={-100} max={500} step={10} value={selected.letterSpacing ?? 0} onPointerDown={() => checkpoint()} onChange={(e) => void executeEditorCommand({ type: "set_text_style", letterSpacing: Number(e.target.value) }, false)} /></label>
+                  <label className="pe-slider"><span>Curve <b>{selected.curve ?? 0}</b></span><input type="range" min={-100} max={100} step={5} value={selected.curve ?? 0} onPointerDown={() => checkpoint()} onChange={(e) => void executeEditorCommand({ type: "set_text_style", curve: Number(e.target.value) }, false)} /></label>
                   <div className="pe-row"><label className="pe-color-input" title="Text outline"><input type="color" value={selected.outline ?? "#ffffff"} onPointerDown={() => checkpoint()} onChange={(e) => void executeEditorCommand({ type: "set_text_style", outline: e.target.value }, false)} /></label><label className="pe-num"><span>Outline</span><input type="number" aria-label="Outline width" min={0} max={24} step={1} value={selected.outlineWidth ?? 0} onFocus={() => checkpoint()} onChange={(e) => void executeEditorCommand({ type: "set_text_style", outline: e.target.value ? selected.outline ?? "#ffffff" : null, outlineWidth: Number(e.target.value) }, false)} /></label></div>
                   <div className="pe-swatches">
                     {TEXT_COLORS.map((c) => (

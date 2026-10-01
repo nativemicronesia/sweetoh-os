@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { archiveAsset, getAssetById, validateImageUpload } from "@/lib/domains/assets/service";
+import { getAssetById, replaceCompositionAsset, validateImageUpload } from "@/lib/domains/assets/service";
 import { studioLayoutSchema } from "@/lib/domains/catalog/studio-layout";
 import { uploadPartnerDesign } from "@/lib/domains/catalog/partner-design-library";
 import { requirePartnerWorkspace } from "@/lib/domains/identity/service";
@@ -17,12 +17,12 @@ export type SaveStudioDesignResult = { error: string } | { saved: { id: string; 
 /**
  * Save a standalone Studio design: artwork on a sized artboard, no product.
  * Nothing here reads or writes product geometry; products consume designs later.
- * Saving over an open design replaces its previous version instead of piling up copies.
+ * Saving an open design updates it in place (same id), so autosave never piles up copies.
  */
 export async function saveStudioDesignAction(formData: FormData): Promise<SaveStudioDesignResult> {
   try {
     const session = await requirePartnerWorkspace();
-    const name = String(formData.get("name") ?? "").trim() || "Untitled design";
+    const name = (String(formData.get("name") ?? "").trim() || "Untitled design").slice(0, 180);
     const file = formData.get("file");
     if (!(file instanceof File) || file.size === 0) throw new ValidationError("Export failed — try again.");
     validateImageUpload({ mimeType: file.type, sizeBytes: file.size });
@@ -52,19 +52,22 @@ export async function saveStudioDesignAction(formData: FormData): Promise<SaveSt
     const previous = previousId ? await getAssetById({ ventureId: session.ventureId, assetId: previousId }).catch(() => null) : null;
     const replaces = previous && previous.assetType === "sweetoh_design" && isStandaloneDesign(previous.compositionLayout?.studio) ? previous : null;
 
-    const saved = await uploadPartnerDesign({
-      ventureId: session.ventureId,
-      ventureSlug: session.ventureSlug,
-      uploadedById: session.appUser.id,
-      name,
-      notes: "Standalone Studio design",
-      file: Buffer.from(await file.arrayBuffer()),
-      filename: file.name || "design.png",
-      mimeType: file.type || "image/png",
-      autoApprove: false,
-      compositionLayout: { studio, blankProductId: null, designAssetId: null, offsetX: 0, offsetY: 0, scale: 1, rotation: 0, canvasSize: 720 },
-    });
-    if (replaces) await archiveAsset({ ventureId: session.ventureId, assetId: replaces.id, actorUserId: session.appUser.id, reason: "Replaced by a newer save of the same design" });
+    const compositionLayout = { studio, blankProductId: null, designAssetId: null, offsetX: 0, offsetY: 0, scale: 1, rotation: 0, canvasSize: 720 };
+    const bytes = Buffer.from(await file.arrayBuffer());
+    const saved = replaces
+      ? await replaceCompositionAsset({ ventureId: session.ventureId, ventureSlug: session.ventureSlug, assetId: replaces.id, name, file: bytes, filename: file.name || "design.png", mimeType: file.type || "image/png", compositionLayout })
+      : await uploadPartnerDesign({
+          ventureId: session.ventureId,
+          ventureSlug: session.ventureSlug,
+          uploadedById: session.appUser.id,
+          name,
+          notes: "Standalone Studio design",
+          file: bytes,
+          filename: file.name || "design.png",
+          mimeType: file.type || "image/png",
+          autoApprove: false,
+          compositionLayout,
+        });
 
     revalidatePath("/partner/studio");
     revalidatePath("/partner/library");
