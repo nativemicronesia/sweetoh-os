@@ -482,3 +482,14 @@
 .pe-check-item strong{display:block;font-size:13px}.pe-check-item small{display:block;margin-top:2px;font-size:12px;line-height:1.4;color:var(--pf-muted)}
 .pe-check-item[data-level=error] strong{color:#a32626}.pe-check-item[data-level=warn] strong{color:#8a5a00}
 .pe-check-item button{flex-shrink:0;padding:5px 12px;border:1px solid var(--pf-border);border-radius:8px;background:#fff;font-size:12px;font-weight:600}.pe-check-item button:hover{border-color:#b9c7bf;background:#f3f5f3}
+
+/* Color swatches */
+.cs{display:grid;gap:12px}
+.cs-group p{margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--pf-muted)}
+.cs-row{display:flex;flex-wrap:wrap;gap:6px}.cs-palette{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.cs-swatch{aspect-ratio:1/1;min-width:0;width:100%;max-width:34px;border-radius:999px;border:1px solid rgba(16,24,40,.14);transition:transform .12s,box-shadow .12s}
+.cs-row:not(.cs-palette) .cs-swatch{width:28px;height:28px;flex:0 0 28px}
+.cs-swatch:hover{transform:scale(1.12)}.cs-swatch[aria-pressed=true]{box-shadow:0 0 0 2px #fff,0 0 0 4px var(--pf-primary)}
+.cs-tools{display:flex;gap:8px;flex-wrap:wrap}
+.cs-custom,.cs-eye{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 12px;border:1px solid var(--pf-border);border-radius:999px;background:#fff;font-size:12px;font-weight:600;cursor:pointer}
+.cs-custom:hover,.cs-eye:hover{border-color:#b9c7bf}.cs-custom input{width:20px;height:20px;padding:0;border:0;border-radius:999px;background:none;cursor:pointer}

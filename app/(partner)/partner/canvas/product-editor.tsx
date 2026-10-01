@@ -105,6 +105,7 @@ import { analyzePhoto, tintGarment } from "@/lib/studio/tint";
 import { sizedPhoto } from "@/lib/studio/photo";
 import { ensureFont, fontFamily, fontSupportsBold } from "@/lib/studio/fonts";
 import { FontBrowser, FontPickerButton } from "./font-browser";
+import { ColorSwatches } from "./color-swatches";
 import { TextStylesGallery } from "./text-styles-gallery";
 import { presetTextColor, type TextStylePreset } from "@/lib/studio/text-styles";
 import { isStudioFontKey, resolveStudioFontKey } from "@/lib/studio/font-provenance";
@@ -2610,6 +2611,22 @@ export function ProductEditor({
   const current = surfaces.find((s) => s.id === surfaceId) ?? surfaces[0];
   const currentSpec = spec(current);
   const currentRegions = regionsFor(current);
+  /** Colors already used in this design, so a palette can be matched in one click. */
+  const docColors = useMemo(() => {
+    const found = new Set<string>();
+    const add = (value: unknown) => { if (typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value)) found.add(value.toLowerCase()); };
+    for (const view of surfaces) for (const layer of view.layers) {
+      if (layer.kind === "text") { add(layer.color); add(layer.outline); }
+      else if (layer.kind === "shape") { add(layer.fill); add(layer.stroke); }
+      else if (layer.kind === "drawing") add(layer.stroke);
+    }
+    for (const layer of layers) {
+      if (layer.kind === "text") { add(layer.color); add(layer.outline); }
+      else if (layer.kind === "shape") { add(layer.fill); add(layer.stroke); }
+      else if (layer.kind === "drawing") add(layer.stroke);
+    }
+    return [...found].slice(0, 12);
+  }, [layers, surfaces]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const printIssues = useMemo(() => computePrintIssues(), [layers, surfaces, ready, surfaceId, activeRegionId, selected]);
   const printErrors = printIssues.filter((issue) => issue.level === "error").length;
@@ -3151,14 +3168,7 @@ export function ProductEditor({
                   <label className="pe-slider"><span>Letter spacing <b>{selected.letterSpacing ?? 0}</b></span><input type="range" min={-100} max={500} step={10} value={selected.letterSpacing ?? 0} onPointerDown={() => checkpoint()} onChange={(e) => void executeEditorCommand({ type: "set_text_style", letterSpacing: Number(e.target.value) }, false)} /></label>
                   <label className="pe-slider"><span>Curve <b>{selected.curve ?? 0}</b></span><input type="range" min={-100} max={100} step={5} value={selected.curve ?? 0} onPointerDown={() => checkpoint()} onChange={(e) => void executeEditorCommand({ type: "set_text_style", curve: Number(e.target.value) }, false)} /></label>
                   <div className="pe-row"><label className="pe-color-input" title="Text outline"><input type="color" value={selected.outline ?? "#ffffff"} onPointerDown={() => checkpoint()} onChange={(e) => void executeEditorCommand({ type: "set_text_style", outline: e.target.value }, false)} /></label><label className="pe-num"><span>Outline</span><input type="number" aria-label="Outline width" min={0} max={24} step={1} value={selected.outlineWidth ?? 0} onFocus={() => checkpoint()} onChange={(e) => void executeEditorCommand({ type: "set_text_style", outline: e.target.value ? selected.outline ?? "#ffffff" : null, outlineWidth: Number(e.target.value) }, false)} /></label></div>
-                  <div className="pe-swatches">
-                    {TEXT_COLORS.map((c) => (
-                      <button key={c} aria-label={c} aria-pressed={selected.color?.toLowerCase() === c} style={{ background: c }} onClick={() => void executeEditorCommand({ type: "set_text_style", color: c })} />
-                    ))}
-                    <label className="pe-color-input" title="Custom color">
-                      <input type="color" value={selected.color?.startsWith("#") ? selected.color : "#101828"} onPointerDown={() => checkpoint()} onChange={(e) => void executeEditorCommand({ type: "set_text_style", color: e.target.value }, false)} />
-                    </label>
-                  </div>
+                  <ColorSwatches value={selected.color} docColors={docColors} onBeforeCustom={() => checkpoint()} onPick={(color, record = true) => void executeEditorCommand({ type: "set_text_style", color }, record)} />
                 </section>
               )}
 
@@ -3203,14 +3213,7 @@ export function ProductEditor({
               {selected.kind === "shape" && (
                 <section className="pe-section">
                   <p className="pe-label">Color</p>
-                  <div className="pe-swatches">
-                    {TEXT_COLORS.map((c) => (
-                      <button key={c} aria-label={c} aria-pressed={selected.fill?.toLowerCase() === c} style={{ background: c }} onClick={() => setFill(c)} />
-                    ))}
-                    <label className="pe-color-input" title="Custom color">
-                      <input type="color" value={selected.fill ?? "#1f7048"} onClick={() => checkpoint()} onChange={(e) => setFill(e.target.value, false)} />
-                    </label>
-                  </div>
+                  <ColorSwatches value={selected.fill} docColors={docColors} onBeforeCustom={() => checkpoint()} onPick={(color, record = true) => setFill(color, record)} />
                   <p className="pe-label">Gradient fills</p>
                   <div className="pe-gradient-presets">
                     <button aria-label="Coral to gold gradient" style={{ background: "linear-gradient(135deg,#ef476f,#ffd166)" }} onClick={() => setShapeGradient("#ef476f", "#ffd166")} />
