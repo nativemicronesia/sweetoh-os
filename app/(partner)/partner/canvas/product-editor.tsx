@@ -83,6 +83,8 @@ import {
 } from "../actions/library";
 import { saveStudioDesignAction } from "../actions/studio-design";
 import { physicalToPixels, describeProductionSize } from "@/lib/domains/catalog/production-geometry";
+import { DESIGN_REGION_ID, DESIGN_TYPES, designCanvasSurface, parseDesignSize, type DesignUnit } from "@/lib/studio/design-canvas";
+import { applyDesignToRegion } from "@/lib/studio/design-apply";
 import {
   defaultArea,
   regionsFor,
@@ -826,8 +828,22 @@ export function ProductEditor({
 
   async function paint(canvas: StaticCanvas, s: Surface, withGuide = false, hex: string | null = colorRef.current) {
     canvas.clear();
-    canvas.backgroundColor = "#ffffff";
     const original = photoFor(s);
+    // With no product photo the print surface itself is the page: white shapes on the workspace, like a Canva page.
+    const board = withGuide && !original;
+    canvas.backgroundColor = board ? "" : "#ffffff";
+    if (withGuide && canvas === editor.current) {
+      // A bare print surface fills the workspace, like a Canva page; a product photo keeps the full stage.
+      const a = s.area;
+      const k = board ? Math.min(2.4, 0.92 / Math.max(a.width, a.height)) : 1;
+      canvas.setViewportTransform([k, 0, 0, k, board ? SIZE * (0.5 - k * (a.x + a.width / 2)) : 0, board ? SIZE * (0.5 - k * (a.y + a.height / 2)) : 0]);
+    }
+    if (board) {
+      // The surface lives on the background layer so artwork layers always stack above it.
+      canvas.backgroundImage = new Group(regionsFor(s).map((region) => new Path(regionPath(region), {
+        fill: "#ffffff", stroke: "#d5dbd6", strokeWidth: 1, strokeUniform: true,
+      })), { selectable: false, evented: false });
+    }
     if (original) {
       const source = (await recolored(original, hex, s.area)) ?? original;
       const image = await FabricImage.fromURL(source, { crossOrigin: "anonymous" });
@@ -875,7 +891,8 @@ export function ProductEditor({
         borderColor: INK,
       });
       guide.current = rect;
-      if (s.printRegions === undefined) canvas.add(rect);
+      if (board) { /* the surface is drawn as the page above */ }
+      else if (s.printRegions === undefined) canvas.add(rect);
       else for (const region of regionsFor(s)) canvas.add(new Path(regionPath(region), {
         fill: "rgba(31,112,72,0.025)", stroke: INK, strokeWidth: 1.2, strokeDashArray: [6, 5],
         selectable: false, evented: false, excludeFromExport: true,
@@ -2186,8 +2203,30 @@ export function ProductEditor({
       };
     },
   });
-  async function saveStandalone() {
-    setBusy("Saving design…");
+  const autosave = useRef<() => void>(() => undefined);
+  useEffect(() => {
+    if (!standalone) return;
+    const timer = setInterval(() => autosave.current(), 6000);
+    return () => clearInterval(timer);
+  }, []);
+  const [resizeDraft, setResizeDraft] = useState<{ w: string; h: string; unit: DesignUnit }>({ w: "", h: "", unit: "in" });
+  async function resizeArtboard(input: { width: unknown; height: unknown; unit: unknown }) {
+    const parsed = parseDesignSize(input);
+    if ("error" in parsed) { setError(parsed.error); return; }
+    setError("");
+    capture();
+    checkpoint();
+    const old = doc.current.surfaces[0];
+    const next = designCanvasSurface(parsed.size);
+    // Artwork scales with the page, like Canva's Resize.
+    const layers = applyDesignToRegion({ area: old.area, layers: old.layers }, { id: DESIGN_REGION_ID, bounds: next.area });
+    doc.current.surfaces[0] = { ...next, layers };
+    dirty.current = true;
+    setSurfaces([...doc.current.surfaces]);
+    await loadSurface(next.id);
+  }
+  async function saveStandalone(silent = false) {
+    if (!silent) setBusy("Saving design…");
     setError("");
     try {
       capture();
@@ -2213,15 +2252,18 @@ export function ProductEditor({
       dirty.current = false;
       clearDraft();
       setDesignId(result.saved.id);
-      setSavedNote(`Saved ${new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`);
+      setSavedNote(`${silent ? "Autosaved" : "Saved"} ${new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`);
       window.history.replaceState(null, "", `/partner/canvas?composition=${result.saved.id}`);
     } catch (e) {
       dirty.current = true;
-      setError(e instanceof Error ? e.message : "Couldn’t save. Your design is still here.");
+      if (!silent) setError(e instanceof Error ? e.message : "Couldn’t save. Your design is still here.");
     } finally {
-      setBusy(null);
+      if (!silent) setBusy(null);
     }
   }
+  autosave.current = () => {
+    if (dirty.current && !busy && ready && doc.current.surfaces[0].layers.length) void saveStandalone(true);
+  };
   async function save(asProduct: boolean, applyToProductDraft = false) {
     if (standalone) return saveStandalone();
     setBusy(asProduct ? "Preparing your product…" : applyToProductDraft ? "Saving artwork to this product draft…" : "Saving to My files…");
@@ -2582,13 +2624,14 @@ export function ProductEditor({
 
         <main className="pe-stage-wrap">
           <div className="pe-surface-bar"><span><strong>{current.name}</strong><small>{standalone ? "Artboard" : photoFor(current) ? setupSaved ? "Product setup saved" : "Verified production blank" : "Print-area surface only · no clean blank photo"}{!standalone && currentSpec ? ` · ${describeProductionSize({ width: currentSpec.width / DPI, height: currentSpec.height / DPI, unit: "in" })}` : ""}</small></span>
-            {currentRegions.length > 0 ? <label>Print area <select aria-label="Active print area" value={activeRegionId ?? currentRegions[0]?.id} onChange={e => {
+            {standalone ? null : currentRegions.length > 0 ? <label>Print area <select aria-label="Active print area" value={activeRegionId ?? currentRegions[0]?.id} onChange={e => {
               const r = currentRegions.find(r => r.id === e.target.value)!;
               capture(); editor.current?.discardActiveObject(); surface().area = r.bounds; setActiveRegionId(r.id); setSurfaces([...doc.current.surfaces]); readSelection();
             }}>{currentRegions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}</select></label> : standalone ? null : <button className="pe-btn pe-btn-primary" onClick={() => setSetupOpen(true)}>Add a print area</button>}
           </div>
-          {!standalone && !photoFor(current) && <div className="pe-production-boundary" role="status" style={{ margin: "8px 12px 0", padding: "10px 12px", border: "1px solid #e8c887", borderRadius: 8, background: "#fff9e9", color: "#72551d", fontSize: 12 }}>
-            <strong>No verified clean blank for this view.</strong> Artwork is placed on the saved print-area surface only. Supplier photos and generated mockups stay references and are not used as the production canvas.
+          {!standalone && !photoFor(current) && <div className="pe-surface-note" role="status">
+            <span><strong>Print surface view.</strong> This is the product&apos;s true print area to scale. Add a clean blank photo to design on the product itself — supplier photos and mockups are references only.</span>
+            <button className="pe-btn pe-btn-ghost" disabled={locked} onClick={() => setViewPicker({ mode: "replace", position: current.position ?? "front" })}>Add blank photo</button>
           </div>}
           <div className="pe-stage" ref={stage} data-pan={panMode} onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = "copy"; }} onDrop={e => { e.preventDefault(); if (!busy) void upload(e.dataTransfer.files[0]); }}
             onPointerDown={(e) => {
@@ -2615,7 +2658,7 @@ export function ProductEditor({
             }}
             onPointerUp={(e) => { gesture.current.pointers.delete(e.pointerId); gesture.current.distance = 0; }}
             onPointerCancel={(e) => { gesture.current.pointers.delete(e.pointerId); gesture.current.distance = 0; }}>
-            <div className="pe-canvas" ref={host} />
+            <div className="pe-canvas" data-board={standalone || !photoFor(current)} ref={host} />
             {ready && !layers.length && <div className="pe-start"><button onClick={() => setPanel("files")}><Upload size={15}/> Add artwork</button><button onClick={() => setPanel("text")}><Type size={15}/> Add text</button><span>or drop an image here</span></div>}
             {!ready && !error && (
               <div className="pe-loading">
@@ -2954,7 +2997,7 @@ export function ProductEditor({
           ) : (
             <>
               <div className="pe-props-head">
-                <h2>Product</h2>
+                <h2>{standalone ? "Design" : "Product"}</h2>
               </div>
               {colors.length > 0 && (
                 <section className="pe-section">
@@ -2991,6 +3034,23 @@ export function ProductEditor({
                 ) : (
                   <p className="pe-muted">{standalone ? "This artboard has no fixed size." : "Set optional production dimensions in Product setup."}</p>
                 )}
+                {standalone && (
+                  <form className="pe-resize" onSubmit={(e) => { e.preventDefault(); void resizeArtboard({ width: resizeDraft.w || currentSpec && round(currentSpec.width / DPI, 2), height: resizeDraft.h || currentSpec && round(currentSpec.height / DPI, 2), unit: resizeDraft.unit }); }}>
+                    <p className="pe-label pe-mt">Resize</p>
+                    <label className="pe-muted">Design type
+                      <select value="" onChange={(e) => { const t = DESIGN_TYPES.find((d) => d.id === e.target.value); if (t) void resizeArtboard(t.size); }}>
+                        <option value="">Choose a size…</option>
+                        {DESIGN_TYPES.map((t) => <option key={t.id} value={t.id}>{t.name} — {t.hint}</option>)}
+                      </select>
+                    </label>
+                    <div className="pe-resize-row">
+                      <label>W<input inputMode="decimal" value={resizeDraft.w} placeholder={currentSpec ? String(round(currentSpec.width / DPI, 2)) : ""} onChange={(e) => setResizeDraft({ ...resizeDraft, w: e.target.value })} /></label>
+                      <label>H<input inputMode="decimal" value={resizeDraft.h} placeholder={currentSpec ? String(round(currentSpec.height / DPI, 2)) : ""} onChange={(e) => setResizeDraft({ ...resizeDraft, h: e.target.value })} /></label>
+                      <select aria-label="Unit" value={resizeDraft.unit} onChange={(e) => setResizeDraft({ ...resizeDraft, unit: e.target.value as DesignUnit })}><option value="in">in</option><option value="cm">cm</option><option value="mm">mm</option><option value="px">px</option></select>
+                    </div>
+                    <button type="submit" className="pe-btn pe-btn-ghost pe-block" disabled={locked}>Resize design</button>
+                  </form>
+                )}
                 <div className="pe-stack">
                   {!standalone && <button className="pe-btn pe-btn-ghost pe-block" disabled={locked} onClick={() => { capture(); setSetupOpen(true); }}>
                     <Crop size={15} /> Edit surfaces & print areas
@@ -3007,7 +3067,7 @@ export function ProductEditor({
               </section>
               <section className="pe-section">
                 <p className="pe-muted pe-small">
-                  Tip: select anything on the product to size, align or restyle it. Delete removes it, arrow keys nudge it.
+                  Tip: select anything on the {standalone ? "page" : "product"} to size, align or restyle it. Delete removes it, arrow keys nudge it.
                 </p>
               </section>
             </>
