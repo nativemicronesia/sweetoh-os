@@ -48,11 +48,12 @@ export function FontBrowser({ value, onPick, compact = false }: { value?: string
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string>("All");
   const [mood, setMood] = useState<string>("All");
-  const [limit, setLimit] = useState(CHUNK);
+  const filterKey = `${query}|${category}|${mood}`;
+  const [paging, setPaging] = useState({ key: "", limit: CHUNK });
+  const limit = paging.key === filterKey ? paging.limit : CHUNK;
   const [recents, setRecents] = useState<string[]>([]);
   const sentinel = useRef<HTMLDivElement>(null);
   useEffect(() => { queueMicrotask(() => setRecents(readRecents())); }, []);
-  useEffect(() => { setLimit(CHUNK); }, [query, category, mood]);
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -67,10 +68,10 @@ export function FontBrowser({ value, onPick, compact = false }: { value?: string
   useEffect(() => {
     const el = sentinel.current;
     if (!el) return;
-    const io = new IntersectionObserver((entries) => { if (entries.some((entry) => entry.isIntersecting)) setLimit((n) => n + CHUNK); }, { rootMargin: "240px" });
+    const io = new IntersectionObserver((entries) => { if (entries.some((entry) => entry.isIntersecting)) setPaging({ key: filterKey, limit: limit + CHUNK }); }, { rootMargin: "240px" });
     io.observe(el);
     return () => io.disconnect();
-  }, [shown.length, results.length]);
+  }, [shown.length, results.length, filterKey, limit]);
 
   function pick(key: string) {
     rememberFont(key);

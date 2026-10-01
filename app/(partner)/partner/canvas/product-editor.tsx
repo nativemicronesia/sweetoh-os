@@ -103,7 +103,7 @@ import {
 import { isLightColor, type CatalogSource, type VariantOptions } from "@/lib/domains/catalog/variants";
 import { analyzePhoto, tintGarment } from "@/lib/studio/tint";
 import { sizedPhoto } from "@/lib/studio/photo";
-import { ensureFont, fontFamily, fontSupportsBold } from "@/lib/studio/fonts";
+import { ensureFont, fontFamily, fontSupportsBold, missingFonts } from "@/lib/studio/fonts";
 import { FontBrowser, FontPickerButton } from "./font-browser";
 import { ColorSwatches } from "./color-swatches";
 import { TextStylesGallery } from "./text-styles-gallery";
@@ -325,6 +325,19 @@ const SIZE = 720;
 const DPI = 300;
 const BRUSH_PRESETS_KEY = "sweetoh:studio:brush-presets:v1";
 const INK = "#1f7048";
+/** Wall-clock time, kept out of render-time analysis (used only in event handlers and timers). */
+const nowMs = () => Date.now();
+
+const IMAGE_LOOKS: readonly { label: string; swatch: string; values: { brightness?: number; contrast?: number; saturation?: number; temperature?: number; blur?: number } }[] = [
+  { label: "Original", swatch: "linear-gradient(135deg,#d9d9d9,#8c8c8c)", values: {} },
+  { label: "Vivid", swatch: "linear-gradient(135deg,#ff6b6b,#1fa2ff)", values: { saturation: 0.5, contrast: 0.12 } },
+  { label: "B&W", swatch: "linear-gradient(135deg,#fff,#222)", values: { saturation: -1, contrast: 0.08 } },
+  { label: "Sepia", swatch: "linear-gradient(135deg,#e3c9a0,#7b5a36)", values: { saturation: -0.45, temperature: 0.55, contrast: 0.05 } },
+  { label: "Fade", swatch: "linear-gradient(135deg,#f3eee6,#b8c1c4)", values: { contrast: -0.22, brightness: 0.08, saturation: -0.2 } },
+  { label: "Warm", swatch: "linear-gradient(135deg,#ffd08a,#ff8a3d)", values: { temperature: 0.55, saturation: 0.1 } },
+  { label: "Cool", swatch: "linear-gradient(135deg,#bfe6ff,#4f8fd9)", values: { temperature: -0.55, saturation: 0.05 } },
+  { label: "Dramatic", swatch: "linear-gradient(135deg,#9aa,#112)", values: { contrast: 0.35, brightness: -0.08, saturation: -0.15 } },
+];
 const TEXT_COLORS = ["#101828", "#ffffff", "#c8102e", "#f2a900", "#1f7048", "#2a4ea6", "#e7407c", "#7c5cc4"];
 type ImageAdjustmentValues = NonNullable<Extract<StudioLayer, { kind: "image" }>["adjustments"]>;
 function imageFiltersFor(adjustments: ImageAdjustmentValues = {}) {
@@ -1919,6 +1932,21 @@ export function ProductEditor({
     }
     capture(); readSelection(); editor.current?.requestRenderAll();
   }
+  /** One-click look: sets every adjustment at once (and stays editable with the sliders). */
+  function applyImageLook(look: { brightness?: number; contrast?: number; saturation?: number; temperature?: number; blur?: number }) {
+    const targets = editor.current?.getActiveObjects().filter((object) => object instanceof FabricImage && meta.current.get(object)?.kind === "image") as FabricImage[] | undefined;
+    if (!targets?.length) return;
+    checkpoint();
+    for (const o of targets) {
+      const base = meta.current.get(o);
+      if (base?.kind !== "image") continue;
+      const adjustments = { ...look };
+      meta.current.set(o, { ...base, adjustments });
+      o.filters = imageFiltersFor(adjustments);
+      o.applyFilters();
+    }
+    capture(); readSelection(); editor.current?.requestRenderAll();
+  }
   function flip(axis: "x" | "y", record = true) {
     changeSelected((o) => o.set(axis === "x" ? { flipX: !o.flipX } : { flipY: !o.flipY }), record);
   }
@@ -2409,6 +2437,12 @@ export function ProductEditor({
       await canvas.dispose();
     }
   }
+  /** Stop before producing a file if a font this design uses could not be loaded. */
+  async function assertFontsReady() {
+    const uses = doc.current.surfaces.flatMap((view) => view.layers).flatMap((layer) => (layer.kind === "text" ? [{ key: layer.font, bold: layer.bold }] : []));
+    const missing = await missingFonts(uses);
+    if (missing.length) throw new Error(`Couldn’t load ${missing.slice(0, 3).join(", ")}${missing.length > 3 ? " and more" : ""}. Check your connection and try again, so the file prints in the right font.`);
+  }
   const exportMenu = useRef<HTMLDetailsElement>(null);
   /** Download the active print area as a PNG (transparent), JPG, or print-size PDF. */
   async function exportCurrent(format: "png" | "jpg" | "pdf") {
@@ -2420,6 +2454,7 @@ export function ProductEditor({
     setBusy(`Preparing ${format.toUpperCase()}…`);
     setError("");
     try {
+      await assertFontsReady();
       const file = await renderPrint(s, region);
       if (!file) throw new Error("Nothing to export yet.");
       let blob = file.blob;
@@ -2537,6 +2572,7 @@ export function ProductEditor({
     if (!silent) setBusy("Saving design…");
     setError("");
     try {
+      await assertFontsReady();
       capture();
       const artboard = doc.current.surfaces[0];
       const print = await renderPrint(artboard, regionsFor(artboard)[0]);
@@ -2558,7 +2594,7 @@ export function ProductEditor({
       const result = await saveStudioDesignAction(form);
       if ("error" in result) throw new Error(result.error);
       clearDraft();
-      lastSaveAt.current = Date.now();
+      lastSaveAt.current = nowMs();
       setDesignId(result.saved.id);
       setSavedNote(`${silent ? "Autosaved" : "Saved"} ${new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`);
       window.history.replaceState(null, "", `/partner/canvas?composition=${result.saved.id}`);
@@ -2571,13 +2607,14 @@ export function ProductEditor({
     }
   }
   autosave.current = () => {
-    if (dirty.current && !busy && ready && Date.now() - lastSaveAt.current > 10_000 && doc.current.surfaces[0].layers.length) void saveStandalone(true);
+    if (dirty.current && !busy && ready && nowMs() - lastSaveAt.current > 10_000 && doc.current.surfaces[0].layers.length) void saveStandalone(true);
   };
   async function save(asProduct: boolean, applyToProductDraft = false) {
     if (standalone) return saveStandalone();
     setBusy(asProduct ? "Preparing your product…" : applyToProductDraft ? "Saving artwork to this product draft…" : "Saving to My files…");
     setError("");
     try {
+      await assertFontsReady();
       const data = await buildPreview();
       const form = new FormData();
       form.set("name", name.trim() || blank.name);
@@ -3185,6 +3222,10 @@ export function ProductEditor({
                     <button onClick={() => void makePattern()} disabled={locked}>
                       <Grid3x3 size={16} /> Make a pattern
                     </button>
+                  </div>
+                  <p className="pe-label">Filters</p>
+                  <div className="pe-looks" role="group" aria-label="Photo filters">
+                    {IMAGE_LOOKS.map((look) => <button key={look.label} type="button" onClick={() => applyImageLook(look.values)}><i style={{ background: look.swatch }} />{look.label}</button>)}
                   </div>
                   <p className="pe-label">Image adjustments</p>
                   {([ ["brightness", "Brightness", -1, 1], ["contrast", "Contrast", -1, 1], ["saturation", "Saturation", -1, 1], ["temperature", "Cool ↔ Warm tint", -1, 1], ["blur", "Soft focus", 0, 0.2] ] as const).map(([field, label, min, max]) => (

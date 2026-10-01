@@ -493,3 +493,9 @@
 .cs-tools{display:flex;gap:8px;flex-wrap:wrap}
 .cs-custom,.cs-eye{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 12px;border:1px solid var(--pf-border);border-radius:999px;background:#fff;font-size:12px;font-weight:600;cursor:pointer}
 .cs-custom:hover,.cs-eye:hover{border-color:#b9c7bf}.cs-custom input{width:20px;height:20px;padding:0;border:0;border-radius:999px;background:none;cursor:pointer}
+
+/* Photo filters */
+.pe-looks{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.pe-looks button{display:grid;gap:5px;justify-items:center;font-size:11px;font-weight:600;color:var(--pf-muted);background:none;border:0;padding:0}
+.pe-looks i{display:block;width:100%;aspect-ratio:1/1;border-radius:10px;border:1px solid var(--pf-border);transition:transform .12s,box-shadow .12s}
+.pe-looks button:hover i{transform:translateY(-2px);box-shadow:0 6px 14px rgba(16,24,40,.14)}.pe-looks button:hover{color:var(--pf-text)}

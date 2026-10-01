@@ -197,3 +197,20 @@ export async function ensureFont(key: string | undefined, bold = false): Promise
     // Falls back to the default font.
   }
 }
+
+/**
+ * Fonts a design uses that are not actually available right now (a catalog family that failed to
+ * download). Export and save refuse to proceed on these, so a print file never silently swaps fonts.
+ */
+export async function missingFonts(uses: readonly { key: string | undefined; bold?: boolean }[]): Promise<string[]> {
+  if (typeof document === "undefined" || !("fonts" in document)) return [];
+  const missing = new Set<string>();
+  for (const use of uses) {
+    const font = use.key ? catalogFont(use.key) : undefined;
+    if (!font) continue;
+    const bold = Boolean(use.bold) && font.bold;
+    await loadCatalogFont(font.key, bold);
+    if (!document.fonts.check(`${bold ? 700 : 400} 20px so-${font.id}`)) missing.add(font.family);
+  }
+  return [...missing];
+}

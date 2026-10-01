@@ -43,7 +43,6 @@ function Tile({ asset, favorite, disabled, onAdd, onFavorite }: { asset: Library
 function Grid({ assets, ...tile }: { assets: readonly LibraryAsset[] } & Omit<Parameters<typeof Tile>[0], "asset" | "favorite"> & { favorites: string[] }) {
   const [limit, setLimit] = useState(CHUNK);
   const sentinel = useRef<HTMLDivElement>(null);
-  useEffect(() => { setLimit(CHUNK); }, [assets]);
   useEffect(() => {
     const el = sentinel.current;
     if (!el) return;
@@ -183,7 +182,7 @@ export function AssetLibraryPanel({ disabled, creativeAssets = [], onAddCreative
           {results.length ? (
             <>
               <p className="el-count">{results.length.toLocaleString()} {results.length === 1 ? "element" : "elements"}</p>
-              <Grid assets={results} {...tile} />
+              <Grid key={`${tab}|${topic}|${origin}|${query}`} assets={results} {...tile} />
             </>
           ) : <p className="el-empty">No elements match “{query}”. Try a simpler word like “palm” or “wave”.</p>}
         </>
