@@ -466,3 +466,19 @@
 .el-tile:has(img[data-loaded="1"]){background:#f1f3f1;animation:so-fade-up .35s var(--so-ease,ease) both}
 
 .fb-chips,.el-tabs,.el-topics{-webkit-mask-image:linear-gradient(90deg,#000 90%,transparent);mask-image:linear-gradient(90deg,#000 90%,transparent);padding-right:18px}
+
+/* Shortcuts */
+.pe-shortcuts{width:min(640px,92vw);padding:22px 24px}.pe-shortcuts header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}.pe-shortcuts h2{margin:0;font-size:18px}
+.pe-shortcut-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px 28px}.pe-shortcut-grid h3{margin:0 0 6px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--pf-muted)}
+.pe-shortcut-grid p{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0;padding:6px 0;border-bottom:1px solid var(--pf-border);font-size:13px}
+.pe-shortcut-grid kbd{font:600 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;padding:4px 7px;border:1px solid var(--pf-border);border-bottom-width:2px;border-radius:6px;background:#fafbfa;white-space:nowrap}
+@media(max-width:560px){.pe-shortcut-grid{grid-template-columns:1fr}}
+
+/* Print check */
+.pe-check-btn[data-state=ok]{color:#1f6b46}.pe-check-btn[data-state=warn]{color:#8a5a00;background:#fff7e0;border-color:#ecd08a}.pe-check-btn[data-state=error]{color:#a32626;background:#fdecec;border-color:#efb0b0}
+.pe-check>div{width:340px;max-height:60vh;overflow-y:auto}
+.pe-check-ok{margin:0;padding:12px;font-size:13px;line-height:1.5;color:var(--pf-muted)}.pe-check-ok strong{display:block;color:#1f6b46;margin-bottom:2px}
+.pe-check-item{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:10px}.pe-check-item+.pe-check-item{border-top:1px solid var(--pf-border)}
+.pe-check-item strong{display:block;font-size:13px}.pe-check-item small{display:block;margin-top:2px;font-size:12px;line-height:1.4;color:var(--pf-muted)}
+.pe-check-item[data-level=error] strong{color:#a32626}.pe-check-item[data-level=warn] strong{color:#8a5a00}
+.pe-check-item button{flex-shrink:0;padding:5px 12px;border:1px solid var(--pf-border);border-radius:8px;background:#fff;font-size:12px;font-weight:600}.pe-check-item button:hover{border-color:#b9c7bf;background:#f3f5f3}

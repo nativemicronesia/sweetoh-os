@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import Link from "next/link";
 import {
   Canvas,
@@ -71,6 +71,9 @@ import {
   Library,
   Upload,
   X,
+  Keyboard,
+  ShieldCheck,
+  TriangleAlert,
 } from "lucide-react";
 import {
   uploadCanvasArtworkAction,
@@ -236,6 +239,7 @@ type Panel = "files" | "text" | "shapes" | "assets" | "ai" | "inspiration" | "la
 type InspirationItem = { id: string; name: string; previewUrl: string };
 type Mockup = { color: string; hex: string; url: string };
 type PreviewData = { views: { name: string; url: string; hasProductionBlank: boolean }[]; colors: Mockup[]; flat?: boolean };
+type PrintIssue = { id: string; level: "warn" | "error"; title: string; detail: string; layerId: string };
 type TextNumberDraft = { layerId: string; field: StudioTextNumberField; value: string };
 
 /** Extend Fabric's PencilBrush input lifecycle and keep the completed drawing
@@ -487,6 +491,8 @@ export function ProductEditor({
   const [colorName, setColorName] = useState<string | null>(colors[0]?.name ?? null);
   const [panel, setPanel] = useState<Panel>(null);
   const [textTab, setTextTab] = useState<"styles" | "fonts">("styles");
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const clip = useRef<{ layers: StudioLayer[]; pastes: number } | null>(null);
   const [zoom, setZoom] = useState(1);
   const [panMode, setPanMode] = useState(false);
   const [drawing, setDrawing] = useState(false);
@@ -517,6 +523,7 @@ export function ProductEditor({
   const [name, setName] = useState(initialName || blank?.name || "My product");
   const [applyTargetId, setApplyTargetId] = useState(initialApplyTargetId ?? privateProductDrafts[0]?.id ?? "");
   const [layers, setLayers] = useState<StudioLayer[]>([]);
+  const printCheck = useRef<HTMLDetailsElement>(null);
   const [selected, setSelected] = useState<Selected>(null);
   const [textNumberDraft, setTextNumberDraft] = useState<TextNumberDraft | null>(null);
   const [selectedLayerIds, setSelectedLayerIds] = useState<string[]>([]);
@@ -693,6 +700,49 @@ export function ProductEditor({
       return [0, .25, .5, .75, 1].some(x => [0, .25, .5, .75, 1].some(y =>
         !paths.some(p => ctx.isPointInPath(p, b.left + b.width * x, b.top + b.height * y))));
     }));
+  }
+
+  /** Printify-style readiness: resolution, tiny text, and artwork past the print area, per layer. */
+  function computePrintIssues(): PrintIssue[] {
+    const canvas = editor.current;
+    if (!canvas || !ready) return [];
+    const s = surface();
+    const ippX = inchesPerPx(s, "x");
+    const ippY = inchesPerPx(s, "y");
+    const regions = regionsFor(s);
+    const ctx = document.createElement("canvas").getContext("2d")!;
+    const found: PrintIssue[] = [];
+    for (const object of canvas.getObjects()) {
+      const layer = meta.current.get(object);
+      if (!layer || layer.hidden || !object.visible) continue;
+      const label = layer.kind === "text" ? `“${layer.text.slice(0, 22)}”` : layer.kind === "image" ? "Image" : layer.kind === "graphic" ? "Element" : layer.kind === "pattern" ? "Pattern" : layer.kind === "drawing" ? "Drawing" : "Shape";
+      if (layer.kind === "image" && ippX && ippY) {
+        const dpi = Math.round(Math.min(1 / (object.scaleX * ippX), 1 / (object.scaleY * ippY)));
+        if (dpi < 100) found.push({ id: `${layer.id}:dpi`, level: "error", title: `${label} is low resolution`, detail: `${dpi} DPI at this size. It will print blurry; use a larger file or make it smaller.`, layerId: layer.id });
+        else if (dpi < 150) found.push({ id: `${layer.id}:dpi`, level: "warn", title: `${label} is borderline`, detail: `${dpi} DPI at this size. 150+ prints sharply.`, layerId: layer.id });
+      }
+      if (layer.kind === "text" && ippY) {
+        const heightIn = (object as IText).fontSize * object.scaleY * ippY;
+        if (heightIn < 0.14) found.push({ id: `${layer.id}:size`, level: "warn", title: `${label} is very small`, detail: `${heightIn.toFixed(2)} in tall. Thin or tiny text can print unevenly; try 0.15 in or larger.`, layerId: layer.id });
+      }
+      const paths = regions.filter((r) => !layer.printRegionId || r.id === layer.printRegionId).map((r) => new Path2D(regionPath(r)));
+      const b = object.getBoundingRect();
+      const samples = [0, 0.25, 0.5, 0.75, 1].flatMap((x) => [0, 0.25, 0.5, 0.75, 1].map((y) => [b.left + b.width * x, b.top + b.height * y] as const));
+      const outsideCount = samples.filter(([x, y]) => !paths.some((path) => ctx.isPointInPath(path, x, y))).length;
+      if (layer.kind !== "pattern" && outsideCount > 0) {
+        found.push({ id: `${layer.id}:area`, level: outsideCount === samples.length ? "error" : "warn", title: `${label} ${outsideCount === samples.length ? "is outside" : "extends past"} the print area`, detail: outsideCount === samples.length ? "Nothing of it will print." : "The part past the edge is clipped in print files.", layerId: layer.id });
+      }
+    }
+    return found;
+  }
+  function selectLayerById(id: string) {
+    const canvas = editor.current;
+    const target = canvas?.getObjects().find((object) => meta.current.get(object)?.id === id);
+    if (!canvas || !target) return;
+    canvas.discardActiveObject();
+    canvas.setActiveObject(target);
+    readSelection();
+    canvas.requestRenderAll();
   }
 
   function readSelection() {
@@ -1249,7 +1299,8 @@ export function ProductEditor({
   // Keyboard: delete, undo, nudge — never while typing.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (document.querySelector('[role="dialog"]')) return;
+      // Only an open dialog blocks shortcuts; hidden ones (like the feedback popover) stay in the DOM.
+      if ([...document.querySelectorAll('[role="dialog"]')].some((dialog) => !dialog.closest("details:not([open])") && dialog.getClientRects().length > 0)) return;
       const target = e.target as HTMLElement;
       if (target.closest("input, textarea, select, [contenteditable=true]")) return;
       const o = editor.current?.getActiveObject();
@@ -1261,6 +1312,31 @@ export function ProductEditor({
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "y") { e.preventDefault(); void redo(); return; }
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "d") { e.preventDefault(); void duplicate(); return; }
       if (e.key === "Escape") { editor.current?.discardActiveObject(); editor.current?.requestRenderAll(); readSelection(); return; }
+      if (editor.current && (o instanceof IText && o.isEditing)) return;
+      const mod = e.metaKey || e.ctrlKey;
+      const key = e.key.toLowerCase();
+      if (mod && key === "c") { if (copySelection()) e.preventDefault(); return; }
+      if (mod && key === "x") { if (copySelection()) { e.preventDefault(); removeSelected(); } return; }
+      if (mod && key === "v") { if (clip.current) { e.preventDefault(); void pasteClipboard(); } return; }
+      if (mod && key === "a") { e.preventDefault(); selectAllLayers(); return; }
+      if (mod && key === "g") {
+        e.preventDefault();
+        const ids = activeLayerIds();
+        if (ids.length) void executeEditorCommand({ type: e.shiftKey ? "ungroup_selection" : "group_selection", layerIds: ids });
+        return;
+      }
+      if (!mod && (e.key === "[" || e.key === "]")) {
+        const ids = activeLayerIds();
+        if (ids.length) { e.preventDefault(); void executeEditorCommand({ type: "set_selection_order", layerIds: ids, direction: e.key === "]" ? (e.shiftKey ? "front" : "forward") : (e.shiftKey ? "back" : "backward") }); }
+        return;
+      }
+      if (!mod && !e.altKey && !locked) {
+        if (e.key === "?") { e.preventDefault(); setShortcutsOpen((open) => !open); return; }
+        if (key === "t") { e.preventDefault(); void addText({ text: "Add a heading", size: 64, font: "anton", bold: false }); return; }
+        if (key === "r") { e.preventDefault(); void executeEditorCommand({ type: "add_shape", shape: "rect" }); return; }
+        if (key === "c") { e.preventDefault(); void executeEditorCommand({ type: "add_shape", shape: "circle" }); return; }
+        if (key === "l") { e.preventDefault(); void executeEditorCommand({ type: "add_shape", shape: "line" }); return; }
+      }
       if (!o || !meta.current.has(o) || (o instanceof IText && o.isEditing)) return;
       if (e.key === "Delete" || e.key === "Backspace") {
         e.preventDefault();
@@ -1472,6 +1548,55 @@ export function ProductEditor({
         o.set(field === "left" ? { left: o.left + target - br.left } : { top: o.top + target - br.top });
       }
     });
+  }
+  const activeLayerIds = () => (editor.current?.getActiveObjects() ?? []).map((object) => meta.current.get(object)?.id).filter((id): id is string => Boolean(id));
+  function copySelection(): boolean {
+    capture();
+    const ids = activeLayerIds();
+    const layers = surface().layers.filter((layer) => ids.includes(layer.id));
+    if (!layers.length) return false;
+    clip.current = { layers: structuredClone(layers), pastes: 0 };
+    return true;
+  }
+  /** Paste copies of the copied layers, offset a little more each time, onto the current view. */
+  async function pasteClipboard() {
+    const canvas = editor.current;
+    const copied = clip.current;
+    if (!canvas || !copied || locked || !canDesign()) return;
+    checkpoint();
+    copied.pastes += 1;
+    const offset = 16 * copied.pastes;
+    const regionIds = new Set(regionsFor(surface()).map((region) => region.id));
+    const groups = new Map<string, string>();
+    const copies: FabricObject[] = [];
+    for (const source of copied.layers) {
+      const base = { ...source };
+      delete base.groupId;
+      if (source.groupId && !groups.has(source.groupId)) groups.set(source.groupId, crypto.randomUUID());
+      const copy = await makeLayer({
+        ...base, id: crypto.randomUUID(), x: source.x + offset, y: source.y + offset,
+        printRegionId: source.printRegionId && regionIds.has(source.printRegionId) ? source.printRegionId : undefined,
+        ...(source.groupId ? { groupId: groups.get(source.groupId) } : {}),
+      } as StudioLayer);
+      canvas.add(copy);
+      copies.push(copy);
+    }
+    bringGuideToTop();
+    canvas.discardActiveObject();
+    canvas.setActiveObject(copies.length === 1 ? copies[0] : new ActiveSelection(copies, { canvas }));
+    capture();
+    readSelection();
+    canvas.requestRenderAll();
+  }
+  function selectAllLayers() {
+    const canvas = editor.current;
+    if (!canvas) return;
+    const objects = canvas.getObjects().filter((object) => meta.current.has(object) && object.selectable !== false && object.visible !== false);
+    if (!objects.length) return;
+    canvas.discardActiveObject();
+    canvas.setActiveObject(objects.length === 1 ? objects[0] : new ActiveSelection(objects, { canvas }));
+    readSelection();
+    canvas.requestRenderAll();
   }
   async function duplicate() {
     const canvas = editor.current;
@@ -2485,6 +2610,9 @@ export function ProductEditor({
   const current = surfaces.find((s) => s.id === surfaceId) ?? surfaces[0];
   const currentSpec = spec(current);
   const currentRegions = regionsFor(current);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const printIssues = useMemo(() => computePrintIssues(), [layers, surfaces, ready, surfaceId, activeRegionId, selected]);
+  const printErrors = printIssues.filter((issue) => issue.level === "error").length;
   const hasDesign = surfaces.some((s) => s.layers.length) || layers.length > 0;
   const usedPositions = new Set(surfaces.map((s) => s.position ?? ""));
   const order = ["front", "back", "left_sleeve", "right_sleeve", "neck"];
@@ -2518,6 +2646,20 @@ export function ProductEditor({
             <Undo2 size={17} />
           </button>
           <button className="pe-icon-btn" onClick={() => void redo()} disabled={!redoCount || locked} aria-label="Redo" title="Redo"><Redo2 size={17}/></button>
+          <details className="pe-menu pe-check" ref={printCheck}>
+            <summary className={`pe-btn pe-btn-ghost pe-check-btn${!hasDesign ? " is-disabled" : ""}`} data-state={!hasDesign ? "idle" : printIssues.length ? (printErrors ? "error" : "warn") : "ok"} onClick={(e) => { if (!hasDesign) e.preventDefault(); }}>
+              {printIssues.length ? <TriangleAlert size={16} /> : <ShieldCheck size={16} />}
+              {printIssues.length ? `${printIssues.length} to check` : "Print-ready"}
+            </summary>
+            <div role="menu" aria-label="Print check">
+              {printIssues.length === 0 ? <p className="pe-check-ok"><strong>Looks good.</strong> Images are sharp enough, text is a printable size, and everything sits inside the print area.</p> : printIssues.map((issue) => (
+                <div key={issue.id} className="pe-check-item" data-level={issue.level}>
+                  <div><strong>{issue.title}</strong><small>{issue.detail}</small></div>
+                  <button type="button" onClick={() => { selectLayerById(issue.layerId); if (printCheck.current) printCheck.current.open = false; }}>Show</button>
+                </div>
+              ))}
+            </div>
+          </details>
           <details className="pe-menu" ref={exportMenu}>
             <summary className={`pe-btn pe-btn-ghost${!hasDesign || locked ? " is-disabled" : ""}`} onClick={(e) => { if (!hasDesign || locked) e.preventDefault(); }}><Download size={16} /> Download</summary>
             <div role="menu">
@@ -2547,6 +2689,7 @@ export function ProductEditor({
               Continue to pricing
             </button>
           )}
+          <button className="pe-icon-btn" onClick={() => setShortcutsOpen(true)} aria-label="Keyboard shortcuts" title="Keyboard shortcuts (?)"><Keyboard size={17} /></button>
           <div className="pe-top-feedback"><FeedbackCapture /></div>
         </div>
       </header>
@@ -3382,6 +3525,23 @@ export function ProductEditor({
         </div>
       )}
 
+      {shortcutsOpen && (
+        <div className="pe-modal" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts" onClick={(e) => { if (e.target === e.currentTarget) setShortcutsOpen(false); }}>
+          <div className="pe-modal-card pe-shortcuts">
+            <header><h2>Keyboard shortcuts</h2><button className="pe-icon-btn" onClick={() => setShortcutsOpen(false)} aria-label="Close"><X size={18} /></button></header>
+            <div className="pe-shortcut-grid">
+              {([
+                ["Add", [["T", "Heading text"], ["R", "Rectangle"], ["C", "Circle"], ["L", "Line"]]],
+                ["Edit", [["⌘/Ctrl C · X · V", "Copy · cut · paste"], ["⌘/Ctrl D", "Duplicate"], ["Delete", "Remove"], ["⌘/Ctrl A", "Select all"], ["Arrows", "Nudge (Shift = 10)"], ["⌘/Ctrl Z · Shift Z", "Undo · redo"]]],
+                ["Arrange", [["⌘/Ctrl G", "Group"], ["⌘/Ctrl Shift G", "Ungroup"], ["]  ·  [", "Forward · backward"], ["Shift ]  ·  Shift [", "To front · to back"]]],
+                ["View", [["⌘/Ctrl scroll", "Zoom"], ["Esc", "Deselect"], ["?", "This list"]]],
+              ] as [string, [string, string][]][]).map(([group, rows]) => (
+                <section key={group}><h3>{group}</h3>{rows.map(([keys, what]) => <p key={keys}><kbd>{keys}</kbd><span>{what}</span></p>)}</section>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
       {publishOpen && PublishPanel && <PublishPanel api={publishApi()} />}
 
       {setupOpen && <ProductSetup surfaces={doc.current.surfaces.map(s => {
