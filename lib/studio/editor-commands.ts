@@ -1,3 +1,4 @@
+import { TEXT_EFFECT_KINDS } from "@/lib/studio/text-effects";
 import { z } from "zod";
 import { SHAPE_KINDS } from "@/lib/domains/catalog/studio-layout";
 import { STUDIO_ASSET_IDS } from "./asset-library-client";
@@ -36,6 +37,7 @@ export const studioEditorCommandSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("set_opacity"), opacity: z.number().min(0).max(1) }).strict(),
   z.object({ type: z.literal("set_shape_style"), fill: z.string().regex(/^#[0-9a-f]{6}$/i).optional(), stroke: z.string().regex(/^#[0-9a-f]{6}$/i).nullable().optional(), strokeWidth: z.number().min(0).max(100).optional() }).strict(),
   z.object({ type: z.literal("set_shape_gradient"), from: z.string().regex(/^#[0-9a-f]{6}$/i), to: z.string().regex(/^#[0-9a-f]{6}$/i), direction: z.enum(["horizontal", "vertical", "diagonal"]).default("diagonal") }).strict(),
+  z.object({ type: z.literal("set_text_effect"), effect: z.object({ kind: z.enum(TEXT_EFFECT_KINDS), color: z.string().regex(/^#[0-9a-f]{6}$/i).optional(), accent: z.string().regex(/^#[0-9a-f]{6}$/i).optional(), amount: z.number().min(0).max(100).optional() }).strict().nullable(), color: z.string().regex(/^#[0-9a-f]{6}$/i).optional() }).strict(),
   z.object({ type: z.literal("set_text_style"), text: z.string().max(120).optional(), font: fontKeySchema.optional(), fontSize: z.number().min(12).max(120).optional(), color: z.string().regex(/^#[0-9a-f]{6}$/i).optional(), letterSpacing: z.number().min(-100).max(500).optional(), curve: z.number().min(-100).max(100).optional(), bold: z.boolean().optional(), italic: z.boolean().optional(), textAlign: z.enum(["left", "center", "right", "justify"]).optional(), lineHeight: z.number().min(0.8).max(3).optional(), textBoxWidth: z.number().positive().max(1440).optional(), outline: z.string().regex(/^#[0-9a-f]{6}$/i).nullable().optional(), outlineWidth: z.number().min(0).max(24).optional() }).strict(),
   z.object({ type: z.literal("set_image_adjustment"), field: z.enum(["brightness", "contrast", "saturation", "temperature", "blur"]), value: z.number().min(-1).max(1) }).strict(),
   z.object({ type: z.literal("set_image_mask"), mask: z.enum(["none", "circle", "rounded"]) }).strict(),

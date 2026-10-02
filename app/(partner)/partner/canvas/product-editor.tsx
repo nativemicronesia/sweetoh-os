@@ -24,6 +24,9 @@ import {
   cache as fabricCache,
 } from "fabric";
 import { initAligningGuidelines } from "fabric/extensions";
+import { StudioTextbox } from "./studio-textbox";
+import { TextEffectsGallery } from "./text-effects-gallery";
+import { TEXT_EFFECT_CONTROLS, TEXT_EFFECT_NAMES, type TextEffect, type TextEffectPreset } from "@/lib/studio/text-effects";
 import { drawingDashPattern, STUDIO_DRAW_BRUSHES, STUDIO_DRAW_TEXTURES, studioBrushPresetSchema, studioBrushTextureCanvas, studioDrawBrush, type StudioBrushPreset, type StudioDrawBrush } from "@/lib/studio/drawing-brushes";
 import { compactPressureSamples, normalizePressureSamples, pointerPressure, pressureSegment, pressureSegments, type LocalPressureSample, type PressureSample } from "@/lib/studio/drawing-pressure";
 import {
@@ -224,6 +227,7 @@ type Selected =
       curve?: number;
       outline?: string;
       outlineWidth?: number;
+      effect?: TextEffect;
       tile?: number;
       gap?: number;
       brick?: boolean;
@@ -522,7 +526,7 @@ export function ProductEditor({
   const [library, setLibrary] = useState(designs);
   const [colorName, setColorName] = useState<string | null>(colors[0]?.name ?? null);
   const [panel, setPanel] = useState<Panel>(null);
-  const [textTab, setTextTab] = useState<"styles" | "fonts">("styles");
+  const [textTab, setTextTab] = useState<"styles" | "effects" | "fonts">("styles");
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const clip = useRef<{ layers: StudioLayer[]; pastes: number } | null>(null);
   const [zoom, setZoom] = useState(1);
@@ -654,6 +658,7 @@ export function ProductEditor({
                 textBoxWidth: o.width,
                 letterSpacing: o.charSpacing,
                 ...(base.kind === "text" && base.curve ? { curve: base.curve } : {}),
+                ...(o instanceof StudioTextbox && o.effect ? { effect: o.effect } : {}),
                 outline: typeof o.stroke === "string" ? o.stroke : undefined,
                 outlineWidth: o.strokeWidth || undefined,
               }
@@ -839,6 +844,7 @@ export function ProductEditor({
             textBoxWidth: o.width,
             letterSpacing: (o as IText).charSpacing,
             curve: base.kind === "text" ? base.curve ?? 0 : 0,
+            effect: base.kind === "text" ? base.effect : undefined,
             outline: typeof (o as IText).stroke === "string" ? String((o as IText).stroke) : undefined,
             outlineWidth: (o as IText).strokeWidth,
           }
@@ -896,12 +902,13 @@ export function ProductEditor({
       // Preserve the natural single-line width for older IText documents until
       // a partner explicitly chooses a wrapping width.
       const naturalWidth = new IText(layer.text, textOptions).width;
-      obj = new Textbox(layer.text, {
+      obj = new StudioTextbox(layer.text, {
         ...textOptions,
         // A little slack so the last word never wraps onto a second line from rounding or tracking.
         width: layer.textBoxWidth ?? Math.min(1440, Math.max(20, Math.ceil(naturalWidth * 1.04) + 6)),
       });
       if (layer.curve) applyTextCurve(obj as IText, layer.curve);
+      if (layer.effect) (obj as StudioTextbox).setEffect(layer.effect);
     }
     if (layer.kind === "image" && layer.mask === "circle") {
       obj.clipPath = new Ellipse({ rx: obj.width / 2, ry: obj.height / 2, originX: "center", originY: "center" });
@@ -1464,7 +1471,7 @@ export function ProductEditor({
       setBusy(null);
     }
   }
-  async function addText(preset: { text: string; size: number; font?: string; bold?: boolean; italic?: boolean; color?: string; letterSpacing?: number; curve?: number; outline?: string; outlineWidth?: number; textAlign?: "left" | "center" | "right"; shadow?: { color: string; opacity: number; blur: number; offsetX: number; offsetY: number } } = { text: "Your text", size: 48 }) {
+  async function addText(preset: { text: string; size: number; font?: string; bold?: boolean; italic?: boolean; color?: string; letterSpacing?: number; curve?: number; outline?: string; outlineWidth?: number; effect?: TextEffect; textAlign?: "left" | "center" | "right"; shadow?: { color: string; opacity: number; blur: number; offsetX: number; offsetY: number } } = { text: "Your text", size: 48 }) {
     if (!canDesign()) return;
     if (locked) return;
     checkpoint();
@@ -1489,6 +1496,7 @@ export function ProductEditor({
       ...(preset.outline ? { outline: preset.outline, outlineWidth: preset.outlineWidth ?? 4 } : {}),
       ...(preset.textAlign ? { textAlign: preset.textAlign } : {}),
       ...(preset.shadow ? { shadow: preset.shadow } : {}),
+      ...(preset.effect ? { effect: preset.effect } : {}),
     };
     const obj = await makeLayer(layer);
     // Start inside the print area: shrink long text to fit its width.
@@ -1983,6 +1991,13 @@ export function ProductEditor({
         o.set({ ...(action.fill ? { fill: action.fill } : {}), ...(action.stroke !== undefined ? { stroke: action.stroke ?? undefined } : {}), ...(action.strokeWidth !== undefined ? { strokeWidth: action.strokeWidth } : {}) });
       });
       case "set_shape_gradient": return setShapeGradient(action.from, action.to, action.direction);
+      case "set_text_effect": return changeSelected((o) => {
+        if (!(o instanceof StudioTextbox)) return;
+        o.setEffect(action.effect);
+        if (action.color) o.set({ fill: action.color });
+        const base = meta.current.get(o);
+        if (base?.kind === "text") meta.current.set(o, { ...base, effect: action.effect ?? undefined, ...(action.color ? { color: action.color } : {}) });
+      }, record);
       case "set_text_style": {
         const currentFont = action.font ?? selected?.font ?? "inter";
         const supportsBold = fontSupportsBold(currentFont);
@@ -3079,10 +3094,19 @@ export function ProductEditor({
                 </button>
                 <div className="pe-seg" role="tablist" aria-label="Text library">
                   <button role="tab" aria-selected={textTab === "styles"} onClick={() => setTextTab("styles")}>Text styles</button>
+                  <button role="tab" aria-selected={textTab === "effects"} onClick={() => setTextTab("effects")}>Effects</button>
                   <button role="tab" aria-selected={textTab === "fonts"} onClick={() => setTextTab("fonts")}>Fonts</button>
                 </div>
                 {textTab === "styles" ? (
                   <TextStylesGallery disabled={locked} onPick={(preset: TextStylePreset) => void addText({ text: preset.sample, size: preset.size, font: preset.font, bold: preset.bold, italic: preset.italic, color: presetTextColor(preset, colorRef.current), letterSpacing: preset.letterSpacing, curve: preset.curve, outline: preset.outline, outlineWidth: preset.outlineWidth, textAlign: preset.textAlign, shadow: preset.shadow })} />
+                ) : textTab === "effects" ? (
+                  <>
+                    <p className="pe-muted pe-small">{selected?.kind === "text" ? "Applies to the selected text." : "Adds a new text layer with the effect."}</p>
+                    <TextEffectsGallery disabled={locked} active={selected?.kind === "text" ? selected.effect : null} onPick={(preset: TextEffectPreset) => {
+                      if (selected?.kind === "text") void executeEditorCommand({ type: "set_text_effect", effect: preset.effect, color: preset.face });
+                      else void addText({ text: "Island", size: 72, font: "lilita", bold: false, color: preset.face, effect: preset.effect });
+                    }} />
+                  </>
                 ) : (
                   <FontBrowser
                     value={selected?.kind === "text" ? selected.font : undefined}
@@ -3366,6 +3390,29 @@ export function ProductEditor({
                   <label className="pe-slider"><span>Curve <b>{selected.curve ?? 0}</b></span><input type="range" min={-100} max={100} step={5} value={selected.curve ?? 0} onPointerDown={() => checkpoint()} onChange={(e) => void executeEditorCommand({ type: "set_text_style", curve: Number(e.target.value) }, false)} /></label>
                   <div className="pe-row"><label className="pe-color-input" title="Text outline"><input type="color" value={selected.outline ?? "#ffffff"} onPointerDown={() => checkpoint()} onChange={(e) => void executeEditorCommand({ type: "set_text_style", outline: e.target.value }, false)} /></label><label className="pe-num"><span>Outline</span><input type="number" aria-label="Outline width" min={0} max={24} step={1} value={selected.outlineWidth ?? 0} onFocus={() => checkpoint()} onChange={(e) => void executeEditorCommand({ type: "set_text_style", outline: e.target.value ? selected.outline ?? "#ffffff" : null, outlineWidth: Number(e.target.value) }, false)} /></label></div>
                   <ColorSwatches value={selected.color} docColors={docColors} onBeforeCustom={() => checkpoint()} onPick={(color, record = true) => void executeEditorCommand({ type: "set_text_style", color }, record)} />
+                </section>
+              )}
+
+              {selected.kind === "text" && (
+                <section className="pe-section fx-controls">
+                  <p className="pe-label">Text effect</p>
+                  <div className="pe-row">
+                    <b>{selected.effect ? TEXT_EFFECT_NAMES[selected.effect.kind] : "None"}</b>
+                    <button className="pe-btn pe-btn-ghost" onClick={() => { setPanel("text"); setTextTab("effects"); }}>{selected.effect ? "Change" : "Browse effects"}</button>
+                    {selected.effect && <button className="pe-btn pe-btn-ghost" onClick={() => void executeEditorCommand({ type: "set_text_effect", effect: null })}>Remove</button>}
+                  </div>
+                  {selected.effect && (() => {
+                    const fx = selected.effect;
+                    const controls = TEXT_EFFECT_CONTROLS[fx.kind];
+                    const update = (patch: Partial<TextEffect>, record = true) => void executeEditorCommand({ type: "set_text_effect", effect: { ...fx, ...patch } }, record);
+                    return (
+                      <>
+                        <label className="pe-slider"><span>{controls.amount} <b>{Math.round(fx.amount ?? 50)}</b></span><input type="range" min={0} max={100} step={1} value={fx.amount ?? 50} onPointerDown={() => checkpoint()} onChange={(event) => update({ amount: Number(event.target.value) }, false)} /></label>
+                        {controls.color && (<><p className="pe-label">{controls.color}</p><ColorSwatches value={fx.color} docColors={docColors} onBeforeCustom={() => checkpoint()} onPick={(color, record = true) => update({ color }, record)} /></>)}
+                        {controls.accent && (<><p className="pe-label">{controls.accent}</p><ColorSwatches value={fx.accent} docColors={docColors} onBeforeCustom={() => checkpoint()} onPick={(color, record = true) => update({ accent: color }, record)} /></>)}
+                      </>
+                    );
+                  })()}
                 </section>
               )}
 

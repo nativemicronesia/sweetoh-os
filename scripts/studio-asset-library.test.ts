@@ -1105,7 +1105,7 @@ test("text styles validate, survive save/reopen and unavailable saved fonts use 
   const editor = readFileSync("app/(partner)/partner/canvas/product-editor.tsx", "utf8");
   assert.match(editor, /case "set_text_style"[\s\S]*?changeSelected\([\s\S]*?record\)/);
   assert.match(editor, /function changeSelected\([\s\S]*?if \(record\) checkpoint\(\)[\s\S]*?capture\(\)/);
-  assert.match(editor, /new Textbox\(layer\.text[\s\S]*?textBoxWidth/);
+  assert.match(editor, /new (?:Studio)?Textbox\(layer\.text[\s\S]*?textBoxWidth/);
   assert.match(editor, /resolveStudioFontKey\(layer\.font\)/);
 });
 

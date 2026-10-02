@@ -514,3 +514,15 @@
 .sh-template strong{font-size:13px;margin-top:6px}.sh-template small{font-size:11px;color:var(--pf-muted)}
 .sh-template .tp-svg{transition:transform .15s,box-shadow .15s}.sh-template:hover .tp-svg{transform:translateY(-3px);box-shadow:0 10px 22px rgba(16,24,40,.14)}
 .el>*{min-width:0}.el-live{min-width:0;display:grid;gap:12px;align-content:start}
+
+/* Text effects gallery */
+.fxg{display:grid;gap:14px}
+.fxg-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.fxg-card{display:grid;gap:5px;padding:5px 5px 7px;border:1.5px solid var(--sh-line,#e5dfd0);border-radius:12px;background:#fff;cursor:pointer;text-align:center;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
+.fxg-card:hover:not(:disabled){transform:translateY(-1px);border-color:#173e39;box-shadow:0 6px 14px rgba(23,62,57,.12)}
+.fxg-card[aria-pressed=true]{border-color:#1f7048;box-shadow:0 0 0 2px rgba(31,112,72,.22)}
+.fxg-card:disabled{opacity:.5;cursor:not-allowed}
+.fxg-card small{font-size:11px;font-weight:600;color:#3d4a52}
+.fxg-canvas{display:block;width:100%;aspect-ratio:148/64;height:auto;border-radius:8px}
+.fxg-card{min-width:0}
+.fx-controls{display:grid;gap:10px}
