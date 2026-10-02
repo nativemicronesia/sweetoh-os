@@ -39,6 +39,12 @@ export default async function SettingsPage() {
       </section>
 
       <section className="cs-card cs-pad">
+        <h2 className="cs-h2" style={{ marginBottom: 6 }}>Your data</h2>
+        <p className="cs-muted" style={{ margin: "0 0 12px", fontSize: 14 }}>Download everything you have given or made in Studio: your brand memory, conversations with Skink, saved design layouts, credits history and plan. Secrets like your Printify token and payment details are never included.</p>
+        <a className="cs-btn cs-btn-ghost" href="/api/studio/my-data" download>Download my data (JSON)</a>
+      </section>
+
+      <section className="cs-card cs-pad">
         <h2 className="cs-h2" style={{ marginBottom: 10 }}>Account</h2>
         <dl style={{ display: "grid", gridTemplateColumns: "140px 1fr", gap: "8px 16px", margin: 0, fontSize: 14 }}>
           <dt className="cs-muted">Name</dt><dd style={{ margin: 0 }}>{session.appUser.name ?? "—"}</dd>

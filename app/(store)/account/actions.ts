@@ -1,5 +1,6 @@
 "use server";
 
+import { actionBlocked, MINUTES, TOO_MANY_ATTEMPTS } from "@/lib/shared/action-limit";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -26,6 +27,7 @@ export async function customerSignUpAction(_prev: FormState, form: FormData): Pr
   const values = { name: String(form.get("name") ?? ""), email: String(form.get("email") ?? ""), phone: String(form.get("phone") ?? "") };
   const parsed = signUpSchema.safeParse({ ...values, password: form.get("password") });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Check your details.", values };
+  if (await actionBlocked("customer-sign-up", { limit: 10, windowMs: MINUTES(60) })) return { error: TOO_MANY_ATTEMPTS, values };
   try {
     await signUpCustomer(parsed.data);
   } catch (error) {
@@ -36,6 +38,7 @@ export async function customerSignUpAction(_prev: FormState, form: FormData): Pr
 
 export async function customerSignInAction(_prev: FormState, form: FormData): Promise<FormState> {
   const email = String(form.get("email") ?? "");
+  if (await actionBlocked("customer-sign-in", { limit: 12, windowMs: MINUTES(10), target: email, targetLimit: 6 })) return { error: TOO_MANY_ATTEMPTS, values: { email } };
   try {
     await signInCustomer(email, String(form.get("password") ?? ""));
   } catch (error) {
@@ -52,6 +55,7 @@ export async function customerSignOutAction() {
 export async function submitCustomRequestAction(_prev: FormState, form: FormData): Promise<FormState> {
   const shopper = await getCurrentCustomer();
   if (!shopper) redirect("/account?next=/custom");
+  if (await actionBlocked("custom-request", { limit: 8, windowMs: MINUTES(60) })) return { error: TOO_MANY_ATTEMPTS };
   const values = {
     productType: String(form.get("productType") ?? ""),
     description: String(form.get("description") ?? ""),

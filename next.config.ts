@@ -12,6 +12,23 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "*.supabase.co" },
     ],
   },
+  // Baseline hardening on every response. (No strict Content-Security-Policy yet: it needs a nonce
+  // pass over inline scripts, Stripe and Supabase before it can be turned on safely.)
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          // The storefront Studio uses the microphone for voice input; nothing uses camera or location.
+          { key: "Permissions-Policy", value: "camera=(), geolocation=(), microphone=(self)" },
+          { key: "Strict-Transport-Security", value: "max-age=31536000" },
+        ],
+      },
+    ];
+  },
   // Parent /Users/dave/package-lock.json confuses Turbopack workspace root detection.
   turbopack: {
     root: path.join(__dirname),

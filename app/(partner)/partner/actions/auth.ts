@@ -1,5 +1,6 @@
 "use server";
 
+import { actionBlocked, MINUTES, TOO_MANY_ATTEMPTS } from "@/lib/shared/action-limit";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/auth/supabase/server";
 import { getPublicEnv } from "@/lib/config/env";
@@ -15,6 +16,7 @@ function redirectLoginError(message: string): never {
 export async function signInAction(formData: FormData): Promise<void> {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
+  if (await actionBlocked("partner-sign-in", { limit: 12, windowMs: MINUTES(10), target: email, targetLimit: 6 })) redirectLoginError(TOO_MANY_ATTEMPTS);
 
   if (!email || !password) {
     redirectLoginError("Enter your email and password to sign in.");
@@ -52,28 +54,6 @@ export async function signInAction(formData: FormData): Promise<void> {
   redirect("/partner");
 }
 
-/** The NMH owner signs in separately from the Sweet'Oh partner. */
-export async function signInOwnerAction(formData: FormData): Promise<void> {
-  const email = String(formData.get("email") ?? "").trim();
-  const password = String(formData.get("password") ?? "");
-
-  if (!email || !password) {
-    redirect("/owner/login?error=Email%20and%20password%20are%20required.");
-  }
-
-  const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) redirect("/owner/login?error=" + encodeURIComponent(error.message));
-
-  const session = await getSessionUser().catch(() => null);
-  if (session?.role !== "owner") {
-    await supabase.auth.signOut();
-    redirect("/owner/login?error=owner_only");
-  }
-
-  redirect("/partner");
-}
-
 /**
  * Owner email-link sign-in, gated to the single address in FOUNDATION_OWNER_EMAIL.
  * Always answers the same way, so it never reveals whether an address matched.
@@ -81,6 +61,8 @@ export async function signInOwnerAction(formData: FormData): Promise<void> {
 export async function signUpOwnerAction(_prev: PasswordFormState, form: FormData): Promise<PasswordFormState> {
   const email = String(form.get("email") ?? "").trim().toLowerCase();
   if (!email) return { error: "Enter your email." };
+  // Past the limit we quietly send nothing: the answer stays the same, so nothing leaks and the inbox is not flooded.
+  if (await actionBlocked("owner-link", { limit: 5, windowMs: MINUTES(60), target: email, targetLimit: 3 })) return { done: true };
   try {
     const allowed = (process.env.FOUNDATION_OWNER_EMAIL ?? "").trim().toLowerCase();
     if (allowed && email === allowed) {
@@ -123,12 +105,14 @@ export async function changePasswordAction(_prev: PasswordFormState, form: FormD
 
 /** Login → "Forgot password?". Always answers the same, so it can't reveal which emails have accounts. */
 export async function forgotPasswordAction(_prev: PasswordFormState, form: FormData): Promise<PasswordFormState> {
+  if (await actionBlocked("forgot-password", { limit: 6, windowMs: MINUTES(60), target: String(form.get("email") ?? ""), targetLimit: 3 })) return { done: true };
   await requestPasswordReset(String(form.get("email") ?? ""), getPublicEnv().siteUrl).catch(() => undefined);
   return { done: true };
 }
 
 /** The emailed link's page → set a new password, then straight into the back office. */
 export async function resetPasswordAction(_prev: PasswordFormState, form: FormData): Promise<PasswordFormState> {
+  if (await actionBlocked("reset-password", { limit: 10, windowMs: MINUTES(60) })) return { error: TOO_MANY_ATTEMPTS };
   try {
     await completePasswordReset(
       String(form.get("token") ?? ""),
@@ -144,6 +128,7 @@ export async function resetPasswordAction(_prev: PasswordFormState, form: FormDa
 /** Completes the emailed owner link (a click, so mail scanners can't burn it). */
 export async function verifyOwnerAction(formData: FormData): Promise<void> {
   const token = String(formData.get("token") ?? "");
+  if (await actionBlocked("owner-verify", { limit: 10, windowMs: MINUTES(10) })) redirect("/owner/login?error=" + encodeURIComponent(TOO_MANY_ATTEMPTS));
   if (!token) redirect("/owner/login?error=" + encodeURIComponent("That sign-in link is incomplete. Ask for a new one."));
   try {
     await redeemOwnerSignIn(token);

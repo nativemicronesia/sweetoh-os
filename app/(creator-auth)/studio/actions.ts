@@ -1,5 +1,6 @@
 "use server";
 
+import { actionBlocked, MINUTES, TOO_MANY_ATTEMPTS } from "@/lib/shared/action-limit";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/auth/supabase/server";
@@ -29,6 +30,7 @@ function safeNext(raw: FormDataEntryValue | null) {
 export async function joinWaitlistAction(form: FormData): Promise<{ error?: string }> {
   const email = z.string().trim().toLowerCase().email().safeParse(form.get("email"));
   if (!email.success) return { error: "Enter a valid email address." };
+  if (await actionBlocked("waitlist", { limit: 10, windowMs: MINUTES(60) })) return { error: TOO_MANY_ATTEMPTS };
   try {
     const venture = await getDefaultVenture();
     await subscribeEmail({ ventureId: venture.id, email: email.data, source: "creator-waitlist" });
@@ -40,6 +42,7 @@ export async function joinWaitlistAction(form: FormData): Promise<{ error?: stri
 
 export async function joinAction(_prev: AuthState, form: FormData): Promise<AuthState> {
   if (!creatorSignupsOpen()) return { error: "Creator sign-ups aren't open yet." };
+  if (await actionBlocked("creator-join", { limit: 8, windowMs: MINUTES(60) })) return { error: TOO_MANY_ATTEMPTS };
   const parsed = joinSchema.safeParse({ name: form.get("name"), email: form.get("email"), password: form.get("password") });
   const echo = { email: String(form.get("email") ?? ""), name: String(form.get("name") ?? "") };
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Check your details.", ...echo };
@@ -68,6 +71,7 @@ export async function studioSignInAction(_prev: AuthState, form: FormData): Prom
   const email = String(form.get("email") ?? "").trim().toLowerCase();
   const password = String(form.get("password") ?? "");
   if (!email || !password) return { error: "Enter your email and password.", email };
+  if (await actionBlocked("studio-sign-in", { limit: 12, windowMs: MINUTES(10), target: email, targetLimit: 6 })) return { error: TOO_MANY_ATTEMPTS, email };
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) return { error: "That email and password don't match.", email };

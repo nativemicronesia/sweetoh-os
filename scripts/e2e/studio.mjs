@@ -9,7 +9,7 @@
  * any console error or wrong result.
  */
 import { spawn } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { setTimeout as sleep } from "node:timers/promises";
 
 const BASE = process.env.E2E_URL ?? "http://localhost:3002";
@@ -187,6 +187,29 @@ await scenario("quick mockups: design on a product, downloadable", async () => {
   await ev(`[...document.querySelectorAll('.mk .pe-seg button')].find((b) => b.textContent === 'Hoodie').click()`); await sleep(800);
   await ev(`${button("Download", "document.querySelector('.mk')")}.click()`);
   await waitFor("window.__png > 20000", "a real PNG file", 30000);
+});
+
+await scenario("accessibility: no serious or critical WCAG A/AA problems in the main panels", async () => {
+  await fresh();
+  await ev(readFileSync("node_modules/axe-core/axe.min.js", "utf8"));
+  const wait = "await new Promise((r) => setTimeout(r, 700));";
+  const states = {
+    "empty editor": "",
+    "text styles": `${rail("Text")}.click();`,
+    "text effects": `[...document.querySelectorAll('.pe-seg button')].find((b) => b.textContent === 'Effects').click();`,
+    "a selected shape": `${rail("Shapes")}.click(); ${wait} [...document.querySelectorAll('.pe-shapes button')].find((b) => b.textContent.trim() === 'Heart').click();`,
+    "icons": `${rail("Elements")}.click(); ${wait} [...document.querySelectorAll('.el-tabs button')].find((b) => b.textContent.trim().startsWith('Icons')).click();`,
+    "templates": `${rail("Templates")}.click();`,
+    "mockups": `${rail("Mockups")}.click();`,
+  };
+  const problems = [];
+  for (const [name, action] of Object.entries(states)) {
+    if (action) await ev(`(async () => { ${action} })()`);
+    await sleep(1800);
+    const found = JSON.parse((await ev(`axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'], resultTypes: ['violations'] }).then((r) => JSON.stringify(r.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical').map((v) => ({ id: v.id, nodes: v.nodes.slice(0, 2).map((n) => n.target.join(' ')) }))))`)) ?? "[]");
+    for (const v of found) problems.push(`${name}: ${v.id} at ${v.nodes.join(" , ")}`);
+  }
+  if (problems.length) throw new Error(problems.slice(0, 6).join("\n       "));
 });
 
 await scenario("autosave: work survives a reload", async () => {

@@ -70,3 +70,23 @@ test("unsupported and oversized files get plain guidance", async () => {
   assert.throws(() => validateArtworkImport({ mimeType: "image/png", sizeBytes: 0 }), /empty/);
   await assert.rejects(() => importArtwork(Buffer.from("not an image"), "image/png"), /couldn't read/);
 });
+
+test("more SVG attacks are refused: use-links, style imports, xinclude, file paths, oversized canvases", async () => {
+  const bad: Record<string, string> = {
+    useExternal: `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="https://evil.example/a.svg#x"/></svg>`,
+    useFile: `<svg xmlns="http://www.w3.org/2000/svg"><image href="file:///etc/passwd"/></svg>`,
+    feImage: `<svg xmlns="http://www.w3.org/2000/svg"><filter id="f"><feImage href="http://evil.example/x.png"/></filter></svg>`,
+    styleImport: `<svg xmlns="http://www.w3.org/2000/svg"><style>@import url(http://evil.example/x.css);</style></svg>`,
+    styleUrl: `<svg xmlns="http://www.w3.org/2000/svg"><style>rect{fill:url(http://evil.example/x)}</style><rect/></svg>`,
+    caseTricks: `<svg xmlns="http://www.w3.org/2000/svg"><SCRIPT>1</SCRIPT></svg>`,
+    spacedHandler: `<svg xmlns="http://www.w3.org/2000/svg"><rect  onClick = "x()"/></svg>`,
+    dataSvg: `<svg xmlns="http://www.w3.org/2000/svg"><image href="data:image/svg+xml;base64,PHN2Zz48L3N2Zz4="/></svg>`,
+    animate: `<svg xmlns="http://www.w3.org/2000/svg"><rect><animate attributeName="x" from="0" to="9"/></rect></svg>`,
+  };
+  for (const [name, svg] of Object.entries(bad)) assert.throws(() => sanitizeSvg(svg), /can't be imported/, name);
+  // A huge declared canvas must not exhaust memory.
+  const huge = `<svg xmlns="http://www.w3.org/2000/svg" width="900000" height="900000"><rect width="10" height="10"/></svg>`;
+  const out = await importArtwork(Buffer.from(huge), "image/svg+xml").catch((e: Error) => e);
+  if (out instanceof Error) assert.match(out.message, /SVG|size|read/i);
+  else assert.ok(out.report.width <= 6000 && out.report.height <= 6000);
+});

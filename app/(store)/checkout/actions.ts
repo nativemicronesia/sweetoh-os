@@ -1,5 +1,6 @@
 "use server";
 
+import { actionBlocked, MINUTES, TOO_MANY_ATTEMPTS } from "@/lib/shared/action-limit";
 import { redirect } from "next/navigation";
 import { getDefaultVenture } from "@/lib/domains/identity/service";
 import { createCartCheckoutSession } from "@/lib/integrations/stripe/checkout";
@@ -13,6 +14,8 @@ export async function createCheckoutSessionAction(
     quantity: number;
   }[],
 ): Promise<{ error: string } | void> {
+  // Guest checkout is public by design; each call creates a Stripe session, so it is limited.
+  if (await actionBlocked("checkout", { limit: 20, windowMs: MINUTES(10) })) return { error: TOO_MANY_ATTEMPTS };
   let checkoutUrl: string;
 
   try {

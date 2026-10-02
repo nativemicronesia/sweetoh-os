@@ -2,16 +2,32 @@
 
 import { useEffect } from "react";
 import { loadCatalogFont, studioFont } from "@/lib/studio/fonts";
-import { TEXT_STYLE_PRESETS, type TextStylePreset } from "@/lib/studio/text-styles";
+import { contrastRatio, TEXT_STYLE_PRESETS, type TextStylePreset } from "@/lib/studio/text-styles";
 
 const GROUPS = ["Headlines", "Retro & groovy", "Script & hand", "Elegant", "Outline & shadow", "Badges & curves", "Clean & minimal"] as const;
+
+const DARK_CARD = "#102a2d";
+function darker(hex: string, amount: number) {
+  const n = parseInt(hex.slice(1), 16);
+  const c = (shift: number) => Math.round(((n >> shift) & 255) * (1 - amount)).toString(16).padStart(2, "0");
+  return `#${c(16)}${c(8)}${c(0)}`;
+}
+/** A readable way to show a style's color on its card: as is on white, on a dark card, or slightly deepened. Insertion keeps the real color. */
+export function previewTone(accent: string | undefined): { color: string; dark: boolean } {
+  const color = accent ?? "#173e39";
+  if (contrastRatio(color, "#ffffff") >= 4.5) return { color, dark: false };
+  if (contrastRatio(color, DARK_CARD) >= 4.5) return { color, dark: true };
+  let deeper = color;
+  for (let step = 1; step <= 10 && contrastRatio(deeper, "#ffffff") < 4.5; step++) deeper = darker(color, step * 0.06);
+  return { color: deeper, dark: false };
+}
 
 function Preview({ preset }: { preset: TextStylePreset }) {
   const font = studioFont(preset.font);
   // Fit the sample to the card: roughly 0.58em per character, plus tracking.
   const tracking = (preset.letterSpacing ?? 0) / 1000;
-  const size = Math.max(12, Math.min(30, preset.size * 0.38, 116 / (preset.sample.length * (0.58 + tracking))));
-  const color = preset.accent ?? "#173e39";
+  const size = Math.max(12, Math.min(30, preset.size * 0.38, 112 / (preset.sample.length * (0.74 + tracking))));
+  const { color, dark } = previewTone(preset.accent);
   const style = {
     fontFamily: font.family,
     fontSize: size,
@@ -19,7 +35,7 @@ function Preview({ preset }: { preset: TextStylePreset }) {
     fontStyle: preset.italic ? "italic" : "normal",
     color,
     letterSpacing: preset.letterSpacing ? `${preset.letterSpacing / 1000}em` : undefined,
-    WebkitTextStroke: preset.outline ? `${Math.max(1, (preset.outlineWidth ?? 4) * 0.35)}px ${preset.outline}` : undefined,
+    WebkitTextStroke: preset.outline && !dark ? `${Math.max(1, (preset.outlineWidth ?? 4) * 0.35)}px ${preset.outline}` : undefined,
     paintOrder: "stroke fill",
   } as const;
   if (preset.curve) {
@@ -44,7 +60,7 @@ export function TextStylesGallery({ disabled, onPick }: { disabled: boolean; onP
           <p className="pe-label">{group}</p>
           <div className="ts-grid">
             {TEXT_STYLE_PRESETS.filter((preset) => preset.group === group).map((preset) => (
-              <button key={preset.id} type="button" className="ts-card" disabled={disabled} onClick={() => onPick(preset)} aria-label={`Add ${preset.label} text`}>
+              <button key={preset.id} type="button" className="ts-card" data-dark={previewTone(preset.accent).dark} disabled={disabled} onClick={() => onPick(preset)} aria-label={`Add ${preset.label} text`}>
                 <Preview preset={preset} />
                 <small>{preset.label}</small>
               </button>
