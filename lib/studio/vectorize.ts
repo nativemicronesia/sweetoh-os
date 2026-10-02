@@ -1,7 +1,7 @@
 import sharp from "sharp";
 import ImageTracer from "imagetracerjs";
 
-export const VECTOR_COLORS = { min: 2, max: 32, default: 8 } as const;
+export const VECTOR_COLORS = { min: 2, max: 32, default: 12 } as const;
 const TRACE_SIDE = 1400;
 
 /**

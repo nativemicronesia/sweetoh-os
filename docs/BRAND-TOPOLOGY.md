@@ -49,10 +49,10 @@ Island Sprouts OS keeps the **room** surfaces for the later Island Sprouts launc
 
 ## Shared vs separate
 
-| Shared (contract later) | Separate now |
+| Shared (contract now in foundation; not cut over) | Separate now |
 |-------------------------|--------------|
 | Studio → product → Sweet'Oh fulfillment concepts | Deployments, domains, brand tokens |
-| POD / custom product handoff when Island Sprouts launches | Catalog seed, Resend from-address, Stripe webhook for this app |
+| Authenticated/versioned POD offer, quote, production, cancellation and event contract (`docs/ISLAND-SPROUTS-INTEGRATION.md`) | Catalog seed, Resend from-address, Stripe webhook for this app |
 | NMH login shell → Sweet'Oh partner home | Sweet'Oh partner UI lives only in this repo |
 
 ## Do not

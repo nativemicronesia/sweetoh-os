@@ -4,6 +4,8 @@ Standalone storefront + **shared POD Studio** for NMH ventures (Sweet'Oh partner
 Island Sprouts / NMH creators).
 
 See [`docs/BRAND-TOPOLOGY.md`](./docs/BRAND-TOPOLOGY.md) and [`docs/LAUNCH.md`](./docs/LAUNCH.md).
+Island Sprouts POD integration status and cutover requirements:
+[`docs/ISLAND-SPROUTS-INTEGRATION.md`](./docs/ISLAND-SPROUTS-INTEGRATION.md).
 
 ## Dev
 

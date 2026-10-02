@@ -590,7 +590,7 @@ export function ProductEditor({
   const [inspirationNote, setInspirationNote] = useState("");
   const [aiMode, setAiMode] = useState<"design" | "pattern">("design");
   const [editPrompt, setEditPrompt] = useState("");
-  const [vectorColors, setVectorColors] = useState(8);
+  const [vectorColors, setVectorColors] = useState(12);
   const [vectorFile, setVectorFile] = useState<{ name: string; svg: string; paths: number } | null>(null);
   const [cropping, setCropping] = useState<{ src: string; initial?: CropPixels } | null>(null);
   const inspirationInput = useRef<HTMLInputElement>(null);
