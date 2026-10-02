@@ -6,11 +6,12 @@ import { ArrowRight, Check, Copy, ExternalLink, Loader2, Sparkles } from "lucide
 import { buildPackAction, saveResultAction, saveToolsAction } from "../actions/tools";
 
 type Tool = { id: string; name: string; kind: string; url: string; good: string };
+type Guide = { id: string; strengths: string[]; limits: string[]; recipes: { id: string; title: string; steps: string[] }[]; exportAdvice?: { format: string; settings: string[] }; bringBack: string; confirmOnSite: string[] };
 type Task = { id: string; label: string; blurb: string; askFor: string; kinds: string[] };
 
 const KIND_LABEL: Record<string, string> = { ai: "AI assistants", design: "Design apps", production: "Printing", store: "Stores" };
 
-export function MyTools({ tools, tasks, mine }: { tools: Tool[]; tasks: Task[]; mine: string[] }) {
+export function MyTools({ tools, tasks, mine, guides = [] }: { tools: Tool[]; tasks: Task[]; mine: string[]; guides?: Guide[] }) {
   const [picked, setPicked] = useState<string[]>(mine);
   const [saved, setSaved] = useState(false);
   const [tool, setTool] = useState<string>(mine.find((id) => tools.find((t) => t.id === id)?.kind === "ai") ?? "");
@@ -75,6 +76,32 @@ export function MyTools({ tools, tasks, mine }: { tools: Tool[]; tasks: Task[]; 
         ))}
         <p className="cs-muted" style={{ fontSize: 13, margin: 0 }}>Skink uses these when they&apos;re the better tool — so your subscriptions do more and your credits last longer.</p>
       </section>
+
+      {tools.filter((t) => picked.includes(t.id) && guides.some((g) => g.id === t.id)).length > 0 && (
+        <section className="cs-card cs-pad">
+          <h2 className="cs-h2" style={{ marginBottom: 4 }}>How Skink works with your tools</h2>
+          <p className="cs-muted" style={{ fontSize: 13, marginTop: 0 }}>Keep using what you know. Skink guides you in each tool and brings the work back here when Studio is the better place.</p>
+          <div className="cs-stack" style={{ gap: 10 }}>
+            {tools.filter((t) => picked.includes(t.id)).map((t) => {
+              const g = guides.find((x) => x.id === t.id);
+              if (!g) return null;
+              return (
+                <details key={t.id} className="cs-card" style={{ padding: "10px 14px" }}>
+                  <summary style={{ cursor: "pointer", fontWeight: 600 }}>{t.name} <span className="cs-muted" style={{ fontWeight: 400 }}>· {g.strengths[0]}</span></summary>
+                  <div className="cs-stack" style={{ gap: 8, marginTop: 10, fontSize: 14 }}>
+                    <p style={{ margin: 0 }}><b>Good for:</b> {g.strengths.join(" · ")}</p>
+                    <p style={{ margin: 0 }}><b>Watch out for:</b> {g.limits.join(" · ")}</p>
+                    {g.recipes[0] && <div><b>{g.recipes[0].title}</b><ol style={{ margin: "4px 0 0 18px", padding: 0 }}>{g.recipes[0].steps.map((step) => <li key={step}>{step}</li>)}</ol></div>}
+                    {g.exportAdvice && <p style={{ margin: 0 }}><b>Export for Studio:</b> {g.exportAdvice.format}. {g.exportAdvice.settings.join("; ")}.</p>}
+                    <p style={{ margin: 0 }}><b>Bring it back to Studio when:</b> {g.bringBack}</p>
+                    <p className="cs-muted" style={{ margin: 0, fontSize: 12 }}>Confirm on their site: {g.confirmOnSite.join("; ")}.</p>
+                  </div>
+                </details>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       <section className="cs-card cs-pad">
         <h2 className="cs-h2" style={{ marginBottom: 4 }}>Hand work to your own tool</h2>

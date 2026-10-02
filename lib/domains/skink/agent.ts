@@ -16,6 +16,8 @@ import { listPartnerLibraryDesigns } from "@/lib/domains/catalog/partner-design-
 import type { SessionUser } from "@/lib/domains/identity/types";
 import { forgetMemory, listMemories, memoryPromptBlock, rememberFact, MEMORY_KINDS, type Memory } from "./memory";
 import { buildHandoffPack, HANDOFF_TASKS, taskById, toolById, TOOLS as OWNABLE_TOOLS } from "./handoff";
+import { guideText, recommendFor, type Job } from "./tool-knowledge";
+import { getCreatorProfile } from "@/lib/domains/creator/credits";
 import type { SkinkTurn } from "./threads";
 
 type ChatMessage = OpenAI.Chat.Completions.ChatCompletionMessageParam;
@@ -40,6 +42,7 @@ const TOOL_STATUS: Record<string, string> = {
   research: "Researching…",
   think_it_through: "Thinking it through…",
   prepare_handoff: "Preparing it for your own tool…",
+  tool_guide: "Checking the best way to do this…",
 };
 
 const PERSONA = `You are SweetOh AI, SweetOh's shared specialized intelligence. In creator-facing Studio conversations, you speak through the Green Tree Skink (Lamprolepis smaragdina), SweetOh's lead operator. The operator is the role and presence; SweetOh AI is the intelligence powering it. Western Skinks and Western Fence Lizards are future subordinate agents that may later use this intelligence under scoped roles. Those agents and autonomous agent workflows are not active.
@@ -72,6 +75,7 @@ Memory:
 Using what the creator already has:
 - Sweet'Oh isn't trying to replace ChatGPT, Claude, Gemini, Canva, Printify or anyone else. You're the agent; those are resources you know how to use, alongside your own.
 - When a creator already pays for a tool that suits the job — a long research piece, heavy image work, video, a big writing job — offer to prepare it for THAT tool with prepare_handoff. It costs them no Sweet'Oh credits and makes their subscription worth more. Then continue from whatever they bring back.
+- Before you advise on how to do something in Canva, Kittl, Printify, Etsy or any other outside tool, call tool_guide so your steps are accurate. Prefer the tool the creator already has (it costs them no credits) and say plainly when Studio is the better place: real print areas, one design on many products, mockups, or selling. Never quote prices, fees or policy numbers; tell them to confirm those on the tool's own site.
 - Use your own capabilities when they're the better or faster path, and for anything that touches their Sweet'Oh workspace (designs, products, memory, print files).
 
 Tools: use find_products to suggest real catalog products (always give the link). Use research for current market/trend/niche questions. Use think_it_through for strategy, pricing, brand positioning, or a plan with trade-offs. Use prepare_handoff to hand work to a tool the creator already pays for. Don't call tools for simple chat.`;
@@ -138,6 +142,22 @@ const TOOLS: Tool[] = [
           brief: { type: "string", description: "The specifics: the niche, product or idea." },
         },
         required: ["tool", "task", "brief"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "tool_guide",
+      description: "Accurate how-to guidance for a tool the creator uses (Canva, Kittl, Printify, Etsy, ChatGPT…): strengths, limits, steps for a job, how to export for Studio, and when to bring the work back to Studio. Optionally pass the job to get the cheapest sensible place to do it.",
+      parameters: {
+        type: "object",
+        properties: {
+          tool: { type: "string", enum: OWNABLE_TOOLS.map((t) => t.id).filter((id) => id !== "other") },
+          goal: { type: "string", description: "What the creator is trying to do, in a few words." },
+          job: { type: "string", enum: ["typography-art", "layout-graphics", "photo-edit", "research", "strategy", "copy", "image-generation", "print-fit", "many-products", "mockups", "fulfilment", "sell", "video"], description: "Optional: the kind of job, to get the cheapest place to do it." },
+        },
+        required: ["tool"],
       },
     },
   },
@@ -299,6 +319,21 @@ async function runTool(
       return {
         result: `Ready for ${tool.name}. In your reply you MUST paste the block below word for word, between two lines of "———", so the creator can copy it. Say one short line before it and one after: that they run it in ${tool.name}, and that you'll carry on when they paste the answer back here.\n\n${pack}`,
         event: { tool: "prepare_handoff", summary: `Prepared for ${tool.name} — no credits used`, href: "/studio/tools" },
+      };
+    }
+    case "tool_guide": {
+      const toolId = String(args.tool ?? "");
+      const guide = guideText(toolId, typeof args.goal === "string" ? args.goal.slice(0, 200) : undefined);
+      if (!guide) return { result: "No guide for that tool. Say so, and offer to prepare a prompt for it with prepare_handoff." };
+      const mine = ((await getCreatorProfile(userId))?.tools ?? []) as Parameters<typeof recommendFor>[1];
+      const rec = typeof args.job === "string" ? recommendFor(args.job as Job, mine) : null;
+      return {
+        result: `${guide}${rec ? `
+
+Cheapest sensible place for this job: ${rec.where}${rec.tool ? ` (${rec.tool})` : ""}. ${rec.why}` : ""}
+
+Use this to answer in your own words, briefly. Do not paste it.`,
+        event: { tool: "tool_guide", summary: `Checked how to do this in ${toolById(toolId)?.name ?? toolId}` },
       };
     }
     case "research": {
