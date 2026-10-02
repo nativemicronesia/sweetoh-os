@@ -531,3 +531,9 @@
 .pe-vector-bar{position:absolute;left:12px;right:12px;top:12px;margin:0 auto;width:max-content;z-index:6;display:flex;align-items:center;gap:8px;max-width:calc(100% - 24px);flex-wrap:nowrap;white-space:nowrap;padding:6px 8px 6px 14px;border-radius:999px;background:#fff;border:1.5px solid #173e39;box-shadow:0 8px 24px rgba(23,62,57,.18);font-size:13px;font-weight:600;color:#173e39}
 .pe-vector-bar .pe-btn{width:auto;height:auto;padding:6px 12px;flex:none}
 .pe-vector-bar span{overflow:hidden;text-overflow:ellipsis}
+
+/* Import report */
+.pe-import-notes{position:absolute;left:12px;right:12px;bottom:64px;margin:0 auto;max-width:520px;z-index:6;display:grid;gap:4px;padding:10px 38px 10px 14px;border-radius:12px;background:#fffaf0;border:1.5px solid #e8b44a;box-shadow:0 8px 24px rgba(23,62,57,.14);font-size:13px;color:#4a3a12}
+.pe-import-notes p{margin:0}
+.pe-import-notes .pe-icon-btn{position:absolute;right:6px;top:6px}
+.pe-link{background:none;border:0;padding:0;color:#173e39;font-weight:700;text-decoration:underline;cursor:pointer}

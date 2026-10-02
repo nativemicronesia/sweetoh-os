@@ -82,26 +82,47 @@ test("path layers validate and reject unsafe path data", () => {
   assert.ok(studioEditorCommandSchema);
 });
 
-import { combineContours } from "../lib/studio/vector-boolean";
+import { combineContours, nudged, TOO_COMPLEX } from "../lib/studio/vector-boolean";
+import { computeBoolean } from "../lib/studio/vector-boolean-core";
+
+/** Stand-in for the worker: same math, in this process, so tests do not need a browser. */
+const inProcess = (op: Parameters<typeof computeBoolean>[0], inputs: Contour[][]) => ({ promise: Promise.resolve().then(() => computeBoolean(op, inputs)), cancel: () => {} });
 
 const box = (x: number, y: number, w: number, h: number) => parsePathData(`M ${x} ${y} L ${x + w} ${y} L ${x + w} ${y + h} L ${x} ${y + h} Z`);
 
 test("combining shapes: unite, subtract, intersect, exclude", async () => {
   const a = box(0, 0, 100, 100), b = box(50, 50, 100, 100);
   const area = (cs: Contour[]) => { const r = contourBounds(cs)!; return r.width * r.height; };
-  const united = await combineContours("unite", [a, b]);
+  const united = await combineContours("unite", [a, b], inProcess);
   assert.equal(united.length, 1);
   assert.deepEqual([Math.round(contourBounds(united)!.width), Math.round(contourBounds(united)!.height)], [150, 150]);
-  const cut = await combineContours("subtract", [a, b]);
+  const cut = await combineContours("subtract", [a, b], inProcess);
   assert.equal(cut.length, 1);
   assert.equal(contourBounds(cut)!.width, 100);
   assert.ok(cut[0].nodes.length >= 6, "an L-shaped remainder");
-  const both = await combineContours("intersect", [a, b]);
+  const both = await combineContours("intersect", [a, b], inProcess);
   assert.deepEqual([contourBounds(both)!.x, contourBounds(both)!.width], [50, 50]);
-  const either = await combineContours("exclude", [a, b]);
+  const either = await combineContours("exclude", [a, b], inProcess);
   assert.equal(either.length, 2);
   assert.ok(area(either) > 0);
-  await assert.rejects(() => combineContours("intersect", [box(0, 0, 10, 10), box(100, 100, 10, 10)]), /overlap/);
-  await assert.rejects(() => combineContours("unite", [a]), /at least two/);
-  await assert.rejects(() => combineContours("unite", [a, parsePathData("M 0 0 L 10 10")]), /closed/);
+  await assert.rejects(() => combineContours("intersect", [box(0, 0, 10, 10), box(100, 100, 10, 10)], inProcess), /overlap/);
+  await assert.rejects(() => combineContours("unite", [a], inProcess), /at least two/);
+  await assert.rejects(() => combineContours("unite", [a, parsePathData("M 0 0 L 10 10")], inProcess), /closed/);
+});
+
+test("shapes that make the boolean hang are cut off, retried once with a nudge, then reported", async () => {
+  let calls = 0;
+  let cancelled = 0;
+  const hangs = () => { calls++; return { promise: new Promise<Contour[]>(() => {}), cancel: () => { cancelled++; } }; };
+  await assert.rejects(() => combineContours("unite", [box(0, 0, 10, 10), box(5, 5, 10, 10)], hangs), new RegExp(TOO_COMPLEX.slice(0, 20)));
+  assert.equal(calls, 2);
+  assert.equal(cancelled, 2);
+  // The retry succeeds when the nudged shapes no longer hang.
+  let attempt = 0;
+  const hangsOnce = (op: Parameters<typeof computeBoolean>[0], inputs: Contour[][]) => (++attempt === 1 ? { promise: new Promise<Contour[]>(() => {}), cancel: () => {} } : inProcess(op, inputs));
+  const result = await combineContours("subtract", [box(0, 0, 100, 100), box(50, 50, 100, 100)], hangsOnce);
+  assert.ok(result.length >= 1);
+  const [base, moved] = nudged([box(0, 0, 10, 10), box(0, 0, 10, 10)]);
+  assert.equal(base[0].nodes[0].x, 0);
+  assert.ok(moved[0].nodes[0].x > 0);
 });

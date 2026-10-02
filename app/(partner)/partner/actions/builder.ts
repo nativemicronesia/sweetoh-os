@@ -10,6 +10,10 @@ import { generatePartnerArtwork } from "@/lib/integrations/ai/product-research";
 import { uploadPartnerDesign } from "@/lib/domains/catalog/partner-design-library";
 import { ValidationError } from "@/lib/shared/errors";
 import { getAssetSignedUrl, createAssetWithUpload, validateImageUpload } from "@/lib/domains/assets/service";
+import { createAdminClient } from "@/lib/auth/supabase/admin";
+import { designLibraryObjectKey, STORAGE_BUCKETS } from "@/lib/storage/paths";
+import { downloadFromBucket, removeFromBucket } from "@/lib/storage/client";
+import { importArtwork, validateArtworkImport, type ImportReport } from "@/lib/studio/artwork-import";
 
 function message(error: unknown) {
   if (error instanceof ValidationError) return error.message;
@@ -86,6 +90,43 @@ export async function uploadCanvasArtworkAction(form: FormData): Promise<{ asset
     revalidatePath("/partner/library");
     return { assetId: art.id, name: art.name, previewUrl: await getAssetSignedUrl({ ventureId: session.ventureId, assetId: art.id }) };
   } catch (error) { return { error: message(error) }; }
+}
+
+/**
+ * Artwork from other tools goes straight to storage on a signed URL (a server
+ * action body is capped at a few MB on Vercel, and print-size PNGs are bigger),
+ * then finishArtworkImportAction checks and normalizes it.
+ */
+export async function prepareArtworkImportAction(input: { name: string; type: string; size: number }): Promise<{ ok: true; key: string; url: string } | { ok: false; error: string }> {
+  const session = await requireStudioWorkspace();
+  try {
+    const data = z.object({ name: z.string().min(1).max(160), type: z.string().max(60), size: z.number().int().positive() }).parse(input);
+    validateArtworkImport({ mimeType: data.type, sizeBytes: data.size });
+    const safe = data.name.replace(/[^a-z0-9._-]+/gi, "-").slice(0, 80).toLowerCase() || "artwork";
+    const key = designLibraryObjectKey(session.ventureSlug, `import-${crypto.randomUUID()}`, safe);
+    const { data: signed, error } = await createAdminClient().storage.from(STORAGE_BUCKETS.designLibrary).createSignedUploadUrl(key);
+    if (error || !signed) throw error ?? new Error("upload url");
+    return { ok: true, key, url: signed.signedUrl };
+  } catch (error) { return { ok: false, error: message(error) }; }
+}
+
+export async function finishArtworkImportAction(input: { key: string; name: string; targetWidthPx?: number }): Promise<{ ok: true; assetId: string; name: string; previewUrl: string | null; report: ImportReport } | { ok: false; error: string }> {
+  const session = await requireStudioWorkspace();
+  let staged: string | null = null;
+  try {
+    const data = z.object({ key: z.string().max(300), name: z.string().min(1).max(160), targetWidthPx: z.number().int().min(300).max(6000).optional() }).parse(input);
+    // Only this workspace's own staged imports can be finished.
+    if (!data.key.startsWith(`${session.ventureSlug}/import-`) || data.key.includes("..")) throw new ValidationError("That upload isn't available. Try again.");
+    staged = data.key;
+    const bytes = await downloadFromBucket({ bucket: STORAGE_BUCKETS.designLibrary, objectKey: data.key });
+    const mimeType = /\.svg$/i.test(data.key) ? "image/svg+xml" : /\.jpe?g$/i.test(data.key) ? "image/jpeg" : /\.webp$/i.test(data.key) ? "image/webp" : /\.gif$/i.test(data.key) ? "image/gif" : /\.hei[cf]$/i.test(data.key) ? "image/heic" : "image/png";
+    const art = await importArtwork(bytes, mimeType, { targetWidthPx: data.targetWidthPx });
+    const base = data.name.replace(/\.[^.]+$/, "").slice(0, 100) || "Imported artwork";
+    const saved = await uploadPartnerDesign({ ventureId: session.ventureId, ventureSlug: session.ventureSlug, uploadedById: session.appUser.id, name: base, notes: `Imported (${art.report.source}). ${art.report.issues.map((i) => i.message).join(" ")}`.slice(0, 500), file: art.bytes, filename: `${base.replace(/[^a-z0-9._-]+/gi, "-").toLowerCase()}.${art.extension}`, mimeType: art.mimeType, autoApprove: false });
+    revalidatePath("/partner/library");
+    return { ok: true, assetId: saved.id, name: saved.name, previewUrl: await getAssetSignedUrl({ ventureId: session.ventureId, assetId: saved.id }), report: art.report };
+  } catch (error) { return { ok: false, error: message(error) }; }
+  finally { if (staged) await removeFromBucket({ bucket: STORAGE_BUCKETS.designLibrary, objectKey: staged }).catch(() => undefined); }
 }
 
 export async function uploadSurfaceAction(form: FormData) {

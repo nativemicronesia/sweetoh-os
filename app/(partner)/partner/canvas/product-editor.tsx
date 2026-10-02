@@ -32,6 +32,7 @@ import { NodeEditSession, PenSession } from "./vector-overlay";
 import { BOOLEAN_OPS, combineContours, type BooleanOp } from "@/lib/studio/vector-boolean";
 import { contoursToPathData, mapContours, parsePathData, type Contour, type VNode } from "@/lib/studio/vector-path";
 import { shapePathData } from "@/lib/studio/shape-geometry";
+import type { ImportIssue } from "@/lib/studio/artwork-import";
 import { TextEffectsGallery, TextShapes } from "./text-effects-gallery";
 import { TEXT_EFFECT_CONTROLS, TEXT_EFFECT_NAMES, TEXT_WARP_NAMES, type TextEffect, type TextEffectPreset, type TextWarp } from "@/lib/studio/text-effects";
 import { drawingDashPattern, STUDIO_DRAW_BRUSHES, STUDIO_DRAW_TEXTURES, studioBrushPresetSchema, studioBrushTextureCanvas, studioDrawBrush, type StudioBrushPreset, type StudioDrawBrush } from "@/lib/studio/drawing-brushes";
@@ -88,7 +89,8 @@ import {
   LayoutTemplate,
 } from "lucide-react";
 import {
-  uploadCanvasArtworkAction,
+  prepareArtworkImportAction,
+  finishArtworkImportAction,
   generateArtworkAction,
   uploadSurfaceAction,
 } from "../actions/builder";
@@ -597,6 +599,7 @@ export function ProductEditor({
   const [inspiration, setInspiration] = useState<InspirationItem[] | null>(null);
   const [inspirationNote, setInspirationNote] = useState("");
   const [aiMode, setAiMode] = useState<"design" | "pattern">("design");
+  const [importNotes, setImportNotes] = useState<{ name: string; issues: ImportIssue[] } | null>(null);
   const [vectorTool, setVectorTool] = useState<"pen" | "edit" | null>(null);
   const [penCount, setPenCount] = useState(0);
   const [nodeSel, setNodeSel] = useState<{ smooth: boolean; removable: boolean } | null>(null);
@@ -1480,10 +1483,24 @@ export function ProductEditor({
     setBusy(ai ? "Creating artwork with AI…" : "Uploading…");
     setError("");
     try {
-      const form = new FormData();
-      if (file) form.set("artwork", file);
-      const result = ai ? await generateArtworkAction(brief) : await uploadCanvasArtworkAction(form);
+      let notes: ImportIssue[] = [];
+      let result: { assetId?: string; previewUrl?: string | null; name?: string; error?: string };
+      if (ai) result = await generateArtworkAction(brief);
+      else {
+        // Straight to storage on a signed URL, then checked and normalized (SVG, big PNGs from other tools).
+        const type = file!.type || (/\.svg$/i.test(file!.name) ? "image/svg+xml" : "image/png");
+        const prep = await prepareArtworkImportAction({ name: file!.name, type, size: file!.size });
+        if (!prep.ok) throw new Error(prep.error);
+        const put = await fetch(prep.url, { method: "PUT", body: file, headers: { "Content-Type": type, "x-upsert": "true" } });
+        if (!put.ok) throw new Error("The file didn’t upload. Check your connection and try again.");
+        setBusy("Checking your artwork…");
+        const done = await finishArtworkImportAction({ key: prep.key, name: file!.name, targetWidthPx: Math.min(6000, Math.round(spec(surface())?.width ?? 3000)) });
+        if (!done.ok) throw new Error(done.error);
+        notes = done.report.issues;
+        result = { assetId: done.assetId, previewUrl: done.previewUrl, name: done.name };
+      }
       if (result.error || !result.assetId || !result.previewUrl) throw new Error(result.error || "Couldn’t upload artwork.");
+      setImportNotes(notes.some((note) => note.level === "warn") ? { name: result.name ?? file?.name ?? "Artwork", issues: notes.filter((note) => note.level === "warn") } : null);
       urls.current[result.assetId] = result.previewUrl;
       setLibrary((items) => [
         { id: result.assetId!, name: result.name || file?.name || "New artwork", previewUrl: result.previewUrl! },
@@ -2835,6 +2852,41 @@ export function ProductEditor({
   }
   const exportMenu = useRef<HTMLDetailsElement>(null);
   /** Download the active print area as a PNG (transparent), JPG, or print-size PDF. */
+  /** Pure-vector designs (shapes and paths) leave as a real SVG; text and photos need PNG, JPG or PDF. */
+  function exportVectorSvg() {
+    stopVector();
+    if (exportMenu.current) exportMenu.current.open = false;
+    const canvas = editor.current;
+    const s = surface();
+    const region = regionsFor(s).find((r) => r.id === activeRegionId) ?? regionsFor(s)[0];
+    if (!canvas || !region) return;
+    capture();
+    setError("");
+    const visible = canvas.getObjects().filter((o) => meta.current.has(o) && !meta.current.get(o)!.hidden);
+    if (!visible.length) { setError("Nothing to export yet."); return; }
+    if (visible.some((o) => { const kind = meta.current.get(o)!.kind; return kind !== "shape" && kind !== "path"; })) {
+      setError("SVG export works for designs made only of shapes and vector paths. Text, photos and icons export as PNG, JPG or PDF.");
+      return;
+    }
+    const f = (n: number) => Math.round(n * 100) / 100;
+    const b = region.bounds;
+    const px = region.dimensions ? physicalToPixels(region.dimensions) : { width: Math.round(b.width * SIZE), height: Math.round(b.height * SIZE) };
+    const body = visible.map((o) => {
+      const layer = meta.current.get(o)!;
+      const contours = objectContours(o);
+      if (!contours || (layer.kind !== "shape" && layer.kind !== "path")) return "";
+      const fill = layer.kind === "shape" && layer.gradient ? layer.gradient.from : layer.fill;
+      const stroke = layer.stroke && (layer.strokeWidth ?? 0) > 0 ? ` stroke="${layer.stroke}" stroke-width="${f((layer.strokeWidth ?? 0) * (Math.abs(o.scaleX) + Math.abs(o.scaleY)) / 2)}" stroke-linejoin="round"` : "";
+      const opacity = o.opacity < 1 ? ` opacity="${f(o.opacity)}"` : "";
+      return `<path d="${contoursToPathData(contours)}" fill="${fill === "none" ? "none" : fill}"${stroke}${opacity}/>`;
+    }).join("\n  ");
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${px.width}" height="${px.height}" viewBox="${f(b.x * SIZE)} ${f(b.y * SIZE)} ${f(b.width * SIZE)} ${f(b.height * SIZE)}">\n  ${body}\n</svg>\n`;
+    const link = document.createElement("a");
+    link.download = `${(name || blank.name).trim().replace(/[^\w-]+/g, "-")}-${s.name}-${region.name}.svg`.replace(/-+/g, "-");
+    link.href = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" }));
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(link.href), 10_000);
+  }
   async function exportCurrent(format: "png" | "jpg" | "pdf") {
     stopVector();
     if (exportMenu.current) exportMenu.current.open = false;
@@ -3112,6 +3164,7 @@ export function ProductEditor({
               <button role="menuitem" onClick={() => void exportCurrent("png")}><strong>PNG</strong><small>Transparent, print resolution</small></button>
               <button role="menuitem" onClick={() => void exportCurrent("jpg")}><strong>JPG</strong><small>White background, smaller file</small></button>
               <button role="menuitem" onClick={() => void exportCurrent("pdf")}><strong>PDF</strong><small>Real print size</small></button>
+              <button role="menuitem" onClick={exportVectorSvg}><strong>SVG</strong><small>Vector, for shapes and paths only</small></button>
             </div>
           </details>
           <button className="pe-btn pe-btn-ghost" onClick={() => void save(false)} disabled={!hasDesign || locked}>
@@ -3185,7 +3238,7 @@ export function ProductEditor({
                 <input
                   ref={uploadInput}
                   type="file"
-                  accept="image/png,image/jpeg,image/webp"
+                  accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml,.svg"
                   className="sr-only"
                   aria-label="Upload artwork file"
                   onChange={(e) => {
@@ -3479,6 +3532,15 @@ export function ProductEditor({
             onPointerUp={(e) => { gesture.current.pointers.delete(e.pointerId); gesture.current.distance = 0; }}
             onPointerCancel={(e) => { gesture.current.pointers.delete(e.pointerId); gesture.current.distance = 0; }}>
             <div className="pe-canvas" data-board={standalone || !photoFor(current)} ref={host} />
+            {importNotes && (
+              <div className="pe-import-notes" role="status">
+                <b>{importNotes.name}</b>
+                {importNotes.issues.map((issue) => (
+                  <p key={issue.code}>{issue.message}{issue.fix ? ` ${issue.fix}` : ""}{issue.code === "solid-background" && <> <button className="pe-link" onClick={() => { setImportNotes(null); void removeBg(); }}>Remove background</button></>}</p>
+                ))}
+                <button className="pe-icon-btn" aria-label="Dismiss" onClick={() => setImportNotes(null)}><X size={14} /></button>
+              </div>
+            )}
             {vectorTool && (
               <div className="pe-vector-bar" role="toolbar" aria-label={vectorTool === "pen" ? "Pen tool" : "Edit points"}>
                 {vectorTool === "pen" ? (
