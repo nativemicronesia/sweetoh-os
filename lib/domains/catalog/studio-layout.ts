@@ -157,6 +157,15 @@ export const layerSchema = z.discriminatedUnion("kind", [
   }),
   z.object({
     ...placement,
+    kind: z.literal("path"),
+    /** Editable vector outline in Fabric's SVG path grammar (absolute M L Q C Z only; never raw SVG or markup). */
+    pathData: z.string().min(4).max(24000).regex(/^[MLQCZ0-9\s.,+-]+$/),
+    fill: hexColor.or(z.literal("none")),
+    stroke: hexColor.optional(),
+    strokeWidth: z.number().min(0).max(100).optional(),
+  }),
+  z.object({
+    ...placement,
     kind: z.literal("drawing"),
     /** Fabric SVG path grammar only; never raw SVG or markup. */
     pathData: z.string().min(4).max(16000).regex(/^[MmLlQqCcZz0-9\s.,+-]+$/),

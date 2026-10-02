@@ -59,3 +59,12 @@ Not yet built: batch apply to many products, per-blank perspective mockup templa
 - **Icons and stickers**: ~40,000 icons (Phosphor, Lucide, Tabler, Heroicons, Iconoir, Bootstrap, Remix, Material Design) and Fluent Emoji stickers from open sets, installed as packages and served from our own API (`/api/studio/icons`, `lib/studio/icon-server.ts`); no third-party calls. They are a layer type (`icon`), so they stay recolorable (single-color sets) and export at print size. Notice: `docs/licenses/ICON-SETS.md`.
 - **Library curation**: specialist art (museum plates, playing cards, game kits) is reachable by search and its own tab but kept out of default shelves.
 - **Print check, shortcuts, colors, filters**: live print-readiness (resolution, tiny text, past the print area), Cmd/Ctrl C/X/V/A/G and tool keys with a `?` dialog, a color control with document colors, palette, recents and eyedropper, and one-click photo filters.
+
+## Kittl-class creative tools (text effects, shapes, vector)
+
+All of these are typed layer data plus editor commands, so the editor, saved designs, templates and the SweetOh AI layer describe them the same way.
+
+- **Text effects** (`lib/studio/text-effects.ts`): 14 kinds (block 3D, long/pop shadow, echo, chiseled, neon, glow, foil, tide gradient, worn print, halftone, die-cut, line, glitch) and 31 island-palette presets. A text layer's `effect` is `{ kind, color?, accent?, amount? }`. `StudioTextbox` renders the finished bitmap at the canvas's current resolution (so zoom and print export stay sharp); the gallery previews use the same renderer. Command: `set_text_effect`.
+- **Text shapes** (`warp`): wave, flag, bulge/pinch, rise/fall, slope, ripple, applied to the finished text bitmap and stackable with any effect. Command: `set_text_warp`.
+- **Make vector art** (`lib/studio/vectorize.ts`): an image is reduced to a perceptual palette (libimagequant via sharp) and traced (imagetracerjs, public domain) to flat-color SVG. The canvas gets a crisp PNG of the trace; the SVG downloads as a true vector file.
+- **Vector paths** (`path` layer, `lib/studio/vector-path.ts`): editable outlines in absolute M/L/Q/C/Z path data. Tools: pen (`P`; click, drag for curves, click the first point to close), point editing (drag anchors and handles, click the outline to add a point, smooth/corner, delete), convert any shape to a path, and combine shapes (unite, subtract, intersect, exclude via paper.js, loaded on demand, `lib/studio/vector-boolean.ts`).

@@ -18,6 +18,9 @@ import {
   Rect,
   Path,
   Pattern as FabricPattern,
+  Polygon,
+  Triangle,
+  util as fabricUtil,
   Shadow,
   filters,
   Gradient,
@@ -25,8 +28,12 @@ import {
 } from "fabric";
 import { initAligningGuidelines } from "fabric/extensions";
 import { StudioTextbox } from "./studio-textbox";
+import { NodeEditSession, PenSession } from "./vector-overlay";
+import { BOOLEAN_OPS, combineContours, type BooleanOp } from "@/lib/studio/vector-boolean";
+import { contoursToPathData, mapContours, parsePathData, type Contour, type VNode } from "@/lib/studio/vector-path";
+import { shapePathData } from "@/lib/studio/shape-geometry";
 import { TextEffectsGallery, TextShapes } from "./text-effects-gallery";
-import { TEXT_EFFECT_CONTROLS, TEXT_EFFECT_NAMES, TEXT_WARP_NAMES, TEXT_WARP_PRESETS, type TextEffect, type TextEffectPreset, type TextWarp } from "@/lib/studio/text-effects";
+import { TEXT_EFFECT_CONTROLS, TEXT_EFFECT_NAMES, TEXT_WARP_NAMES, type TextEffect, type TextEffectPreset, type TextWarp } from "@/lib/studio/text-effects";
 import { drawingDashPattern, STUDIO_DRAW_BRUSHES, STUDIO_DRAW_TEXTURES, studioBrushPresetSchema, studioBrushTextureCanvas, studioDrawBrush, type StudioBrushPreset, type StudioDrawBrush } from "@/lib/studio/drawing-brushes";
 import { compactPressureSamples, normalizePressureSamples, pointerPressure, pressureSegment, pressureSegments, type LocalPressureSample, type PressureSample } from "@/lib/studio/drawing-pressure";
 import {
@@ -59,6 +66,7 @@ import {
   Layers,
   Loader2,
   PenLine,
+  PenTool,
   Maximize,
   Minus,
   Plus,
@@ -206,7 +214,7 @@ type Props = {
 type Selected =
   | null
   | {
-      kind: "image" | "text" | "shape" | "pattern" | "graphic" | "icon" | "drawing";
+      kind: "image" | "text" | "shape" | "path" | "pattern" | "graphic" | "icon" | "drawing";
       iconColor?: string;
       iconMonotone?: boolean;
       name: string;
@@ -589,6 +597,11 @@ export function ProductEditor({
   const [inspiration, setInspiration] = useState<InspirationItem[] | null>(null);
   const [inspirationNote, setInspirationNote] = useState("");
   const [aiMode, setAiMode] = useState<"design" | "pattern">("design");
+  const [vectorTool, setVectorTool] = useState<"pen" | "edit" | null>(null);
+  const [penCount, setPenCount] = useState(0);
+  const [nodeSel, setNodeSel] = useState<{ smooth: boolean; removable: boolean } | null>(null);
+  const penRef = useRef<PenSession | null>(null);
+  const nodeEditRef = useRef<NodeEditSession | null>(null);
   const [editPrompt, setEditPrompt] = useState("");
   const [vectorColors, setVectorColors] = useState(12);
   const [vectorFile, setVectorFile] = useState<{ name: string; svg: string; paths: number } | null>(null);
@@ -668,7 +681,7 @@ export function ProductEditor({
                 outlineWidth: o.strokeWidth || undefined,
               }
             : {}),
-          ...(base.kind === "shape" ? { ...(typeof o.fill === "string" ? { fill: noFill(o.fill) ? "none" : o.fill } : {}), stroke: typeof o.stroke === "string" ? o.stroke : undefined, strokeWidth: o.strokeWidth || undefined } : {}),
+          ...(base.kind === "shape" || base.kind === "path" ? { ...(typeof o.fill === "string" ? { fill: noFill(o.fill) ? "none" : o.fill } : {}), stroke: typeof o.stroke === "string" ? o.stroke : undefined, strokeWidth: o.strokeWidth || undefined } : {}),
         } as StudioLayer;
       });
     if (restoreMulti) {
@@ -757,7 +770,7 @@ export function ProductEditor({
     for (const object of canvas.getObjects()) {
       const layer = meta.current.get(object);
       if (!layer || layer.hidden || !object.visible) continue;
-      const label = layer.kind === "text" ? `“${layer.text.slice(0, 22)}”` : layer.kind === "image" ? "Image" : layer.kind === "graphic" || layer.kind === "icon" ? "Element" : layer.kind === "pattern" ? "Pattern" : layer.kind === "drawing" ? "Drawing" : "Shape";
+      const label = layer.kind === "text" ? `“${layer.text.slice(0, 22)}”` : layer.kind === "image" ? "Image" : layer.kind === "graphic" || layer.kind === "icon" ? "Element" : layer.kind === "pattern" ? "Pattern" : layer.kind === "drawing" ? "Drawing" : layer.kind === "path" ? "Vector path" : "Shape";
       if (layer.kind === "image" && ippX && ippY) {
         const dpi = Math.round(Math.min(1 / (object.scaleX * ippX), 1 / (object.scaleY * ippY)));
         if (dpi < 100) found.push({ id: `${layer.id}:dpi`, level: "error", title: `${label} is low resolution`, detail: `${dpi} DPI at this size. It will print blurry; use a larger file or make it smaller.`, layerId: layer.id });
@@ -815,12 +828,12 @@ export function ProductEditor({
       flipY: o.flipY,
       assetId,
       printRegionId: base.printRegionId,
-      fill: base.kind === "shape" && typeof o.fill === "string" ? (noFill(o.fill) ? "none" : o.fill) : undefined,
+      fill: (base.kind === "shape" || base.kind === "path") && typeof o.fill === "string" ? (noFill(o.fill) ? "none" : o.fill) : undefined,
       iconColor: base.kind === "icon" ? base.color : undefined,
       iconMonotone: base.kind === "icon" ? isMonotoneIcon(base.icon) : undefined,
-      stroke: base.kind === "shape" && typeof o.stroke === "string" ? o.stroke : undefined,
-      strokeWidth: base.kind === "drawing" ? base.strokeWidth : base.kind === "shape" ? o.strokeWidth : undefined,
-      ...(base.kind === "drawing" ? { stroke: base.stroke } : base.kind === "shape" && typeof o.stroke === "string" ? { stroke: o.stroke } : {}),
+      stroke: (base.kind === "shape" || base.kind === "path") && typeof o.stroke === "string" ? o.stroke : undefined,
+      strokeWidth: base.kind === "drawing" ? base.strokeWidth : base.kind === "shape" || base.kind === "path" ? o.strokeWidth : undefined,
+      ...(base.kind === "drawing" ? { stroke: base.stroke } : (base.kind === "shape" || base.kind === "path") && typeof o.stroke === "string" ? { stroke: o.stroke } : {}),
       ...(base.kind === "drawing" ? { brush: studioDrawBrush(base.brushPreset?.baseBrush ?? base.brush), brushPreset: base.brushPreset } : {}),
       gradient: base.kind === "shape" ? base.gradient : undefined,
       adjustments: base.kind === "image" ? base.adjustments : undefined,
@@ -876,6 +889,8 @@ export function ProductEditor({
     } else if (layer.kind === "drawing") {
       const brush = studioDrawBrush(layer.brushPreset?.baseBrush ?? layer.brush);
       obj = layer.pressurePoints?.length ? makePressureDrawingGroup(layer.pressurePoints, layer.strokeWidth, layer.stroke, brush, layer.brushPreset ?? null) : new Path(layer.pathData, { fill: "", stroke: layer.stroke, strokeWidth: layer.strokeWidth, strokeDashArray: drawingDashPattern(brush, layer.strokeWidth), strokeLineCap: brush === "marker" ? "butt" : "round", strokeLineJoin: "round", objectCaching: false });
+    } else if (layer.kind === "path") {
+      obj = new Path(layer.pathData, { fill: layer.fill === "none" ? "transparent" : layer.fill, stroke: layer.stroke, strokeWidth: layer.strokeWidth ?? 0, strokeLineJoin: "round", strokeLineCap: "round", objectCaching: false });
     } else if (layer.kind === "shape") {
       obj = makeShape(layer.shape, layer.width, layer.height, layer.fill === "none" ? "transparent" : layer.fill, layer.stroke, layer.strokeWidth);
       if (layer.gradient) {
@@ -1070,6 +1085,7 @@ export function ProductEditor({
   }
 
   async function loadSurface(id: string) {
+    stopVector();
     if (editor.current?.isDrawingMode) setFreehand(false);
     if (eraseMode.current) setEraseMode(false);
     setReady(false);
@@ -1283,6 +1299,8 @@ export function ProductEditor({
       if (editor.current === canvas) editor.current = null;
       window.removeEventListener("beforeunload", leave);
       if (mockTimer.current) clearTimeout(mockTimer.current);
+      penRef.current?.destroy();
+      nodeEditRef.current?.destroy();
       stopGuidelines();
       void canvas.dispose();
     };
@@ -1341,11 +1359,11 @@ export function ProductEditor({
 
   useEffect(() => {
     if (!editor.current) return;
-    editor.current.skipTargetFind = panMode || drawing || erasing;
-    editor.current.selection = !panMode && !drawing && !erasing;
+    editor.current.skipTargetFind = panMode || drawing || erasing || vectorTool === "pen";
+    editor.current.selection = !panMode && !drawing && !erasing && !vectorTool;
     if (panMode) editor.current.discardActiveObject();
     editor.current.requestRenderAll();
-  }, [panMode, drawing, erasing]);
+  }, [panMode, drawing, erasing, vectorTool]);
 
   // Keyboard: delete, undo, nudge — never while typing.
   useEffect(() => {
@@ -1383,6 +1401,7 @@ export function ProductEditor({
       }
       if (!mod && !e.altKey && !locked) {
         if (e.key === "?") { e.preventDefault(); setShortcutsOpen((open) => !open); return; }
+        if (key === "p") { e.preventDefault(); startPen(); return; }
         if (key === "t") { e.preventDefault(); void addText({ text: "Add a heading", size: 64, font: "anton", bold: false }); return; }
         if (key === "r") { e.preventDefault(); void executeEditorCommand({ type: "add_shape", shape: "rect" }); return; }
         if (key === "c") { e.preventDefault(); void executeEditorCommand({ type: "add_shape", shape: "circle" }); return; }
@@ -1887,6 +1906,168 @@ export function ProductEditor({
       meta.current.set(object, { ...layer, shadow });
     }, record);
   }
+  /* ---------- vector tools ---------- */
+
+  function stopVector() {
+    penRef.current?.destroy();
+    penRef.current = null;
+    nodeEditRef.current?.destroy();
+    nodeEditRef.current = null;
+    setVectorTool(null);
+    setNodeSel(null);
+    setPenCount(0);
+  }
+
+  function startPen() {
+    if (locked || !canDesign()) return;
+    const canvas = editor.current;
+    if (!canvas) return;
+    stopVector();
+    if (drawing) setFreehand(false);
+    if (erasing) setEraseMode(false);
+    canvas.discardActiveObject();
+    setPanel("shapes");
+    setVectorTool("pen");
+    penRef.current = new PenSession(canvas, {
+      onFinish: (contour) => { penRef.current = null; setVectorTool(null); setPenCount(0); void addPathFromContour(contour); },
+      onCancel: () => { penRef.current = null; setVectorTool(null); setPenCount(0); },
+      onChange: setPenCount,
+    });
+  }
+
+  async function addPathFromContour(contour: { nodes: VNode[]; closed: boolean }) {
+    const pathData = contoursToPathData([contour]);
+    const probe = new Path(pathData);
+    const light = isLightColor(colorRef.current ?? "#ffffff");
+    const layer: StudioLayer = {
+      id: crypto.randomUUID(),
+      printRegionId: surface().printRegions ? activeRegionId ?? surface().printRegions?.[0]?.id : undefined,
+      kind: "path",
+      pathData,
+      fill: contour.closed ? (light ? "#1f7048" : "#ffffff") : "none",
+      stroke: contour.closed ? undefined : light ? "#101828" : "#ffffff",
+      strokeWidth: contour.closed ? 0 : 6,
+      x: probe.left,
+      y: probe.top,
+      scaleX: 1,
+      scaleY: 1,
+      angle: 0,
+    };
+    checkpoint();
+    const obj = await makeLayer(layer);
+    editor.current!.add(obj);
+    bringGuideToTop();
+    editor.current!.setActiveObject(obj);
+    capture();
+    readSelection();
+    editor.current!.requestRenderAll();
+  }
+
+  /** A shape or path as outlines in scene coordinates, with its rotation and scale applied. */
+  function objectContours(o: FabricObject): Contour[] | null {
+    const base = meta.current.get(o);
+    const matrix = o.calcTransformMatrix();
+    const place = (cx: number, cy: number) => (x: number, y: number): [number, number] => {
+      const p = fabricUtil.transformPoint(new Point(x - cx, y - cy), matrix);
+      return [p.x, p.y];
+    };
+    if (o instanceof Path) return mapContours(parsePathData(o.path.map((command) => command.join(" ")).join(" ")), place(o.pathOffset.x, o.pathOffset.y));
+    if (o instanceof Polygon) return mapContours(parsePathData(`M ${o.points.map((point) => `${point.x} ${point.y}`).join(" L ")} Z`), place(o.pathOffset.x, o.pathOffset.y));
+    if ((o instanceof Rect || o instanceof Ellipse || o instanceof Triangle) && base?.kind === "shape") return mapContours(parsePathData(shapePathData(base.shape, o.width, o.height)), place(o.width / 2, o.height / 2));
+    return null;
+  }
+
+  /** Swap objects for one editable path built from `contours`, in the lowest object's place in the stack. */
+  async function replaceWithPath(objects: FabricObject[], contours: Contour[]) {
+    const canvas = editor.current;
+    if (!canvas) return;
+    const stack = canvas.getObjects();
+    const ordered = [...objects].sort((a, b) => stack.indexOf(a) - stack.indexOf(b));
+    const bottom = meta.current.get(ordered[0]);
+    const style = bottom && (bottom.kind === "shape" || bottom.kind === "path")
+      ? { fill: bottom.kind === "shape" && bottom.gradient ? bottom.gradient.from : bottom.fill, stroke: bottom.stroke, strokeWidth: bottom.strokeWidth }
+      : { fill: "#1f7048", stroke: undefined, strokeWidth: 0 };
+    const pathData = contoursToPathData(contours);
+    const probe = new Path(pathData);
+    const lowest = stack.indexOf(ordered[0]);
+    const layer: StudioLayer = {
+      id: crypto.randomUUID(),
+      printRegionId: bottom?.printRegionId,
+      kind: "path",
+      pathData,
+      fill: style.fill as string,
+      ...(style.stroke ? { stroke: style.stroke } : {}),
+      ...(style.strokeWidth ? { strokeWidth: style.strokeWidth } : {}),
+      x: probe.left,
+      y: probe.top,
+      scaleX: 1,
+      scaleY: 1,
+      angle: 0,
+      ...(bottom?.opacity !== undefined ? { opacity: bottom.opacity } : {}),
+    };
+    checkpoint();
+    const obj = await makeLayer(layer);
+    canvas.discardActiveObject();
+    for (const object of ordered) canvas.remove(object);
+    canvas.insertAt(Math.min(lowest, canvas.getObjects().length), obj);
+    canvas.setActiveObject(obj);
+    capture();
+    readSelection();
+    canvas.requestRenderAll();
+  }
+
+  async function convertToPath() {
+    const o = editor.current?.getActiveObject();
+    if (!o || locked) return;
+    const contours = objectContours(o);
+    if (!contours || meta.current.get(o)?.kind !== "shape") return;
+    await replaceWithPath([o], contours);
+  }
+
+  async function combineSelected(op: BooleanOp) {
+    const canvas = editor.current;
+    if (!canvas || locked) return;
+    const objects = canvas.getActiveObjects();
+    if (objects.length < 2) return;
+    const stack = canvas.getObjects();
+    const ordered = [...objects].sort((a, b) => stack.indexOf(a) - stack.indexOf(b));
+    const inputs = ordered.map(objectContours);
+    if (inputs.some((contours) => !contours)) { setError("Combine works on shapes and vector paths. Convert text or images to shapes first."); return; }
+    try {
+      setError("");
+      const result = await combineContours(op, inputs as Contour[][]);
+      await replaceWithPath(ordered, result);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn’t combine these shapes.");
+    }
+  }
+
+  function startNodeEdit() {
+    const canvas = editor.current;
+    const o = canvas?.getActiveObject();
+    if (!canvas || !(o instanceof Path) || meta.current.get(o)?.kind !== "path" || locked) return;
+    stopVector();
+    setVectorTool("edit");
+    nodeEditRef.current = new NodeEditSession(canvas, o, {
+      onBegin: () => checkpoint(),
+      onChange: (pathData, final) => {
+        const base = meta.current.get(o);
+        if (base?.kind === "path") meta.current.set(o, { ...base, pathData });
+        if (final) { capture(); readSelection(); }
+      },
+      onSelect: setNodeSel,
+      onExit: () => {
+        nodeEditRef.current = null;
+        setVectorTool(null);
+        setNodeSel(null);
+        canvas.setActiveObject(o);
+        capture();
+        readSelection();
+        canvas.requestRenderAll();
+      },
+    });
+  }
+
   async function addShape(kind: ShapeKind) {
     if (!canDesign()) return;
     if (locked) return;
@@ -2085,10 +2266,12 @@ export function ProductEditor({
         const previous = typeof o.fill === "string" && !noFill(o.fill) ? o.fill : (typeof o.stroke === "string" ? o.stroke : "#101828");
         o.set({ fill: "transparent", stroke: typeof o.stroke === "string" ? o.stroke : previous, strokeWidth: Math.max(o.strokeWidth || 0, 4) });
         if (base?.kind === "shape") meta.current.set(o, { ...base, fill: "none", stroke: typeof o.stroke === "string" ? o.stroke : previous, strokeWidth: Math.max(o.strokeWidth || 0, 4), gradient: undefined });
+        else if (base?.kind === "path") meta.current.set(o, { ...base, fill: "none", stroke: typeof o.stroke === "string" ? o.stroke : previous, strokeWidth: Math.max(o.strokeWidth || 0, 4) });
         return;
       }
       o.set({ fill: hex });
       if (base?.kind === "shape") meta.current.set(o, { ...base, fill: hex, gradient: undefined });
+      else if (base?.kind === "path") meta.current.set(o, { ...base, fill: hex });
     }, record);
   }
   function setShapeGradient(from: string, to: string, direction: "horizontal" | "vertical" | "diagonal" = "diagonal") {
@@ -2653,6 +2836,7 @@ export function ProductEditor({
   const exportMenu = useRef<HTMLDetailsElement>(null);
   /** Download the active print area as a PNG (transparent), JPG, or print-size PDF. */
   async function exportCurrent(format: "png" | "jpg" | "pdf") {
+    stopVector();
     if (exportMenu.current) exportMenu.current.open = false;
     const s = surface();
     const region = regionsFor(s).find((r) => r.id === activeRegionId) ?? regionsFor(s)[0];
@@ -2861,13 +3045,13 @@ export function ProductEditor({
     const add = (value: unknown) => { if (typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value)) found.add(value.toLowerCase()); };
     for (const view of surfaces) for (const layer of view.layers) {
       if (layer.kind === "text") { add(layer.color); add(layer.outline); }
-      else if (layer.kind === "shape") { add(layer.fill); add(layer.stroke); }
+      else if (layer.kind === "shape" || layer.kind === "path") { add(layer.fill); add(layer.stroke); }
       else if (layer.kind === "drawing") add(layer.stroke);
       else if (layer.kind === "icon") add(layer.color);
     }
     for (const layer of layers) {
       if (layer.kind === "text") { add(layer.color); add(layer.outline); }
-      else if (layer.kind === "shape") { add(layer.fill); add(layer.stroke); }
+      else if (layer.kind === "shape" || layer.kind === "path") { add(layer.fill); add(layer.stroke); }
       else if (layer.kind === "drawing") add(layer.stroke);
     }
     return [...found].slice(0, 12);
@@ -3048,6 +3232,11 @@ export function ProductEditor({
 
             {panel === "shapes" && (
               <div className="pe-panel-body">
+                <section className="pe-section">
+                  <p className="pe-label">Vector pen</p>
+                  <button className="pe-btn pe-btn-primary pe-block" disabled={locked} aria-pressed={vectorTool === "pen"} onClick={() => (vectorTool === "pen" ? penRef.current?.cancel() : startPen())}><PenTool size={16} />{vectorTool === "pen" ? "Cancel pen" : "Pen tool (P)"}</button>
+                  <p className="pe-muted pe-small">Click to place points, drag for curves, click the first point to close. Select a path later to edit its points, or select two shapes to combine them.</p>
+                </section>
                 <section className="pe-section pe-draw-tool">
                   <p className="pe-label">Draw freely</p>
                   <div className="pe-row"><button className="pe-btn pe-btn-primary pe-grow" disabled={locked} aria-pressed={drawing} onClick={() => setFreehand(!drawing)}><PenLine size={16}/>{drawing ? "Finish drawing" : "Draw"}</button><button className="pe-btn pe-btn-ghost pe-grow" disabled={locked} aria-pressed={erasing} onClick={() => setEraseMode(!erasing)}><Eraser size={16}/>{erasing ? "Finish erasing" : "Erase strokes"}</button></div>
@@ -3213,6 +3402,8 @@ export function ProductEditor({
                             <Type size={16} />
                           ) : l.kind === "shape" ? (
                             <Shapes size={16} />
+                          ) : l.kind === "path" ? (
+                            <PenTool size={16} />
                           ) : l.kind === "graphic" ? (
                             <img src={studioAssetUrl(l.assetKey)} alt="" />
                           ) : l.kind === "icon" ? (
@@ -3223,6 +3414,7 @@ export function ProductEditor({
                           <span>
                             {l.kind === "text"
                               ? l.text
+                              : l.kind === "path" ? "Vector path"
                               : l.kind === "shape"
                                 ? `${l.shape[0].toUpperCase()}${l.shape.slice(1)}`
                                 : l.kind === "graphic"
@@ -3287,7 +3479,25 @@ export function ProductEditor({
             onPointerUp={(e) => { gesture.current.pointers.delete(e.pointerId); gesture.current.distance = 0; }}
             onPointerCancel={(e) => { gesture.current.pointers.delete(e.pointerId); gesture.current.distance = 0; }}>
             <div className="pe-canvas" data-board={standalone || !photoFor(current)} ref={host} />
-            {ready && !layers.length && <div className="pe-start"><button onClick={() => setPanel("files")}><Upload size={15}/> Add artwork</button><button onClick={() => setPanel("text")}><Type size={15}/> Add text</button><span>or drop an image here</span></div>}
+            {vectorTool && (
+              <div className="pe-vector-bar" role="toolbar" aria-label={vectorTool === "pen" ? "Pen tool" : "Edit points"}>
+                {vectorTool === "pen" ? (
+                  <>
+                    <span>{penCount < 2 ? "Click to place points · drag for curves" : "Enter to finish · click the first point to close"}</span>
+                    <button className="pe-btn pe-btn-ghost" disabled={penCount < 2} onClick={() => penRef.current?.finish(false)}>Finish</button>
+                    <button className="pe-btn pe-btn-ghost" onClick={() => penRef.current?.cancel()}>Cancel</button>
+                  </>
+                ) : (
+                  <>
+                    <span>Drag points and handles · click the outline to add a point</span>
+                    <button className="pe-btn pe-btn-ghost" disabled={!nodeSel} onClick={() => nodeEditRef.current?.toggleSmooth()}>{nodeSel?.smooth ? "Make corner" : "Make smooth"}</button>
+                    <button className="pe-btn pe-btn-ghost" disabled={!nodeSel?.removable} onClick={() => nodeEditRef.current?.removeSelected()}>Delete point</button>
+                    <button className="pe-btn pe-btn-primary" onClick={() => nodeEditRef.current?.finish()}>Done</button>
+                  </>
+                )}
+              </div>
+            )}
+            {ready && !layers.length && !vectorTool && <div className="pe-start"><button onClick={() => setPanel("files")}><Upload size={15}/> Add artwork</button><button onClick={() => setPanel("text")}><Type size={15}/> Add text</button><span>or drop an image here</span></div>}
             {!ready && !error && (
               <div className="pe-loading">
                 <WaveLoader compact label={standalone ? "Loading your design…" : "Loading product…"} />
@@ -3376,13 +3586,21 @@ export function ProductEditor({
                 <p className="pe-label">Distribute evenly</p>
                 <div className="pe-row"><button className="pe-btn pe-btn-ghost pe-grow" disabled={selectedLayerIds.length < 3} onClick={() => void executeEditorCommand({ type: "distribute_selection", layerIds: selectedLayerIds, axis: "horizontal" })}>Horizontal</button><button className="pe-btn pe-btn-ghost pe-grow" disabled={selectedLayerIds.length < 3} onClick={() => void executeEditorCommand({ type: "distribute_selection", layerIds: selectedLayerIds, axis: "vertical" })}>Vertical</button></div>
                 <p className="pe-muted pe-small">Drag the selection together on the canvas. Group keeps these layers together when selecting from Layers.</p>
+                {layers.filter((layer) => selectedLayerIds.includes(layer.id)).every((layer) => layer.kind === "shape" || layer.kind === "path") && (
+                  <>
+                    <p className="pe-label">Combine shapes</p>
+                    <div className="pe-gradient-presets" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                      {BOOLEAN_OPS.map((item) => <button key={item.op} className="pe-btn pe-btn-ghost" style={{ width: "auto", height: "auto" }} title={item.hint} disabled={locked} onClick={() => void combineSelected(item.op)}>{item.label}</button>)}
+                    </div>
+                  </>
+                )}
                 <p className="pe-label">Shared effect</p><button className="pe-btn pe-btn-ghost pe-block" onClick={() => setLayerShadow({ enabled: true })}>Add soft shadow to selection</button>
               </section>
             </>
           ) : selected ? (
             <>
               <div className="pe-props-head">
-                <h2>{{ text: "Text", image: "Artwork", shape: "Shape", pattern: "Pattern", graphic: "Graphic", icon: "Icon", drawing: "Drawing" }[selected.kind]}</h2>
+                <h2>{{ text: "Text", image: "Artwork", shape: "Shape", path: "Vector path", pattern: "Pattern", graphic: "Graphic", icon: "Icon", drawing: "Drawing" }[selected.kind]}</h2>
                 <div>
                   <button className="pe-icon-btn" onClick={() => void duplicate()} aria-label="Duplicate" title="Duplicate">
                     <Copy size={16} />
@@ -3520,22 +3738,25 @@ export function ProductEditor({
                 </section>
               )}
 
-              {selected.kind === "shape" && (
+              {(selected.kind === "shape" || selected.kind === "path") && (
                 <section className="pe-section">
                   <p className="pe-label">Color</p>
                   <ColorSwatches value={selected.fill === "none" ? undefined : selected.fill} docColors={docColors} onBeforeCustom={() => checkpoint()} onPick={(color, record = true) => setFill(color, record)} />
                   <button type="button" className="pe-btn pe-btn-ghost pe-block" aria-pressed={selected.fill === "none"} onClick={() => setFill(selected.fill === "none" ? "#173e39" : "none")}>{selected.fill === "none" ? "Add fill" : "No fill (outline only)"}</button>
-                  <p className="pe-label">Gradient fills</p>
-                  <div className="pe-gradient-presets">
+                  {selected.kind === "shape" && <p className="pe-label">Gradient fills</p>}
+                  {selected.kind === "shape" && <div className="pe-gradient-presets">
                     <button aria-label="Coral to gold gradient" style={{ background: "linear-gradient(135deg,#ef476f,#ffd166)" }} onClick={() => setShapeGradient("#ef476f", "#ffd166")} />
                     <button aria-label="Ocean gradient" style={{ background: "linear-gradient(135deg,#06a6a6,#26547c)" }} onClick={() => setShapeGradient("#06a6a6", "#26547c")} />
                     <button aria-label="Garden gradient" style={{ background: "linear-gradient(135deg,#94c973,#1f7048)" }} onClick={() => setShapeGradient("#94c973", "#1f7048")} />
-                  </div>
+                  </div>}
                   <p className="pe-label">Outline</p>
                   <div className="pe-row">
                     <label className="pe-color-input" title="Outline color"><input type="color" value={selected.stroke ?? "#ffffff"} onClick={() => checkpoint()} onChange={(e) => changeSelected((o) => o.set({ stroke: e.target.value }), false)} /></label>
                     <label className="pe-num"><span>Width</span><input type="number" min={0} max={100} step={1} value={selected.strokeWidth ?? 0} onChange={(e) => changeSelected((o) => o.set({ stroke: e.target.value ? selected.stroke ?? "#ffffff" : undefined, strokeWidth: Number(e.target.value) }))} /></label>
                   </div>
+                  {selected.kind === "path"
+                    ? <button className="pe-btn pe-btn-ghost pe-block" disabled={locked} onClick={startNodeEdit}><PenTool size={15} /> Edit points</button>
+                    : <button className="pe-btn pe-btn-ghost pe-block" disabled={locked} onClick={() => void convertToPath()}><PenTool size={15} /> Convert to editable path</button>}
                 </section>
               )}
 

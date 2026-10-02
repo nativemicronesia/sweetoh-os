@@ -1,4 +1,5 @@
 import { Ellipse, FabricObject, Path, Polygon, Rect, Triangle } from "fabric";
+import { heartPathData, polygonPoints, starPoints } from "./shape-geometry";
 
 export type ShapeKind = "rect" | "rounded" | "circle" | "oval" | "triangle" | "star" | "burst" | "heart" | "hexagon" | "arrow" | "line";
 
@@ -15,23 +16,6 @@ export const SHAPES: { kind: ShapeKind; label: string; w: number; h: number }[] 
   { kind: "arrow", label: "Arrow", w: 180, h: 100 },
   { kind: "line", label: "Line", w: 220, h: 8 },
 ];
-
-function starPoints(w: number, h: number) {
-  const pts = [];
-  for (let i = 0; i < 10; i++) {
-    const r = i % 2 === 0 ? 0.5 : 0.21;
-    const a = -Math.PI / 2 + (i * Math.PI) / 5;
-    pts.push({ x: w / 2 + Math.cos(a) * r * w, y: h * 0.53 + Math.sin(a) * r * h * 1.05 });
-  }
-  return pts;
-}
-function polygonPoints(w: number, h: number, sides: number, innerRatio = 1) {
-  return Array.from({ length: sides * (innerRatio < 1 ? 2 : 1) }, (_, i) => {
-    const radius = innerRatio < 1 && i % 2 ? innerRatio : 1;
-    const angle = -Math.PI / 2 + i * Math.PI / sides;
-    return { x: w / 2 + Math.cos(angle) * radius * w * 0.48, y: h / 2 + Math.sin(angle) * radius * h * 0.48 };
-  });
-}
 
 /** A Fabric object for a shape at its base size; placement is applied by the editor. */
 export function makeShape(kind: ShapeKind, w: number, h: number, fill: string, stroke?: string, strokeWidth = 0): FabricObject {
@@ -53,14 +37,8 @@ export function makeShape(kind: ShapeKind, w: number, h: number, fill: string, s
       return new Polygon(polygonPoints(w, h, 6), style);
     case "arrow":
       return new Polygon([{ x: 0, y: h * .32 }, { x: w * .62, y: h * .32 }, { x: w * .62, y: 0 }, { x: w, y: h / 2 }, { x: w * .62, y: h }, { x: w * .62, y: h * .68 }, { x: 0, y: h * .68 }], style);
-    case "heart": {
-      const sx = w / 100, sy = h / 90;
-      const p = (x: number, y: number) => `${(x * sx).toFixed(1)} ${(y * sy).toFixed(1)}`;
-      return new Path(
-        `M ${p(50, 88)} C ${p(20, 66)} ${p(0, 48)} ${p(0, 28)} C ${p(0, 10)} ${p(14, 0)} ${p(28, 0)} C ${p(39, 0)} ${p(46, 6)} ${p(50, 14)} C ${p(54, 6)} ${p(61, 0)} ${p(72, 0)} C ${p(86, 0)} ${p(100, 10)} ${p(100, 28)} C ${p(100, 48)} ${p(80, 66)} ${p(50, 88)} Z`,
-        style,
-      );
-    }
+    case "heart":
+      return new Path(heartPathData(w, h), style);
     case "line":
       return new Rect({ width: w, height: h, ...style, rx: h / 2, ry: h / 2 });
     default:

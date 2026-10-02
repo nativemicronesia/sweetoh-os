@@ -526,3 +526,8 @@
 .fxg-canvas{display:block;width:100%;aspect-ratio:148/64;height:auto;border-radius:8px}
 .fxg-card{min-width:0}
 .fx-controls{display:grid;gap:10px}
+
+/* Vector pen and point editing bar */
+.pe-vector-bar{position:absolute;left:12px;right:12px;top:12px;margin:0 auto;width:max-content;z-index:6;display:flex;align-items:center;gap:8px;max-width:calc(100% - 24px);flex-wrap:nowrap;white-space:nowrap;padding:6px 8px 6px 14px;border-radius:999px;background:#fff;border:1.5px solid #173e39;box-shadow:0 8px 24px rgba(23,62,57,.18);font-size:13px;font-weight:600;color:#173e39}
+.pe-vector-bar .pe-btn{width:auto;height:auto;padding:6px 12px;flex:none}
+.pe-vector-bar span{overflow:hidden;text-overflow:ellipsis}
