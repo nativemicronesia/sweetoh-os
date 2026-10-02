@@ -8,6 +8,10 @@ This phase adds a Library panel to both editor surfaces, 14 reusable original gr
 
 The Library is a typed registry in `lib/studio/asset-library.ts` with stable ID, kind, category, tags, license, source, and SVG. IDs are persisted; old entries must remain available to reopen saved designs. The UI is `app/(partner)/partner/canvas/asset-library-panel.tsx`. Favorites and recents live in the browser; they are preferences, not part of customer artwork. Future licensed packs can be added to the manifest or backed by a database while keeping these stable IDs. Template storage and moderation are future work.
 
+## Photo collage — shipped 2026-10-03
+
+`/partner/studio/collage` is a standalone photo composition workflow. It accepts 2–6 PNG, JPEG or WebP photos, previews mosaic and grid layouts, square/portrait/landscape/social sizes, spacing, rounded corners, and background colors. Creating a collage imports each source photo through the existing validated asset pipeline, saves a print-sized preview with an editable Studio layout, then opens the result in the existing canvas. The source photos remain separate image layers, so the user can reposition, crop or style them and add other Studio artwork. The entry point is on Studio home. This does not replace the full canvas editor or its save/export checks.
+
 ## Follow-on editor depth — shipped 2026-09-26
 
 The saved version-1 layout now persists shape outlines and linear gradient presets, text letter spacing/outlines, and image brightness, contrast, saturation and soft-focus adjustments. These image edits are non-destructive: numeric settings remain attached to the source image layer and are reapplied when reopening. The shape drawer now includes oval, burst, hexagon and arrow shapes. These join the existing freeform transform, lock/visibility, crop, layer order, duplicate, history, alignment guides, pan/zoom and touch pinch paths.

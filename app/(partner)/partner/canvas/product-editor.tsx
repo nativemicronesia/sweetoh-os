@@ -89,6 +89,7 @@ import {
   ShieldCheck,
   TriangleAlert,
   LayoutTemplate,
+  RotateCcw,
 } from "lucide-react";
 import {
   prepareArtworkImportAction,
@@ -126,6 +127,7 @@ import { TemplatesPanel } from "./templates-panel";
 import { STUDIO_TEMPLATES, type StudioTemplate } from "@/lib/studio/templates";
 import { iconPreviewUrl, isMonotoneIcon, loadIconSvg } from "@/lib/studio/icon-sets";
 import { TextStylesGallery } from "./text-styles-gallery";
+import { PhotoLooksGallery, type PhotoLook } from "./photo-looks-gallery";
 import { contrastRatio, presetTextColor, type TextStylePreset } from "@/lib/studio/text-styles";
 import { isStudioFontKey, resolveStudioFontKey } from "@/lib/studio/font-provenance";
 import { studioAssetMetadata, studioAssetUrl } from "@/lib/studio/asset-library-client";
@@ -357,7 +359,7 @@ const noFill = (fill: string) => fill === "" || fill === "transparent" || /^rgba
 /** Wall-clock time, kept out of render-time analysis (used only in event handlers and timers). */
 const nowMs = () => Date.now();
 
-const IMAGE_LOOKS: readonly { label: string; swatch: string; values: { brightness?: number; contrast?: number; saturation?: number; temperature?: number; blur?: number } }[] = [
+const IMAGE_LOOKS: readonly PhotoLook[] = [
   { label: "Original", swatch: "linear-gradient(135deg,#d9d9d9,#8c8c8c)", values: {} },
   { label: "Vivid", swatch: "linear-gradient(135deg,#ff6b6b,#1fa2ff)", values: { saturation: 0.5, contrast: 0.12 } },
   { label: "B&W", swatch: "linear-gradient(135deg,#fff,#222)", values: { saturation: -1, contrast: 0.08 } },
@@ -575,6 +577,8 @@ export function ProductEditor({
   const [layers, setLayers] = useState<StudioLayer[]>([]);
   const printCheck = useRef<HTMLDetailsElement>(null);
   const [selected, setSelected] = useState<Selected>(null);
+  const [showOriginalPhoto, setShowOriginalPhoto] = useState(false);
+  const comparedPhoto = useRef<FabricImage | null>(null);
   const [textNumberDraft, setTextNumberDraft] = useState<TextNumberDraft | null>(null);
   const [selectedLayerIds, setSelectedLayerIds] = useState<string[]>([]);
   const [fontFallbackNotice, setFontFallbackNotice] = useState(() => initial.current.surfaces.some((view) => view.layers.some((layer) => layer.kind === "text" && layer.font !== undefined && !isStudioFontKey(layer.font))));
@@ -2337,6 +2341,27 @@ export function ProductEditor({
     }
     capture(); readSelection(); editor.current?.requestRenderAll();
   }
+  function compareOriginalPhoto(showOriginal: boolean) {
+    const canvas = editor.current;
+    if (showOriginal) {
+      const object = canvas?.getActiveObject();
+      const base = object && meta.current.get(object);
+      if (!(object instanceof FabricImage) || base?.kind !== "image") return;
+      comparedPhoto.current = object;
+      object.filters = [];
+      object.applyFilters();
+    } else {
+      const object = comparedPhoto.current;
+      const base = object && meta.current.get(object);
+      if (object && base?.kind === "image") {
+        object.filters = imageFiltersFor(base.adjustments);
+        object.applyFilters();
+      }
+      comparedPhoto.current = null;
+    }
+    setShowOriginalPhoto(showOriginal);
+    canvas?.requestRenderAll();
+  }
   function flip(axis: "x" | "y", record = true) {
     changeSelected((o) => o.set(axis === "x" ? { flipX: !o.flipX } : { flipY: !o.flipY }), record);
   }
@@ -3794,10 +3819,33 @@ export function ProductEditor({
                   <button className="pe-btn pe-btn-ghost pe-block" disabled={locked || Boolean(busy)} onClick={() => void makeVector()}><WandSparkles size={15} /> Make vector art</button>
                   {vectorFile && <button className="pe-btn pe-btn-ghost pe-block" onClick={downloadVector}><Download size={15} /> Download SVG · {vectorFile.paths} shapes</button>}
                   <p className="pe-muted pe-small">Flat colors, sharp at any size. Best for logos, illustrations and simple photos.</p>
-                  <p className="pe-label">Filters</p>
-                  <div className="pe-looks" role="group" aria-label="Photo filters">
-                    {IMAGE_LOOKS.map((look) => <button key={look.label} type="button" onClick={() => applyImageLook(look.values)}><i style={{ background: look.swatch }} />{look.label}</button>)}
+                  <p className="pe-label">Photo looks</p>
+                  <div className="pe-row pe-photo-look-actions">
+                    <button
+                      className="pe-btn pe-btn-ghost pe-grow"
+                      type="button"
+                      disabled={!Object.values(selected.adjustments ?? {}).some((value) => Math.abs(value) > 0.001)}
+                      aria-pressed={showOriginalPhoto}
+                      onPointerDown={(event) => { event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); compareOriginalPhoto(true); }}
+                      onPointerUp={() => compareOriginalPhoto(false)}
+                      onPointerCancel={() => compareOriginalPhoto(false)}
+                      onLostPointerCapture={() => compareOriginalPhoto(false)}
+                      onKeyDown={(event) => { if (event.key === " " || event.key === "Enter") { event.preventDefault(); compareOriginalPhoto(true); } }}
+                      onKeyUp={(event) => { if (event.key === " " || event.key === "Enter") compareOriginalPhoto(false); }}
+                      onBlur={() => compareOriginalPhoto(false)}
+                    >
+                      <Eye size={15} /> {showOriginalPhoto ? "Showing original" : "Hold to compare"}
+                    </button>
+                    <button className="pe-btn pe-btn-ghost" type="button" disabled={locked || !Object.values(selected.adjustments ?? {}).some((value) => Math.abs(value) > 0.001)} onClick={() => { compareOriginalPhoto(false); applyImageLook({}); }} title="Remove all photo adjustments">
+                      <RotateCcw size={15} /> Reset
+                    </button>
                   </div>
+                  <PhotoLooksGallery
+                    source={selected.assetId ? urls.current[selected.assetId] : null}
+                    looks={IMAGE_LOOKS}
+                    adjustments={selected.adjustments}
+                    onApply={applyImageLook}
+                  />
                   <p className="pe-label">Image adjustments</p>
                   {([ ["brightness", "Brightness", -1, 1], ["contrast", "Contrast", -1, 1], ["saturation", "Saturation", -1, 1], ["temperature", "Cool ↔ Warm tint", -1, 1], ["blur", "Soft focus", 0, 0.2] ] as const).map(([field, label, min, max]) => (
                     <label className="pe-slider" key={field}>

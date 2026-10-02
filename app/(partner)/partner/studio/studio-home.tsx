@@ -63,6 +63,7 @@ export function StudioHome({ designs, products, error }: { designs: StudioHomeDe
           <p>Design on any canvas. Products use your designs — you don&apos;t need a product to start.</p>
         </div>
         <div className="sh-actions">
+          <Link href="/partner/studio/collage" className="sh-ghost">Photo collage</Link>
           <Link href="/partner/library" className="sh-ghost">Files &amp; Creative Library</Link>
           <details className="sh-custom">
             <summary className="sh-primary">＋ Custom size</summary>
