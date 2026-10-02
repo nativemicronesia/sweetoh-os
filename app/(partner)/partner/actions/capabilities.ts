@@ -12,6 +12,7 @@ import {
   generateDesign,
   listInspiration,
   removeBackground,
+  vectorizeArtwork,
   turnPhotoIntoBlank,
   PRODUCT_TYPE_OPTIONS,
   type BlankProposal,
@@ -96,6 +97,17 @@ export async function removeBackgroundAction(assetId: string): Promise<Result<De
   const session = await requireStudioWorkspace();
   try {
     const result = await removeBackground(session, z.string().uuid().parse(assetId));
+    revalidatePath("/partner/library");
+    return { ok: true, ...result };
+  } catch (error) {
+    return failure(error);
+  }
+}
+
+export async function vectorizeArtworkAction(assetId: string, colors: number): Promise<Result<Design & { svg: string; paths: number }>> {
+  const session = await requireStudioWorkspace();
+  try {
+    const result = await vectorizeArtwork(session, z.string().uuid().parse(assetId), z.number().int().min(2).max(32).parse(colors));
     revalidatePath("/partner/library");
     return { ok: true, ...result };
   } catch (error) {

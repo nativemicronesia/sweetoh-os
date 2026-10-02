@@ -128,6 +128,7 @@ import {
   generateDesignAction,
   listInspirationAction,
   removeBackgroundAction,
+  vectorizeArtworkAction,
 } from "../actions/capabilities";
 import { regionPath } from "@/lib/studio/print-regions";
 import { ProductSetup } from "./product-setup";
@@ -589,6 +590,8 @@ export function ProductEditor({
   const [inspirationNote, setInspirationNote] = useState("");
   const [aiMode, setAiMode] = useState<"design" | "pattern">("design");
   const [editPrompt, setEditPrompt] = useState("");
+  const [vectorColors, setVectorColors] = useState(8);
+  const [vectorFile, setVectorFile] = useState<{ name: string; svg: string; paths: number } | null>(null);
   const [cropping, setCropping] = useState<{ src: string; initial?: CropPixels } | null>(null);
   const inspirationInput = useRef<HTMLInputElement>(null);
   const [photoScores, setPhotoScores] = useState<Record<string, number>>({});
@@ -2188,6 +2191,31 @@ export function ProductEditor({
       setBusy(null);
     }
   }
+  /** Trace the selected image to flat-color vector art; the canvas gets the crisp result and the SVG is offered for download. */
+  async function makeVector() {
+    if (!selected?.assetId) return;
+    setBusy("Tracing to vector…");
+    setError("");
+    try {
+      const r = await vectorizeArtworkAction(selected.assetId, vectorColors);
+      if (!r.ok) throw new Error(r.error);
+      await replaceArtwork(r.assetId, r.previewUrl, r.name);
+      setVectorFile({ name: r.name, svg: r.svg, paths: r.paths });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn’t make vector art from this image.");
+    } finally {
+      setBusy(null);
+    }
+  }
+  function downloadVector() {
+    if (!vectorFile) return;
+    const url = URL.createObjectURL(new Blob([vectorFile.svg], { type: "image/svg+xml" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${vectorFile.name.replace(/[^\w.-]+/g, "-").slice(0, 60) || "vector"}.svg`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  }
   async function aiEdit() {
     if (!selected?.assetId || editPrompt.trim().length < 4) return;
     setBusy("Editing with AI…");
@@ -3459,6 +3487,11 @@ export function ProductEditor({
                       <Grid3x3 size={16} /> Make a pattern
                     </button>
                   </div>
+                  <p className="pe-label">Vector art</p>
+                  <label className="pe-slider"><span>Colors <b>{vectorColors}</b></span><input type="range" min={2} max={32} step={1} value={vectorColors} onChange={(event) => setVectorColors(Number(event.target.value))} aria-label="Number of colors" /></label>
+                  <button className="pe-btn pe-btn-ghost pe-block" disabled={locked || Boolean(busy)} onClick={() => void makeVector()}><WandSparkles size={15} /> Make vector art</button>
+                  {vectorFile && <button className="pe-btn pe-btn-ghost pe-block" onClick={downloadVector}><Download size={15} /> Download SVG · {vectorFile.paths} shapes</button>}
+                  <p className="pe-muted pe-small">Flat colors, sharp at any size. Best for logos, illustrations and simple photos.</p>
                   <p className="pe-label">Filters</p>
                   <div className="pe-looks" role="group" aria-label="Photo filters">
                     {IMAGE_LOOKS.map((look) => <button key={look.label} type="button" onClick={() => applyImageLook(look.values)}><i style={{ background: look.swatch }} />{look.label}</button>)}

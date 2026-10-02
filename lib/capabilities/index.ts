@@ -1,6 +1,7 @@
 import "server-only";
 import { createHash } from "node:crypto";
 import sharp from "sharp";
+import { vectorizeImage } from "@/lib/studio/vectorize";
 import { and, desc, eq, like } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import { listPartnerInspiration, savePartnerInspiration } from "@/lib/domains/partner-captures/service";
@@ -363,6 +364,15 @@ export async function removeBackground(session: SessionUser, assetId: string) {
   const cut = await cutoutOf(session, image, "artwork", `bg:${fingerprint}`);
   const saved = await saveDesign(session, `${source.name} (no background)`, cut.png, `Background removed (${cut.method}).`);
   return { ...saved, method: cut.method };
+}
+
+/** Flat-color vector version of artwork: saved as a new design, with the SVG returned for download. */
+export async function vectorizeArtwork(session: SessionUser, assetId: string, colors: number) {
+  assertBuilderRole(session);
+  const { asset: source, bytes } = await assetBytes(session, assetId);
+  const traced = await vectorizeImage(await normalize(bytes), colors);
+  const saved = await saveDesign(session, `${source.name} (vector)`, traced.png, `Traced to ${traced.paths} vector shapes with ${colors} colors.`);
+  return { ...saved, svg: traced.svg, paths: traced.paths };
 }
 
 export async function editDesign(session: SessionUser, assetId: string, instruction: string) {

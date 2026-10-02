@@ -34,6 +34,7 @@
     "cn": "^0.3.0",
     "drizzle-orm": "^0.44.2",
     "fabric": "^6.9.1",
+    "imagetracerjs": "^1.2.6",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.47.0",
     "next": "16.2.9",
