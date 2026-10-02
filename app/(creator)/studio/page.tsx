@@ -3,6 +3,7 @@ import { ArrowRight, Check, MessageCircle, Palette } from "lucide-react";
 import { requireCreator } from "@/lib/domains/identity/service";
 import { getCreditBalance, getCreatorProfile } from "@/lib/domains/creator/credits";
 import { listMemories } from "@/lib/domains/skink/memory";
+import { buildPlan, parsePlanBody } from "@/lib/domains/skink/workflows";
 import { listPartnerLibraryDesigns } from "@/lib/domains/catalog/partner-design-library";
 import { listBuilderBlanks } from "@/lib/domains/intelligence/partner-builder";
 import { listBestsellerBlueprints } from "@/lib/integrations/printify/catalog";
@@ -32,6 +33,12 @@ export default async function StudioHome({ searchParams }: { searchParams: Promi
     { done: Boolean(profile?.printifyShopId), title: "Connect Printify", text: "Your own store, your money", href: "/studio/settings" },
   ];
   const doneCount = steps.filter((s) => s.done).length;
+  const mine = (profile?.tools ?? []) as Parameters<typeof buildPlan>[1];
+  const plans = memories
+    .filter((m) => m.kind === "project" && m.title.startsWith("Plan: "))
+    .map((m) => { const saved = parsePlanBody(m.body); return saved ? buildPlan(saved.workflowId, mine, saved.goal, saved.done) : null; })
+    .filter((p): p is NonNullable<typeof p> => Boolean(p && p.next))
+    .slice(0, 2);
   const greeting = memories.length
     ? `Welcome back, ${first}! I remember ${memories.length === 1 ? "one thing" : `${memories.length} things`} about your brand. Want to pick up where we left off, or start something new?`
     : `Hey ${first}, I'm Skink — your Sweet'Oh guide. Tell me what you want to create: a brand idea, a niche, or even just a vibe. I'll help you turn it into products people want to buy.`;
@@ -52,6 +59,26 @@ export default async function StudioHome({ searchParams }: { searchParams: Promi
         </div>
         <MascotCharacter size={150} className="cs-hero-skink" />
       </section>
+
+      {plans.map((p) => (
+        <section key={p.workflow.id} className="cs-card cs-pad">
+          <div className="cs-section-head" style={{ marginBottom: 10 }}>
+            <div>
+              <h2 className="cs-h2">{p.workflow.name}</h2>
+              <p className="cs-muted" style={{ margin: "4px 0 0", fontSize: 14 }}>{p.goal ? `${p.goal} · ` : ""}{p.steps.filter((s) => s.done).length} of {p.steps.length} done{p.ownToolSteps ? ` · ${p.ownToolSteps} to do in tools you already have` : ""}</p>
+            </div>
+            <Link href="/studio/skink" className="cs-link">Continue with Skink <ArrowRight size={14} /></Link>
+          </div>
+          <ol className="cs-stack" style={{ gap: 6, margin: 0, paddingLeft: 18 }}>
+            {p.steps.map((s) => (
+              <li key={s.id} style={{ opacity: s.done ? 0.55 : 1, fontWeight: p.next?.id === s.id ? 700 : 400 }}>
+                {s.done ? <s>{s.title}</s> : s.title}
+                <span className="cs-muted" style={{ fontSize: 13 }}> · {s.where === "own-tool" ? `in ${s.toolName}` : s.where === "studio" ? "in Studio" : "with Skink"}</span>
+              </li>
+            ))}
+          </ol>
+        </section>
+      ))}
 
       {doneCount < steps.length && (
         <section>

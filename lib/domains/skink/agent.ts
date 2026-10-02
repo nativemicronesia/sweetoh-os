@@ -17,6 +17,7 @@ import type { SessionUser } from "@/lib/domains/identity/types";
 import { forgetMemory, listMemories, memoryPromptBlock, rememberFact, MEMORY_KINDS, type Memory } from "./memory";
 import { buildHandoffPack, HANDOFF_TASKS, taskById, toolById, TOOLS as OWNABLE_TOOLS } from "./handoff";
 import { guideText, recommendFor, type Job } from "./tool-knowledge";
+import { buildPlan, encodePlan, parsePlanBody, planText, planTitle, WORKFLOWS } from "./workflows";
 import { getCreatorProfile } from "@/lib/domains/creator/credits";
 import type { SkinkTurn } from "./threads";
 
@@ -43,6 +44,7 @@ const TOOL_STATUS: Record<string, string> = {
   think_it_through: "Thinking it through…",
   prepare_handoff: "Preparing it for your own tool…",
   tool_guide: "Checking the best way to do this…",
+  workflow_plan: "Planning the steps…",
 };
 
 const PERSONA = `You are SweetOh AI, SweetOh's shared specialized intelligence. In creator-facing Studio conversations, you speak through the Green Tree Skink (Lamprolepis smaragdina), SweetOh's lead operator. The operator is the role and presence; SweetOh AI is the intelligence powering it. Western Skinks and Western Fence Lizards are future subordinate agents that may later use this intelligence under scoped roles. Those agents and autonomous agent workflows are not active.
@@ -76,6 +78,7 @@ Using what the creator already has:
 - Sweet'Oh isn't trying to replace ChatGPT, Claude, Gemini, Canva, Printify or anyone else. You're the agent; those are resources you know how to use, alongside your own.
 - When a creator already pays for a tool that suits the job — a long research piece, heavy image work, video, a big writing job — offer to prepare it for THAT tool with prepare_handoff. It costs them no Sweet'Oh credits and makes their subscription worth more. Then continue from whatever they bring back.
 - Before you advise on how to do something in Canva, Kittl, Printify, Etsy or any other outside tool, call tool_guide so your steps are accurate. Prefer the tool the creator already has (it costs them no credits) and say plainly when Studio is the better place: real print areas, one design on many products, mockups, or selling. Never quote prices, fees or policy numbers; tell them to confirm those on the tool's own site.
+- For a multi-step goal (launching a product, building a collection, a seasonal drop), call workflow_plan first, then work one step at a time. Say where each step is best done and why, favoring tools the creator already pays for. When they finish a step, call workflow_plan again with it in completed.
 - Use your own capabilities when they're the better or faster path, and for anything that touches their Sweet'Oh workspace (designs, products, memory, print files).
 
 Tools: use find_products to suggest real catalog products (always give the link). Use research for current market/trend/niche questions. Use think_it_through for strategy, pricing, brand positioning, or a plan with trade-offs. Use prepare_handoff to hand work to a tool the creator already pays for. Don't call tools for simple chat.`;
@@ -158,6 +161,22 @@ const TOOLS: Tool[] = [
           job: { type: "string", enum: ["typography-art", "layout-graphics", "photo-edit", "research", "strategy", "copy", "image-generation", "print-fit", "many-products", "mockups", "fulfilment", "sell", "video"], description: "Optional: the kind of job, to get the cheapest place to do it." },
         },
         required: ["tool"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "workflow_plan",
+      description: "Plan or update a guided workflow for the creator's goal and save it to their memory. Each step says where it is cheapest and best to do it: their own tool, Studio, or Skink. Pass completed step ids as they finish them.",
+      parameters: {
+        type: "object",
+        properties: {
+          workflow: { type: "string", enum: WORKFLOWS.map((w) => w.id), description: WORKFLOWS.map((w) => `${w.id}: ${w.summary}`).join(" | ") },
+          goal: { type: "string", description: "What they want, in a short phrase (niche, product, season)." },
+          completed: { type: "array", items: { type: "string" }, description: "Step ids the creator has finished." },
+        },
+        required: ["workflow"],
       },
     },
   },
@@ -334,6 +353,23 @@ Cheapest sensible place for this job: ${rec.where}${rec.tool ? ` (${rec.tool})` 
 
 Use this to answer in your own words, briefly. Do not paste it.`,
         event: { tool: "tool_guide", summary: `Checked how to do this in ${toolById(toolId)?.name ?? toolId}` },
+      };
+    }
+    case "workflow_plan": {
+      const id = String(args.workflow ?? "");
+      const title = planTitle(id);
+      const existing = (await listMemories(userId, 200)).find((m) => m.kind === "project" && m.title === title);
+      const saved = existing ? parsePlanBody(existing.body) : null;
+      const completed = Array.isArray(args.completed) ? args.completed.map(String).slice(0, 20) : [];
+      const goal = typeof args.goal === "string" && args.goal.trim() ? args.goal.trim().slice(0, 300) : saved?.goal ?? "";
+      const done = [...new Set([...(saved?.done ?? []), ...completed])];
+      const mine = ((await getCreatorProfile(userId))?.tools ?? []) as Parameters<typeof recommendFor>[1];
+      const plan = buildPlan(id, mine, goal, done);
+      if (!plan) return { result: "Unknown workflow." };
+      await rememberFact(userId, { kind: "project", title, body: encodePlan(id, goal, plan.steps.filter((s) => s.done).map((s) => s.id)) }, "skink");
+      return {
+        result: `${planText(plan)}\n\nShare the plan briefly (a short list, not a lecture), then start on the NEXT STEP. Don't repeat finished steps.`,
+        event: { tool: "workflow_plan", summary: plan.next ? `${plan.workflow.name}: next, ${plan.next.title}${plan.ownToolSteps ? ` · ${plan.ownToolSteps} step${plan.ownToolSteps === 1 ? "" : "s"} in your own tools` : ""}` : `${plan.workflow.name}: all done`, href: "/studio" },
       };
     }
     case "research": {
