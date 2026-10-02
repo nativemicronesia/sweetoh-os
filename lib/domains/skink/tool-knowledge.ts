@@ -72,6 +72,19 @@ export const TOOL_KNOWLEDGE: ToolKnowledge[] = [
     reviewBy: REVIEW,
   },
   {
+    id: "picsart",
+    strengths: ["Photo-first editing that is quick and playful", "Background and object removal, cutouts and sticker making", "Collages with templates and one-tap effects", "Works well on a phone"],
+    limits: ["Built around photos and social posts, not print areas", "Some effects and exports need a paid plan", "Check the license on stock and generated content before selling products"],
+    recipes: [
+      { id: "cutout-sticker", title: "A cutout sticker from a photo", goal: "A clean subject on transparent", steps: ["Open the photo and remove the background so only the subject is left.", "Tidy the edges and, if you like, add a border or outline.", "Export as PNG with a transparent background at the largest size.", "Bring it into Studio: it fits the product, adds a die-cut border if you want one, and makes mockups."] },
+      { id: "collage", title: "A photo collage", goal: "Several photos in one design", steps: ["Pick a collage template for the number of photos.", "Fill each frame and adjust spacing and background.", "Export a PNG at the size you need.", "Bring it into Studio to put it on a mug, tee or print."] },
+    ],
+    exportAdvice: { format: "Transparent PNG at the largest size (JPG for a full photo)", settings: ["Export the maximum size, not a social preview size", "Transparent background for cutouts and stickers", "Skip watermarks: free exports can carry one, so check before using it", "Keep faces and key details away from the edges"] },
+    bringBack: "Bring it to Studio to fit it to the real print area, add a die-cut sticker border, recolor the product, apply it to a mug, tee or print, and make mockups.",
+    confirmOnSite: ["Which exports and effects need a paid plan", "Whether free exports carry a watermark", "License terms for stock and AI content when selling products"],
+    reviewBy: REVIEW,
+  },
+  {
     id: "photoshop",
     strengths: ["Detailed retouching and compositing", "Precise masks and color work", "Raster artwork at very high resolution"],
     limits: ["Heavy to learn and to run", "Not product-aware", "Subscription cost"],
@@ -166,13 +179,14 @@ export const TOOL_KNOWLEDGE: ToolKnowledge[] = [
 
 export const knowledgeFor = (id: string) => TOOL_KNOWLEDGE.find((k) => k.id === id);
 
-export type Job = "typography-art" | "layout-graphics" | "photo-edit" | "research" | "strategy" | "copy" | "image-generation" | "print-fit" | "many-products" | "mockups" | "fulfilment" | "sell" | "video";
+export type Job = "typography-art" | "photo-cutout" | "layout-graphics" | "photo-edit" | "research" | "strategy" | "copy" | "image-generation" | "print-fit" | "many-products" | "mockups" | "fulfilment" | "sell" | "video";
 
 /** Which tool kinds suit a job, best first. Studio handles the jobs only it can. */
 const BEST: Record<Job, ToolId[]> = {
   "typography-art": ["kittl", "canva", "photoshop"],
+  "photo-cutout": ["picsart", "photoshop", "canva"],
   "layout-graphics": ["canva", "kittl"],
-  "photo-edit": ["photoshop", "canva"],
+  "photo-edit": ["picsart", "photoshop", "canva"],
   research: ["gemini", "chatgpt", "claude"],
   strategy: ["claude", "chatgpt", "gemini"],
   copy: ["chatgpt", "claude", "copilot"],

@@ -30,14 +30,14 @@
 .previewPanel,.controls { min-width: 0; border: 1px solid #e0e7e2; border-radius: 16px; background: #fff; box-shadow: 0 3px 12px rgb(16 24 40 / 4%); }
 .previewPanel { position: sticky; top: 16px; display: grid; gap: 0; overflow: hidden; }
 .previewTop { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 17px; border-bottom: 1px solid #e9eeea; font-size: 13px; font-weight: 700; }
-.previewTop small { overflow: hidden; color: #718078; font-size: 11px; font-weight: 550; text-overflow: ellipsis; white-space: nowrap; }
+.previewTop small { overflow: hidden; color: #586760; font-size: 11px; font-weight: 550; text-overflow: ellipsis; white-space: nowrap; }
 .artboard { position: relative; display: grid; place-items: center; min-height: 300px; max-height: min(72dvh, 780px); padding: clamp(20px, 5vw, 56px); background-image: radial-gradient(#cfd7d2 .7px, transparent .7px); background-position: 0 0; background-size: 15px 15px; }
 .artboard canvas { display: block; width: auto; height: auto; max-width: 100%; max-height: min(66dvh, 680px); border-radius: 3px; background: #fff; box-shadow: 0 10px 30px rgb(21 34 27 / 16%), 0 0 0 1px rgb(31 44 37 / 8%); }
 .empty { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: #34443b; pointer-events: none; }
 .empty>span { display: grid; place-items: center; width: 48px; height: 48px; border: 1px solid #dfe8e2; border-radius: 15px; background: #ffffffeb; color: #1f7048; }
 .empty strong { font-size: 14px; }
-.empty small { color: #748178; font-size: 12px; }
-.previewFooter { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 17px; border-top: 1px solid #e9eeea; color: #68766d; font-size: 11px; }
+.empty small { color: #586760; font-size: 12px; }
+.previewFooter { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 17px; border-top: 1px solid #e9eeea; color: #586760; font-size: 11px; }
 
 .controls { display: grid; overflow: hidden; }
 .controlSection { display: grid; gap: 13px; padding: 17px; }
@@ -45,18 +45,18 @@
 .sectionHead { display: flex; align-items: flex-start; gap: 10px; }
 .sectionHead>span { display: grid; flex: 0 0 auto; place-items: center; width: 24px; height: 24px; border-radius: 8px; background: #eaf3ed; color: #1f7048; font-size: 10px; font-weight: 800; }
 .sectionHead h2 { margin: 0; color: #26362d; font-size: 13px; font-weight: 730; }
-.sectionHead p { margin: 3px 0 0; color: #718078; font-size: 11px; line-height: 1.45; }
+.sectionHead p { margin: 3px 0 0; color: #586760; font-size: 11px; line-height: 1.45; }
 .hiddenInput { display: none; }
 .upload { display: flex; align-items: center; justify-content: flex-start; gap: 9px; min-height: 40px; padding: 0 12px; border: 1px dashed #b7c9bd; border-radius: 9px; background: #fbfdfb; color: #255c40; font-size: 12px; font-weight: 700; }
 .upload:hover:not(:disabled) { border-color: #1f7048; background: #f1f8f3; }
-.upload span { margin-left: auto; color: #849188; font-size: 10px; font-weight: 500; }
+.upload span { margin-left: auto; color: #5f6d65; font-size: 10px; font-weight: 500; }
 .upload:disabled { opacity: .48; }
 .photoList { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
 .photoList li { display: flex; align-items: center; gap: 6px; min-width: 0; padding: 6px; border: 1px solid #e7ece8; border-radius: 9px; background: #fff; }
 .photoList li>img { width: 40px; height: 40px; flex: 0 0 auto; border-radius: 6px; background: #f0f2f0; object-fit: cover; }
 .photoList li>span { display: grid; flex: 1; min-width: 0; gap: 2px; }
 .photoList strong { overflow: hidden; color: #34443b; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
-.photoList small { color: #849188; font-size: 10px; }
+.photoList small { color: #5f6d65; font-size: 10px; }
 .photoList li>button { display: grid; flex: 0 0 auto; place-items: center; width: 29px; height: 29px; border: 0; border-radius: 7px; background: transparent; color: #617168; }
 .photoList li>button:hover:not(:disabled) { background: #eef4f0; color: #1f7048; }
 .photoList li>button:disabled { color: #c6cec9; cursor: default; }
@@ -77,7 +77,7 @@
 .colors button[aria-pressed="true"] { outline: 2px solid #1f7048; outline-offset: 2px; }
 .customColor { position: relative; display: grid; place-items: center; width: 27px; height: 27px; overflow: hidden; border: 1px dashed #9cac9f; border-radius: 50%; color: #617168; cursor: pointer; }
 .customColor input { position: absolute; inset: -5px; width: 38px; height: 38px; opacity: 0; cursor: pointer; }
-.printNote { margin: 0; padding: 13px 17px; border-top: 1px solid #e9eeea; background: #f7faf7; color: #68766d; font-size: 11px; line-height: 1.5; }
+.printNote { margin: 0; padding: 13px 17px; border-top: 1px solid #e9eeea; background: #f7faf7; color: #586760; font-size: 11px; line-height: 1.5; }
 .error { max-width: 1500px; width: 100%; margin: 0 auto; padding: 10px 13px; border: 1px solid #f2c5bf; border-radius: 9px; background: #fff7f5; color: #a53121; font-size: 12px; }
 
 @media (max-width: 950px) {

@@ -10,7 +10,7 @@
  */
 import type { Memory } from "./memory";
 
-export type ToolId = "chatgpt" | "claude" | "gemini" | "copilot" | "canva" | "kittl" | "photoshop" | "capcut" | "printify" | "printful" | "etsy" | "shopify" | "other";
+export type ToolId = "chatgpt" | "claude" | "gemini" | "copilot" | "canva" | "kittl" | "picsart" | "photoshop" | "capcut" | "printify" | "printful" | "etsy" | "shopify" | "other";
 
 export type Tool = { id: ToolId; name: string; kind: "ai" | "design" | "production" | "store"; url: string; good: string };
 
@@ -21,6 +21,7 @@ export const TOOLS: Tool[] = [
   { id: "copilot", name: "Microsoft Copilot", kind: "ai", url: "https://copilot.microsoft.com", good: "everyday writing and images" },
   { id: "canva", name: "Canva", kind: "design", url: "https://canva.com", good: "layouts, mockups, social posts, brand kits" },
   { id: "kittl", name: "Kittl", kind: "design", url: "https://www.kittl.com", good: "typography, text effects, vector badges and merch artwork" },
+  { id: "picsart", name: "Picsart", kind: "design", url: "https://picsart.com", good: "photo edits, cutouts, stickers, collages and quick AI effects" },
   { id: "photoshop", name: "Photoshop", kind: "design", url: "https://www.adobe.com/products/photoshop.html", good: "detailed image work and retouching" },
   { id: "capcut", name: "CapCut", kind: "design", url: "https://www.capcut.com", good: "short videos and product reels" },
   { id: "printify", name: "Printify", kind: "production", url: "https://printify.com", good: "printing and shipping your orders" },

@@ -103,6 +103,8 @@ export const layerSchema = z.discriminatedUnion("kind", [
     assetId: z.string().uuid(),
     mask: z.enum(["circle", "rounded"]).optional(),
     adjustments: imageAdjustments.optional(),
+    /** Die-cut sticker border around the visible pixels (width is a percent of the longer side). */
+    sticker: z.object({ color: z.string().regex(/^#[0-9a-f]{6}$/i), width: z.number().min(0).max(12) }).optional(),
     /** Crop window in the source image's pixels. */
     crop: z
       .object({ x: z.number().min(0), y: z.number().min(0), width: z.number().positive(), height: z.number().positive() })

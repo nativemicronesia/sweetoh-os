@@ -45,3 +45,14 @@ test("a guide leads with steps for the goal and always points back to Studio", (
   assert.match(guide, /confirm on the tool's own site/);
   assert.equal(guideText("nope"), null);
 });
+
+test("Picsart is covered: photo jobs go to it first, and its steps lead back to Studio", () => {
+  assert.ok(TOOLS.some((t) => t.id === "picsart"));
+  assert.equal(recommendFor("photo-cutout", ["picsart", "canva"]).tool, "picsart");
+  assert.equal(recommendFor("photo-edit", ["photoshop", "picsart"]).tool, "picsart");
+  assert.equal(recommendFor("photo-cutout", []).where, "skink");
+  const guide = guideText("picsart", "cutout sticker from a photo")!;
+  assert.match(guide, /remove the background/i);
+  assert.match(guide, /die-cut/i);
+  assert.match(guide, /watermark/i);
+});

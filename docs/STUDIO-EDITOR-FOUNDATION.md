@@ -79,3 +79,11 @@ All of these are typed layer data plus editor commands, so the editor, saved des
 - **Quick mockups** (`lib/studio/quick-mockup.ts`, Mockups panel in standalone mode): the design at real print scale on a flat tee, hoodie, tote or print, in a chosen color and scene, with a "fill the print area" trim of empty margins. They are illustrations for listings and posts, never a substitute for a sample or the print provider's photos. The older product-photo renderer in `lib/studio/mockup/` is separate and unchanged.
 - **AI**: the proposal route knows `set_text_effect` and `set_text_warp`, sees each text layer's effect and warp and each path layer's fill, and only lets those commands target text layers.
 - **Skink**: `tool_guide` (how to do a job in the creator's own tool) and `workflow_plan` (a saved, multi-step plan whose steps prefer tools the creator already has, then Studio for product jobs).
+
+## Photo-first tools (the Picsart side)
+
+- **Photo looks** (`photo-looks-gallery.tsx`): one-tap looks with live previews on the actual photo, hold to compare with the original, reset.
+- **Collage** (`/partner/studio/collage`): 2 to 6 photos, mosaic or grid, canvas size, spacing, rounded corners and background; it opens as an editable Studio design with each photo as a layer.
+- **Sticker border** (`lib/studio/sticker-border.ts`, `studio-image.ts`): an image layer can wear a die-cut border that follows its visible pixels, with a soft shadow. Layer field `sticker {color, width}` (width is a percent of the longer side), command `set_image_sticker`, and "Cut out + sticker" removes the background first. A sticker replaces a mask, because a mask would clip the border.
+- **Photo to product**: "See it on a product" in the image inspector opens the quick mockups panel.
+- **Skink** knows Picsart (cutouts, stickers, collages, export settings, watermark warning) and routes photo jobs to it first when the creator has it.

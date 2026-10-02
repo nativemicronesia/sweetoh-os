@@ -158,7 +158,7 @@ const TOOLS: Tool[] = [
         properties: {
           tool: { type: "string", enum: OWNABLE_TOOLS.map((t) => t.id).filter((id) => id !== "other") },
           goal: { type: "string", description: "What the creator is trying to do, in a few words." },
-          job: { type: "string", enum: ["typography-art", "layout-graphics", "photo-edit", "research", "strategy", "copy", "image-generation", "print-fit", "many-products", "mockups", "fulfilment", "sell", "video"], description: "Optional: the kind of job, to get the cheapest place to do it." },
+          job: { type: "string", enum: ["typography-art", "photo-cutout", "layout-graphics", "photo-edit", "research", "strategy", "copy", "image-generation", "print-fit", "many-products", "mockups", "fulfilment", "sell", "video"], description: "Optional: the kind of job, to get the cheapest place to do it." },
         },
         required: ["tool"],
       },

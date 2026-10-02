@@ -28,6 +28,8 @@ import {
 } from "fabric";
 import { initAligningGuidelines } from "fabric/extensions";
 import { StudioTextbox } from "./studio-textbox";
+import { StudioImage } from "./studio-image";
+import { STICKER_COLORS, STICKER_DEFAULT, type StickerBorder } from "@/lib/studio/sticker-border";
 import { NodeEditSession, PenSession } from "./vector-overlay";
 import { reportClientError } from "@/lib/studio/report-error";
 import { BOOLEAN_OPS, combineContours, type BooleanOp } from "@/lib/studio/vector-boolean";
@@ -237,6 +239,7 @@ type Selected =
       gradient?: { from: string; to: string; direction: "horizontal" | "vertical" | "diagonal" };
       adjustments?: { brightness?: number; contrast?: number; saturation?: number; temperature?: number; blur?: number };
       mask?: "circle" | "rounded";
+      sticker?: StickerBorder;
       shadow?: { color: string; opacity: number; blur: number; offsetX: number; offsetY: number };
       letterSpacing?: number;
       curve?: number;
@@ -847,6 +850,7 @@ export function ProductEditor({
       gradient: base.kind === "shape" ? base.gradient : undefined,
       adjustments: base.kind === "image" ? base.adjustments : undefined,
       mask: base.kind === "image" ? base.mask : undefined,
+      sticker: base.kind === "image" ? base.sticker : undefined,
       shadow: base.shadow,
       tile: base.kind === "pattern" ? base.tile : undefined,
       gap: base.kind === "pattern" ? base.gap : undefined,
@@ -884,11 +888,12 @@ export function ProductEditor({
     const storedLayer = layer.kind === "text" ? { ...layer, font: resolveStudioFontKey(layer.font) } : layer;
     let obj: FabricObject;
     if (layer.kind === "image") {
-      obj = await FabricImage.fromURL(urls.current[layer.assetId], { crossOrigin: "anonymous" });
+      obj = await StudioImage.fromURL(urls.current[layer.assetId], { crossOrigin: "anonymous" });
       if (layer.crop) obj.set({ cropX: layer.crop.x, cropY: layer.crop.y, width: layer.crop.width, height: layer.crop.height });
       const image = obj as FabricImage;
       image.filters = imageFiltersFor(layer.adjustments);
       if (image.filters.length) image.applyFilters();
+      if (layer.sticker && image instanceof StudioImage) image.setSticker(layer.sticker);
     } else if (layer.kind === "graphic") {
       const asset = studioAssetMetadata(layer.assetKey);
       if (!asset) throw new Error(`Studio graphic is unavailable: ${layer.assetKey}`);
@@ -2236,6 +2241,17 @@ export function ProductEditor({
           if (base?.kind === "text") meta.current.set(o, { ...base, ...(action.curve !== undefined ? { curve: action.curve || undefined } : {}), ...(action.font ? { font: action.font } : {}), ...(action.bold !== undefined || action.font !== undefined ? { bold: effectiveBold } : {}), ...(action.italic !== undefined ? { italic: action.italic } : {}), ...(action.textAlign !== undefined ? { textAlign: action.textAlign } : {}), ...(action.lineHeight !== undefined ? { lineHeight: action.lineHeight } : {}), ...(action.textBoxWidth !== undefined ? { textBoxWidth: action.textBoxWidth } : {}) });
         }, record);
       }
+      case "set_image_sticker": return changeSelected((o) => {
+        if (!(o instanceof StudioImage)) return;
+        const base = meta.current.get(o);
+        if (base?.kind !== "image") return;
+        o.setSticker(action.sticker);
+        // A mask would clip the border off, so a sticker replaces it.
+        if (action.sticker) o.clipPath = undefined;
+        const { mask: _mask, sticker: _sticker, ...rest } = base;
+        void _mask; void _sticker;
+        meta.current.set(o, { ...rest, ...(action.sticker ? { sticker: action.sticker } : base.mask ? { mask: base.mask } : {}) });
+      }, record);
       case "set_image_adjustment": return setImageAdjustment(action.field, action.value, record);
       case "set_image_mask": return setImageMask(action.mask, record);
       case "set_shadow": return setLayerShadow(action, record);
@@ -2410,16 +2426,18 @@ export function ProductEditor({
     readSelection();
     editor.current!.requestRenderAll();
   }
-  async function removeBg() {
-    if (!selected?.assetId) return;
+  async function removeBg(): Promise<boolean> {
+    if (!selected?.assetId) return false;
     setBusy("Removing background…");
     setError("");
     try {
       const r = await removeBackgroundAction(selected.assetId);
       if (!r.ok) throw new Error(r.error);
       await replaceArtwork(r.assetId, r.previewUrl, r.name);
+      return true;
     } catch (e) {
       setError(e instanceof Error ? e.message : "Couldn’t remove the background.");
+      return false;
     } finally {
       setBusy(null);
     }
@@ -2448,6 +2466,12 @@ export function ProductEditor({
     link.download = `${vectorFile.name.replace(/[^\w.-]+/g, "-").slice(0, 60) || "vector"}.svg`;
     link.click();
     setTimeout(() => URL.revokeObjectURL(url), 2000);
+  }
+  /** One tap: remove the background, then give the cutout a die-cut border. */
+  async function cutOutAndSticker() {
+    if (!selected?.assetId) return;
+    // Only add the border if the cutout worked; on a photo with its background it would just draw a box.
+    if (await removeBg()) await executeEditorCommand({ type: "set_image_sticker", sticker: STICKER_DEFAULT });
   }
   async function aiEdit() {
     if (!selected?.assetId || editPrompt.trim().length < 4) return;
@@ -3814,6 +3838,21 @@ export function ProductEditor({
                       <Grid3x3 size={16} /> Make a pattern
                     </button>
                   </div>
+                  <p className="pe-label">Sticker</p>
+                  <div className="pe-row">
+                    <button className="pe-btn pe-btn-ghost pe-grow" type="button" aria-pressed={Boolean(selected.sticker)} disabled={locked} onClick={() => void executeEditorCommand({ type: "set_image_sticker", sticker: selected.sticker ? null : STICKER_DEFAULT })}>{selected.sticker ? "Remove sticker border" : "Add sticker border"}</button>
+                    {!selected.sticker && <button className="pe-btn pe-btn-ghost" type="button" disabled={locked || Boolean(busy)} onClick={() => void cutOutAndSticker()}>Cut out + sticker</button>}
+                  </div>
+                  {selected.sticker && (
+                    <div className="st-controls">
+                      <label className="pe-slider"><span>Border <b>{selected.sticker.width.toFixed(1)}%</b></span><input type="range" min={0.5} max={12} step={0.5} value={selected.sticker.width} onPointerDown={() => checkpoint()} onChange={(event) => void executeEditorCommand({ type: "set_image_sticker", sticker: { color: selected.sticker!.color, width: Number(event.target.value) } }, false)} /></label>
+                      <div className="pe-swatches" role="group" aria-label="Sticker border color">
+                        {STICKER_COLORS.map((color) => <button key={color} type="button" aria-label={`Border ${color}`} aria-pressed={selected.sticker!.color === color} style={{ background: color }} onClick={() => void executeEditorCommand({ type: "set_image_sticker", sticker: { color, width: selected.sticker!.width } })} />)}
+                      </div>
+                    </div>
+                  )}
+                  <p className="pe-muted pe-small">A die-cut edge that follows the shape. It looks best on a cutout.</p>
+                  <button className="pe-btn pe-btn-ghost pe-block" type="button" onClick={() => setPanel("mockups")} hidden={!standalone}>See it on a product</button>
                   <p className="pe-label">Vector art</p>
                   <label className="pe-slider"><span>Colors <b>{vectorColors}</b></span><input type="range" min={2} max={32} step={1} value={vectorColors} onChange={(event) => setVectorColors(Number(event.target.value))} aria-label="Number of colors" /></label>
                   <button className="pe-btn pe-btn-ghost pe-block" disabled={locked || Boolean(busy)} onClick={() => void makeVector()}><WandSparkles size={15} /> Make vector art</button>

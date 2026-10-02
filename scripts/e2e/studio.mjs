@@ -66,10 +66,10 @@ const heading = () => ev("document.querySelector('.pe-props-head h2')?.textConte
 const timings = { editorReady: [], effectApplied: [], mockupReady: [] };
 const BUDGETS = { editorReady: 6000, effectApplied: 2500, mockupReady: 6000 };
 
-async function fresh(clear = true) {
+async function fresh(clear = true, path = "/studio-lab", ready = "!!document.querySelector('.pe-canvas canvas') && !document.querySelector('.pe-loading')") {
   const t0 = Date.now();
-  await send("Page.navigate", { url: `${BASE}/studio-lab` });
-  await waitFor("!!document.querySelector('.pe-canvas canvas') && !document.querySelector('.pe-loading')", "the editor to load", 90000);
+  await send("Page.navigate", { url: `${BASE}${path}` });
+  await waitFor(ready, "the page to load", 90000);
   timings.editorReady.push(Date.now() - t0);
   if (clear) { await ev("localStorage.clear()"); }
   await sleep(500);
@@ -89,6 +89,16 @@ async function scenario(name, run) {
     console.log(`  FAIL ${name}\n       ${error.message}`);
   }
 }
+// Pick files into an <input type=file> the way a person's file dialog would.
+async function chooseFiles(selector, paths) {
+  const { result: doc } = await send("DOM.getDocument", { depth: 0 });
+  const { result: node } = await send("DOM.querySelector", { nodeId: doc.root.nodeId, selector });
+  if (!node?.nodeId) throw new Error(`no element for ${selector}`);
+  await send("DOM.setFileInputFiles", { nodeId: node.nodeId, files: paths });
+}
+const darkPixels = `(() => { const c = document.querySelector('.pe-canvas .lower-canvas') || document.querySelector('.pe-canvas canvas'); const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let n = 0; for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 200 && d[i] < 40 && d[i + 1] < 40 && d[i + 2] < 60) n++; return n; })()`;
+const PHOTO_CLICK = [617, 340];
+
 const eq = (actual, expected, what) => { if (actual !== expected) throw new Error(`${what}: expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`); };
 const has = (text, part, what) => { if (!String(text).includes(part)) throw new Error(`${what}: expected to include ${JSON.stringify(part)}, got ${JSON.stringify(String(text).slice(0, 200))}`); };
 
@@ -210,6 +220,70 @@ await scenario("accessibility: no serious or critical WCAG A/AA problems in the 
     for (const v of found) problems.push(`${name}: ${v.id} at ${v.nodes.join(" , ")}`);
   }
   if (problems.length) throw new Error(problems.slice(0, 6).join("\n       "));
+});
+
+await scenario("sticker: a die-cut border follows the shape of a photo cutout", async () => {
+  await fresh(true, "/studio-lab?photo=1");
+  await click(...PHOTO_CLICK);
+  await waitFor(`!!${button("Add sticker border")}`, "the sticker control");
+  const before = await ev(darkPixels);
+  await ev(`${button("Add sticker border")}.click()`);
+  await waitFor(`!!${button("Remove sticker border")}`, "the border to be added");
+  await ev(`document.querySelector('.st-controls [aria-label="Border #101828"]').click()`);
+  await sleep(900);
+  const after = await ev(darkPixels);
+  if (!(after > before * 3 + 2000)) throw new Error(`dark border should add many pixels around the star (before ${before}, after ${after})`);
+  await ev(`${button("Remove sticker border")}.click()`);
+  await waitFor(`!!${button("Add sticker border")}`, "the border to be removed");
+  await sleep(600);
+  const removed = await ev(darkPixels);
+  if (Math.abs(removed - before) > before * 0.2 + 200) throw new Error(`removing the border should restore the picture (${before} vs ${removed})`);
+});
+
+await scenario("photo looks: apply a look, compare with the original, reset", async () => {
+  await fresh(true, "/studio-lab?photo=1");
+  await click(...PHOTO_CLICK);
+  await waitFor("!!document.querySelector('[aria-label=\"Photo looks\"] button')", "the looks gallery");
+  // The first look can be the untouched original; pick one that changes the photo.
+  await ev(`document.querySelectorAll('[aria-label="Photo looks"] button')[3].click()`);
+  await waitFor(`!!${button("Reset")} && !${button("Reset")}.disabled`, "Reset to become available");
+  await ev(`${button("Reset")}.click()`);
+  await waitFor(`${button("Reset")}.disabled`, "Reset to clear the look");
+});
+
+await scenario("a photo can be seen on a product in one tap", async () => {
+  await fresh(true, "/studio-lab?photo=1");
+  await click(...PHOTO_CLICK);
+  await waitFor(`!!${button("See it on a product")}`, "the product shortcut");
+  await ev(`${button("See it on a product")}.click()`);
+  await waitFor("!!document.querySelector('.mk-canvas')", "the mockup panel");
+  await waitFor(`(() => { const b = ${button("Download", "document.querySelector('.mk')")}; return b && !b.disabled; })()`, "the mockup", 30000);
+});
+
+await scenario("collage: pick photos, change layout, and stay accessible", async () => {
+  const { default: sharp } = await import("sharp");
+  const { mkdirSync } = await import("node:fs");
+  mkdirSync("/tmp/studio-e2e-photos", { recursive: true });
+  const paths = [];
+  for (const [i, color] of ["#e8795f", "#2aa6a0", "#f2b84b"].entries()) {
+    const file = `/tmp/studio-e2e-photos/p${i}.png`;
+    await sharp({ create: { width: 600 + i * 120, height: 800 - i * 100, channels: 3, background: color } }).png().toFile(file);
+    paths.push(file);
+  }
+  await fresh(true, "/studio-lab/collage", "!!document.querySelector('input[type=file]')");
+  await waitFor("!!document.querySelector('input[type=file]')", "the collage page");
+  await chooseFiles("input[type=file]", paths);
+  await waitFor("document.querySelectorAll('ol li').length === 3", "three photos");
+  const drawn = await ev(`(() => { const c = document.querySelector('canvas'); const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let n = 0; for (let i = 0; i < d.length; i += 4) if (!(d[i] > 245 && d[i + 1] > 245 && d[i + 2] > 245)) n++; return n / (d.length / 4); })()`);
+  if (!(drawn > 0.5)) throw new Error(`the collage preview should be mostly photo (${drawn})`);
+  await ev(`${button("Grid")}.click()`); await sleep(500);
+  eq(await ev(`${button("Grid")}.getAttribute('aria-pressed')`), "true", "grid layout selected");
+  await waitFor(`!${button("Create editable collage")}.disabled`, "Create to be available with 3 photos");
+  await ev(`[...document.querySelectorAll('button')].find((b) => b.getAttribute('aria-label') === 'Remove photo 3').click()`);
+  await waitFor("document.querySelectorAll('ol li').length === 2", "two photos");
+  await ev(readFileSync("node_modules/axe-core/axe.min.js", "utf8"));
+  const found = JSON.parse(await ev(`axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'], resultTypes: ['violations'] }).then((r) => JSON.stringify(r.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical').map((v) => v.id + ' at ' + v.nodes.slice(0, 2).map((n) => n.target.join(' ')).join(' , '))))`));
+  if (found.length) throw new Error(found.join("\n       "));
 });
 
 await scenario("autosave: work survives a reload", async () => {
