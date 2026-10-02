@@ -1,5 +1,5 @@
 import { Textbox } from "fabric";
-import { renderTextEffect, type TextEffect } from "@/lib/studio/text-effects";
+import { renderTextEffect, type TextEffect, type TextWarp } from "@/lib/studio/text-effects";
 
 /**
  * A text object that can carry a text effect. Without an effect it renders
@@ -9,19 +9,30 @@ import { renderTextEffect, type TextEffect } from "@/lib/studio/text-effects";
  */
 export class StudioTextbox extends Textbox {
   effect: TextEffect | null = null;
+  warp: TextWarp | null = null;
   private fx: { key: string; canvas: HTMLCanvasElement; scale: number } | null = null;
 
   setEffect(effect: TextEffect | null) {
     this.effect = effect;
-    // The effect bitmap replaces Fabric's own object cache, which would clip glows and shadows.
-    this.objectCaching = !effect;
+    this.refresh();
+  }
+
+  setWarp(warp: TextWarp | null) {
+    this.warp = warp;
+    this.refresh();
+  }
+
+  private refresh() {
+    // The finished bitmap replaces Fabric's own object cache, which would clip glows, shadows and warps.
+    this.objectCaching = !(this.effect || this.warp);
     this.fx = null;
     this.dirty = true;
   }
 
   _render(ctx: CanvasRenderingContext2D) {
     const effect = this.effect;
-    if (!effect) {
+    const warp = this.warp;
+    if (!effect && !warp) {
       super._render(ctx);
       return;
     }
@@ -31,7 +42,7 @@ export class StudioTextbox extends Textbox {
     const stroke = typeof this.stroke === "string" ? this.stroke : null;
     const strokeWidth = this.strokeWidth || 0;
     const key = [
-      JSON.stringify(effect), this.text, this.fontFamily, this.fontSize, this.fontWeight, this.fontStyle, fill, stroke, strokeWidth,
+      JSON.stringify(effect), JSON.stringify(warp), this.text, this.fontFamily, this.fontSize, this.fontWeight, this.fontStyle, fill, stroke, strokeWidth,
       this.charSpacing, this.textAlign, this.lineHeight, this.width, this.height, this.path ? JSON.stringify(this.path.path) : "",
       k.toFixed(2), typeof document !== "undefined" ? document.fonts?.size : 0,
     ].join("|");
@@ -51,7 +62,7 @@ export class StudioTextbox extends Textbox {
           this.strokeLineJoin = saved.join;
         }
       };
-      const { canvas, scale } = renderTextEffect({ effect, width: this.width, height: this.height, k, unit: Math.min(3, Math.max(0.4, this.fontSize / 40)), fill, stroke, strokeWidth, paint });
+      const { canvas, scale } = renderTextEffect({ effect, warp, width: this.width, height: this.height, k, unit: Math.min(3, Math.max(0.4, this.fontSize / 40)), fill, stroke, strokeWidth, paint });
       this.fx = { key, canvas, scale };
     }
     const { canvas, scale } = this.fx;

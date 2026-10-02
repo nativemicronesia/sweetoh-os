@@ -25,8 +25,8 @@ import {
 } from "fabric";
 import { initAligningGuidelines } from "fabric/extensions";
 import { StudioTextbox } from "./studio-textbox";
-import { TextEffectsGallery } from "./text-effects-gallery";
-import { TEXT_EFFECT_CONTROLS, TEXT_EFFECT_NAMES, type TextEffect, type TextEffectPreset } from "@/lib/studio/text-effects";
+import { TextEffectsGallery, TextShapes } from "./text-effects-gallery";
+import { TEXT_EFFECT_CONTROLS, TEXT_EFFECT_NAMES, TEXT_WARP_NAMES, TEXT_WARP_PRESETS, type TextEffect, type TextEffectPreset, type TextWarp } from "@/lib/studio/text-effects";
 import { drawingDashPattern, STUDIO_DRAW_BRUSHES, STUDIO_DRAW_TEXTURES, studioBrushPresetSchema, studioBrushTextureCanvas, studioDrawBrush, type StudioBrushPreset, type StudioDrawBrush } from "@/lib/studio/drawing-brushes";
 import { compactPressureSamples, normalizePressureSamples, pointerPressure, pressureSegment, pressureSegments, type LocalPressureSample, type PressureSample } from "@/lib/studio/drawing-pressure";
 import {
@@ -228,6 +228,7 @@ type Selected =
       outline?: string;
       outlineWidth?: number;
       effect?: TextEffect;
+      warp?: TextWarp;
       tile?: number;
       gap?: number;
       brick?: boolean;
@@ -659,6 +660,7 @@ export function ProductEditor({
                 letterSpacing: o.charSpacing,
                 ...(base.kind === "text" && base.curve ? { curve: base.curve } : {}),
                 ...(o instanceof StudioTextbox && o.effect ? { effect: o.effect } : {}),
+                ...(o instanceof StudioTextbox && o.warp ? { warp: o.warp } : {}),
                 outline: typeof o.stroke === "string" ? o.stroke : undefined,
                 outlineWidth: o.strokeWidth || undefined,
               }
@@ -845,6 +847,7 @@ export function ProductEditor({
             letterSpacing: (o as IText).charSpacing,
             curve: base.kind === "text" ? base.curve ?? 0 : 0,
             effect: base.kind === "text" ? base.effect : undefined,
+            warp: base.kind === "text" ? base.warp : undefined,
             outline: typeof (o as IText).stroke === "string" ? String((o as IText).stroke) : undefined,
             outlineWidth: (o as IText).strokeWidth,
           }
@@ -909,6 +912,7 @@ export function ProductEditor({
       });
       if (layer.curve) applyTextCurve(obj as IText, layer.curve);
       if (layer.effect) (obj as StudioTextbox).setEffect(layer.effect);
+      if (layer.warp) (obj as StudioTextbox).setWarp(layer.warp);
     }
     if (layer.kind === "image" && layer.mask === "circle") {
       obj.clipPath = new Ellipse({ rx: obj.width / 2, ry: obj.height / 2, originX: "center", originY: "center" });
@@ -1471,7 +1475,7 @@ export function ProductEditor({
       setBusy(null);
     }
   }
-  async function addText(preset: { text: string; size: number; font?: string; bold?: boolean; italic?: boolean; color?: string; letterSpacing?: number; curve?: number; outline?: string; outlineWidth?: number; effect?: TextEffect; textAlign?: "left" | "center" | "right"; shadow?: { color: string; opacity: number; blur: number; offsetX: number; offsetY: number } } = { text: "Your text", size: 48 }) {
+  async function addText(preset: { text: string; size: number; font?: string; bold?: boolean; italic?: boolean; color?: string; letterSpacing?: number; curve?: number; outline?: string; outlineWidth?: number; effect?: TextEffect; warp?: TextWarp; textAlign?: "left" | "center" | "right"; shadow?: { color: string; opacity: number; blur: number; offsetX: number; offsetY: number } } = { text: "Your text", size: 48 }) {
     if (!canDesign()) return;
     if (locked) return;
     checkpoint();
@@ -1497,6 +1501,7 @@ export function ProductEditor({
       ...(preset.textAlign ? { textAlign: preset.textAlign } : {}),
       ...(preset.shadow ? { shadow: preset.shadow } : {}),
       ...(preset.effect ? { effect: preset.effect } : {}),
+      ...(preset.warp ? { warp: preset.warp } : {}),
     };
     const obj = await makeLayer(layer);
     // Start inside the print area: shrink long text to fit its width.
@@ -1991,6 +1996,12 @@ export function ProductEditor({
         o.set({ ...(action.fill ? { fill: action.fill } : {}), ...(action.stroke !== undefined ? { stroke: action.stroke ?? undefined } : {}), ...(action.strokeWidth !== undefined ? { strokeWidth: action.strokeWidth } : {}) });
       });
       case "set_shape_gradient": return setShapeGradient(action.from, action.to, action.direction);
+      case "set_text_warp": return changeSelected((o) => {
+        if (!(o instanceof StudioTextbox)) return;
+        o.setWarp(action.warp);
+        const base = meta.current.get(o);
+        if (base?.kind === "text") meta.current.set(o, { ...base, warp: action.warp ?? undefined });
+      }, record);
       case "set_text_effect": return changeSelected((o) => {
         if (!(o instanceof StudioTextbox)) return;
         o.setEffect(action.effect);
@@ -3102,6 +3113,10 @@ export function ProductEditor({
                 ) : textTab === "effects" ? (
                   <>
                     <p className="pe-muted pe-small">{selected?.kind === "text" ? "Applies to the selected text." : "Adds a new text layer with the effect."}</p>
+                    <TextShapes disabled={locked} active={selected?.kind === "text" ? selected.warp : null} onPick={(warp) => {
+                      if (selected?.kind === "text") void executeEditorCommand({ type: "set_text_warp", warp });
+                      else void addText({ text: "Island", size: 72, font: "lilita", bold: false, warp });
+                    }} />
                     <TextEffectsGallery disabled={locked} active={selected?.kind === "text" ? selected.effect : null} onPick={(preset: TextEffectPreset) => {
                       if (selected?.kind === "text") void executeEditorCommand({ type: "set_text_effect", effect: preset.effect, color: preset.face });
                       else void addText({ text: "Island", size: 72, font: "lilita", bold: false, color: preset.face, effect: preset.effect });
@@ -3413,6 +3428,20 @@ export function ProductEditor({
                       </>
                     );
                   })()}
+                </section>
+              )}
+
+              {selected.kind === "text" && (
+                <section className="pe-section fx-controls">
+                  <p className="pe-label">Text shape</p>
+                  <div className="pe-row">
+                    <b>{selected.warp ? TEXT_WARP_NAMES[selected.warp.kind] : "Straight"}</b>
+                    <button className="pe-btn pe-btn-ghost" onClick={() => { setPanel("text"); setTextTab("effects"); }}>{selected.warp ? "Change" : "Browse shapes"}</button>
+                    {selected.warp && <button className="pe-btn pe-btn-ghost" onClick={() => void executeEditorCommand({ type: "set_text_warp", warp: null })}>Remove</button>}
+                  </div>
+                  {selected.warp && (
+                    <label className="pe-slider"><span>Amount <b>{Math.round(selected.warp.amount)}</b></span><input type="range" min={-100} max={100} step={1} value={selected.warp.amount} onPointerDown={() => checkpoint()} onChange={(event) => void executeEditorCommand({ type: "set_text_warp", warp: { kind: selected.warp!.kind, amount: Number(event.target.value) } }, false)} /></label>
+                  )}
                 </section>
               )}
 

@@ -109,6 +109,23 @@ export const TEXT_EFFECT_CONTROLS: Record<TextEffectKind, { color?: string; acce
   glitch: { color: "Split color A", accent: "Split color B", amount: "Split" },
 };
 
+export const TEXT_WARP_KINDS = ["wave", "flag", "bulge", "rise", "slope", "ripple"] as const;
+export type TextWarpKind = (typeof TEXT_WARP_KINDS)[number];
+/** Reshapes the finished text bitmap. amount -100..100; negative flips direction. */
+export type TextWarp = { kind: TextWarpKind; amount: number };
+
+export const TEXT_WARP_NAMES: Record<TextWarpKind, string> = { wave: "Wave", flag: "Flag", bulge: "Bulge", rise: "Rise", slope: "Slope", ripple: "Ripple" };
+export const TEXT_WARP_PRESETS: readonly { id: string; name: string; warp: TextWarp }[] = [
+  { id: "wave", name: "Wave", warp: { kind: "wave", amount: 55 } },
+  { id: "flag", name: "Flag", warp: { kind: "flag", amount: 60 } },
+  { id: "bulge", name: "Bulge", warp: { kind: "bulge", amount: 55 } },
+  { id: "pinch", name: "Pinch", warp: { kind: "bulge", amount: -45 } },
+  { id: "rise", name: "Rise", warp: { kind: "rise", amount: 55 } },
+  { id: "fall", name: "Fall", warp: { kind: "rise", amount: -55 } },
+  { id: "slope", name: "Slope up", warp: { kind: "slope", amount: -55 } },
+  { id: "ripple", name: "Ripple", warp: { kind: "ripple", amount: 60 } },
+];
+
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
 const HEX = /^#[0-9a-f]{6}$/i;
 
@@ -187,7 +204,9 @@ function wearTile(wear: number, res: number): HTMLCanvasElement {
 export type EffectPaint = (g: CanvasRenderingContext2D, fill: string | null, stroke: string | null, strokeWidth: number) => void;
 
 export type EffectRenderInput = {
-  effect: TextEffect;
+  /** null draws the plain text (used when only a warp is set). */
+  effect: TextEffect | null;
+  warp?: TextWarp | null;
   /** Text box size in local units. */
   width: number;
   height: number;
@@ -204,7 +223,12 @@ export type EffectRenderInput = {
 const MAX_SIDE = 8192;
 
 /** Room the effect needs around the text box, in local units. */
-export function effectPadding(effect: TextEffect, unit: number, strokeWidth = 0): number {
+export function warpExtraPad(warp: TextWarp | null | undefined, height: number): number {
+  return warp ? Math.ceil(height * (warp.kind === "slope" ? 0.7 : 0.55) * (Math.abs(warp.amount) / 100) + 4) : 0;
+}
+
+export function effectPadding(effect: TextEffect | null, unit: number, strokeWidth = 0): number {
+  if (!effect) return Math.ceil(strokeWidth + 4);
   const a = clamp(effect.amount ?? 50, 0, 100) / 100;
   const u = unit;
   const need: Record<TextEffectKind, number> = {
@@ -228,12 +252,13 @@ export function effectPadding(effect: TextEffect, unit: number, strokeWidth = 0)
 
 /** Draws the effect and returns the bitmap; its center is the text box center. */
 export function renderTextEffect(input: EffectRenderInput): { canvas: HTMLCanvasElement; scale: number } {
-  const { effect, width, height, unit: u, fill, stroke, strokeWidth: sw, paint } = input;
+  const { effect, warp, width, height, unit: u, fill, stroke, strokeWidth: sw, paint } = input;
   const pad = effectPadding(effect, u, sw);
-  const fullW = width + pad * 2, fullH = height + pad * 2;
+  const padY = pad + warpExtraPad(warp, height);
+  const fullW = width + pad * 2, fullH = height + padY * 2;
   const k = Math.min(input.k, MAX_SIDE / fullW, MAX_SIDE / fullH);
   const cw = Math.max(2, Math.ceil(fullW * k)), ch = Math.max(2, Math.ceil(fullH * k));
-  const amount = clamp(effect.amount ?? 50, 0, 100) / 100;
+  const amount = clamp(effect?.amount ?? 50, 0, 100) / 100;
 
   const make = () => {
     const canvas = document.createElement("canvas");
@@ -260,7 +285,8 @@ export function renderTextEffect(input: EffectRenderInput): { canvas: HTMLCanvas
   const body = () => blit(text(fill, stroke, sw));
   const bounds = { x0: cw / 2 - (width / 2) * k, x1: cw / 2 + (width / 2) * k, y0: ch / 2 - (height / 2) * k, y1: ch / 2 + (height / 2) * k };
 
-  switch (effect.kind) {
+  if (!effect) body();
+  else switch (effect.kind) {
     case "extrude": {
       const color = effect.color ?? darken(fill, 0.55);
       const depth = (3 + amount * 26) * u;
@@ -460,7 +486,37 @@ export function renderTextEffect(input: EffectRenderInput): { canvas: HTMLCanvas
       break;
     }
   }
-  return { canvas: out.canvas, scale: k };
+  const result = warp && warp.amount ? warpCanvas(out.canvas, warp, { cw, ch, k, bounds, height }) : out.canvas;
+  return { canvas: result, scale: k };
+}
+
+/** Column-by-column vertical shift and stretch of a finished bitmap. */
+function warpCanvas(src: HTMLCanvasElement, warp: TextWarp, m: { cw: number; ch: number; k: number; bounds: { x0: number; x1: number }; height: number }): HTMLCanvasElement {
+  const dst = document.createElement("canvas");
+  dst.width = m.cw;
+  dst.height = m.ch;
+  const g = dst.getContext("2d")!;
+  const a = clamp(warp.amount, -100, 100) / 100;
+  const strip = m.cw > 3000 ? 2 : 1;
+  const span = Math.max(1, m.bounds.x1 - m.bounds.x0);
+  const tall = m.height * m.k;
+  const cy = m.ch / 2;
+  for (let x = 0; x < m.cw; x += strip) {
+    const u = (x + strip / 2 - m.bounds.x0) / span;
+    const t = clamp(u, 0, 1);
+    let s = 1, dy = 0;
+    switch (warp.kind) {
+      case "wave": dy = Math.sin(u * Math.PI * 2 * 1.25) * a * tall * 0.35; break;
+      case "ripple": dy = Math.sin(u * Math.PI * 2 * 3.5) * a * tall * 0.14; break;
+      case "flag": dy = Math.sin(u * Math.PI * 2 * 1.4) * a * tall * 0.3 * (0.35 + 0.65 * t); s = 1 + Math.cos(u * Math.PI * 2 * 1.4) * a * 0.1 * t; break;
+      case "bulge": s = 1 + a * 0.9 * (1 - (2 * t - 1) ** 2); break;
+      case "rise": s = 1 + a * 0.8 * (2 * t - 1); break;
+      case "slope": dy = (t - 0.5) * a * tall; break;
+    }
+    s = Math.max(0.12, s);
+    g.drawImage(src, x, 0, strip, m.ch, x, cy * (1 - s) + dy, strip, m.ch * s);
+  }
+  return dst;
 }
 
 export function describeTextEffect(effect: TextEffect | null | undefined): string {

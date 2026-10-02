@@ -1,4 +1,4 @@
-import { TEXT_EFFECT_KINDS } from "@/lib/studio/text-effects";
+import { TEXT_EFFECT_KINDS, TEXT_WARP_KINDS } from "@/lib/studio/text-effects";
 import { z } from "zod";
 import { STUDIO_ASSET_IDS } from "@/lib/studio/asset-library-client";
 import { isStudioIconId } from "@/lib/studio/icon-sets";
@@ -75,6 +75,7 @@ const placement = {
   flipY: z.boolean().optional(),
 };
 const hexColor = z.string().regex(/^#[0-9a-f]{6}$/i);
+const textWarpSchema = z.object({ kind: z.enum(TEXT_WARP_KINDS), amount: z.number().min(-100).max(100) });
 const textEffectSchema = z.object({ kind: z.enum(TEXT_EFFECT_KINDS), color: z.string().regex(/^#[0-9a-f]{6}$/i).optional(), accent: z.string().regex(/^#[0-9a-f]{6}$/i).optional(), amount: z.number().min(0).max(100).optional() });
 const drawingBrush = z.enum(["pencil", "marker", "dashed"]);
 const pressurePoint = z.object({ x: z.number().finite().min(0).max(720), y: z.number().finite().min(0).max(720), pressure: z.number().min(0).max(1) });
@@ -151,6 +152,8 @@ export const layerSchema = z.discriminatedUnion("kind", [
     outlineWidth: z.number().min(0).max(24).optional(),
     /** A finish drawn on the text: depth, glow, foil, worn print… (see lib/studio/text-effects.ts). */
     effect: textEffectSchema.optional(),
+    /** Reshapes the text: wave, flag, bulge… */
+    warp: textWarpSchema.optional(),
   }),
   z.object({
     ...placement,
