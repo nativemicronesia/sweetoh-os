@@ -11,7 +11,7 @@
 
 CI (`.github/workflows/ci.yml`) runs typecheck, tests and a scoped lint on every push. Lint is scoped to Studio, Skink and scripts because older files elsewhere still have React-hooks lint errors.
 
-The browser tests cover text effects, text shapes, icons, the pen tool and point editing, combining shapes (including shapes whose edges touch exactly, which used to hang paper.js), SVG export, and surviving a reload through autosave.
+The browser tests cover text effects, text shapes, icons, the pen tool and point editing, combining shapes (including shapes whose edges touch exactly, which used to hang paper.js), SVG export, quick mockups, and surviving a reload through autosave.
 
 ## What still needs a signed-in check
 

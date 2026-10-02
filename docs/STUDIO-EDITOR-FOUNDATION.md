@@ -68,3 +68,10 @@ All of these are typed layer data plus editor commands, so the editor, saved des
 - **Text shapes** (`warp`): wave, flag, bulge/pinch, rise/fall, slope, ripple, applied to the finished text bitmap and stackable with any effect. Command: `set_text_warp`.
 - **Make vector art** (`lib/studio/vectorize.ts`): an image is reduced to a perceptual palette (libimagequant via sharp) and traced (imagetracerjs, public domain) to flat-color SVG. The canvas gets a crisp PNG of the trace; the SVG downloads as a true vector file.
 - **Vector paths** (`path` layer, `lib/studio/vector-path.ts`): editable outlines in absolute M/L/Q/C/Z path data. Tools: pen (`P`; click, drag for curves, click the first point to close), point editing (drag anchors and handles, click the outline to add a point, smooth/corner, delete), convert any shape to a path, and combine shapes (unite, subtract, intersect, exclude via paper.js, loaded on demand, `lib/studio/vector-boolean.ts`).
+
+## Importing, exporting, mockups and the AI
+
+- **Import** (`lib/studio/artwork-import.ts`): files go straight to storage on a signed URL, then are checked: SVG sanitized and drawn at print size on transparent, photos capped at 6000 px, and a plain-language report (solid background, low resolution). **Export**: PNG, JPG, PDF, and SVG for designs made only of shapes and paths.
+- **Quick mockups** (`lib/studio/quick-mockup.ts`, Mockups panel in standalone mode): the design at real print scale on a flat tee, hoodie, tote or print, in a chosen color and scene, with a "fill the print area" trim of empty margins. They are illustrations for listings and posts, never a substitute for a sample or the print provider's photos. The older product-photo renderer in `lib/studio/mockup/` is separate and unchanged.
+- **AI**: the proposal route knows `set_text_effect` and `set_text_warp`, sees each text layer's effect and warp and each path layer's fill, and only lets those commands target text layers.
+- **Skink**: `tool_guide` (how to do a job in the creator's own tool) and `workflow_plan` (a saved, multi-step plan whose steps prefer tools the creator already has, then Studio for product jobs).

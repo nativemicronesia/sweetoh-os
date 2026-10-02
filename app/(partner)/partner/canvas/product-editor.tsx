@@ -34,6 +34,7 @@ import { contoursToPathData, mapContours, parsePathData, type Contour, type VNod
 import { shapePathData } from "@/lib/studio/shape-geometry";
 import type { ImportIssue } from "@/lib/studio/artwork-import";
 import { TextEffectsGallery, TextShapes } from "./text-effects-gallery";
+import { MockupsPanel } from "./mockups-panel";
 import { TEXT_EFFECT_CONTROLS, TEXT_EFFECT_NAMES, TEXT_WARP_NAMES, type TextEffect, type TextEffectPreset, type TextWarp } from "@/lib/studio/text-effects";
 import { drawingDashPattern, STUDIO_DRAW_BRUSHES, STUDIO_DRAW_TEXTURES, studioBrushPresetSchema, studioBrushTextureCanvas, studioDrawBrush, type StudioBrushPreset, type StudioDrawBrush } from "@/lib/studio/drawing-brushes";
 import { compactPressureSamples, normalizePressureSamples, pointerPressure, pressureSegment, pressureSegments, type LocalPressureSample, type PressureSample } from "@/lib/studio/drawing-pressure";
@@ -260,7 +261,7 @@ type Selected =
       lineHeight?: number;
       textBoxWidth?: number;
     };
-type Panel = "templates" | "files" | "text" | "shapes" | "assets" | "ai" | "inspiration" | "layers" | null;
+type Panel = "templates" | "files" | "text" | "shapes" | "assets" | "ai" | "inspiration" | "layers" | "mockups" | null;
 type InspirationItem = { id: string; name: string; previewUrl: string };
 type Mockup = { color: string; hex: string; url: string };
 type PreviewData = { views: { name: string; url: string; hasProductionBlank: boolean }[]; colors: Mockup[]; flat?: boolean };
@@ -2844,6 +2845,18 @@ export function ProductEditor({
       await canvas.dispose();
     }
   }
+  /** The current artboard as a transparent PNG and its printed size, for quick mockups. */
+  async function getMockupDesign() {
+    capture();
+    const s = surface();
+    const region = regionsFor(s)[0];
+    if (!region || !s.layers.some((layer) => !layer.hidden)) return null;
+    await assertFontsReady();
+    const file = await renderPrint(s, region);
+    if (!file) return null;
+    const inches = region.dimensions ? physicalToPixels(region.dimensions) : { width: file.width, height: file.height };
+    return { blob: file.blob, widthIn: inches.width / DPI, heightIn: inches.height / DPI };
+  }
   /** Stop before producing a file if a font this design uses could not be loaded. */
   async function assertFontsReady() {
     const uses = doc.current.surfaces.flatMap((view) => view.layers).flatMap((layer) => (layer.kind === "text" ? [{ key: layer.font, bold: layer.bold }] : []));
@@ -3206,6 +3219,7 @@ export function ProductEditor({
               ["ai", Sparkles, "Create"],
               ["inspiration", Lightbulb, "Ideas"],
               ["layers", Layers, "Layers"],
+              ...(standalone ? ([["mockups", ImageIcon, "Mockups"]] as const) : []),
             ] as const
           ).map(([key, Icon, label]) => (
             <button
@@ -3226,7 +3240,7 @@ export function ProductEditor({
           <aside className="pe-panel">
             <div className="pe-panel-head">
               <h2>
-                {{ templates: "Templates", files: "Uploads", text: "Text", shapes: "Shapes", assets: "Elements", ai: "Create with AI", inspiration: "Inspiration", layers: "Layers" }[panel]}
+                {{ templates: "Templates", files: "Uploads", text: "Text", shapes: "Shapes", assets: "Elements", ai: "Create with AI", inspiration: "Inspiration", layers: "Layers", mockups: "Quick mockups" }[panel]}
               </h2>
               <button className="pe-icon-btn" aria-label="Close panel" onClick={() => setPanel(null)}>
                 <X size={16} />
@@ -3360,6 +3374,7 @@ export function ProductEditor({
               </div>
             )}
 
+            {panel === "mockups" && standalone && <MockupsPanel name={name || "design"} getDesign={getMockupDesign} />}
             {panel === "templates" && <TemplatesPanel disabled={locked} hasContent={layers.length > 0} onApply={(template) => void applyTemplate(template)} />}
 
             {panel === "text" && (

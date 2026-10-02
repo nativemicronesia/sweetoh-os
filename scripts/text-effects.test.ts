@@ -35,3 +35,20 @@ test("text warps are valid commands and saved layer fields", () => {
   assert.ok(studioEditorCommandSchema.safeParse({ type: "set_text_warp", warp: null }).success);
   assert.equal(studioEditorCommandSchema.safeParse({ type: "set_text_warp", warp: { kind: "wave", amount: 400 } }).success, false);
 });
+
+test("the AI can see and use effects, warps and vector paths", async () => {
+  const { readFileSync } = await import("node:fs");
+  const { buildStudioEditorState } = await import("../lib/studio/editor-commands");
+  const layout = { version: 1 as const, surfaces: [{ id: "design", name: "Design", assetId: null, position: "design", area: { x: 0, y: 0, width: 1, height: 1 }, layers: [
+    { id: "t1", kind: "text" as const, text: "Aloha", x: 0, y: 0, scaleX: 1, scaleY: 1, angle: 0, color: "#101828", fontSize: 48, effect: { kind: "neon" as const, color: "#ff3d8b" }, warp: { kind: "wave" as const, amount: 40 } },
+    { id: "p1", kind: "path" as const, pathData: "M 0 0 L 10 0 L 10 10 Z", fill: "#173e39", x: 0, y: 0, scaleX: 1, scaleY: 1, angle: 0 },
+  ] }] };
+  const state = buildStudioEditorState(layout, "design", ["t1"], 1);
+  const text = state.layers.find((l) => l.id === "t1")!;
+  assert.deepEqual((text.geometry as Record<string, unknown>).effect, { kind: "neon", color: "#ff3d8b" });
+  assert.equal(state.layers.find((l) => l.id === "p1")!.name, "Vector path");
+  const route = readFileSync("app/api/studio/editor-proposals/route.ts", "utf8");
+  for (const kind of ["extrude", "neon", "foil", "worn", "halftone", "diecut", "glitch"]) assert.ok(route.includes(kind), kind);
+  assert.match(route, /set_text_warp/);
+  assert.match(route, /Text effects and shapes can only target text layers/);
+});

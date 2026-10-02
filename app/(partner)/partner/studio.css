@@ -537,3 +537,10 @@
 .pe-import-notes p{margin:0}
 .pe-import-notes .pe-icon-btn{position:absolute;right:6px;top:6px}
 .pe-link{background:none;border:0;padding:0;color:#173e39;font-weight:700;text-decoration:underline;cursor:pointer}
+
+/* Quick mockups */
+.mk{display:grid;gap:10px}
+.mk-stage{position:relative;border-radius:14px;overflow:hidden;background:repeating-conic-gradient(#eef1f0 0 25%,#fff 0 50%) 0 0/16px 16px;aspect-ratio:1}
+.mk-canvas{display:block;width:100%;height:100%}
+.mk-busy{position:absolute;inset:auto 8px 8px 8px;margin:0;padding:6px 10px;border-radius:8px;background:rgba(255,255,255,.92);font-size:12px;font-weight:600;color:#173e39}
+.mk .pe-swatches button[aria-pressed=true]{outline:2px solid #173e39;outline-offset:2px}
