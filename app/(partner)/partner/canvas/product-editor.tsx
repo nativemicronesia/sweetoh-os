@@ -29,6 +29,7 @@ import {
 import { initAligningGuidelines } from "fabric/extensions";
 import { StudioTextbox } from "./studio-textbox";
 import { NodeEditSession, PenSession } from "./vector-overlay";
+import { reportClientError } from "@/lib/studio/report-error";
 import { BOOLEAN_OPS, combineContours, type BooleanOp } from "@/lib/studio/vector-boolean";
 import { contoursToPathData, mapContours, parsePathData, type Contour, type VNode } from "@/lib/studio/vector-path";
 import { shapePathData } from "@/lib/studio/shape-geometry";
@@ -1287,6 +1288,10 @@ export function ProductEditor({
       }
     };
     window.addEventListener("beforeunload", leave);
+    const onError = (event: ErrorEvent) => reportClientError(event.error ?? event.message, "editor:error");
+    const onRejection = (event: PromiseRejectionEvent) => reportClientError(event.reason, "editor:rejection");
+    window.addEventListener("error", onError);
+    window.addEventListener("unhandledrejection", onRejection);
     try {
       const raw = localStorage.getItem(draftKey);
       const draft = raw ? (JSON.parse(raw) as { at: number; studio: StudioLayout }) : null;
@@ -1302,6 +1307,8 @@ export function ProductEditor({
       disposed = true;
       if (editor.current === canvas) editor.current = null;
       window.removeEventListener("beforeunload", leave);
+      window.removeEventListener("error", onError);
+      window.removeEventListener("unhandledrejection", onRejection);
       if (mockTimer.current) clearTimeout(mockTimer.current);
       penRef.current?.destroy();
       nodeEditRef.current?.destroy();

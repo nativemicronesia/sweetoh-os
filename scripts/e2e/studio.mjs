@@ -62,9 +62,15 @@ const button = (label, scope = "document") => `[...${scope}.querySelectorAll('bu
 const rail = (label) => `[...document.querySelectorAll('.pe-rail button')].find((b) => b.textContent.includes(${JSON.stringify(label)}))`;
 const heading = () => ev("document.querySelector('.pe-props-head h2')?.textContent ?? ''");
 
+// Timings (ms) are printed at the end; with E2E_BUDGETS=1 against a production build they also have to stay under budget.
+const timings = { editorReady: [], effectApplied: [], mockupReady: [] };
+const BUDGETS = { editorReady: 6000, effectApplied: 2500, mockupReady: 6000 };
+
 async function fresh(clear = true) {
+  const t0 = Date.now();
   await send("Page.navigate", { url: `${BASE}/studio-lab` });
   await waitFor("!!document.querySelector('.pe-canvas canvas') && !document.querySelector('.pe-loading')", "the editor to load", 90000);
+  timings.editorReady.push(Date.now() - t0);
   if (clear) { await ev("localStorage.clear()"); }
   await sleep(500);
 }
@@ -92,8 +98,10 @@ await scenario("text effect: gold foil on new text", async () => {
   await fresh();
   await ev(`${rail("Text")}.click()`); await sleep(500);
   await ev(`[...document.querySelectorAll('.pe-seg button')].find((b) => b.textContent === 'Effects').click()`); await sleep(1800);
+  const tEffect = Date.now();
   await ev(`[...document.querySelectorAll('.fxg-card')].find((b) => b.getAttribute('aria-label').startsWith('Gold foil')).click()`);
   await waitFor("document.querySelector('.pe-props-head h2')?.textContent === 'Text'", "text to be added");
+  timings.effectApplied.push(Date.now() - tEffect);
   has(await ev("document.querySelector('.fx-controls')?.textContent"), "Foil", "effect name");
 });
 
@@ -169,8 +177,10 @@ await scenario("quick mockups: design on a product, downloadable", async () => {
   await ev(`[...document.querySelectorAll('.pe-seg button')].find((b) => b.textContent === 'Effects').click()`); await sleep(1800);
   await ev(`[...document.querySelectorAll('.fxg-card')].find((b) => b.getAttribute('aria-label').startsWith('Gold foil')).click()`);
   await waitFor("document.querySelector('.pe-props-head h2')?.textContent === 'Text'", "text to be added");
+  const tMock = Date.now();
   await ev(`${rail("Mockups")}.click()`);
   await waitFor(`(() => { const b = ${button("Download", "document.querySelector('.mk')")}; return b && !b.disabled; })()`, "the mockup to be ready", 30000);
+  timings.mockupReady.push(Date.now() - tMock);
   // The preview actually shows a garment with artwork: it has plenty of drawn pixels.
   const drawn = await ev(`(() => { const c = document.querySelector('.mk-canvas'); const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i] > 0) n++; return n / (d.length / 4); })()`);
   if (!(drawn > 0.9)) throw new Error(`mockup preview looks empty (${drawn})`);
@@ -193,7 +203,13 @@ await scenario("autosave: work survives a reload", async () => {
   await waitFor("document.querySelectorAll('.pe-layer-select').length >= 1", "the restored layer");
 });
 
+const median = (list) => (list.length ? [...list].sort((a, b) => a - b)[Math.floor(list.length / 2)] : 0);
+console.log("\ntimings (median ms): " + Object.entries(timings).map(([k, v]) => `${k} ${median(v)}`).join("  "));
+if (process.env.E2E_BUDGETS === "1") {
+  for (const [key, limit] of Object.entries(BUDGETS)) if (median(timings[key]) > limit) results.push([`budget: ${key} under ${limit}ms`, false, `took ${median(timings[key])}ms`]);
+}
 const failed = results.filter((r) => !r[1]);
+for (const r of failed) if (r[0].startsWith("budget")) console.log(`  FAIL ${r[0]}\n       ${r[2]}`);
 console.log(`\n${results.length - failed.length}/${results.length} passed`);
 chrome.kill();
 process.exit(failed.length ? 1 : 0);

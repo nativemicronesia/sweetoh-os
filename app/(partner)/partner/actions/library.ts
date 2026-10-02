@@ -13,7 +13,7 @@ import { uploadPartnerDesign } from "@/lib/domains/catalog/partner-design-librar
 import { canModerateListings } from "@/lib/domains/catalog/partner-listings";
 import { requirePartnerWorkspace, requireStudioWorkspace, studioBase } from "@/lib/domains/identity/service";
 import { getCreditBalance } from "@/lib/domains/creator/credits";
-import { listPartnerLibraryDesigns } from "@/lib/domains/catalog/partner-design-library";
+import { countPartnerCompositions } from "@/lib/domains/catalog/partner-design-library";
 import { getActionErrorMessage } from "@/lib/shared/action-errors";
 import { plainCatalogDescription } from "@/lib/integrations/printify/catalog";
 import { canInsertCreativeLibraryAsset } from "@/lib/domains/library/model";
@@ -269,7 +269,7 @@ export async function saveCanvasCompositionAction(formData: FormData): Promise<{
     if (session.role === "creator") {
       const { plan } = await getCreditBalance(session.appUser.id);
       if (plan.savedDesigns !== null) {
-        const count = (await listPartnerLibraryDesigns(session.ventureId)).filter((d) => d.isComposition).length;
+        const count = await countPartnerCompositions(session.ventureId);
         if (count >= plan.savedDesigns) throw new ValidationError(`The ${plan.name} plan saves up to ${plan.savedDesigns} designs. Upgrade on the Plans page to save unlimited designs — or delete an old one.`);
       }
     }

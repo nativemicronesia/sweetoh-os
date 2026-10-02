@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, count, desc, eq, inArray, isNotNull } from "drizzle-orm";
 import {
   approveAsset,
   createAssetWithUpload,
@@ -29,8 +29,22 @@ export type PartnerLibraryDesign = {
   libraryMetadata: CreativeLibraryMetadata | null;
 };
 
+/** Saved Studio compositions, counted in the database (no thumbnails are signed just to count). */
+export async function countPartnerCompositions(ventureId: string): Promise<number> {
+  const [row] = await getDb()
+    .select({ n: count() })
+    .from(asset)
+    .where(and(eq(asset.ventureId, ventureId), eq(asset.assetType, "sweetoh_design"), inArray(asset.status, ["draft", "approved", "licensed"]), isNotNull(asset.compositionLayout)));
+  return row?.n ?? 0;
+}
+
+/**
+ * `options.limit` keeps a page that shows a handful of recent designs from signing
+ * a thumbnail for every design a busy creator has ever saved.
+ */
 export async function listPartnerLibraryDesigns(
   ventureId: string,
+  options: { limit?: number } = {},
 ): Promise<PartnerLibraryDesign[]> {
   const db = getDb();
   const rows = await db
@@ -46,8 +60,9 @@ export async function listPartnerLibraryDesigns(
     )
     .orderBy(desc(asset.updatedAt));
 
+  const usable = rows.filter(row => canUseCreativeLibraryAsset(normalizeCreativeLibraryAsset(row.asset, row.entry), { ventureId, use: "studio_edit" }));
   return Promise.all(
-    rows.filter(row => canUseCreativeLibraryAsset(normalizeCreativeLibraryAsset(row.asset, row.entry), { ventureId, use: "studio_edit" })).map(async ({ asset: row, entry }) => ({
+    (options.limit ? usable.slice(0, options.limit) : usable).map(async ({ asset: row, entry }) => ({
       id: row.id,
       name: row.name,
       status: row.status,

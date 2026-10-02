@@ -322,7 +322,7 @@ async function runTool(
       };
     }
     case "list_my_designs": {
-      const rows = await listPartnerLibraryDesigns(ctx.session.ventureId).catch(() => []);
+      const rows = await listPartnerLibraryDesigns(ctx.session.ventureId, { limit: 40 }).catch(() => []);
       const designs = rows.filter((r) => r.isComposition).slice(0, 15);
       return {
         result: designs.length

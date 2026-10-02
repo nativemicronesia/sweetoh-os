@@ -1,6 +1,7 @@
 import type { IconifyJSON } from "@iconify/types";
 import { getIconData, iconToHTML, iconToSVG, replaceIDs } from "@iconify/utils";
 import { ICON_SETS, parseIconId } from "./icon-sets";
+import iconIndex from "./icon-index.json";
 
 /** Static import paths so the bundler includes exactly these sets. */
 const LOADERS: Record<string, () => Promise<{ default: unknown }>> = {
@@ -15,20 +16,31 @@ const LOADERS: Record<string, () => Promise<{ default: unknown }>> = {
   "fluent-emoji-flat": () => import("@iconify-json/fluent-emoji-flat/icons.json"),
 };
 
-type Loaded = { data: IconifyJSON; names: string[] };
+type Loaded = { data: IconifyJSON };
+
+/**
+ * Search runs on a small prebuilt list of names (lib/studio/icon-index.json, built by
+ * scripts/build-icon-index.ts), so it never loads the heavy icon data. Only drawing
+ * an icon loads its set.
+ */
+const searchable = new Map<string, { names: string[]; parts: string[][] }>();
+function searchSet(prefix: string) {
+  let entry = searchable.get(prefix);
+  if (!entry) {
+    const names = (iconIndex as Record<string, string[]>)[prefix] ?? [];
+    entry = { names, parts: names.map((name) => name.split("-")) };
+    searchable.set(prefix, entry);
+  }
+  return entry;
+}
 const sets = new Map<string, Promise<Loaded>>();
-/** Weight variants that make a list noisy; each concept appears in regular, bold and fill only. */
-const NOISY = /-(thin|light|duotone)$/;
 
 function loadSet(prefix: string): Promise<Loaded> {
   let hit = sets.get(prefix);
   if (!hit) {
     const load = LOADERS[prefix];
     if (!load) return Promise.reject(new Error("Unknown icon set."));
-    hit = load().then((module) => {
-      const data = module.default as IconifyJSON;
-      return { data, names: [...Object.keys(data.icons), ...Object.keys(data.aliases ?? {})].filter((name) => !NOISY.test(name)) };
-    });
+    hit = load().then((module) => ({ data: module.default as IconifyJSON }));
     hit.catch(() => sets.delete(prefix));
     sets.set(prefix, hit);
   }
@@ -47,8 +59,7 @@ export async function iconSvg(prefix: string, name: string, size: number, color?
   return svg;
 }
 
-function score(name: string, tokens: string[], whole: string): number | null {
-  const parts = name.split("-");
+function score(name: string, parts: string[], tokens: string[], whole: string): number | null {
   let total = 0;
   for (const token of tokens) {
     if (parts.includes(token)) total += 0;
@@ -61,17 +72,39 @@ function score(name: string, tokens: string[], whole: string): number | null {
   return 2 + total + parts.length * 0.4;
 }
 
+/** Recent answers, so a popular query is computed once per server instance. */
+const recent = new Map<string, string[]>();
+const RECENT_MAX = 1500;
+
 /** Name search across sets, best matches first, interleaved so styles are mixed. */
 export async function searchIconIds(query: string, prefixes: readonly string[], limit: number, start: number): Promise<string[]> {
+  const key = `${[...prefixes].sort().join(",")}|${query.toLowerCase().trim()}|${limit}|${start}`;
+  const hit = recent.get(key);
+  if (hit) { recent.delete(key); recent.set(key, hit); return hit; }
+  const answer = await searchUncached(query, prefixes, limit, start);
+  recent.set(key, answer);
+  if (recent.size > RECENT_MAX) recent.delete(recent.keys().next().value as string);
+  return answer;
+}
+
+async function searchUncached(query: string, prefixes: readonly string[], limit: number, start: number): Promise<string[]> {
   const whole = query.toLowerCase().trim().replace(/\s+/g, "-");
   const tokens = query.toLowerCase().split(/[\s-]+/).filter(Boolean);
   if (!tokens.length) return [];
   const wanted = prefixes.filter((prefix) => Object.hasOwn(ICON_SETS, prefix));
   const perSet = await Promise.all(wanted.map(async (prefix) => {
-    const { names } = await loadSet(prefix);
-    return names
-      .map((name) => [name, score(name, tokens, whole)] as const)
-      .filter((entry): entry is readonly [string, number] => entry[1] !== null)
+    const { names, parts } = searchSet(prefix);
+    const hits: Array<readonly [string, number]> = [];
+    for (let i = 0; i < names.length; i++) {
+      const name = names[i];
+      // Native substring checks reject almost every name before any scoring.
+      let possible = true;
+      for (const token of tokens) if (!name.includes(token)) { possible = false; break; }
+      if (!possible) continue;
+      const value = score(name, parts[i], tokens, whole);
+      if (value !== null) hits.push([name, value]);
+    }
+    return hits
       .sort((a, b) => a[1] - b[1] || a[0].length - b[0].length)
       .slice(0, start + limit)
       .map(([name]) => `${prefix}:${name}`);

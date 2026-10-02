@@ -1,7 +1,10 @@
 import { iconSvg } from "@/lib/studio/icon-server";
+import { clientKey, rateLimit, tooManyRequests } from "@/lib/shared/rate-limit";
 
 export async function GET(request: Request, context: { params: Promise<{ prefix: string; name: string }> }) {
   const { prefix, name } = await context.params;
+  const rate = rateLimit(`icons-svg:${clientKey(request)}`, 1500, 60_000);
+  if (!rate.ok) return tooManyRequests(rate.retryAfterSeconds);
   const url = new URL(request.url);
   const size = Math.min(1024, Math.max(16, Number(url.searchParams.get("size")) || 512));
   const color = url.searchParams.get("color");

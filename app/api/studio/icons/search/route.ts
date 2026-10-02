@@ -1,7 +1,11 @@
 import { ICON_PREFIXES, STICKER_PREFIXES } from "@/lib/studio/icon-sets";
 import { searchIconIds } from "@/lib/studio/icon-server";
+import { clientKey, rateLimit, tooManyRequests } from "@/lib/shared/rate-limit";
 
 export async function GET(request: Request) {
+  // Each distinct query costs real work, so one address gets a generous but finite budget.
+  const rate = rateLimit(`icons-search:${clientKey(request)}`, 240, 60_000);
+  if (!rate.ok) return tooManyRequests(rate.retryAfterSeconds);
   const url = new URL(request.url);
   const query = (url.searchParams.get("q") ?? "").slice(0, 60);
   const allowed = new Set([...ICON_PREFIXES, ...STICKER_PREFIXES]);

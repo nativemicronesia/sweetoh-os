@@ -19,7 +19,7 @@ export default async function StudioHome({ searchParams }: { searchParams: Promi
     getCreditBalance(session.appUser.id),
     getCreatorProfile(session.appUser.id),
     listMemories(session.appUser.id),
-    listPartnerLibraryDesigns(session.ventureId).catch(() => []),
+    listPartnerLibraryDesigns(session.ventureId, { limit: 24 }).catch(() => []),
     listBuilderBlanks(session).catch(() => []),
     listBestsellerBlueprints().catch(() => []),
   ]);
