@@ -21,7 +21,7 @@ import { defaultArea, inferSurfaceImageRole, regionsFor, studioMatchesProductPri
 export const maxDuration = 180;
 
 type PageProps = {
-  searchParams: Promise<{ new?: string; w?: string; h?: string; unit?: string; design?: string; blank?: string; composition?: string; template?: string; targetDraft?: string; returnTo?: string; orderId?: string; error?: string }>;
+  searchParams: Promise<{ tpl?: string; new?: string; w?: string; h?: string; unit?: string; design?: string; blank?: string; composition?: string; template?: string; targetDraft?: string; returnTo?: string; orderId?: string; error?: string }>;
 };
 
 export default async function PartnerCanvasPage({ searchParams }: PageProps) {
@@ -201,7 +201,8 @@ export default async function PartnerCanvasPage({ searchParams }: PageProps) {
             ? (query.template ? `Copy of ${savedAsset?.name ?? "design"}` : savedAsset?.name ?? "Untitled design")
             : applyToProduct ? null
             : sourceDesign ? `Copy of ${sourceDesign.name}` : null}
-          draftScope={query.template ? `template-${query.template}` : query.composition ? `composition-${query.composition}` : newSize ? `new-${query.new}-${newSize.width}x${newSize.height}${newSize.unit}` : "fresh"}
+          draftScope={query.template ? `template-${query.template}` : query.composition ? `composition-${query.composition}` : newSize ? `new-${query.new}-${newSize.width}x${newSize.height}${newSize.unit}${query.tpl ? `-${query.tpl}` : ""}` : "fresh"}
+          initialTemplateId={newSize ? query.tpl ?? null : null}
           rightsFallbackNotice={fallbackNotice}
           initialDesignId={savedComposition?.designAssetId ?? query.design ?? null}
           initialBlankId={designBlank ? designBlank.id : query.targetDraft ?? savedComposition?.blankProductId ?? query.blank ?? null}

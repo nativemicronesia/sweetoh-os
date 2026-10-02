@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { FlashBanner } from "@/app/(owner)/owner/components/flash-banner";
 import { DESIGN_TYPES, DESIGN_MAX_PX, DESIGN_EXPORT_DPI } from "@/lib/studio/design-canvas";
+import { TemplateShelf } from "./template-shelf";
 
 export type StudioHomeDesign = { id: string; name: string; previewUrl: string | null; createdAt: Date; compositionKind: "standalone" | "product" | null };
 
@@ -92,6 +93,11 @@ export function StudioHome({ designs, products, error }: { designs: StudioHomeDe
             </li>
           ))}
         </ul>
+      </section>
+
+      <section aria-labelledby="sh-templates">
+        <h2 id="sh-templates">Start from a template</h2>
+        <TemplateShelf />
       </section>
 
       <section aria-labelledby="sh-designs">

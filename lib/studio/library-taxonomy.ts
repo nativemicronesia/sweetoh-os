@@ -15,7 +15,7 @@ export const LIBRARY_TOPICS = [
 ] as const;
 export type LibraryTopic = (typeof LIBRARY_TOPICS)[number];
 
-export type LibraryAsset = StudioAssetMetadata & { type: LibraryType; topic: LibraryTopic; origin: string; haystack: string };
+export type LibraryAsset = StudioAssetMetadata & { type: LibraryType; topic: LibraryTopic; origin: string; haystack: string; /** Specialist art (museum plates, playing cards, game kits): reachable, but kept out of default shelves and ranked last in search. */ niche: boolean };
 
 const TOPIC_RULES: readonly [LibraryTopic, RegExp][] = [
   ["Fantasy & adventure", /\b(pirate|medieval|dungeon|western|ruins|fantasy|dragon|knight|wizard|magic|sword|treasure|skull|viking|castle|unicorn|fairy)\b/i],
@@ -65,6 +65,11 @@ function relevance(asset: LibraryAsset): number {
   if (!rule) return 0;
   return (rule.test(asset.name) ? 3 : 0) + (rule.test(asset.tags.join(" ")) ? 1 : 0);
 }
+const NICHE_KITS = /\((dungeon|ruins|cyberpunk|medieval|western|interior|city) kit/i;
+function isNiche(asset: StudioAssetMetadata, type: LibraryType): boolean {
+  return type === "Vintage & art" || /playing cards|card back/i.test(`${asset.source} ${asset.category}`) || NICHE_KITS.test(asset.source);
+}
+
 const PRIORITY = (asset: LibraryAsset) => (asset.origin === "SweetOh original" ? 0 : asset.type === "Illustrations" ? 1 : asset.type === "Vintage & art" ? 2 : 3);
 
 let cache: readonly LibraryAsset[] | null = null;
@@ -74,7 +79,7 @@ export function libraryAssets(): readonly LibraryAsset[] {
   cache = STUDIO_ASSET_MANIFEST.filter((asset) => asset.studioUseApproved)
     .map((asset): LibraryAsset => {
       const type = typeOf(asset);
-      return { ...asset, type, topic: topicOf(asset, type), origin: originOf(asset), haystack: `${asset.name} ${asset.category} ${asset.tags.join(" ")} ${type}`.toLowerCase() };
+      return { ...asset, type, topic: topicOf(asset, type), origin: originOf(asset), niche: isNiche(asset, type), haystack: `${asset.name} ${asset.category} ${asset.tags.join(" ")} ${type}`.toLowerCase() };
     })
     .sort((a, b) => PRIORITY(a) - PRIORITY(b) || a.name.localeCompare(b.name));
   // Within a topic the clearest matches come first, so shelf previews actually look like the shelf.
@@ -82,7 +87,7 @@ export function libraryAssets(): readonly LibraryAsset[] {
   return cache;
 }
 
-export type LibraryShelf = { id: string; title: string; subtitle?: string; filter: { type?: LibraryType; topic?: LibraryTopic; origin?: string } };
+export type LibraryShelf = { id: string; title: string; subtitle?: string; filter: { type?: LibraryType; topic?: LibraryTopic; origin?: string; includeNiche?: boolean } };
 /** Curated shelves for the browse view, in the order a person would reach for them. */
 export const LIBRARY_SHELVES: readonly LibraryShelf[] = [
   { id: "sweetoh", title: "SweetOh originals", subtitle: "Drawn for SweetOh", filter: { origin: "SweetOh original" } },
@@ -100,13 +105,36 @@ export const LIBRARY_SHELVES: readonly LibraryShelf[] = [
   { id: "adventure", title: "Fantasy & adventure", filter: { topic: "Fantasy & adventure" } },
   { id: "space", title: "Space & science", filter: { topic: "Space & science" } },
   { id: "hobbies", title: "Sports & hobbies", filter: { topic: "Sports & hobbies" } },
-  { id: "vintage", title: "Vintage & museum art", filter: { type: "Vintage & art" } },
+  { id: "vintage", title: "Vintage & museum art", subtitle: "Museum plates and engravings", filter: { type: "Vintage & art", includeNiche: true } },
   { id: "silhouettes", title: "Silhouettes", filter: { type: "Silhouettes" } },
 ];
 
+/** Merch-friendly subjects people reach for first; one standout per subject makes the "Trending" shelf. */
+const TRENDING_TERMS = ["sun", "sunset", "wave", "palm", "hibiscus", "flower", "heart", "star", "sparkle", "moon", "mountain", "anchor", "shell", "turtle", "dolphin", "whale", "coffee", "camera", "music", "rainbow", "leaf", "butterfly", "cat", "dog", "skull", "rose", "crown", "lightning", "fire", "mushroom", "cactus", "pineapple", "surf", "boat", "airplane", "balloon", "gift", "cake", "peace", "smile"];
+export function trendingAssets(assets: readonly LibraryAsset[], limit = 16): LibraryAsset[] {
+  const used = new Set<string>();
+  const picks: LibraryAsset[] = [];
+  for (const term of TRENDING_TERMS) {
+    const hit = assets
+      .filter((asset) => !asset.niche && asset.type !== "Patterns" && asset.type !== "Frames" && !used.has(asset.id) && new RegExp(`\\b${term}s?\\b`, "i").test(asset.name))
+      .sort((a, b) => Number(b.type === "Illustrations" || b.type === "Emoji") - Number(a.type === "Illustrations" || a.type === "Emoji"))[0];
+    if (hit) { used.add(hit.id); picks.push(hit); }
+    if (picks.length >= limit) break;
+  }
+  return picks;
+}
+
+function queryScore(asset: LibraryAsset, terms: readonly string[]): number {
+  const name = asset.name.toLowerCase();
+  return terms.reduce((total, term) => total + (new RegExp(`\\b${term}`).test(name) ? 4 : name.includes(term) ? 2 : 1), 0) - (asset.niche ? 3 : 0);
+}
+
 export function filterLibrary(assets: readonly LibraryAsset[], filter: LibraryShelf["filter"] & { query?: string }): LibraryAsset[] {
   const terms = (filter.query ?? "").toLowerCase().split(/\s+/).filter(Boolean);
-  return assets.filter((asset) =>
-    (!filter.type || asset.type === filter.type) && (!filter.topic || asset.topic === filter.topic) && (!filter.origin || asset.origin === filter.origin)
+  // Specialist art stays out of default browsing but is always reachable by type, by search, or by its own tab.
+  const showNiche = Boolean(filter.includeNiche || filter.type === "Vintage & art" || terms.length);
+  const matches = assets.filter((asset) =>
+    (showNiche || !asset.niche) && (!filter.type || asset.type === filter.type) && (!filter.topic || asset.topic === filter.topic) && (!filter.origin || asset.origin === filter.origin)
     && terms.every((term) => asset.haystack.includes(term) || asset.haystack.includes(term.replace(/s$/, ""))));
+  return terms.length ? matches.sort((a, b) => queryScore(b, terms) - queryScore(a, terms)) : matches;
 }

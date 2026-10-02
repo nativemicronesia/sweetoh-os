@@ -73,7 +73,7 @@ export function buildStudioEditorState(layout: StudioLayout, surfaceId: string, 
   if (!surface) throw new Error("Unknown Studio surface.");
   const describe = (layer: StudioLayer) => ({
     id: layer.id, kind: layer.kind,
-    name: layer.kind === "text" ? layer.text : layer.kind === "graphic" ? layer.assetKey : layer.kind === "shape" ? layer.shape : layer.kind === "pattern" ? "Pattern" : "Artwork",
+    name: layer.kind === "text" ? layer.text : layer.kind === "graphic" ? layer.assetKey : layer.kind === "icon" ? layer.icon : layer.kind === "shape" ? layer.shape : layer.kind === "pattern" ? "Pattern" : "Artwork",
     locked: Boolean(layer.locked), hidden: Boolean(layer.hidden),
     geometry: { x: layer.x, y: layer.y, scaleX: layer.scaleX, scaleY: layer.scaleY, angle: layer.angle, opacity: layer.opacity ?? 1,
       ...(layer.groupId ? { groupId: layer.groupId } : {}),

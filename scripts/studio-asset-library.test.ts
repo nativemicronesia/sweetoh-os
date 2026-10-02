@@ -1330,7 +1330,10 @@ test("Studio persists the latest captured edit for crash recovery and makes cust
   const clearDraft = source.slice(source.indexOf("function clearDraft()"), source.indexOf("function checkOutside()"));
   assert.match(clearDraft, /clearTimeout\(draftTimer\.current\)/);
   assert.match(clearDraft, /draftTimer\.current = null/);
-  assert.match(source, /value=\{selected\.fill \?\? "#1f7048"\} onClick=\{\(\) => checkpoint\(\)\} onChange=\{\(e\) => setFill\(e\.target\.value, false\)\}/);
+  // Custom shape colors stay undoable: a checkpoint before the picker changes, then non-recording updates.
+  assert.match(source, /<ColorSwatches value=\{selected\.fill === "none" \? undefined : selected\.fill\} docColors=\{docColors\} onBeforeCustom=\{\(\) => checkpoint\(\)\} onPick=\{\(color, record = true\) => setFill\(color, record\)\}/);
+  const swatches = readFileSync("app/(partner)/partner/canvas/color-swatches.tsx", "utf8");
+  assert.match(swatches, /onPointerDown=\{\(\) => onBeforeCustom\?\.\(\)\} onChange=\{\(e\) => onPick\(e\.target\.value, false\)\}/);
   assert.match(source, /title="Outline color"><input type="color" value=\{selected\.stroke \?\? "#ffffff"\} onClick=\{\(\) => checkpoint\(\)\} onChange=/);
 });
 

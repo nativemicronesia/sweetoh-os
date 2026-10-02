@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { loadCatalogFont, studioFont } from "@/lib/studio/fonts";
 import { TEXT_STYLE_PRESETS, type TextStylePreset } from "@/lib/studio/text-styles";
 
-const GROUPS = ["Headlines", "Script & hand", "Badges & curves", "Clean & minimal"] as const;
+const GROUPS = ["Headlines", "Retro & groovy", "Script & hand", "Elegant", "Outline & shadow", "Badges & curves", "Clean & minimal"] as const;
 
 function Preview({ preset }: { preset: TextStylePreset }) {
   const font = studioFont(preset.font);

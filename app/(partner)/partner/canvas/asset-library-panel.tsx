@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Heart, Search, X } from "lucide-react";
 import { studioAssetUrl, saveStudioLibraryIds } from "@/lib/studio/asset-library-client";
-import { LIBRARY_SHELVES, LIBRARY_TYPES, LIBRARY_TOPICS, filterLibrary, libraryAssets, type LibraryAsset, type LibraryShelf, type LibraryTopic, type LibraryType } from "@/lib/studio/library-taxonomy";
+import { LIBRARY_SHELVES, LIBRARY_TYPES, LIBRARY_TOPICS, filterLibrary, libraryAssets, trendingAssets, type LibraryAsset, type LibraryShelf, type LibraryTopic, type LibraryType } from "@/lib/studio/library-taxonomy";
+import { LiveIcons } from "./live-icons";
 import { filterStudioCreativeAssets, type StudioCreativeAssetOption } from "@/lib/studio/creative-library-browser";
 
 const FAVORITES_KEY = "sweetoh:studio:favorites:v1";
@@ -22,7 +23,7 @@ function writeIds(key: string, ids: string[]) {
   try { saveStudioLibraryIds(window.localStorage, key, ids); } catch { /* preferences are optional */ }
 }
 
-type Tab = "browse" | LibraryType | "mine";
+type Tab = "browse" | LibraryType | "stickers" | "mine";
 
 function Tile({ asset, favorite, disabled, onAdd, onFavorite }: { asset: LibraryAsset; favorite: boolean; disabled: boolean; onAdd: (id: string) => void; onFavorite: (id: string) => void }) {
   const rights = `${asset.name} · ${asset.origin} · ${asset.licenseId ?? asset.license}`;
@@ -59,11 +60,13 @@ function Grid({ assets, ...tile }: { assets: readonly LibraryAsset[] } & Omit<Pa
   );
 }
 
-export function AssetLibraryPanel({ disabled, creativeAssets = [], onAddCreativeAsset, onAddGraphic }: {
+export function AssetLibraryPanel({ disabled, creativeAssets = [], onAddCreativeAsset, onAddGraphic, onAddIcon }: {
   disabled: boolean;
   creativeAssets?: StudioCreativeAssetOption[];
   onAddCreativeAsset: (id: string) => void;
   onAddGraphic: (id: string) => void;
+  /** Live icon or sticker from the open Iconify sets. */
+  onAddIcon?: (id: string) => void;
   /** Fonts live in the Text panel now; kept so existing callers still compile. */
   onAddFont?: (key: string) => void;
 }) {
@@ -126,6 +129,7 @@ export function AssetLibraryPanel({ disabled, creativeAssets = [], onAddCreative
     () => LIBRARY_SHELVES.map((shelf) => ({ shelf, assets: filterLibrary(all, shelf.filter) })).filter((entry) => entry.assets.length >= MIN_SHELF),
     [all],
   );
+  const trending = useMemo(() => trendingAssets(all), [all]);
   const favoriteAssets = favorites.map((id) => byId.get(id)).filter((asset): asset is LibraryAsset => Boolean(asset));
   const recentAssets = recent.map((id) => byId.get(id)).filter((asset): asset is LibraryAsset => Boolean(asset));
 
@@ -137,18 +141,20 @@ export function AssetLibraryPanel({ disabled, creativeAssets = [], onAddCreative
     <div className="pe-panel-body el">
       <label className="el-search">
         <Search size={15} aria-hidden />
-        <input type="search" value={query} onChange={(e) => { setQuery(e.target.value); if (tab === "mine") setMineQuery(e.target.value); }} placeholder={tab === "mine" ? "Search your library" : `Search ${all.length.toLocaleString()} elements`} aria-label="Search elements" />
+        <input type="search" value={query} onChange={(e) => { setQuery(e.target.value); if (tab === "mine") setMineQuery(e.target.value); }} placeholder={tab === "mine" ? "Search your library" : tab === "Icons" ? "Search 40,000+ icons" : tab === "stickers" ? "Search 10,000+ stickers" : `Search ${all.length.toLocaleString()} elements`} aria-label="Search elements" />
         {query && <button type="button" onClick={() => { setQuery(""); setMineQuery(""); }} aria-label="Clear search"><X size={14} /></button>}
       </label>
       <div className="el-tabs" role="tablist" aria-label="Element types">
-        {(["browse", ...LIBRARY_TYPES, "mine"] as Tab[]).map((value) => (
+        {(["browse", "Illustrations", "Icons", "stickers", "Emoji", "Patterns", "Frames", "Silhouettes", "Vintage & art", "mine"] as Tab[]).map((value) => (
           <button key={value} type="button" role="tab" aria-selected={tab === value} onClick={() => reset(value)}>
-            {value === "browse" ? "For you" : value === "mine" ? `My library${creativeAssets.length ? ` ${creativeAssets.length}` : ""}` : value}
+            {value === "browse" ? "For you" : value === "stickers" ? "Stickers" : value === "mine" ? `My library${creativeAssets.length ? ` ${creativeAssets.length}` : ""}` : value}
           </button>
         ))}
       </div>
 
-      {tab === "mine" ? (
+      {(tab === "Icons" || tab === "stickers") && onAddIcon ? (
+        <LiveIcons mode={tab === "Icons" ? "icons" : "stickers"} query={query} disabled={disabled} onAdd={onAddIcon} onSeeAll={setQuery} />
+      ) : tab === "mine" ? (
         <>
           {mineKinds.length > 1 && (
             <div className="el-topics" role="group" aria-label="Kind">
@@ -190,6 +196,7 @@ export function AssetLibraryPanel({ disabled, creativeAssets = [], onAddCreative
         <div className="el-shelves">
           {favoriteAssets.length > 0 && <Shelf title="Favorites" assets={favoriteAssets.slice(0, SHELF_SIZE)} {...tile} />}
           {recentAssets.length > 0 && <Shelf title="Recently used" assets={recentAssets.slice(0, SHELF_SIZE)} {...tile} />}
+          {trending.length >= MIN_SHELF && <Shelf title="Trending now" subtitle="Popular picks for merch" assets={trending} {...tile} />}
           {shelves.map(({ shelf, assets }) => <Shelf key={shelf.id} title={shelf.title} subtitle={shelf.subtitle} assets={assets.slice(0, SHELF_SIZE)} total={assets.length} onSeeAll={() => openShelf(shelf)} {...tile} />)}
         </div>
       )}

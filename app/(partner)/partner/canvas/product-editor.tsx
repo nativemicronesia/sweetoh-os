@@ -74,6 +74,7 @@ import {
   Keyboard,
   ShieldCheck,
   TriangleAlert,
+  LayoutTemplate,
 } from "lucide-react";
 import {
   uploadCanvasArtworkAction,
@@ -106,8 +107,11 @@ import { sizedPhoto } from "@/lib/studio/photo";
 import { ensureFont, fontFamily, fontSupportsBold, missingFonts } from "@/lib/studio/fonts";
 import { FontBrowser, FontPickerButton } from "./font-browser";
 import { ColorSwatches } from "./color-swatches";
+import { TemplatesPanel } from "./templates-panel";
+import { STUDIO_TEMPLATES, type StudioTemplate } from "@/lib/studio/templates";
+import { iconPreviewUrl, isMonotoneIcon, loadIconSvg } from "@/lib/studio/icon-sets";
 import { TextStylesGallery } from "./text-styles-gallery";
-import { presetTextColor, type TextStylePreset } from "@/lib/studio/text-styles";
+import { contrastRatio, presetTextColor, type TextStylePreset } from "@/lib/studio/text-styles";
 import { isStudioFontKey, resolveStudioFontKey } from "@/lib/studio/font-provenance";
 import { studioAssetMetadata, studioAssetUrl } from "@/lib/studio/asset-library-client";
 import { buildStudioEditorState, parseStudioTextNumber, studioEditorCommandSchema, studioEditorProposalSchema, type StudioEditorCommand, type StudioTextNumberField } from "@/lib/studio/editor-commands";
@@ -167,6 +171,8 @@ type Props = {
   mode?: "partner" | "creator";
   /** Standalone Studio design: a sized artboard with no product, saved/reopened on its own. */
   standalone?: boolean;
+  /** Start from this starter template once the canvas is ready (new standalone designs only). */
+  initialTemplateId?: string | null;
   /** The saved design this standalone session reopened, if any. */
   savedDesignId?: string | null;
   /** Name of a reopened saved design. */
@@ -196,7 +202,9 @@ type Props = {
 type Selected =
   | null
   | {
-      kind: "image" | "text" | "shape" | "pattern" | "graphic" | "drawing";
+      kind: "image" | "text" | "shape" | "pattern" | "graphic" | "icon" | "drawing";
+      iconColor?: string;
+      iconMonotone?: boolean;
       name: string;
       opacity: number;
       flipX: boolean;
@@ -236,7 +244,7 @@ type Selected =
       lineHeight?: number;
       textBoxWidth?: number;
     };
-type Panel = "files" | "text" | "shapes" | "assets" | "ai" | "inspiration" | "layers" | null;
+type Panel = "templates" | "files" | "text" | "shapes" | "assets" | "ai" | "inspiration" | "layers" | null;
 type InspirationItem = { id: string; name: string; previewUrl: string };
 type Mockup = { color: string; hex: string; url: string };
 type PreviewData = { views: { name: string; url: string; hasProductionBlank: boolean }[]; colors: Mockup[]; flat?: boolean };
@@ -325,6 +333,9 @@ const SIZE = 720;
 const DPI = 300;
 const BRUSH_PRESETS_KEY = "sweetoh:studio:brush-presets:v1";
 const INK = "#1f7048";
+/** Fabric stores an outline-only shape as a transparent fill; layouts store it as "none". */
+const noFill = (fill: string) => fill === "" || fill === "transparent" || /^rgba\(0,\s*0,\s*0,\s*0\)$/.test(fill);
+
 /** Wall-clock time, kept out of render-time analysis (used only in event handlers and timers). */
 const nowMs = () => Date.now();
 
@@ -383,6 +394,12 @@ async function loadStudioGraphic(assetKey: string): Promise<FabricImage> {
   return FabricImage.fromURL(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`);
 }
 
+/** An Iconify icon as a canvas image at its native 512 square; single-color icons take a color. */
+async function loadStudioIcon(icon: string, color?: string): Promise<FabricImage> {
+  const svg = await loadIconSvg(icon, color);
+  return FabricImage.fromURL(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`);
+}
+
 /** Lay a text object along an arc: curve > 0 arches up, < 0 bows down, 0 restores straight text. */
 function applyTextCurve(o: IText | Textbox, curve: number) {
   if (!curve) {
@@ -428,6 +445,7 @@ export function ProductEditor({
   returnLabel: requestedReturnLabel,
   mode = "partner",
   standalone = false,
+  initialTemplateId = null,
   savedDesignId = null,
   initialName = null,
   draftScope = "fresh",
@@ -640,7 +658,7 @@ export function ProductEditor({
                 outlineWidth: o.strokeWidth || undefined,
               }
             : {}),
-          ...(base.kind === "shape" ? { ...(typeof o.fill === "string" ? { fill: o.fill } : {}), stroke: typeof o.stroke === "string" ? o.stroke : undefined, strokeWidth: o.strokeWidth || undefined } : {}),
+          ...(base.kind === "shape" ? { ...(typeof o.fill === "string" ? { fill: noFill(o.fill) ? "none" : o.fill } : {}), stroke: typeof o.stroke === "string" ? o.stroke : undefined, strokeWidth: o.strokeWidth || undefined } : {}),
         } as StudioLayer;
       });
     if (restoreMulti) {
@@ -729,7 +747,7 @@ export function ProductEditor({
     for (const object of canvas.getObjects()) {
       const layer = meta.current.get(object);
       if (!layer || layer.hidden || !object.visible) continue;
-      const label = layer.kind === "text" ? `“${layer.text.slice(0, 22)}”` : layer.kind === "image" ? "Image" : layer.kind === "graphic" ? "Element" : layer.kind === "pattern" ? "Pattern" : layer.kind === "drawing" ? "Drawing" : "Shape";
+      const label = layer.kind === "text" ? `“${layer.text.slice(0, 22)}”` : layer.kind === "image" ? "Image" : layer.kind === "graphic" || layer.kind === "icon" ? "Element" : layer.kind === "pattern" ? "Pattern" : layer.kind === "drawing" ? "Drawing" : "Shape";
       if (layer.kind === "image" && ippX && ippY) {
         const dpi = Math.round(Math.min(1 / (object.scaleX * ippX), 1 / (object.scaleY * ippY)));
         if (dpi < 100) found.push({ id: `${layer.id}:dpi`, level: "error", title: `${label} is low resolution`, detail: `${dpi} DPI at this size. It will print blurry; use a larger file or make it smaller.`, layerId: layer.id });
@@ -781,13 +799,15 @@ export function ProductEditor({
     const assetId = base.kind === "image" || base.kind === "pattern" ? base.assetId : undefined;
     setSelected({
       kind: base.kind,
-      name: text ? (o as IText).text.slice(0, 40) : base.kind === "graphic" ? (studioAssetMetadata(base.assetKey)?.name ?? "Graphic") : (library.find((d) => d.id === assetId)?.name ?? (base.kind === "shape" ? "Shape" : "Artwork")),
+      name: text ? (o as IText).text.slice(0, 40) : base.kind === "graphic" ? (studioAssetMetadata(base.assetKey)?.name ?? "Graphic") : base.kind === "icon" ? base.icon.split(":")[1].replace(/-/g, " ") : (library.find((d) => d.id === assetId)?.name ?? (base.kind === "shape" ? "Shape" : "Artwork")),
       opacity: o.opacity,
       flipX: o.flipX,
       flipY: o.flipY,
       assetId,
       printRegionId: base.printRegionId,
-      fill: base.kind === "shape" && typeof o.fill === "string" ? o.fill : undefined,
+      fill: base.kind === "shape" && typeof o.fill === "string" ? (noFill(o.fill) ? "none" : o.fill) : undefined,
+      iconColor: base.kind === "icon" ? base.color : undefined,
+      iconMonotone: base.kind === "icon" ? isMonotoneIcon(base.icon) : undefined,
       stroke: base.kind === "shape" && typeof o.stroke === "string" ? o.stroke : undefined,
       strokeWidth: base.kind === "drawing" ? base.strokeWidth : base.kind === "shape" ? o.strokeWidth : undefined,
       ...(base.kind === "drawing" ? { stroke: base.stroke } : base.kind === "shape" && typeof o.stroke === "string" ? { stroke: o.stroke } : {}),
@@ -839,11 +859,13 @@ export function ProductEditor({
       const asset = studioAssetMetadata(layer.assetKey);
       if (!asset) throw new Error(`Studio graphic is unavailable: ${layer.assetKey}`);
       obj = await loadStudioGraphic(layer.assetKey);
+    } else if (layer.kind === "icon") {
+      obj = await loadStudioIcon(layer.icon, layer.color);
     } else if (layer.kind === "drawing") {
       const brush = studioDrawBrush(layer.brushPreset?.baseBrush ?? layer.brush);
       obj = layer.pressurePoints?.length ? makePressureDrawingGroup(layer.pressurePoints, layer.strokeWidth, layer.stroke, brush, layer.brushPreset ?? null) : new Path(layer.pathData, { fill: "", stroke: layer.stroke, strokeWidth: layer.strokeWidth, strokeDashArray: drawingDashPattern(brush, layer.strokeWidth), strokeLineCap: brush === "marker" ? "butt" : "round", strokeLineJoin: "round", objectCaching: false });
     } else if (layer.kind === "shape") {
-      obj = makeShape(layer.shape, layer.width, layer.height, layer.fill, layer.stroke, layer.strokeWidth);
+      obj = makeShape(layer.shape, layer.width, layer.height, layer.fill === "none" ? "transparent" : layer.fill, layer.stroke, layer.strokeWidth);
       if (layer.gradient) {
         const end = layer.gradient.direction === "horizontal" ? { x: layer.width, y: 0 } : layer.gradient.direction === "vertical" ? { x: 0, y: layer.height } : { x: layer.width, y: layer.height };
         obj.set({ fill: new Gradient({ type: "linear", gradientUnits: "pixels", coords: { x1: 0, y1: 0, x2: end.x, y2: end.y }, colorStops: [{ offset: 0, color: layer.gradient.from }, { offset: 1, color: layer.gradient.to }] }) });
@@ -876,7 +898,8 @@ export function ProductEditor({
       const naturalWidth = new IText(layer.text, textOptions).width;
       obj = new Textbox(layer.text, {
         ...textOptions,
-        width: layer.textBoxWidth ?? Math.min(1440, Math.max(20, naturalWidth)),
+        // A little slack so the last word never wraps onto a second line from rounding or tracking.
+        width: layer.textBoxWidth ?? Math.min(1440, Math.max(20, Math.ceil(naturalWidth * 1.04) + 6)),
       });
       if (layer.curve) applyTextCurve(obj as IText, layer.curve);
     }
@@ -1492,6 +1515,129 @@ export function ProductEditor({
     readSelection();
     editor.current!.requestRenderAll();
   }
+  const templateStarted = useRef(false);
+  useEffect(() => {
+    if (!initialTemplateId || templateStarted.current || !ready) return;
+    templateStarted.current = true;
+    const template = STUDIO_TEMPLATES.find((candidate) => candidate.id === initialTemplateId);
+    if (template && !surface().layers.length) void applyTemplate(template);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, initialTemplateId]);
+  /** Replace this view with a starter template: ordinary layers, laid out for the print area. */
+  async function applyTemplate(template: StudioTemplate) {
+    const canvas = editor.current;
+    if (!canvas || locked || !canDesign()) return;
+    checkpoint();
+    setBusy("Setting up your template…");
+    try {
+      for (const object of canvas.getObjects().filter((candidate) => meta.current.has(candidate))) canvas.remove(object);
+      const a = surface().area;
+      const W = a.width * SIZE, H = a.height * SIZE, X0 = a.x * SIZE, Y0 = a.y * SIZE, A = Math.min(W, H);
+      const hex = colorRef.current ?? "#ffffff";
+      const regionId = surface().printRegions ? activeRegionId ?? surface().printRegions?.[0]?.id : undefined;
+      for (const element of template.elements) {
+        const base = { id: crypto.randomUUID(), printRegionId: regionId, x: 0, y: 0, scaleX: 1, scaleY: 1, angle: 0 };
+        let layer: StudioLayer;
+        if (element.type === "text") {
+          const target = element.size * A;
+          const fontSize = Math.min(120, Math.max(12, Math.round(target)));
+          const ink = isLightColor(hex) ? "#101828" : "#ffffff";
+          const adapt = template.adaptColors !== false;
+          const color = element.color === "ink" ? ink : !adapt || contrastRatio(element.color, hex) >= 1.8 ? element.color : ink;
+          let curve = element.curve;
+          if (element.arc) {
+            // Fit the text to a circle of the requested radius: arc length = text width, so angle = width / radius.
+            await ensureFont(element.font, Boolean(element.bold) && fontSupportsBold(element.font));
+            fabricCache.clearFontCache(fontFamily(element.font));
+            const probe = new IText(element.text, { fontSize, fontFamily: fontFamily(element.font), fontWeight: element.bold && fontSupportsBold(element.font) ? "bold" : "normal", charSpacing: element.letterSpacing ?? 0 });
+            const k = target / fontSize;
+            const theta = Math.min(probe.width / ((element.arc.radius * A) / k), 1.45 * Math.PI);
+            curve = Math.round((theta / (1.5 * Math.PI)) * 100) * (element.arc.side === "top" ? 1 : -1);
+          }
+          layer = { ...base, kind: "text", text: element.text, fontSize, scaleX: target / fontSize, scaleY: target / fontSize, color, font: element.font, bold: element.bold ?? false, ...(element.italic ? { italic: true } : {}), ...(element.letterSpacing ? { letterSpacing: element.letterSpacing } : {}), ...(curve ? { curve } : {}), ...(element.outline ? { outline: element.outline, outlineWidth: element.outlineWidth ?? 4 } : {}) };
+        } else if (element.type === "graphic") {
+          layer = { ...base, kind: "graphic", assetKey: element.id };
+        } else {
+          const width = Math.max(4, Math.round(element.w * A));
+          const height = element.shape === "line" ? Math.max(4, element.strokeWidth ?? 6) : Math.max(4, Math.round((element.h ?? element.w) * A));
+          layer = { ...base, kind: "shape", shape: element.shape, width, height, fill: element.fill ?? "none", ...(element.stroke ? { stroke: element.stroke, strokeWidth: element.strokeWidth ?? 4 } : {}), ...(element.shape === "line" && !element.stroke ? { fill: "#101828" } : {}) };
+          if (element.shape === "line") layer = { ...layer, fill: element.stroke ?? "#101828" } as StudioLayer;
+        }
+        const object = await makeLayer(layer);
+        if (element.type === "graphic") {
+          const scale = (element.w * A) / (object.width || 1);
+          object.set({ scaleX: scale, scaleY: scale });
+        } else if (element.type === "text" && object.getScaledWidth() > W * 0.94) {
+          object.scale(object.scaleX * ((W * 0.94) / object.getScaledWidth()));
+        }
+        if (element.type === "text" && element.arc) {
+          // Ring text: center on the circle, then sit the glyphs on the baseline radius.
+          const R = element.arc.radius * A;
+          const cap = element.size * A * 0.72;
+          const top = element.arc.side === "top" ? Y0 + element.cy * H - R - cap : Y0 + element.cy * H + R - object.getScaledHeight();
+          object.set({ left: X0 + element.cx * W - object.getScaledWidth() / 2, top });
+        } else {
+          object.set({ left: X0 + element.cx * W - object.getScaledWidth() / 2, top: Y0 + element.cy * H - object.getScaledHeight() / 2 });
+        }
+        object.setCoords();
+        canvas.add(object);
+      }
+      bringGuideToTop();
+      canvas.discardActiveObject();
+      capture();
+      readSelection();
+      canvas.requestRenderAll();
+      setPanel(null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn’t apply that template.");
+    } finally {
+      setBusy(null);
+    }
+  }
+  /** Add an Iconify icon or sticker as an editable layer, centered and sized to the print area. */
+  async function addIcon(icon: string) {
+    const canvas = editor.current;
+    if (!canvas || locked || !canDesign()) return;
+    checkpoint();
+    const a = surface().area;
+    const A = Math.min(a.width, a.height) * SIZE;
+    const color = isMonotoneIcon(icon) ? (isLightColor(colorRef.current ?? "#ffffff") ? "#101828" : "#ffffff") : undefined;
+    try {
+      const object = await makeLayer({
+        id: crypto.randomUUID(), kind: "icon", icon, ...(color ? { color } : {}),
+        printRegionId: surface().printRegions ? activeRegionId ?? surface().printRegions?.[0]?.id : undefined,
+        x: 0, y: 0, scaleX: 1, scaleY: 1, angle: 0,
+      });
+      const scale = (A * 0.34) / (object.width || 512);
+      object.set({ scaleX: scale, scaleY: scale });
+      object.set({ left: a.x * SIZE + (a.width * SIZE - object.getScaledWidth()) / 2, top: a.y * SIZE + (a.height * SIZE - object.getScaledHeight()) / 2 });
+      object.setCoords();
+      canvas.add(object);
+      bringGuideToTop();
+      canvas.setActiveObject(object);
+      capture();
+      readSelection();
+      canvas.requestRenderAll();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn’t add that icon.");
+    }
+  }
+  /** Recolor the selected single-color icons by reloading them in the new color. */
+  async function setIconColor(color: string, record = true) {
+    const targets = (editor.current?.getActiveObjects() ?? []).filter((object) => object instanceof FabricImage && meta.current.get(object)?.kind === "icon") as FabricImage[];
+    if (!targets.length) return;
+    if (record) checkpoint();
+    for (const object of targets) {
+      const base = meta.current.get(object);
+      if (base?.kind !== "icon" || !isMonotoneIcon(base.icon)) continue;
+      const svg = await loadIconSvg(base.icon, color);
+      await object.setSrc(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`);
+      meta.current.set(object, { ...base, color });
+    }
+    capture();
+    readSelection();
+    editor.current?.requestRenderAll();
+  }
   /** Drop an element from the Elements panel: add it, then center it where it was released. */
   async function dropGraphic(assetKey: string, clientX: number, clientY: number) {
     if (!canDesign() || locked) return;
@@ -1904,8 +2050,15 @@ export function ProductEditor({
   }
   function setFill(hex: string, record = true) {
     changeSelected((o) => {
-      o.set({ fill: hex });
       const base = meta.current.get(o);
+      if (hex === "none") {
+        // Outline-only: keep the shape visible by promoting its old fill to a stroke.
+        const previous = typeof o.fill === "string" && !noFill(o.fill) ? o.fill : (typeof o.stroke === "string" ? o.stroke : "#101828");
+        o.set({ fill: "transparent", stroke: typeof o.stroke === "string" ? o.stroke : previous, strokeWidth: Math.max(o.strokeWidth || 0, 4) });
+        if (base?.kind === "shape") meta.current.set(o, { ...base, fill: "none", stroke: typeof o.stroke === "string" ? o.stroke : previous, strokeWidth: Math.max(o.strokeWidth || 0, 4), gradient: undefined });
+        return;
+      }
+      o.set({ fill: hex });
       if (base?.kind === "shape") meta.current.set(o, { ...base, fill: hex, gradient: undefined });
     }, record);
   }
@@ -2656,6 +2809,7 @@ export function ProductEditor({
       if (layer.kind === "text") { add(layer.color); add(layer.outline); }
       else if (layer.kind === "shape") { add(layer.fill); add(layer.stroke); }
       else if (layer.kind === "drawing") add(layer.stroke);
+      else if (layer.kind === "icon") add(layer.color);
     }
     for (const layer of layers) {
       if (layer.kind === "text") { add(layer.color); add(layer.outline); }
@@ -2753,6 +2907,7 @@ export function ProductEditor({
         <nav className="pe-rail" aria-label="Design tools">
           {(
             [
+              ["templates", LayoutTemplate, "Templates"],
               ["files", Upload, "Uploads"],
               ["text", Type, "Text"],
               ["shapes", Shapes, "Shapes"],
@@ -2780,7 +2935,7 @@ export function ProductEditor({
           <aside className="pe-panel">
             <div className="pe-panel-head">
               <h2>
-                {{ files: "Uploads", text: "Text", shapes: "Shapes", assets: "Elements", ai: "Create with AI", inspiration: "Inspiration", layers: "Layers" }[panel]}
+                {{ templates: "Templates", files: "Uploads", text: "Text", shapes: "Shapes", assets: "Elements", ai: "Create with AI", inspiration: "Inspiration", layers: "Layers" }[panel]}
               </h2>
               <button className="pe-icon-btn" aria-label="Close panel" onClick={() => setPanel(null)}>
                 <X size={16} />
@@ -2882,7 +3037,7 @@ export function ProductEditor({
               </div>
             )}
 
-            {panel === "assets" && <AssetLibraryPanel creativeAssets={creativeAssets} disabled={locked} onAddCreativeAsset={(assetId) => void executeEditorCommand({ type: "add_library_asset", assetId })} onAddGraphic={(id) => void executeEditorCommand({ type: "add_graphic", assetKey: id })} onAddFont={(key) => { if (isStudioFontKey(key)) void executeEditorCommand({ type: "add_text", text: "Your text", font: key }); }} />}
+            {panel === "assets" && <AssetLibraryPanel creativeAssets={creativeAssets} disabled={locked} onAddCreativeAsset={(assetId) => void executeEditorCommand({ type: "add_library_asset", assetId })} onAddGraphic={(id) => void executeEditorCommand({ type: "add_graphic", assetKey: id })} onAddIcon={(id) => void addIcon(id)} onAddFont={(key) => { if (isStudioFontKey(key)) void executeEditorCommand({ type: "add_text", text: "Your text", font: key }); }} />}
 
             {panel === "inspiration" && (
               <div className="pe-panel-body">
@@ -2908,6 +3063,8 @@ export function ProductEditor({
                 )}
               </div>
             )}
+
+            {panel === "templates" && <TemplatesPanel disabled={locked} hasContent={layers.length > 0} onApply={(template) => void applyTemplate(template)} />}
 
             {panel === "text" && (
               <div className="pe-panel-body pe-text-panel">
@@ -2991,6 +3148,8 @@ export function ProductEditor({
                             <Shapes size={16} />
                           ) : l.kind === "graphic" ? (
                             <img src={studioAssetUrl(l.assetKey)} alt="" />
+                          ) : l.kind === "icon" ? (
+                            <img src={iconPreviewUrl(l.icon, l.color)} alt="" />
                           ) : l.kind === "drawing" ? <PenLine size={16} />
                             : (l.kind === "image" || l.kind === "pattern") && urls.current[l.assetId] ? <img src={urls.current[l.assetId]} alt="" />
                               : <ImageIcon size={16} />}
@@ -3001,6 +3160,7 @@ export function ProductEditor({
                                 ? `${l.shape[0].toUpperCase()}${l.shape.slice(1)}`
                                 : l.kind === "graphic"
                                   ? studioAssetMetadata(l.assetKey)?.name ?? "Graphic"
+                                  : l.kind === "icon" ? l.icon.split(":")[1].replace(/-/g, " ")
                                   : l.kind === "drawing" ? "Freehand stroke" : `${library.find((d) => d.id === l.assetId)?.name ?? "Artwork"}${l.kind === "pattern" ? " (pattern)" : ""}`}{l.groupId ? " · Grouped" : ""}
                           </span>
                         </button>
@@ -3155,7 +3315,7 @@ export function ProductEditor({
           ) : selected ? (
             <>
               <div className="pe-props-head">
-                <h2>{{ text: "Text", image: "Artwork", shape: "Shape", pattern: "Pattern", graphic: "Graphic", drawing: "Drawing" }[selected.kind]}</h2>
+                <h2>{{ text: "Text", image: "Artwork", shape: "Shape", pattern: "Pattern", graphic: "Graphic", icon: "Icon", drawing: "Drawing" }[selected.kind]}</h2>
                 <div>
                   <button className="pe-icon-btn" onClick={() => void duplicate()} aria-label="Duplicate" title="Duplicate">
                     <Copy size={16} />
@@ -3254,7 +3414,8 @@ export function ProductEditor({
               {selected.kind === "shape" && (
                 <section className="pe-section">
                   <p className="pe-label">Color</p>
-                  <ColorSwatches value={selected.fill} docColors={docColors} onBeforeCustom={() => checkpoint()} onPick={(color, record = true) => setFill(color, record)} />
+                  <ColorSwatches value={selected.fill === "none" ? undefined : selected.fill} docColors={docColors} onBeforeCustom={() => checkpoint()} onPick={(color, record = true) => setFill(color, record)} />
+                  <button type="button" className="pe-btn pe-btn-ghost pe-block" aria-pressed={selected.fill === "none"} onClick={() => setFill(selected.fill === "none" ? "#173e39" : "none")}>{selected.fill === "none" ? "Add fill" : "No fill (outline only)"}</button>
                   <p className="pe-label">Gradient fills</p>
                   <div className="pe-gradient-presets">
                     <button aria-label="Coral to gold gradient" style={{ background: "linear-gradient(135deg,#ef476f,#ffd166)" }} onClick={() => setShapeGradient("#ef476f", "#ffd166")} />
@@ -3269,6 +3430,14 @@ export function ProductEditor({
                 </section>
               )}
 
+              {selected.kind === "icon" && (
+                <section className="pe-section">
+                  <p className="pe-label">Icon</p>
+                  {selected.iconMonotone
+                    ? <ColorSwatches value={selected.iconColor} docColors={docColors} onBeforeCustom={() => checkpoint()} onPick={(color, record = true) => void setIconColor(color, record)} />
+                    : <p className="pe-muted pe-small">Stickers keep their own colors. Resize, rotate, and layer them like any element.</p>}
+                </section>
+              )}
               {selected.kind === "drawing" && <section className="pe-section"><p className="pe-label">Stroke style</p><label className="pe-select"><span>Brush</span><select value={selected.brushPreset ? `custom:${selected.brushPreset.id}` : selected.brush ?? "pencil"} onChange={(event) => { const preset = brushPresets.find((item) => `custom:${item.id}` === event.target.value); setDrawingStyle(preset ? { brush: preset.baseBrush, brushPreset: preset } : { brush: studioDrawBrush(event.target.value), brushPreset: null }); }}>{STUDIO_DRAW_BRUSHES.map((brush) => <option key={brush.id} value={brush.id}>{brush.label}</option>)}{selected.brushPreset && !brushPresets.some((preset) => preset.id === selected.brushPreset?.id) && <option value={`custom:${selected.brushPreset.id}`}>{selected.brushPreset.name}</option>}<optgroup label="Saved texture brushes">{brushPresets.map((preset) => <option key={preset.id} value={`custom:${preset.id}`}>{preset.name}</option>)}</optgroup></select></label><div className="pe-row"><label className="pe-color-input" title="Stroke color"><input type="color" value={selected.stroke ?? drawColor} onPointerDown={() => checkpoint()} onChange={(event) => setDrawingStyle({ stroke: event.target.value }, false)} /></label><label className="pe-slider pe-grow"><span>Size <b>{selected.strokeWidth ?? drawWidth}px</b></span><input type="range" min={1} max={50} step={1} value={selected.strokeWidth ?? drawWidth} onPointerDown={() => checkpoint()} onChange={(event) => setDrawingStyle({ strokeWidth: Number(event.target.value) }, false)}/></label></div><p className="pe-muted pe-small">The brush recipe and pressure samples are saved with this artwork. Erase strokes with the stroke eraser, or remove this whole stroke below.</p><button className="pe-btn pe-btn-ghost pe-block" onClick={removeSelected}><Eraser size={15}/>Erase this stroke</button></section>}
 
               {selected.kind === "pattern" && (

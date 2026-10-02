@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { STUDIO_ASSET_IDS } from "@/lib/studio/asset-library-client";
+import { isStudioIconId } from "@/lib/studio/icon-sets";
 import { studioBrushPresetSchema } from "@/lib/studio/drawing-brushes";
 import { CONFIRMED_SHOP_METHODS } from "@/lib/domains/production/methods";
 
@@ -87,6 +88,14 @@ export const layerSchema = z.discriminatedUnion("kind", [
   }),
   z.object({
     ...placement,
+    kind: z.literal("icon"),
+    /** Iconify id from an allowlisted open set, e.g. "ph:sun-bold". */
+    icon: z.string().max(80).refine(isStudioIconId, "Unknown icon."),
+    /** Recolor for single-color icons; stickers keep their own colors. */
+    color: hexColor.optional(),
+  }),
+  z.object({
+    ...placement,
     kind: z.literal("image"),
     assetId: z.string().uuid(),
     mask: z.enum(["circle", "rounded"]).optional(),
@@ -100,7 +109,8 @@ export const layerSchema = z.discriminatedUnion("kind", [
     ...placement,
     kind: z.literal("shape"),
     shape: z.enum(SHAPE_KINDS),
-    fill: hexColor,
+    /** A color, or "none" for an outline-only shape. */
+    fill: hexColor.or(z.literal("none")),
     stroke: hexColor.optional(),
     strokeWidth: z.number().min(0).max(100).optional(),
     gradient: linearGradient.optional(),
