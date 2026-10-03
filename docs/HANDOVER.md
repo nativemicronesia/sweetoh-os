@@ -18,7 +18,10 @@ npm test               # 175+ logic tests, no environment needed
 STUDIO_LAB=1 npm run dev, then npm run e2e:studio     # 13 browser tests incl. WCAG
 npm run db:check       # database has every table and column the code expects (needs DATABASE_URL)
 node scripts/load-test.mjs icons-search   # local only; refuses production
+node scripts/partner-journey.mjs          # signed-in walk through the live site as the partner (see below)
 ```
+
+`scripts/partner-journey.mjs` signs in with `FOUNDATION_PARTNER_EMAIL` / `FOUNDATION_PARTNER_PASSWORD` from `.env.local` and walks the partner's real first-time journey on the live site: look around, make a design (text, effect, sticker, mockup), save it, reopen it, duplicate it. It writes ONE small design named `zz-journey-<time>` and hides every `zz-journey-` file from My files at the end. Only run it with the account owner's permission. 15 of 15 steps passed on 2026-10-03.
 
 `.env.example` lists the variables. Notable ones: `FOUNDATION_OWNER_EMAIL` (the only address that can use the owner email link), `CREATOR_SIGNUPS` (creator sign-up gate, currently closed), and `STUDIO_LAB` (test route; leave unset in production).
 
@@ -42,7 +45,7 @@ node scripts/load-test.mjs icons-search   # local only; refuses production
 - Apply one design to many product drafts at once (the save-as-product pipeline is rendered in the browser; build it with a signed-in test).
 - Pagination on `/studio/designs`, `/partner/library` and `/partner/list`.
 - The collage lives under the partner area; creators do not have it yet.
-- Signed-in flows (save and reopen, apply to a product, vector-art action, a real file import through storage) are covered by unit tests of their logic but have not had a recorded end-to-end run.
+- Still not exercised signed in: apply a design to a real product and publish it, the vector-art button, and a real file import through storage. (Save, reopen and duplicate are covered by `partner-journey.mjs`.)
 
 ## Working agreements that avoided breakage
 

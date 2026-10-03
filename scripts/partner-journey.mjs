@@ -56,12 +56,21 @@ async function step(name, run) {
   }
 }
 const editorReady = () => page.locator(".pe-canvas canvas").first().waitFor({ state: "visible", timeout: 60_000 });
+// Right after a save the app refreshes itself in the background and can interrupt a navigation; retry once.
+async function go(url, options = { waitUntil: "domcontentloaded" }) {
+  try { return await page.goto(url, options); }
+  catch (error) {
+    if (!/ERR_ABORTED/.test(String(error.message))) throw error;
+    await page.waitForTimeout(1500);
+    return page.goto(url, options);
+  }
+}
 const rail = (label) => page.locator(".pe-rail button", { hasText: label }).first();
 
 console.log(`Partner journey against ${base}`);
 
 await step("sign in with email and password", async () => {
-  await page.goto(`${base}/partner/login`, { waitUntil: "domcontentloaded" });
+  await go(`${base}/partner/login`, { waitUntil: "domcontentloaded" });
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
@@ -76,7 +85,7 @@ for (const [name, url, heading] of [
   ["collage page", "/partner/studio/collage", "Make a collage"],
 ]) {
   await step(`page loads: ${name}`, async () => {
-    const res = await page.goto(`${base}${url}`, { waitUntil: "domcontentloaded" });
+    const res = await go(`${base}${url}`, { waitUntil: "domcontentloaded" });
     if (!res || res.status() >= 400) throw new Error(`status ${res?.status()}`);
     await page.locator("h1").first().waitFor({ state: "visible", timeout: 30_000 });
     if (heading) await page.getByRole("heading", { name: heading, exact: true }).first().waitFor({ state: "visible", timeout: 15_000 });
@@ -84,7 +93,7 @@ for (const [name, url, heading] of [
 }
 
 await step("start a portrait design from Studio home", async () => {
-  await page.goto(`${base}/partner/studio`, { waitUntil: "domcontentloaded" });
+  await go(`${base}/partner/studio`, { waitUntil: "domcontentloaded" });
   await page.getByRole("link", { name: /Portrait artwork/ }).first().click();
   await page.waitForURL(/\/partner\/canvas\?new=portrait/, { timeout: 30_000 });
   await editorReady();
@@ -134,7 +143,7 @@ await step("name the design and save it", async () => {
 });
 
 await step("the saved design shows up on Studio home and reopens with its work", async () => {
-  await page.goto(`${base}/partner/studio`, { waitUntil: "domcontentloaded" });
+  await go(`${base}/partner/studio`, { waitUntil: "domcontentloaded" });
   const open = page.getByRole("link", { name: `Open ${designName}` });
   await open.waitFor({ state: "visible", timeout: 30_000 });
   await open.click();
@@ -147,7 +156,7 @@ await step("the saved design shows up on Studio home and reopens with its work",
 });
 
 await step("duplicating a design opens a copy", async () => {
-  await page.goto(`${base}/partner/studio`, { waitUntil: "domcontentloaded" });
+  await go(`${base}/partner/studio`, { waitUntil: "domcontentloaded" });
   await page.getByLabel(`More for ${designName}`).click();
   await page.locator(".sh-menu a", { hasText: "Duplicate" }).first().click();
   await page.waitForURL(/template=/, { timeout: 30_000 });
@@ -156,14 +165,14 @@ await step("duplicating a design opens a copy", async () => {
 
 // Cleanup: remove every test file this run created (and any left by earlier runs of the old smoke test).
 await step("clean up: hide every test design from My files", async () => {
-  await page.goto(`${base}/partner/library`, { waitUntil: "domcontentloaded" });
+  await go(`${base}/partner/library`, { waitUntil: "domcontentloaded" });
   await page.getByRole("heading", { name: "My files", exact: true }).waitFor({ state: "visible", timeout: 30_000 });
   for (let round = 0; round < 6; round++) {
     const card = page.locator("li", { has: page.getByText(/zz-journey-\d+|studio-image-smoke-/) }).first();
     if (!(await card.count())) break;
     await card.getByRole("button", { name: "Hide file", exact: true }).click();
     await page.waitForURL(/\/partner\/library\?success=/, { timeout: 30_000 });
-    await page.goto(`${base}/partner/library`, { waitUntil: "domcontentloaded" });
+    await go(`${base}/partner/library`, { waitUntil: "domcontentloaded" });
     await page.getByRole("heading", { name: "My files", exact: true }).waitFor({ state: "visible", timeout: 30_000 });
   }
   const left = await page.getByText(/zz-journey-\d+/).count();
