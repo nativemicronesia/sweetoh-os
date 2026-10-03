@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useCart } from "@/lib/cart/cart-context";
 import { formatPrice } from "@/lib/shared/format";
@@ -170,6 +171,9 @@ export function ProductBuy({ product, images, colorImages }: Props) {
           <p className="text-xs leading-relaxed so-muted">
             Printed on demand · ships after press. Made for Micronesia — and wherever you are.
           </p>
+          <Link href={`/custom?from=personalize&product=${encodeURIComponent(product.name)}`} className="so-btn-ghost w-full">
+            Make this one yours
+          </Link>
         </div>
       </div>
     </div>

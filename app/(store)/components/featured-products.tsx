@@ -53,12 +53,12 @@ export async function FeaturedProducts({
   }
 
   return (
-    <section className="mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 sm:py-24">
+    <section className="sx-section">
       <div className="flex items-end justify-between gap-4">
         <div>
-          <p className="so-eyebrow">Fresh off the press</p>
-          <h2 className="so-display mt-3 text-4xl text-[color:var(--so-cream)] sm:text-5xl">
-            Now <em className="font-normal" style={{ color: "var(--so-lagoon)" }}>printing</em>
+          <p className="sx-label sx-mono">Ready to ship</p>
+          <h2 className="sx-h2 mt-3">
+            Made, and <span className="sx-em">ready.</span>
           </h2>
         </div>
         <Link href="/products" className="so-link shrink-0 text-sm so-muted">
@@ -83,32 +83,30 @@ export async function FeaturedProducts({
 }
 
 const DROP_TILES = [
-  { label: "Island tees", bg: "var(--so-lagoon)", fg: "#fbf6ea", ink: "rgba(255,255,255,.14)" },
-  { label: "Tumblers", bg: "var(--so-coral)", fg: "#fff8f1", ink: "rgba(255,255,255,.16)" },
-  { label: "For the little ones", bg: "var(--so-sun)", fg: "var(--so-ink)", ink: "rgba(36,29,20,.1)" },
-  { label: "Gifts", bg: "var(--so-reef)", fg: "#eef4f7", ink: "rgba(255,255,255,.14)" },
+  { label: "Island tees", bg: "var(--sx-reef)", fg: "#f4ecdd" },
+  { label: "Tumblers", bg: "var(--sx-vermilion-deep)", fg: "#fff6ea" },
+  { label: "For the little ones", bg: "var(--sx-yellow)", fg: "#16120d" },
+  { label: "Gifts", bg: "#16120d", fg: "#f4ecdd" },
 ] as const;
 
 /** Before the shop's first products are published: an honest "on the press" shelf. */
 function FirstDrop() {
   return (
-    <section className="mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 sm:py-24">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+    <section className="sx-section">
+      <div className="flex flex-wrap items-end justify-between gap-5">
         <div>
-          <p className="so-eyebrow">The first drop</p>
-          <h2 className="so-display mt-3 text-4xl text-[color:var(--so-cream)] sm:text-5xl">
-            On the <em className="font-normal" style={{ color: "var(--so-lagoon)" }}>press</em> now.
-          </h2>
-          <p className="mt-4 max-w-md so-muted">Our first pieces are being photographed and listed. Want something now? We&apos;ll make it for you.</p>
+          <p className="sx-label sx-mono">Ready to ship</p>
+          <h2 className="sx-h2 mt-3">First pieces <span className="sx-em">landing soon.</span></h2>
+          <p className="sx-lede mt-4">We&apos;re photographing the first ready-made pieces now. Don&apos;t want to wait? Bring us an idea and we&apos;ll make yours first.</p>
         </div>
-        <Link href="/custom" className="so-btn-primary">Request a custom order</Link>
+        <Link href="/custom" className="so-btn-primary">Bring us an idea</Link>
       </div>
-      <div className="mt-10 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="mt-9 grid grid-cols-2 gap-4 lg:grid-cols-4">
         {DROP_TILES.map((t, i) => (
-          <div key={t.label} className="relative flex aspect-[4/5] items-end overflow-hidden rounded-[1.4rem] p-5" style={{ background: t.bg, color: t.fg }}>
-            <span className="so-pattern-layer" style={{ ["--pattern-ink" as string]: t.ink }} />
-            <span className="so-tag absolute left-4 top-4" style={{ background: "rgba(255,255,255,.24)", color: t.fg, transform: `rotate(${i % 2 ? 3 : -3}deg)` }}>Coming soon</span>
-            <span className="so-display relative text-2xl sm:text-3xl">{t.label}</span>
+          <div key={t.label} className="sx-drop" style={{ background: t.bg, color: t.fg }}>
+            <span className="sx-mono sx-drop-tag">Coming soon</span>
+            <span className="sx-h3 relative">{t.label}</span>
+            <svg viewBox="0 0 100 100" aria-hidden className="sx-drop-art"><g fill="currentColor" opacity=".16">{Array.from({ length: 12 }, (_, k) => <circle key={k} cx={50 + Math.cos((k / 12) * 6.283 + i) * 34} cy={50 + Math.sin((k / 12) * 6.283 + i) * 34} r={3 + (k % 3) * 2} />)}<circle cx="50" cy="50" r="16" /></g></svg>
           </div>
         ))}
       </div>

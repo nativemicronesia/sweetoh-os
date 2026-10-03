@@ -25,10 +25,10 @@ export function ProductCard({
     <article className="group flex flex-col">
       <Link
         href={`/products/${slug}`}
-        className="relative aspect-[4/5] overflow-hidden rounded-[1.25rem]"
+        className="sx-pcard relative aspect-[4/5] overflow-hidden"
         style={{ background: "var(--so-dark)" }}
       >
-        <span className="so-tag absolute left-3 top-3 z-10 -rotate-2" style={{ background: "var(--so-sun)", color: "var(--so-ink)" }}>
+        <span className="so-tag absolute left-3 top-3 z-10" style={{ background: "var(--so-ink)", color: "var(--so-black)", borderRadius: 2 }}>
           Made to order
         </span>
         {imageUrl ? (
@@ -49,7 +49,7 @@ export function ProductCard({
         <div className="space-y-1">
           <Link
             href={`/products/${slug}`}
-            className="so-display block text-lg leading-snug text-[color:var(--so-cream)] hover:text-[color:var(--so-lagoon)]"
+            className="so-display block text-lg leading-snug text-[color:var(--so-cream)] hover:text-[color:var(--sx-vermilion-deep)]"
           >
             {name}
           </Link>
@@ -70,7 +70,7 @@ export function ProductCard({
             </div>
           ) : null}
         </div>
-        <div className="mt-auto">
+        <div className="mt-auto space-y-2">
           {options ? (
             // Color and size are chosen on the product page.
             <Link href={`/products/${slug}`} className="so-btn-primary block w-full text-center">
@@ -85,6 +85,9 @@ export function ProductCard({
               imageUrl={imageUrl}
             />
           )}
+          <Link href={`/custom?from=personalize&product=${encodeURIComponent(name)}`} className="sx-mono block text-center" style={{ color: "var(--so-gold)", fontSize: "0.68rem" }}>
+            Make it yours →
+          </Link>
         </div>
       </div>
     </article>

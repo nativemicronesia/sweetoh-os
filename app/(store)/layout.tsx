@@ -3,6 +3,7 @@ import { CartProvider } from "@/lib/cart/cart-context";
 import { Mascot } from "./components/mascot";
 import { StoreHeader } from "./components/store-header";
 import { GREETING_LINE } from "@/lib/shared/island-greetings";
+import "./storefront.css";
 import { creatorSideOpen } from "@/lib/domains/creator/access";
 
 // Product/venture data should stay fresh, but force-dynamic reran every
@@ -35,41 +36,42 @@ export default function StoreLayout({
       >
         <StoreHeader creatorSideOpen={creatorSideOpen()} />
 
-        <main className="flex-1 pt-[6.1rem]">{children}</main>
+        <main className="flex-1 pt-[4.1rem]">{children}</main>
 
-        <footer className="mt-24 overflow-hidden" style={{ background: "var(--so-ink)", color: "#efe6d4" }}>
-          <div className="mx-auto grid w-full max-w-6xl gap-10 px-5 pt-16 sm:px-8 md:grid-cols-[1.4fr_1fr_1fr]">
+        <footer className="sx-ink overflow-hidden" style={{ marginTop: 0 }}>
+          <div className="sx-wrap grid gap-10 pt-16 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
             <div className="max-w-sm space-y-4">
-              <p className="text-sm leading-relaxed" style={{ color: "#bfb29b" }}>
-                Micronesian-owned, made to order in Lacey, Washington. Shop our pieces or
-                request something made just for you.
-              </p>
-              <p className="text-sm" style={{ color: "var(--so-sun)" }}>
-                {GREETING_LINE}
-              </p>
+              <p className="sx-h3" style={{ color: "#f4ecdd" }}>Bring the idea.<br /><span style={{ color: "#f0c419", fontStyle: "italic" }}>Leave with the real thing.</span></p>
+              <p className="text-sm" style={{ color: "#cfc4ad" }}>Micronesian-owned, made to order in Lacey, Washington.</p>
+              <p className="text-sm" style={{ color: "#f0c419" }}>{GREETING_LINE}</p>
             </div>
-            <nav aria-label="Shop" className="flex flex-col gap-2 text-sm">
-              <p className="so-eyebrow mb-1" style={{ color: "var(--so-sun)" }}>Shop</p>
-              {FOOTER_LINKS.slice(0, 2).map((item) => (
-                <Link key={item.href} href={item.href} className="hover:underline">{item.label}</Link>
-              ))}
-              <Link href="/create" className="hover:underline">Create (opening soon)</Link>
+            <nav aria-label="Ways in" className="flex flex-col gap-2.5 text-sm">
+              <p className="sx-mono mb-1" style={{ color: "#f0c419" }}>Ways in</p>
+              <Link href="/design" className="hover:underline">Studio</Link>
+              <Link href="/custom" className="hover:underline">Bring us an idea</Link>
+              <Link href="/collections" className="hover:underline">Shop what&apos;s ready</Link>
+              <Link href="/make" className="hover:underline">What we make</Link>
             </nav>
-            <nav aria-label="Help" className="flex flex-col gap-2 text-sm">
-              <p className="so-eyebrow mb-1" style={{ color: "var(--so-sun)" }}>Help</p>
+            <nav aria-label="Help" className="flex flex-col gap-2.5 text-sm">
+              <p className="sx-mono mb-1" style={{ color: "#f0c419" }}>Help</p>
               {FOOTER_LINKS.slice(2).map((item) => (
                 <Link key={item.href} href={item.href} className="hover:underline">{item.label}</Link>
               ))}
+            </nav>
+            <nav aria-label="Account" className="flex flex-col gap-2.5 text-sm">
+              <p className="sx-mono mb-1" style={{ color: "#f0c419" }}>You</p>
+              <Link href="/account" className="hover:underline">Account</Link>
+              <Link href="/cart" className="hover:underline">Cart</Link>
             </nav>
           </div>
           <p
             aria-hidden
             className="so-display mt-14 select-none whitespace-nowrap px-3 text-center leading-[0.8]"
-            style={{ fontSize: "clamp(2.6rem, 11.2vw, 11rem)", color: "#f6efe0" }}
+            style={{ fontSize: "clamp(2.2rem, 9.6vw, 11rem)", color: "#f4ecdd" }}
           >
-            Sweet&apos;Oh <em className="font-normal" style={{ color: "var(--so-coral)" }}>Creations</em>
+            Sweet&apos;Oh <em className="font-normal" style={{ color: "var(--sx-vermilion)" }}>Creations</em>
           </p>
-          <div className="border-t px-5 py-5 text-center text-xs sm:px-8" style={{ borderColor: "rgba(239,230,212,.14)", color: "#9d917c" }}>
+          <div className="border-t px-5 py-5 text-center text-xs sm:px-8" style={{ borderColor: "rgba(239,230,212,.14)", color: "#a89c86" }}>
             {`© ${new Date().getFullYear()} Sweet'Oh Creations · sweetohcreations.shop`}
           </div>
         </footer>

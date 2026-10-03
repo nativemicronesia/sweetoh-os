@@ -37,10 +37,10 @@ export function ProductsView({ products }: { products: ProductListItem[] }) {
     : products;
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-10 px-5 py-12 sm:px-8 sm:py-16">
+    <div className="sx-paper"><div className="sx-wrap space-y-10 py-12 sm:py-16">
       <div>
-        <p className="so-eyebrow">Shop</p>
-        <h1 className="so-display mt-3 text-3xl text-[color:var(--so-cream)] sm:text-5xl">
+        <p className="sx-label sx-mono">Shop what&apos;s ready</p>
+        <h1 className="sx-h1 mt-3" style={{ fontSize: "clamp(2.4rem, 6vw, 4.6rem)" }}>
           {activeLabel ? activeLabel : "All products"}
         </h1>
         <p className="mt-3 max-w-xl text-sm so-muted">
@@ -56,12 +56,9 @@ export function ProductsView({ products }: { products: ProductListItem[] }) {
       <div className="flex flex-wrap gap-2">
         <Link
           href="/products"
-          className="border px-3 py-1.5 text-xs transition-colors"
-          style={
-            !category
-              ? { borderColor: "var(--so-gold)", background: "var(--so-gold)", color: "var(--so-ink)" }
-              : { borderColor: "var(--so-border)", color: "var(--so-cream-dim)" }
-          }
+          className="sx-chip"
+          aria-current={!category ? "page" : undefined}
+          style={!category ? { background: "var(--so-ink)", color: "var(--so-black)" } : undefined}
         >
           All
         </Link>
@@ -69,12 +66,9 @@ export function ProductsView({ products }: { products: ProductListItem[] }) {
           <Link
             key={item.slug}
             href={`/products?category=${item.category}`}
-            className="border px-3 py-1.5 text-xs transition-colors"
-            style={
-              category === item.category
-                ? { borderColor: "var(--so-gold)", background: "var(--so-gold)", color: "var(--so-ink)" }
-                : { borderColor: "var(--so-border)", color: "var(--so-cream-dim)" }
-            }
+            className="sx-chip"
+            aria-current={category === item.category ? "page" : undefined}
+            style={category === item.category ? { background: "var(--so-ink)", color: "var(--so-black)" } : undefined}
           >
             {item.name}
           </Link>
@@ -82,11 +76,15 @@ export function ProductsView({ products }: { products: ProductListItem[] }) {
       </div>
 
       {filtered.length === 0 ? (
-        <p className="text-sm so-muted">
-          Products are coming soon — or{" "}
-          <Link href="/products" className="so-link">Browse products</Link>
-          .
-        </p>
+        <div className="sx-card" style={{ padding: "clamp(1.4rem, 4vw, 2.4rem)", maxWidth: "40rem" }}>
+          <p className="sx-mono" style={{ color: "var(--so-gold)" }}>First pieces landing soon</p>
+          <h2 className="sx-h3" style={{ marginTop: "0.6rem", fontSize: "clamp(1.6rem, 3vw, 2.2rem)" }}>Nothing on the shelf yet, but we can make yours.</h2>
+          <p style={{ marginTop: "0.8rem", color: "var(--so-cream-dim)" }}>Bring us an idea, or look at what we can make.</p>
+          <div style={{ marginTop: "1.3rem", display: "flex", flexWrap: "wrap", gap: "0.8rem" }}>
+            <Link href="/custom" className="so-btn-primary">Bring us an idea</Link>
+            <Link href="/make" className="so-btn-ghost">What we make</Link>
+          </div>
+        </div>
       ) : (
         <div className="grid gap-x-5 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
           {filtered.map((product) => (
@@ -102,6 +100,6 @@ export function ProductsView({ products }: { products: ProductListItem[] }) {
           ))}
         </div>
       )}
-    </div>
+    </div></div>
   );
 }

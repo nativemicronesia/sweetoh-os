@@ -3,78 +3,79 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Lock } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { CartIcon } from "./cart-icon";
-import { ISLAND_GREETINGS } from "@/lib/shared/island-greetings";
 
-const ANNOUNCEMENTS = [
-  "Made to order in Lacey, Washington",
-  "Micronesian-owned",
-  ...ISLAND_GREETINGS.slice(0, 3).map((g) => `${g.greeting} — ${g.place}`),
-  "Custom orders open — names, logos, family reunions",
-  ...ISLAND_GREETINGS.slice(3).map((g) => `${g.greeting} — ${g.place}`),
-  "Something for every age",
-];
-
-/** Thin lagoon bar above the nav — scrolls, pauses on hover. */
-function AnnouncementBar() {
-  const items = ANNOUNCEMENTS.map((text) => (
-    <span key={text} className="flex items-center gap-10 whitespace-nowrap">
-      {text}
-      <span aria-hidden style={{ color: "var(--so-sun)" }}>✦</span>
-    </span>
-  ));
-  return (
-    <div className="so-marquee so-marquee-slow py-1.5 text-[11px] font-medium tracking-[0.12em] uppercase" style={{ background: "var(--so-lagoon)", color: "#f3efe4" }} aria-label="Sweet'Oh Creations — made to order in Lacey, Washington. Micronesian-owned. Custom orders open.">
-      <div className="so-marquee-track" aria-hidden>{items}</div>
-      <div className="so-marquee-track" aria-hidden>{items}</div>
-    </div>
-  );
-}
+/** The five ways in. Plain words; the same list drives the bar and the full-screen menu. */
+export const DOORS = [
+  { href: "/design", label: "Studio", hint: "Design" },
+  { href: "/custom", label: "Bring an idea", hint: "Request" },
+  { href: "/collections", label: "Shop", hint: "Ready" },
+  { href: "/make", label: "What we make", hint: "Range" },
+] as const;
 
 export function StoreHeader({ creatorSideOpen = false }: { creatorSideOpen?: boolean }) {
+  void creatorSideOpen;
   const pathname = usePathname();
   const isHome = pathname === "/";
   const [scrolled, setScrolled] = useState(false);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    if (!isHome) {
-      setScrolled(true);
-      return;
-    }
-    const onScroll = () => setScrolled(window.scrollY > 36);
+    const onScroll = () => setScrolled(window.scrollY > 12);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, [isHome]);
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : "";
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    window.addEventListener("keydown", onKey);
+    return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = ""; };
+  }, [open]);
 
   const solid = !isHome || scrolled;
+  const current = (href: string) => (pathname === href || pathname.startsWith(`${href}/`) ? "page" : undefined);
 
   return (
-    <header
-      className={`fixed inset-x-0 top-0 z-[45] transition-[background,border-color,backdrop-filter] duration-300 ${
-        solid
-          ? "border-b border-[color:var(--so-border)] bg-[color:var(--so-black)]/90 backdrop-blur-md"
-          : "border-b border-transparent bg-transparent"
-      }`}
-    >
-      <AnnouncementBar />
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-4 sm:px-8">
-        <Link href="/" className="so-display flex items-baseline gap-1 text-[1.05rem] tracking-tight text-[color:var(--so-cream)] sm:gap-1.5 sm:text-2xl" aria-label="Sweet'Oh Creations — home">
-          Sweet&apos;Oh
-          <span className="font-normal italic" style={{ color: "var(--so-lagoon)" }}>Creations</span>
-        </Link>
-        <nav className="flex items-center gap-3.5 text-[13px] sm:gap-8 sm:text-sm">
-          <Link href="/collections" className="so-link text-[13px] sm:text-sm text-[color:var(--so-mist)]">
-            Shop
+    <>
+      <header className="sx-header" data-solid={solid ? "true" : "false"}>
+        <div className="sx-wrap sx-header-inner">
+          <Link href="/" className="sx-logo" aria-label="Sweet'Oh Creations, home">
+            <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden>
+              <circle cx="15" cy="15" r="14" fill="#16120d" />
+              <g fill="#d93d22"><path d="M15 15 L15 3 A12 12 0 0 1 24.5 7.5 Z" /><path d="M15 15 L27 15 A12 12 0 0 1 22.5 24.5 Z" fill="#f0c419" /><path d="M15 15 L15 27 A12 12 0 0 1 5.5 22.5 Z" /><path d="M15 15 L3 15 A12 12 0 0 1 7.5 5.5 Z" fill="#1b8ea6" /></g>
+              <circle cx="15" cy="15" r="4.2" fill="#f4ecdd" />
+            </svg>
+            <span>Sweet&apos;Oh</span>
           </Link>
-          <Link href="/create" className="so-link inline-flex items-center gap-1 text-[13px] sm:text-sm text-[color:var(--so-mist)]">
-            Create
-            {!creatorSideOpen && <Lock size={12} aria-label="(opening soon)" />}
+          <nav className="sx-nav" aria-label="Main">
+            {DOORS.map((d) => <Link key={d.href} href={d.href} aria-current={current(d.href)}>{d.label}</Link>)}
+          </nav>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+            <CartIcon />
+            <button type="button" className="sx-burger" aria-label="Open menu" aria-expanded={open} aria-controls="sx-menu" onClick={() => setOpen(true)}>
+              <Menu size={20} />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div id="sx-menu" className="sx-menu" data-open={open ? "true" : "false"} role="dialog" aria-modal="true" aria-label="Menu" {...(open ? {} : { inert: true })}>
+        <button type="button" className="sx-burger sx-menu-close" aria-label="Close menu" onClick={() => setOpen(false)} style={{ background: "transparent", borderColor: "#f4ecdd", color: "#f4ecdd" }}>
+          <X size={20} />
+        </button>
+        <p className="sx-mono" style={{ color: "#f0c419", marginBottom: "0.75rem" }}>Where to?</p>
+        {DOORS.map((d) => (
+          <Link key={d.href} href={d.href} className="sx-menu-link" onClick={() => setOpen(false)}>
+            {d.label}<small>{d.hint}</small>
           </Link>
-          <CartIcon />
-        </nav>
+        ))}
+        <Link href="/cart" className="sx-menu-link" onClick={() => setOpen(false)}>Cart<small>Bag</small></Link>
+        <Link href="/account" className="sx-menu-link" onClick={() => setOpen(false)}>Account<small>You</small></Link>
+        <p style={{ marginTop: "auto", paddingTop: "2rem", color: "#cfc4ad", fontSize: "0.9rem" }}>Made in Lacey, Washington. Shipped to anywhere you are.</p>
       </div>
-    </header>
+    </>
   );
 }

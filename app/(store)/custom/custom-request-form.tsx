@@ -6,7 +6,7 @@ import { submitCustomRequestAction } from "../account/actions";
 
 type Photo = { file: File; url: string };
 
-export function CustomRequestForm({ productTypes, maxPhotos, defaultPhone }: { productTypes: string[]; maxPhotos: number; defaultPhone: string }) {
+export function CustomRequestForm({ productTypes, maxPhotos, defaultPhone, defaultType = "" }: { productTypes: string[]; maxPhotos: number; defaultPhone: string; defaultType?: string }) {
   const [state, submit, sending] = useActionState(submitCustomRequestAction, undefined);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const v = state?.values;
@@ -30,14 +30,13 @@ export function CustomRequestForm({ productTypes, maxPhotos, defaultPhone }: { p
         for (const p of photos) data.append("photos", p.file);
         return submit(data);
       }}
-      className="mt-10 space-y-5 rounded-2xl border p-6 sm:p-8"
-      style={{ borderColor: "var(--so-border)", background: "var(--so-dark)" }}
+      className="sx-card space-y-5 p-5 sm:p-8"
     >
       <div className="grid gap-5 sm:grid-cols-2">
         <label className="so-label">
-          What would you like?
-          <select className="so-input" name="productType" required defaultValue={v?.productType ?? ""}>
-            <option value="" disabled>Choose a product</option>
+          What should it become?
+          <select className="so-input" name="productType" required defaultValue={v?.productType ?? (productTypes.includes(defaultType) ? defaultType : "")}>
+            <option value="" disabled>Pick the closest, we can adjust</option>
             {productTypes.map((t) => (
               <option key={t} value={t}>{t}</option>
             ))}
@@ -50,7 +49,7 @@ export function CustomRequestForm({ productTypes, maxPhotos, defaultPhone }: { p
       </div>
 
       <label className="so-label">
-        Tell us about it
+        Tell us what you have in mind
         <textarea
           className="so-input"
           name="description"
@@ -59,15 +58,15 @@ export function CustomRequestForm({ productTypes, maxPhotos, defaultPhone }: { p
           minLength={10}
           maxLength={4000}
           defaultValue={v?.description}
-          placeholder="What it's for, the design or words, colors, sizes you need…"
+          placeholder="The occasion, the people, a line you love, colors, anything you can picture. Rough is fine."
         />
       </label>
 
       <div>
-        <span className="so-label">Photos or artwork <span className="so-muted">(optional, up to {maxPhotos})</span></span>
-        <label className="mt-2 flex cursor-pointer items-center justify-center rounded-xl border border-dashed px-4 py-6 text-sm so-muted" style={{ borderColor: "var(--so-border)" }}>
+        <span className="so-label">Photos, sketches, references <span className="so-muted">(optional, up to {maxPhotos})</span></span>
+        <label className="mt-2 flex min-h-24 cursor-pointer items-center justify-center rounded-[4px] border-[1.5px] border-dashed px-4 py-6 text-center text-sm font-medium transition-colors hover:bg-[color:var(--so-dark)]" style={{ borderColor: "var(--so-ink)", color: "var(--so-cream)" }}>
           <input type="file" accept="image/*" multiple className="sr-only" onChange={(e) => { addFiles(e.target.files); e.target.value = ""; }} />
-          {photos.length ? `${photos.length} of ${maxPhotos} added — tap to add more` : "Tap to add a sketch, logo, or example you like"}
+          {photos.length ? `${photos.length} of ${maxPhotos} added — tap to add more` : "Tap to add a photo, a sketch, or an example you like"}
         </label>
         {photos.length > 0 && (
           <div className="mt-3 grid grid-cols-4 gap-2">
@@ -105,7 +104,7 @@ export function CustomRequestForm({ productTypes, maxPhotos, defaultPhone }: { p
 
       {state?.error && <p role="alert" className="so-alert">{state.error}</p>}
       <button type="submit" className="so-btn-primary" disabled={sending}>
-        {sending ? "Sending…" : "Send to the shop"}
+        {sending ? "Sending…" : "Send us your idea"}
       </button>
     </form>
   );

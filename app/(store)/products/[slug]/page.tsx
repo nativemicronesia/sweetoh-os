@@ -39,7 +39,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   );
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-5 py-12 sm:px-8 sm:py-16">
+    <div className="sx-paper"><div className="sx-wrap py-12 sm:py-16">
       <ProductBuy
         product={{
           id: product.id,
@@ -52,6 +52,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
         images={images}
         colorImages={colorImages}
       />
-    </div>
+    </div></div>
   );
 }
