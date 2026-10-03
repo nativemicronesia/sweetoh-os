@@ -117,6 +117,19 @@ for (const [label, size] of Object.entries(SIZES)) {
     const ring = await page.evaluate(() => { const e = document.activeElement; const s = getComputedStyle(e); return { tag: e.tagName, width: s.outlineWidth, style: s.outlineStyle }; });
     if (ring.style === "none" || parseFloat(ring.width) < 2) throw new Error(`no focus ring on ${ring.tag}`);
   });
+  await check("laptop: Skink opens as an avatar, answers, speaks, and closes with Escape", async () => {
+    await go(page, "/");
+    await page.waitForTimeout(1500);
+    await page.getByRole("button", { name: "Ask Skink" }).click();
+    await page.locator(".sx-skink-card svg").waitFor();
+    await page.getByRole("button", { name: "Shipping", exact: true }).click();
+    const seen = new Set();
+    for (let n = 0; n < 60 && !(seen.has("speaking") && seen.has("idle") && n > 4 && seen.size >= 3); n++) { await page.waitForTimeout(500); seen.add(await page.locator(".sx-skink-card svg").getAttribute("data-mood")); }
+    if (!seen.has("thinking") && !seen.has("speaking")) throw new Error(`avatar never reacted: ${[...seen]}`);
+    if (!(await page.locator(".sx-skink-bubble").innerText()).length) throw new Error("no answer shown");
+    await page.keyboard.press("Escape");
+    await page.locator(".sx-skink-card").waitFor({ state: "detached" });
+  });
   await check("laptop: reduced motion shows everything at once", async () => {
     const ctx2 = await browser.newContext({ viewport: { width: 1366, height: 820 }, reducedMotion: "reduce" });
     const p2 = await ctx2.newPage();

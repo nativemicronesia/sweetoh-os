@@ -1,0 +1,53 @@
+/* Skink: one drawing, rigged with CSS. Moods are set with data-mood on the <svg>. */
+.sk { overflow: visible; display: block; }
+.sk * { transform-box: fill-box; }
+.sk-body { transform-origin: 50% 90%; }
+.sk-tail { transform-origin: 0% 20%; }
+.sk-head { transform-origin: 50% 92%; }
+.sk-tongue { transform-origin: 50% 0%; transform: scaleY(0); }
+.sk-lid { transform-origin: 50% 0%; transform: scaleY(0); }
+.sk-pupil { transform: translate(calc(var(--lx, 0) * 4.5px), calc(var(--ly, 0) * 3.5px)); transition: transform .18s ease-out; }
+.sk-mouth-open { opacity: 0; }
+.sk-brow { transform-origin: 50% 100%; transition: transform .3s ease; }
+.sk-sparkle { opacity: 0; }
+
+.sk[data-live="true"] .sk-body { animation: sk-breathe 3.6s ease-in-out infinite; }
+.sk[data-live="true"] .sk-tail { animation: sk-sway 5.2s ease-in-out infinite; }
+.sk[data-live="true"] .sk-head { animation: sk-head 6s ease-in-out infinite; }
+.sk[data-live="true"] .sk-lid { animation: sk-blink 5.4s infinite; }
+.sk[data-live="true"] .sk-tongue { animation: sk-flick 9s infinite; }
+
+.sk[data-mood="listening"] .sk-head { animation: none; transform: rotate(6deg) translateY(-1px); transition: transform .4s ease; }
+.sk[data-mood="listening"] .sk-pupil { transform: translate(calc(var(--lx, 0) * 4.5px), calc(var(--ly, 0) * 3.5px)) scale(1.12); }
+.sk[data-mood="listening"] .sk-brow { transform: translateY(-2px) rotate(-3deg); }
+
+.sk[data-mood="thinking"] .sk-head { animation: none; transform: rotate(-7deg); transition: transform .4s ease; }
+.sk[data-mood="thinking"] .sk-pupil { transform: translate(-3.5px, -3.5px); }
+.sk[data-mood="thinking"] .sk-tail { animation: sk-sway 1.6s ease-in-out infinite; }
+.sk[data-mood="thinking"] .sk-sparkle { animation: sk-spark 1.4s ease-in-out infinite; }
+.sk[data-mood="thinking"] .sk-sparkle:nth-of-type(2) { animation-delay: .35s; }
+.sk[data-mood="thinking"] .sk-sparkle:nth-of-type(3) { animation-delay: .7s; }
+
+.sk[data-mood="speaking"] .sk-head { animation: sk-talk .55s ease-in-out infinite; }
+.sk[data-mood="speaking"] .sk-mouth-closed { opacity: 0; }
+.sk[data-mood="speaking"] .sk-mouth-open { opacity: 1; animation: sk-mouth .32s steps(1) infinite alternate; transform-origin: 50% 0%; }
+
+.sk[data-mood="happy"] .sk-body { animation: sk-hop .7s var(--so-ease, ease) 2; }
+.sk[data-mood="happy"] .sk-brow { transform: translateY(-3px); }
+.sk[data-mood="happy"] .sk-mouth-closed { transform: scaleY(1.5); transform-origin: 50% 0%; }
+
+@keyframes sk-breathe { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.012, 1.03); } }
+@keyframes sk-sway { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(5deg); } }
+@keyframes sk-head { 0%, 100% { transform: rotate(0) translateY(0); } 30% { transform: rotate(-2deg) translateY(-1px); } 65% { transform: rotate(2deg) translateY(0); } }
+@keyframes sk-blink { 0%, 93%, 100% { transform: scaleY(0); } 95.5% { transform: scaleY(1.05); } }
+@keyframes sk-flick { 0%, 90%, 100% { transform: scaleY(0); } 93% { transform: scaleY(1); } 96% { transform: scaleY(.2); } }
+@keyframes sk-talk { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-1.5px) rotate(1.5deg); } }
+@keyframes sk-mouth { from { transform: scaleY(.45); } to { transform: scaleY(1); } }
+@keyframes sk-hop { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-10px); } }
+@keyframes sk-spark { 0%, 100% { opacity: 0; transform: translateY(2px) scale(.7); } 50% { opacity: 1; transform: translateY(-3px) scale(1); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .sk[data-live="true"] .sk-body, .sk[data-live="true"] .sk-tail, .sk[data-live="true"] .sk-head, .sk[data-live="true"] .sk-lid, .sk[data-live="true"] .sk-tongue,
+  .sk[data-mood] .sk-tail, .sk[data-mood="speaking"] .sk-head, .sk[data-mood="speaking"] .sk-mouth-open, .sk[data-mood="happy"] .sk-body, .sk .sk-sparkle { animation: none !important; }
+  .sk[data-mood="thinking"] .sk-sparkle { opacity: 1; }
+}

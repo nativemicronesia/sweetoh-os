@@ -5,6 +5,8 @@ import { ISLAND_GREETINGS } from "@/lib/shared/island-greetings";
 import { FeaturedProducts, getFeaturedProductsForHome } from "./components/featured-products";
 import { Reveal } from "./components/reveal";
 import { ObjectWall } from "./components/scenes/object-wall";
+import { getShippingFootprint } from "@/lib/domains/commerce/shipping-footprint";
+import { SHIPPING_ESTIMATES } from "@/lib/domains/commerce/shipping-estimates";
 import { GlobeLazy } from "./components/scenes/globe-lazy";
 import { TransformScene } from "./components/scenes/transform-scene";
 
@@ -24,6 +26,7 @@ const DOOR_LIST = [
 export default async function HomePage() {
   const venture = await getDefaultVenture();
   const featured = await getFeaturedProductsForHome(venture.id);
+  const footprint = await getShippingFootprint(venture.id).catch(() => []);
 
   return (
     <div className="sx-paper">
@@ -120,7 +123,7 @@ export default async function HomePage() {
           </div>
         </Reveal>
         <Reveal delay={120}>
-          <div style={{ color: "var(--so-ink)", marginTop: "2.2rem" }}><GlobeLazy /></div>
+          <div style={{ color: "var(--so-ink)", marginTop: "2.2rem" }}><GlobeLazy destinations={footprint} estimates={SHIPPING_ESTIMATES} /></div>
         </Reveal>
       </section>
 

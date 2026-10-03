@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Pause, Play } from "lucide-react";
 import { geoGraticule10, geoOrthographic, geoPath } from "d3-geo";
 import { feature } from "topojson-client";
@@ -44,15 +44,26 @@ const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 const shortest = (from: number, to: number) => ((((to - from) % 360) + 540) % 360) - 180;
 const ease = (t: number) => 1 - Math.pow(1 - t, 3);
 
-export function Globe() {
+export type GlobeDestination = { code: string; name: string; lon: number; lat: number; orders: number };
+
+export function Globe({ destinations = [], estimates = {} }: { destinations?: GlobeDestination[]; estimates?: Record<string, string> }) {
   const wrap = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
+  const views = useMemo<View[]>(() => destinations.length
+    ? [{ id: "shipped", name: "Where it has gone", kicker: "Shipped so far", note: `${destinations.length} ${destinations.length === 1 ? "country" : "countries"} so far. Select a dot to see how shipping works there.`, lon: -150, lat: 28, zoom: 1.05 }, ...VIEWS]
+    : VIEWS, [destinations.length]);
   const [i, setI] = useState(0);
+  const [selected, setSelected] = useState<string | null>(null);
+  const hits = useRef<{ code: string; x: number; y: number }[]>([]);
+  const selRef = useRef<string | null>(null);
+  useEffect(() => { selRef.current = selected; }, [selected]);
+  const dests = useRef(destinations);
+  useEffect(() => { dests.current = destinations; }, [destinations]);
   const [paused, setPaused] = useState(false);
   const [held, setHeld] = useState(false);
   const [visible, setVisible] = useState(false);
   const [reduced, setReduced] = useState(true);
-  const state = useRef({ lon: VIEWS[0].lon, lat: VIEWS[0].lat, zoom: VIEWS[0].zoom, target: VIEWS[0], drag: false, dragAt: 0, last: [0, 0] as [number, number], time: 0, from: { lon: VIEWS[0].lon, lat: VIEWS[0].lat, zoom: VIEWS[0].zoom }, start: 0 });
+  const state = useRef({ lon: views[0].lon, lat: views[0].lat, zoom: views[0].zoom, target: views[0], drag: false, moved: 0, last: [0, 0] as [number, number], from: { lon: views[0].lon, lat: views[0].lat, zoom: views[0].zoom }, start: 0 });
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -67,18 +78,18 @@ export function Globe() {
   const playing = visible && !held && !paused && !reduced;
   useEffect(() => {
     if (!playing) return;
-    const t = setTimeout(() => setI((n) => (n + 1) % VIEWS.length), 7000);
+    const t = setTimeout(() => setI((n) => (n + 1) % views.length), 7000);
     return () => clearTimeout(t);
-  }, [playing, i]);
+  }, [playing, i, views.length]);
 
   // Start a glide to the chosen view.
   useEffect(() => {
     const s = state.current;
     s.from = { lon: s.lon, lat: s.lat, zoom: s.zoom };
-    s.target = VIEWS[i];
+    s.target = views[i];
     s.start = performance.now();
-    if (reduced) { s.lon = VIEWS[i].lon; s.lat = VIEWS[i].lat; s.zoom = VIEWS[i].zoom; s.start = 0; }
-  }, [i, reduced]);
+    if (reduced) { s.lon = views[i].lon; s.lat = views[i].lat; s.zoom = views[i].zoom; s.start = 0; }
+  }, [i, reduced, views]);
 
   useEffect(() => {
     const cv = canvas.current;
@@ -153,8 +164,22 @@ export function Globe() {
       // routes from Lacey
       const t = now / 1000;
       ctx.lineWidth = 1.6; ctx.setLineDash([2, 7]); ctx.lineDashOffset = -t * 18; ctx.strokeStyle = "rgba(255,247,226,.9)";
-      for (const to of ROUTES) { ctx.beginPath(); path({ type: "LineString", coordinates: [LACEY, to] } as never); ctx.stroke(); }
+      const real = dests.current;
+      const routeTo: [number, number][] = real.length ? real.map((d) => [d.lon, d.lat]) : ROUTES;
+      for (const to of routeTo) { ctx.beginPath(); path({ type: "LineString", coordinates: [LACEY, to] } as never); ctx.stroke(); }
       ctx.setLineDash([]);
+      hits.current = [];
+      for (const d of real) {
+        if (geoDistance([d.lon, d.lat], [s.lon, s.lat]) > Math.PI / 2) continue;
+        const q = proj([d.lon, d.lat]);
+        if (!q) continue;
+        hits.current.push({ code: d.code, x: q[0], y: q[1] });
+        const rad = 4 + Math.min(6, Math.log2(1 + d.orders));
+        const sel = d.code === selRef.current;
+        ctx.beginPath(); ctx.arc(q[0], q[1], rad + (sel ? 7 : 4), 0, Math.PI * 2); ctx.fillStyle = sel ? "rgba(240,196,25,.45)" : "rgba(240,196,25,.25)"; ctx.fill();
+        ctx.beginPath(); ctx.arc(q[0], q[1], rad, 0, Math.PI * 2); ctx.fillStyle = "#f0c419"; ctx.fill(); ctx.strokeStyle = "#16120d"; ctx.lineWidth = 1.6; ctx.stroke();
+        if (sel || s.zoom > 1.6) label(ctx, d.name, q[0], q[1] - rad - 8, "center", 13);
+      }
 
       // Lacey pin with pulse
       const lp = proj(LACEY);
@@ -197,7 +222,7 @@ export function Globe() {
   // Drag to spin.
   function down(e: React.PointerEvent) {
     const s = state.current;
-    s.drag = true; s.start = 0; s.last = [e.clientX, e.clientY];
+    s.drag = true; s.start = 0; s.moved = 0; s.last = [e.clientX, e.clientY];
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     setPaused(true);
   }
@@ -207,13 +232,31 @@ export function Globe() {
     const el = wrap.current;
     const k = (el ? Math.min(el.clientWidth, el.clientHeight) * 0.48 : 200) * s.zoom;
     const f = 180 / Math.PI / k;
+    s.moved += Math.abs(e.clientX - s.last[0]) + Math.abs(e.clientY - s.last[1]);
     s.lon -= (e.clientX - s.last[0]) * f;
     s.lat = Math.max(-70, Math.min(70, s.lat + (e.clientY - s.last[1]) * f));
     s.last = [e.clientX, e.clientY];
   }
-  function up() { state.current.drag = false; }
+  function up(e: React.PointerEvent) {
+    const s = state.current;
+    s.drag = false;
+    if (s.moved < 6 && e.type === "pointerup") {
+      const box = wrap.current?.getBoundingClientRect();
+      if (!box) return;
+      const x = e.clientX - box.left;
+      const y = e.clientY - box.top;
+      let best: { code: string; d: number } | null = null;
+      for (const h of hits.current) { const d = Math.hypot(h.x - x, h.y - y); if (d < 24 && (!best || d < best.d)) best = { code: h.code, d }; }
+      setSelected(best ? best.code : null);
+      if (best) {
+        const dst = dests.current.find((d) => d.code === best!.code);
+        if (dst) { s.from = { lon: s.lon, lat: s.lat, zoom: s.zoom }; s.target = { ...views[i], lon: dst.lon, lat: dst.lat, zoom: Math.max(s.zoom, 1.8) }; s.start = performance.now(); }
+      }
+    }
+  }
 
-  const view = VIEWS[i];
+  const view = views[i];
+  const pick = destinations.find((d) => d.code === selected);
   return (
     <figure style={{ margin: 0 }} onMouseEnter={() => setHeld(true)} onMouseLeave={() => setHeld(false)} onFocus={() => setHeld(true)} onBlur={() => setHeld(false)}>
       <div ref={wrap} className="sx-globe" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}>
@@ -222,12 +265,18 @@ export function Globe() {
           <span className="sx-mono" style={{ color: "var(--so-gold)" }}>{view.kicker}</span>
           <b>{view.name}</b>
         </div>
-        <span className="sx-globe-hint sx-mono" aria-hidden>Drag to turn</span>
+        {pick && (
+          <div className="sx-globe-card" role="status">
+            <b>{pick.name}</b>
+            <span>{estimates[pick.code] ?? "We share a delivery estimate at checkout."}</span>
+          </div>
+        )}
+        <span className="sx-globe-hint sx-mono" aria-hidden>{destinations.length ? "Drag to turn · select a dot" : "Drag to turn"}</span>
       </div>
       <figcaption className="sx-atlas-foot">
         <p aria-live="polite">{view.note}</p>
         <div className="sx-atlas-ctl" role="group" aria-label="Choose a region">
-          {VIEWS.map((v, n) => (
+          {views.map((v, n) => (
             <button key={v.id} type="button" className="sx-dot" aria-pressed={n === i} aria-label={v.name} onClick={() => { setI(n); setPaused(true); }} />
           ))}
           <button type="button" className="sx-chip sx-chip-ghost" style={{ marginLeft: "0.4rem" }} onClick={() => setPaused((p) => !p)} aria-label={paused || reduced ? "Play the tour" : "Pause the tour"}>
