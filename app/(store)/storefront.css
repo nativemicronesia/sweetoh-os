@@ -291,3 +291,8 @@
   .sx-skink-close { top: 0.5rem; right: 0.6rem; }
 }
 @media (prefers-reduced-motion: reduce) { .sx-skink-card, .sx-skink-scrim { animation: none; } .sx-skink-caret, .sx-skink-dots i { animation: none; } .sx-skink-fab { transition: none; } }
+.sx-globe-ctl { position: absolute; right: 0.9rem; bottom: 2.6rem; display: flex; flex-direction: column; gap: 0.4rem; }
+.sx-globe-btn { width: 44px; height: 44px; display: grid; place-items: center; background: rgba(10,31,36,.88); color: #f4ecdd; border: 1.5px solid rgba(244,236,221,.55); border-radius: 3px; transition: background .2s ease, transform .25s var(--so-ease); }
+.sx-globe-btn:hover { background: #f4ecdd; color: #16120d; transform: translateY(-1px); }
+.sx-globe-card { right: auto; left: 0.9rem; top: 0.9rem; }
+.sx-globe:focus-visible { outline: 2.5px solid var(--sx-vermilion-deep); outline-offset: 3px; }

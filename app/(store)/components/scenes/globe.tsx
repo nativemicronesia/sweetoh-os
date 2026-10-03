@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Pause, Play } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Minus, Plus } from "lucide-react";
 import { geoGraticule10, geoOrthographic, geoPath } from "d3-geo";
 import { feature } from "topojson-client";
 import type { Topology } from "topojson-specification";
@@ -9,21 +9,16 @@ import land110 from "world-atlas/land-110m.json";
 import micro from "./micronesia-geo.json";
 
 /**
- * A real globe: coastlines from Natural Earth, every Micronesian nation in vermilion, and the true
- * great-circle routes out from Lacey, Washington. It turns by itself from region to region and can be
- * dragged by hand. Drawn on a canvas so it stays smooth on phones.
+ * One interactive globe. Real coastlines (Natural Earth), every Micronesian nation in vermilion, and the true
+ * great-circle routes out from Lacey, Washington. Drag to turn, use the buttons or pinch to zoom, and select a
+ * dot to see how shipping works there. Drawn on a canvas so it stays smooth on phones.
  */
 
-type View = { id: string; name: string; kicker: string; note: string; lon: number; lat: number; zoom: number };
-const VIEWS: View[] = [
-  { id: "micronesia", name: "Micronesia", kicker: "Home islands", note: "Palau, the four states of the FSM, Guam and the Marianas, the Marshall Islands, Nauru and Kiribati.", lon: 153, lat: 9, zoom: 5.2 },
-  { id: "pacific", name: "The Pacific", kicker: "The wide ocean", note: "Hawaii, the islands, and the long way home to the Pacific Northwest.", lon: -178, lat: 16, zoom: 1.55 },
-  { id: "north-america", name: "North America", kicker: "Where it's made", note: "Lacey, Washington: every piece is made here, then sent across the continent.", lon: -104, lat: 42, zoom: 1.9 },
-  { id: "asia", name: "Asia and Australasia", kicker: "Across the water", note: "Family in the Philippines, Japan, Australia, New Zealand and everywhere between.", lon: 115, lat: 12, zoom: 1.7 },
-  { id: "europe", name: "Europe and the Middle East", kicker: "Further out", note: "Friends, military families and curious people far from any island.", lon: 22, lat: 42, zoom: 2.3 },
-  { id: "africa", name: "Africa", kicker: "Further still", note: "People who found the work and wanted a piece of it.", lon: 20, lat: 3, zoom: 1.7 },
-  { id: "south-america", name: "South America and the Caribbean", kicker: "Everywhere else", note: "Anyone who wants to hold their idea in their hands.", lon: -62, lat: -16, zoom: 1.8 },
-];
+type Pose = { lon: number; lat: number; zoom: number };
+const HOME: Pose = { lon: -178, lat: 18, zoom: 1.45 };
+const MICRONESIA: Pose = { lon: 153, lat: 9, zoom: 5.2 };
+const MIN_ZOOM = 1;
+const MAX_ZOOM = 9;
 
 const LACEY: [number, number] = [-122.8, 47.0];
 const ROUTES: [number, number][] = [[144.8, 13.45], [158.2, 6.9], [171.4, 7.1], [134.5, 7.5], [-157.9, 21.3], [151.8, 7.4]];
@@ -43,53 +38,45 @@ const nations = micro.nations as never;
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 const shortest = (from: number, to: number) => ((((to - from) % 360) + 540) % 360) - 180;
 const ease = (t: number) => 1 - Math.pow(1 - t, 3);
+const clampZoom = (z: number) => Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, z));
 
 export type GlobeDestination = { code: string; name: string; lon: number; lat: number; orders: number };
 
 export function Globe({ destinations = [], estimates = {} }: { destinations?: GlobeDestination[]; estimates?: Record<string, string> }) {
   const wrap = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
-  const views = useMemo<View[]>(() => destinations.length
-    ? [{ id: "shipped", name: "Where it has gone", kicker: "Shipped so far", note: `${destinations.length} ${destinations.length === 1 ? "country" : "countries"} so far. Select a dot to see how shipping works there.`, lon: -150, lat: 28, zoom: 1.05 }, ...VIEWS]
-    : VIEWS, [destinations.length]);
-  const [i, setI] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
+  const [visible, setVisible] = useState(false);
+  const [reduced, setReduced] = useState(true);
   const hits = useRef<{ code: string; x: number; y: number }[]>([]);
   const selRef = useRef<string | null>(null);
   useEffect(() => { selRef.current = selected; }, [selected]);
   const dests = useRef(destinations);
   useEffect(() => { dests.current = destinations; }, [destinations]);
-  const [paused, setPaused] = useState(false);
-  const [held, setHeld] = useState(false);
-  const [visible, setVisible] = useState(false);
-  const [reduced, setReduced] = useState(true);
-  const state = useRef({ lon: views[0].lon, lat: views[0].lat, zoom: views[0].zoom, target: views[0], drag: false, moved: 0, last: [0, 0] as [number, number], from: { lon: views[0].lon, lat: views[0].lat, zoom: views[0].zoom }, start: 0 });
+  const visibleRef = useRef(false);
+  useEffect(() => { visibleRef.current = visible; }, [visible]);
+  const redRef = useRef(true);
+  useEffect(() => { redRef.current = reduced; }, [reduced]);
+  const state = useRef({ ...HOME, target: HOME as Pose, from: HOME as Pose, start: 0, drag: false, moved: 0, last: [0, 0] as [number, number], pointers: new Map<number, [number, number]>(), pinch: 0 });
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
     const sync = () => setReduced(media.matches);
     sync();
     media.addEventListener("change", sync);
-    const io = new IntersectionObserver(([e]) => setVisible(e.isIntersecting), { threshold: 0.2 });
+    const io = new IntersectionObserver(([e]) => setVisible(e.isIntersecting), { threshold: 0.1 });
     if (wrap.current) io.observe(wrap.current);
     return () => { media.removeEventListener("change", sync); io.disconnect(); };
   }, []);
 
-  const playing = visible && !held && !paused && !reduced;
-  useEffect(() => {
-    if (!playing) return;
-    const t = setTimeout(() => setI((n) => (n + 1) % views.length), 7000);
-    return () => clearTimeout(t);
-  }, [playing, i, views.length]);
-
-  // Start a glide to the chosen view.
-  useEffect(() => {
+  function glide(to: Pose) {
     const s = state.current;
+    if (redRef.current) { s.lon = to.lon; s.lat = to.lat; s.zoom = to.zoom; s.start = 0; return; }
     s.from = { lon: s.lon, lat: s.lat, zoom: s.zoom };
-    s.target = views[i];
+    s.target = to;
     s.start = performance.now();
-    if (reduced) { s.lon = views[i].lon; s.lat = views[i].lat; s.zoom = views[i].zoom; s.start = 0; }
-  }, [i, reduced, views]);
+  }
+  const zoomBy = (f: number) => { const s = state.current; glide({ lon: s.lon, lat: s.lat, zoom: clampZoom(s.zoom * f) }); };
 
   useEffect(() => {
     const cv = canvas.current;
@@ -116,10 +103,10 @@ export function Globe({ destinations = [], estimates = {} }: { destinations?: Gl
 
     const frame = (now: number) => {
       raf = requestAnimationFrame(frame);
-      if (!visible && state.current.start === 0) return;
+      if (!visibleRef.current) return;
       const s = state.current;
       if (!s.drag && s.start) {
-        const t = Math.min(1, (now - s.start) / 2600);
+        const t = Math.min(1, (now - s.start) / 1800);
         const k = ease(t);
         s.lon = s.from.lon + shortest(s.from.lon, s.target.lon) * k;
         s.lat = lerp(s.from.lat, s.target.lat, k);
@@ -217,28 +204,39 @@ export function Globe({ destinations = [], estimates = {} }: { destinations?: Gl
     };
     raf = requestAnimationFrame(frame);
     return () => { cancelAnimationFrame(raf); ro.disconnect(); };
-  }, [visible]);
+  }, []);
 
-  // Drag to spin.
   function down(e: React.PointerEvent) {
     const s = state.current;
+    s.pointers.set(e.pointerId, [e.clientX, e.clientY]);
     s.drag = true; s.start = 0; s.moved = 0; s.last = [e.clientX, e.clientY];
+    if (s.pointers.size === 2) { const [a, b] = [...s.pointers.values()]; s.pinch = Math.hypot(a[0] - b[0], a[1] - b[1]); }
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    setPaused(true);
   }
   function move(e: React.PointerEvent) {
     const s = state.current;
     if (!s.drag) return;
+    s.pointers.set(e.pointerId, [e.clientX, e.clientY]);
+    if (s.pointers.size === 2) {
+      const [a, b] = [...s.pointers.values()];
+      const d = Math.hypot(a[0] - b[0], a[1] - b[1]);
+      if (s.pinch) s.zoom = clampZoom(s.zoom * (d / s.pinch));
+      s.pinch = d; s.moved += 10;
+      return;
+    }
     const el = wrap.current;
     const k = (el ? Math.min(el.clientWidth, el.clientHeight) * 0.48 : 200) * s.zoom;
     const f = 180 / Math.PI / k;
     s.moved += Math.abs(e.clientX - s.last[0]) + Math.abs(e.clientY - s.last[1]);
     s.lon -= (e.clientX - s.last[0]) * f;
-    s.lat = Math.max(-70, Math.min(70, s.lat + (e.clientY - s.last[1]) * f));
+    s.lat = Math.max(-75, Math.min(75, s.lat + (e.clientY - s.last[1]) * f));
     s.last = [e.clientX, e.clientY];
   }
   function up(e: React.PointerEvent) {
     const s = state.current;
+    s.pointers.delete(e.pointerId);
+    s.pinch = 0;
+    if (s.pointers.size > 0) return;
     s.drag = false;
     if (s.moved < 6 && e.type === "pointerup") {
       const box = wrap.current?.getBoundingClientRect();
@@ -250,20 +248,37 @@ export function Globe({ destinations = [], estimates = {} }: { destinations?: Gl
       setSelected(best ? best.code : null);
       if (best) {
         const dst = dests.current.find((d) => d.code === best!.code);
-        if (dst) { s.from = { lon: s.lon, lat: s.lat, zoom: s.zoom }; s.target = { ...views[i], lon: dst.lon, lat: dst.lat, zoom: Math.max(s.zoom, 1.8) }; s.start = performance.now(); }
+        if (dst) glide({ lon: dst.lon, lat: dst.lat, zoom: Math.max(s.zoom, 2) });
       }
     }
   }
+  function key(e: React.KeyboardEvent) {
+    const s = state.current;
+    const step = 12 / s.zoom;
+    if (e.key === "ArrowLeft") glide({ lon: s.lon - step, lat: s.lat, zoom: s.zoom });
+    else if (e.key === "ArrowRight") glide({ lon: s.lon + step, lat: s.lat, zoom: s.zoom });
+    else if (e.key === "ArrowUp") glide({ lon: s.lon, lat: Math.min(75, s.lat + step), zoom: s.zoom });
+    else if (e.key === "ArrowDown") glide({ lon: s.lon, lat: Math.max(-75, s.lat - step), zoom: s.zoom });
+    else if (e.key === "+" || e.key === "=") zoomBy(1.5);
+    else if (e.key === "-") zoomBy(1 / 1.5);
+    else return;
+    e.preventDefault();
+  }
+  function wheel(e: React.WheelEvent) {
+    if (!(e.ctrlKey || e.metaKey)) return;
+    const s = state.current;
+    s.start = 0;
+    s.zoom = clampZoom(s.zoom * Math.exp(-e.deltaY * 0.01));
+  }
 
-  const view = views[i];
   const pick = destinations.find((d) => d.code === selected);
   return (
-    <figure style={{ margin: 0 }} onMouseEnter={() => setHeld(true)} onMouseLeave={() => setHeld(false)} onFocus={() => setHeld(true)} onBlur={() => setHeld(false)}>
-      <div ref={wrap} className="sx-globe" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}>
-        <canvas ref={canvas} role="img" aria-label={`A globe turned to ${view.name}, drawn from real coastlines. ${view.note}`} style={{ width: "100%", height: "100%", display: "block", touchAction: "pan-y" }} />
+    <figure style={{ margin: 0 }}>
+      <div ref={wrap} className="sx-globe" tabIndex={0} role="group" aria-label="Interactive globe. Drag to turn, plus and minus to zoom, arrow keys to move." onKeyDown={key} onWheel={wheel} onDoubleClick={() => zoomBy(1.8)} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}>
+        <canvas ref={canvas} role="img" aria-label="A globe of the Pacific and the world drawn from real coastlines. Lacey, Washington is where every piece is made; the Micronesian islands are highlighted in red." style={{ width: "100%", height: "100%", display: "block", touchAction: "pan-y" }} />
         <div className="sx-atlas-tag">
-          <span className="sx-mono" style={{ color: "var(--so-gold)" }}>{view.kicker}</span>
-          <b>{view.name}</b>
+          <span className="sx-mono" style={{ color: "var(--so-gold)" }}>Made in Lacey, Washington</span>
+          <b>Rooted in Micronesia</b>
         </div>
         {pick && (
           <div className="sx-globe-card" role="status">
@@ -271,17 +286,17 @@ export function Globe({ destinations = [], estimates = {} }: { destinations?: Gl
             <span>{estimates[pick.code] ?? "We share a delivery estimate at checkout."}</span>
           </div>
         )}
-        <span className="sx-globe-hint sx-mono" aria-hidden>{destinations.length ? "Drag to turn · select a dot" : "Drag to turn"}</span>
+        <div className="sx-globe-ctl">
+          <button type="button" className="sx-globe-btn" onClick={() => zoomBy(1.6)} aria-label="Zoom in"><Plus size={18} aria-hidden /></button>
+          <button type="button" className="sx-globe-btn" onClick={() => zoomBy(1 / 1.6)} aria-label="Zoom out"><Minus size={18} aria-hidden /></button>
+        </div>
+        <span className="sx-globe-hint sx-mono" aria-hidden>{destinations.length ? "Drag to turn · select a dot" : "Drag to turn · zoom in"}</span>
       </div>
       <figcaption className="sx-atlas-foot">
-        <p aria-live="polite">{view.note}</p>
-        <div className="sx-atlas-ctl" role="group" aria-label="Choose a region">
-          {views.map((v, n) => (
-            <button key={v.id} type="button" className="sx-dot" aria-pressed={n === i} aria-label={v.name} onClick={() => { setI(n); setPaused(true); }} />
-          ))}
-          <button type="button" className="sx-chip sx-chip-ghost" style={{ marginLeft: "0.4rem" }} onClick={() => setPaused((p) => !p)} aria-label={paused || reduced ? "Play the tour" : "Pause the tour"}>
-            {paused || reduced ? <Play size={14} aria-hidden /> : <Pause size={14} aria-hidden />}
-          </button>
+        <p>{destinations.length ? `Shipped to ${destinations.length} ${destinations.length === 1 ? "country" : "countries"} so far. Select a dot to see how shipping works there.` : "Palau, the four states of the FSM, Guam and the Marianas, the Marshall Islands, Nauru and Kiribati are in red. Zoom in to see the islands by name."}</p>
+        <div className="sx-atlas-ctl" role="group" aria-label="Jump to">
+          <button type="button" className="sx-chip" onClick={() => glide(MICRONESIA)}>Micronesia</button>
+          <button type="button" className="sx-chip sx-chip-ghost" onClick={() => glide(HOME)}>Reset</button>
         </div>
       </figcaption>
     </figure>
