@@ -328,7 +328,7 @@
 .pe-surface-note{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 12px 0;padding:8px 12px;border:1px solid var(--pf-border);border-radius:10px;background:#fff;color:var(--pf-muted);font-size:12px;line-height:1.4}.pe-surface-note strong{color:var(--pf-text)}.pe-surface-note .pe-btn{flex-shrink:0;padding:6px 12px;font-size:12px}
 
 /* Studio home */
-.sh{display:grid;gap:36px;max-width:1240px}
+.sh{display:grid;grid-template-columns:minmax(0,1fr);gap:36px;max-width:1240px}.sh>*{min-width:0}
 .sh h1{font-size:30px;font-weight:700;letter-spacing:-.02em;margin:0}
 .sh h2{font-size:16px;font-weight:700;margin:0 0 14px}
 .sh-head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap}
@@ -356,9 +356,10 @@
 .sh-thumb:hover{box-shadow:0 8px 20px rgba(16,24,40,.12)}
 .sh-meta{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
 .sh-meta strong{display:block;font-size:13px}.sh-meta small{font-size:11px;color:var(--pf-muted)}
+.sh-card{position:relative}.sh-card:has(.sh-menu[open]){z-index:30}
 .sh-menu{position:relative}.sh-menu>summary{list-style:none;cursor:pointer;width:30px;height:30px;display:grid;place-items:center;border-radius:8px;font-size:18px;line-height:1}
 .sh-menu>summary::-webkit-details-marker{display:none}.sh-menu>summary:hover,.sh-menu[open]>summary{background:#eef1ee}
-.sh-menu>div{position:absolute;right:0;top:34px;z-index:15;width:230px;display:grid;gap:2px;padding:6px;background:#fff;border:1px solid var(--pf-border);border-radius:10px;box-shadow:0 12px 32px rgba(16,24,40,.16)}
+.sh-menu>div{position:absolute;right:0;top:34px;z-index:40;width:230px;display:grid;gap:2px;padding:6px;background:#fff;border:1px solid var(--pf-border);border-radius:10px;box-shadow:0 12px 32px rgba(16,24,40,.16)}
 .sh-menu a{padding:8px 10px;border-radius:6px;font-size:13px;color:inherit;text-decoration:none}.sh-menu a:hover{background:#f3f5f3}
 .sh-menu form{display:grid;gap:6px;padding:8px 10px;border-top:1px solid var(--pf-border);margin-top:4px}
 .sh-menu label{display:grid;gap:4px;font-size:11px;font-weight:600;color:var(--pf-muted)}

@@ -3574,7 +3574,7 @@ export function ProductEditor({
             }}>{currentRegions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}</select></label> : standalone ? null : <button className="pe-btn pe-btn-primary" onClick={() => setSetupOpen(true)}>Add a print area</button>}
           </div>
           {!standalone && !photoFor(current) && <div className="pe-surface-note" role="status">
-            <span><strong>Flat product view.</strong> Drawn at real size from the product&apos;s printable dimensions. Add your own clean blank photo for customer-facing mockups.</span>
+            <span><strong>Simple product outline.</strong> Shown at real size. Add your own photo of a blank product for nicer customer previews.</span>
             <button className="pe-btn pe-btn-ghost" disabled={locked} onClick={() => setViewPicker({ mode: "replace", position: current.position ?? "front" })}>Add blank photo</button>
           </div>}
           <div className="pe-stage" ref={stage} data-pan={panMode} onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = "copy"; }} onDrop={e => {
