@@ -1,0 +1,17 @@
+import { readFileSync, writeFileSync } from "node:fs";
+import { feature } from "topojson-client";
+const load = (f) => JSON.parse(readFileSync(`node_modules/world-atlas/${f}`, "utf8"));
+const c10 = load("countries-10m.json"), l50 = load("land-50m.json");
+const KEY = { Palau: "palau", Micronesia: "fsm", "Marshall Is.": "marshall", Kiribati: "kiribati", Nauru: "nauru", Guam: "guam", "N. Mariana Is.": "cnmi" };
+const r = (n) => Math.round(n * 100) / 100;
+const r1 = (n) => Math.round(n * 10) / 10;
+const rc1 = (c) => (typeof c[0] === "number" ? [r1(c[0]), r1(c[1])] : c.map(rc1));
+const rc = (c) => (typeof c[0] === "number" ? [r(c[0]), r(c[1])] : c.map(rc));
+const nations = feature(c10, c10.objects.countries).features.filter((f) => KEY[f.properties.name]).map((f) => ({ type: "Feature", properties: { key: KEY[f.properties.name] }, geometry: { type: f.geometry.type, coordinates: rc(f.geometry.coordinates) } }));
+const land = feature(l50, l50.objects.land);
+const geoms = land.features ? land.features.map((f) => f.geometry) : [land.geometry];
+const polys = geoms.flatMap((g) => (g.type === "MultiPolygon" ? g.coordinates : [g.coordinates]));
+const inBox = (poly) => poly[0].some(([x, y]) => x > 112 && x < 195 && y > -22 && y < 36);
+const detail = { type: "Feature", properties: {}, geometry: { type: "MultiPolygon", coordinates: rc1(polys.filter(inBox)) } };
+writeFileSync("micronesia-geo.json", JSON.stringify({ nations: { type: "FeatureCollection", features: nations }, detail }));
+console.log(nations.length, polys.filter(inBox).length);

@@ -5,7 +5,7 @@ import { ISLAND_GREETINGS } from "@/lib/shared/island-greetings";
 import { FeaturedProducts, getFeaturedProductsForHome } from "./components/featured-products";
 import { Reveal } from "./components/reveal";
 import { ObjectWall } from "./components/scenes/object-wall";
-import { WorldAtlas } from "./components/scenes/world-atlas";
+import { GlobeLazy } from "./components/scenes/globe-lazy";
 import { TransformScene } from "./components/scenes/transform-scene";
 
 export const metadata = {
@@ -120,7 +120,7 @@ export default async function HomePage() {
           </div>
         </Reveal>
         <Reveal delay={120}>
-          <div style={{ color: "var(--so-ink)", marginTop: "2.2rem" }}><WorldAtlas /></div>
+          <div style={{ color: "var(--so-ink)", marginTop: "2.2rem" }}><GlobeLazy /></div>
         </Reveal>
       </section>
 

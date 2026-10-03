@@ -240,3 +240,10 @@
   .sx-atlas { aspect-ratio: 4 / 3; }
   .sx-atlas-view { object-fit: cover; } }
 @media (prefers-reduced-motion: reduce) { .sx-atlas-view { transition: none; transform: none; } }
+
+/* Globe */
+.sx-globe { position: relative; height: clamp(22rem, 62vw, 40rem); border: 1.5px solid var(--so-ink); box-shadow: 6px 6px 0 var(--so-ink); overflow: hidden; background: #0a1f24; cursor: grab; touch-action: pan-y; }
+.sx-globe:active { cursor: grabbing; }
+.sx-globe .sx-atlas-tag { background: rgba(10,31,36,.82); border-color: rgba(244,236,221,.5); backdrop-filter: blur(6px); color: #f4ecdd; }
+.sx-globe .sx-atlas-tag .sx-mono { color: #f0c419 !important; }
+.sx-globe-hint { position: absolute; right: 0.9rem; bottom: 0.8rem; color: rgba(244,236,221,.8); font-size: 0.64rem; }
