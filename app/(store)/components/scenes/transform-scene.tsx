@@ -24,7 +24,7 @@ const STAGE_NAMES = ["Idea", "Design", "Object"] as const;
 const MONO = 'ui-monospace, "SF Mono", Menlo, Consolas, monospace';
 
 function IdeaCard({ w, h, art, stage, drawn }: { w: number; h: number; art: ArtKind; stage: number; drawn: number }) {
-  const art2 = Math.min(w - 56, h * 0.46);
+  const art2 = Math.max(60, Math.min(w - 56, h * 0.46, h - (h * 0.2 + 112) - 18));
   return (
     <g>
       <rect x="6" y="8" width={w} height={h} rx="6" fill="#16120d" opacity=".14" />
