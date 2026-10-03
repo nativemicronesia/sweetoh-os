@@ -3082,9 +3082,23 @@ export function ProductEditor({
   }
   const savingRef = useRef(false);
   const lastSaveAt = useRef(0);
+  const saveInFlight = useRef<Promise<void> | null>(null);
+  /**
+   * One save at a time. A background autosave that is already running is simply skipped, but
+   * when the person presses Save, it waits for that autosave and then saves, so the click
+   * never does nothing and a name they just typed is not left behind.
+   */
   async function saveStandalone(silent = false) {
-    // One save at a time; edits made while a save runs set dirty again and are picked up next round.
-    if (savingRef.current) return;
+    if (saveInFlight.current) {
+      if (silent) return;
+      setBusy("Saving design…");
+      await saveInFlight.current.catch(() => undefined);
+    }
+    const run = runStandaloneSave(silent);
+    saveInFlight.current = run;
+    try { await run; } finally { if (saveInFlight.current === run) saveInFlight.current = null; }
+  }
+  async function runStandaloneSave(silent: boolean) {
     savingRef.current = true;
     dirty.current = false;
     if (!silent) setBusy("Saving design…");

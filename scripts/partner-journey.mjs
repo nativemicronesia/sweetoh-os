@@ -86,6 +86,8 @@ await step("start a portrait design from Studio home", async () => {
   await page.getByRole("link", { name: /Portrait artwork/ }).first().click();
   await page.waitForURL(/\/partner\/canvas\?new=portrait/, { timeout: 30_000 });
   await editorReady();
+  // Name it first, so even a background autosave can only ever save under the test name.
+  await page.getByLabel("Design name").fill(designName);
 });
 
 await step("add a heading and type her own words", async () => {
