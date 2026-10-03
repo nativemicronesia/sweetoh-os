@@ -34,6 +34,8 @@ const browser = await chromium.launch({ executablePath: chrome, headless: true }
 const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
 const page = await context.newPage();
 page.on("console", (m) => { if (m.type() === "error" && !/favicon|Failed to load resource/i.test(m.text())) problems.push(`console: ${m.text().slice(0, 160)}`); });
+// A "leave this site?" prompt after saving would alarm her, so it counts as a problem.
+page.on("dialog", (d) => { problems.push(`dialog: ${d.type()} "${d.message().slice(0, 60)}"`); void d.accept(); });
 page.on("pageerror", (e) => problems.push(`exception: ${e.message.slice(0, 160)}`));
 page.on("response", (r) => { if (r.status() >= 500) problems.push(`HTTP ${r.status()} ${new URL(r.url()).pathname}`); });
 

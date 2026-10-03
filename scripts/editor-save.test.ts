@@ -17,3 +17,11 @@ test("an explicit Save waits for an in-flight autosave instead of being dropped"
   assert.match(body, /const run = runStandaloneSave\(silent\)/);
   assert.doesNotMatch(source, /if \(savingRef\.current\) return;/, "the old silent drop is gone");
 });
+
+test("a save that waits behind an autosave updates the same design instead of creating a second one", () => {
+  const source = readFileSync("app/(partner)/partner/canvas/product-editor.tsx", "utf8");
+  assert.match(source, /const designIdRef = useRef<string \| null>\(savedDesignId\)/);
+  assert.match(source, /if \(designIdRef\.current\) form\.set\("designId", designIdRef\.current\)/);
+  assert.match(source, /designIdRef\.current = result\.saved\.id;/);
+  assert.doesNotMatch(source, /if \(designId\) form\.set\("designId", designId\)/, "the stale closure value must not be used");
+});

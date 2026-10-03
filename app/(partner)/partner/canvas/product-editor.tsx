@@ -481,6 +481,8 @@ export function ProductEditor({
   const returnLabel = requestedReturnLabel ?? "Back to catalog";
   const [publishOpen, setPublishOpen] = useState(false);
   const [designId, setDesignId] = useState<string | null>(savedDesignId);
+  // A save that waits behind an autosave must see the id that autosave just created, not the id from when it was pressed.
+  const designIdRef = useRef<string | null>(savedDesignId);
   const [savedNote, setSavedNote] = useState<string | null>(null);
   /** Local autosave, so a closed tab or a crash never costs someone their work. */
   const draftKey = `sweetoh:draft:${initialBlankId ?? blanks[0]?.id ?? "new"}:${draftScope}`;
@@ -3120,13 +3122,14 @@ export function ProductEditor({
       if (!preview) throw new Error("Couldn’t render this design.");
       const form = new FormData();
       form.set("name", name.trim() || "Untitled design");
-      if (designId) form.set("designId", designId);
+      if (designIdRef.current) form.set("designId", designIdRef.current);
       form.set("studioLayout", JSON.stringify(doc.current));
       form.set("file", new File([preview], "design.png", { type: "image/png" }));
       const result = await saveStudioDesignAction(form);
       if ("error" in result) throw new Error(result.error);
       clearDraft();
       lastSaveAt.current = nowMs();
+      designIdRef.current = result.saved.id;
       setDesignId(result.saved.id);
       setSavedNote(`${silent ? "Autosaved" : "Saved"} ${new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`);
       window.history.replaceState(null, "", `/partner/canvas?composition=${result.saved.id}`);
