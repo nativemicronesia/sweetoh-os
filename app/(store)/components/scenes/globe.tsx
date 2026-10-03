@@ -15,19 +15,19 @@ import micro from "./micronesia-geo.json";
  */
 
 type Pose = { lon: number; lat: number; zoom: number };
-const HOME: Pose = { lon: -178, lat: 18, zoom: 1.45 };
-const MICRONESIA: Pose = { lon: 153, lat: 9, zoom: 5.2 };
+const HOME: Pose = { lon: -168, lat: 28, zoom: 1 };
+const MICRONESIA: Pose = { lon: 154, lat: 9, zoom: 3.4 };
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 9;
 
 const LACEY: [number, number] = [-122.8, 47.0];
-const ROUTES: [number, number][] = [[144.8, 13.45], [158.2, 6.9], [171.4, 7.1], [134.5, 7.5], [-157.9, 21.3], [151.8, 7.4]];
 const PLACES: { name: string; lon: number; lat: number; dx: number; dy: number }[] = [
   { name: "Palau", lon: 134.5, lat: 7.5, dx: -8, dy: -10 }, { name: "Yap", lon: 138.1, lat: 9.5, dx: 0, dy: -11 },
   { name: "Guam", lon: 144.8, lat: 13.45, dx: 0, dy: 20 }, { name: "Saipan", lon: 145.7, lat: 15.2, dx: 14, dy: -6 },
   { name: "Chuuk", lon: 151.8, lat: 7.4, dx: 0, dy: 20 }, { name: "Pohnpei", lon: 158.2, lat: 6.9, dx: 0, dy: -12 },
   { name: "Kosrae", lon: 163.0, lat: 5.3, dx: 0, dy: 20 }, { name: "Majuro", lon: 171.4, lat: 7.1, dx: 0, dy: -12 },
   { name: "Nauru", lon: 166.9, lat: -0.52, dx: 14, dy: 6 }, { name: "Tarawa", lon: 173.0, lat: 1.4, dx: 16, dy: 4 },
+  { name: "Kwajalein", lon: 167.7, lat: 8.7, dx: 0, dy: -12 }, { name: "Kiritimati", lon: -157.4, lat: 1.9, dx: 0, dy: 20 },
   { name: "Honolulu", lon: -157.9, lat: 21.3, dx: 0, dy: -12 },
 ];
 
@@ -152,7 +152,7 @@ export function Globe({ destinations = [], estimates = {} }: { destinations?: Gl
       const t = now / 1000;
       ctx.lineWidth = 1.6; ctx.setLineDash([2, 7]); ctx.lineDashOffset = -t * 18; ctx.strokeStyle = "rgba(255,247,226,.9)";
       const real = dests.current;
-      const routeTo: [number, number][] = real.length ? real.map((d) => [d.lon, d.lat]) : ROUTES;
+      const routeTo: [number, number][] = real.map((d) => [d.lon, d.lat]);
       for (const to of routeTo) { ctx.beginPath(); path({ type: "LineString", coordinates: [LACEY, to] } as never); ctx.stroke(); }
       ctx.setLineDash([]);
       hits.current = [];
@@ -168,31 +168,37 @@ export function Globe({ destinations = [], estimates = {} }: { destinations?: Gl
         if (sel || s.zoom > 1.6) label(ctx, d.name, q[0], q[1] - rad - 8, "center", 13);
       }
 
-      // Lacey pin with pulse
+      // Lacey: the hub everything leaves from
       const lp = proj(LACEY);
       const front = lp && geoDistance(LACEY, [s.lon, s.lat]) < Math.PI / 2;
       if (lp && front) {
-        const pulse = (t % 2.2) / 2.2;
-        ctx.beginPath(); ctx.arc(lp[0], lp[1], 7 + pulse * 22, 0, Math.PI * 2); ctx.strokeStyle = `rgba(240,196,25,${0.7 * (1 - pulse)})`; ctx.lineWidth = 2; ctx.stroke();
-        ctx.beginPath(); ctx.arc(lp[0], lp[1], 7, 0, Math.PI * 2); ctx.fillStyle = "#f0c419"; ctx.fill(); ctx.strokeStyle = "#16120d"; ctx.lineWidth = 2; ctx.stroke();
-        label(ctx, "Lacey, Washington", lp[0] + 14, lp[1] + 5, "left", 15);
+        const pulse = (t % 2.4) / 2.4;
+        ctx.beginPath(); ctx.arc(lp[0], lp[1], 11 + pulse * 34, 0, Math.PI * 2); ctx.strokeStyle = `rgba(240,196,25,${0.75 * (1 - pulse)})`; ctx.lineWidth = 2.4; ctx.stroke();
+        ctx.beginPath(); ctx.arc(lp[0], lp[1], 15, 0, Math.PI * 2); ctx.fillStyle = "rgba(240,196,25,.3)"; ctx.fill();
+        ctx.beginPath(); ctx.arc(lp[0], lp[1], 9, 0, Math.PI * 2); ctx.fillStyle = "#f0c419"; ctx.fill(); ctx.strokeStyle = "#16120d"; ctx.lineWidth = 2.4; ctx.stroke();
+        ctx.beginPath(); ctx.arc(lp[0], lp[1], 3, 0, Math.PI * 2); ctx.fillStyle = "#16120d"; ctx.fill();
+        const flip = lp[0] > w * 0.55;
+        label(ctx, "Lacey, Washington", lp[0] + (flip ? -18 : 18), lp[1] + 6, flip ? "right" : "left", w < 520 ? 14 : 17);
       }
 
-      // island names when close
-      if (s.zoom > 3) {
+      // every island named, as soon as there is room for it
+      if (s.zoom > 2.1) {
+        const placed: [number, number, number, number][] = [];
+        const size = s.zoom > 4 ? 14 : 12;
         for (const p of PLACES) {
-          if (p.lon < 0) continue;
           if (geoDistance([p.lon, p.lat], [s.lon, s.lat]) > Math.PI / 2) continue;
           const q = proj([p.lon, p.lat]);
           if (!q) continue;
-          ctx.beginPath(); ctx.arc(q[0], q[1], 3.4, 0, Math.PI * 2); ctx.fillStyle = "#f0c419"; ctx.fill(); ctx.strokeStyle = "#16120d"; ctx.lineWidth = 1.4; ctx.stroke();
-          label(ctx, p.name, q[0] + p.dx, q[1] + p.dy, p.dx > 8 ? "left" : p.dx < -4 ? "right" : "center", 14);
-        }
-      } else if (s.zoom > 1.2) {
-        const hp = proj([-157.9, 21.3]);
-        if (hp && geoDistance([-157.9, 21.3], [s.lon, s.lat]) < Math.PI / 2 && s.zoom < 2) {
-          ctx.beginPath(); ctx.arc(hp[0], hp[1], 3.4, 0, Math.PI * 2); ctx.fillStyle = "#f0c419"; ctx.fill(); ctx.strokeStyle = "#16120d"; ctx.lineWidth = 1.4; ctx.stroke();
-          label(ctx, "Honolulu", hp[0], hp[1] - 11, "center", 14);
+          ctx.beginPath(); ctx.arc(q[0], q[1], 3.2, 0, Math.PI * 2); ctx.fillStyle = "#f0c419"; ctx.fill(); ctx.strokeStyle = "#16120d"; ctx.lineWidth = 1.3; ctx.stroke();
+          ctx.font = `600 ${size}px Fraunces, Georgia, serif`;
+          const tw = ctx.measureText(p.name).width;
+          const align: CanvasTextAlign = p.dx > 8 ? "left" : p.dx < -4 ? "right" : "center";
+          const x = q[0] + p.dx, y = q[1] + p.dy;
+          const left = align === "left" ? x : align === "right" ? x - tw : x - tw / 2;
+          const rect: [number, number, number, number] = [left - 3, y - size, left + tw + 3, y + 4];
+          if (placed.some((o) => rect[0] < o[2] && rect[2] > o[0] && rect[1] < o[3] && rect[3] > o[1])) continue;
+          placed.push(rect);
+          label(ctx, p.name, x, y, align, size);
         }
       }
 
@@ -275,7 +281,7 @@ export function Globe({ destinations = [], estimates = {} }: { destinations?: Gl
   return (
     <figure style={{ margin: 0 }}>
       <div ref={wrap} className="sx-globe" tabIndex={0} role="group" aria-label="Interactive globe. Drag to turn, plus and minus to zoom, arrow keys to move." onKeyDown={key} onWheel={wheel} onDoubleClick={() => zoomBy(1.8)} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}>
-        <canvas ref={canvas} role="img" aria-label="A globe of the Pacific and the world drawn from real coastlines. Lacey, Washington is where every piece is made; the Micronesian islands are highlighted in red." style={{ width: "100%", height: "100%", display: "block", touchAction: "pan-y" }} />
+        <canvas ref={canvas} role="img" aria-label="A globe of the Pacific and the world drawn from real coastlines. Lacey, Washington is the hub where every piece is made; the Micronesian islands are highlighted in red." style={{ width: "100%", height: "100%", display: "block", touchAction: "pan-y" }} />
         <div className="sx-atlas-tag">
           <span className="sx-mono" style={{ color: "var(--so-gold)" }}>Made in Lacey, Washington</span>
           <b>Rooted in Micronesia</b>
@@ -290,10 +296,10 @@ export function Globe({ destinations = [], estimates = {} }: { destinations?: Gl
           <button type="button" className="sx-globe-btn" onClick={() => zoomBy(1.6)} aria-label="Zoom in"><Plus size={18} aria-hidden /></button>
           <button type="button" className="sx-globe-btn" onClick={() => zoomBy(1 / 1.6)} aria-label="Zoom out"><Minus size={18} aria-hidden /></button>
         </div>
-        <span className="sx-globe-hint sx-mono" aria-hidden>{destinations.length ? "Drag to turn · select a dot" : "Drag to turn · zoom in"}</span>
+        <span className="sx-globe-hint sx-mono" aria-hidden>{destinations.length ? "Drag to turn · select a dot" : "Drag to turn · zoom for island names"}</span>
       </div>
       <figcaption className="sx-atlas-foot">
-        <p>{destinations.length ? `Shipped to ${destinations.length} ${destinations.length === 1 ? "country" : "countries"} so far. Select a dot to see how shipping works there.` : "Palau, the four states of the FSM, Guam and the Marianas, the Marshall Islands, Nauru and Kiribati are in red. Zoom in to see the islands by name."}</p>
+        <p>{destinations.length ? `Shipped to ${destinations.length} ${destinations.length === 1 ? "country" : "countries"} so far. Select a dot to see how shipping works there.` : "Lacey, Washington is where every piece is made. The islands of Palau, the FSM, Guam and the Marianas, the Marshall Islands, Nauru and Kiribati are in red. Zoom in a little to see them by name."}</p>
         <div className="sx-atlas-ctl" role="group" aria-label="Jump to">
           <button type="button" className="sx-chip" onClick={() => glide(MICRONESIA)}>Micronesia</button>
           <button type="button" className="sx-chip sx-chip-ghost" onClick={() => glide(HOME)}>Reset</button>
