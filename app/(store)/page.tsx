@@ -5,7 +5,7 @@ import { ISLAND_GREETINGS } from "@/lib/shared/island-greetings";
 import { FeaturedProducts, getFeaturedProductsForHome } from "./components/featured-products";
 import { Reveal } from "./components/reveal";
 import { ObjectWall } from "./components/scenes/object-wall";
-import { PlaceMap } from "./components/scenes/place-map";
+import { WorldAtlas } from "./components/scenes/world-atlas";
 import { TransformScene } from "./components/scenes/transform-scene";
 
 export const metadata = {
@@ -109,7 +109,7 @@ export default async function HomePage() {
             <h2 className="sx-h2" style={{ marginTop: "0.9rem" }}>Made in <span className="sx-em">Lacey.</span><br />Rooted in Micronesia.</h2>
             <div>
               <p className="sx-lede">
-                Every piece is made to order by a Micronesian-owned shop in Washington state, for people in the islands, across the mainland, and anywhere else someone wants to hold their idea.
+                Every piece is made to order by a Micronesian-owned shop in Washington state. For family in the islands, for the diaspora across the mainland, and for anyone anywhere who is drawn to this work.
               </p>
               <ul className="sx-hello" style={{ marginTop: "1.4rem", padding: 0 }}>
                 {ISLAND_GREETINGS.map((g) => (
@@ -120,7 +120,7 @@ export default async function HomePage() {
           </div>
         </Reveal>
         <Reveal delay={120}>
-          <div style={{ color: "var(--so-ink)", marginTop: "2.2rem" }}><PlaceMap /></div>
+          <div style={{ color: "var(--so-ink)", marginTop: "2.2rem" }}><WorldAtlas /></div>
         </Reveal>
       </section>
 

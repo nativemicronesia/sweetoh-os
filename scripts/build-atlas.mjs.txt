@@ -1,0 +1,47 @@
+import { readFileSync, writeFileSync } from "node:fs";
+import { feature } from "topojson-client";
+import { geoEquirectangular, geoMercator, geoPath, geoGraticule } from "d3-geo";
+const load = (f) => JSON.parse(readFileSync(`node_modules/world-atlas/${f}`, "utf8"));
+const c10 = load("countries-10m.json"), l50 = load("land-50m.json"), l110 = load("land-110m.json");
+const nations = feature(c10, c10.objects.countries).features;
+const MIC = new Set(["Palau", "Micronesia", "Marshall Is.", "Kiribati", "Nauru", "Guam", "N. Mariana Is."]);
+const mic = { type: "FeatureCollection", features: nations.filter((f) => MIC.has(f.properties.name)) };
+const W = 1000, H = 560;
+const LACEY = [-122.8, 47.0];
+const round = (d) => (d ?? "").replace(/(\d+\.\d{2,})/g, (m) => (+m).toFixed(1));
+
+function build({ id, name, kicker, note, cx, cy, span, kind, land, step = 10, halo = 14, micW = 3 }) {
+  const lonRad = (span * Math.PI) / 180;
+  const k = W / lonRad;
+  const proj = kind === "merc" ? geoMercator() : geoEquirectangular();
+  proj.rotate([-cx, 0]).scale(k).translate([0, 0]);
+  const c = proj([cx, cy]);
+  proj.translate([W / 2 - c[0], H / 2 - c[1]]);
+  proj.clipExtent([[0, 0], [W, H]]);
+  const path = geoPath(proj);
+  const half = span / 2;
+  const grat = geoGraticule().step([step, step]).extent([[cx - half - 5 < -180 ? -180 : cx - half - 5, -80], [cx + half + 5 > 180 ? 180 : cx + half + 5, 84]]);
+  const lacey = proj(LACEY);
+  const inView = lacey && lacey[0] >= 0 && lacey[0] <= W && lacey[1] >= 0 && lacey[1] <= H;
+  const arc = path({ type: "LineString", coordinates: [LACEY, [cx, cy]] });
+  return {
+    id, name, kicker, note,
+    land: round(path(feature(land, land.objects.land))),
+    micro: round(path(mic)),
+    grat: round(path(grat())),
+    arc: round(arc),
+    lacey: inView ? [+lacey[0].toFixed(1), +lacey[1].toFixed(1)] : null,
+    halo, micW,
+  };
+}
+const views = [
+  build({ id: "micronesia", name: "Micronesia", kicker: "Home islands", note: "Palau, the four states of the FSM, Guam and the Marianas, the Marshall Islands, Nauru and Kiribati.", cx: 154, cy: 8, span: 52, kind: "eq", land: l50, halo: 12, micW: 3.2 }),
+  build({ id: "pacific", name: "The Pacific", kicker: "The wide ocean", note: "Hawaii, the islands, and the long way home to the Pacific Northwest.", cx: 190, cy: 18, span: 130, kind: "eq", land: l110, halo: 16, micW: 4.5 }),
+  build({ id: "north-america", name: "North America", kicker: "Where it's made", note: "Lacey, Washington: every piece is made here, then sent across the continent.", cx: -105, cy: 40, span: 110, kind: "merc", land: l110, step: 10, halo: 16, micW: 5 }),
+  build({ id: "asia", name: "Asia and Australasia", kicker: "Across the water", note: "Family in the Philippines, Japan, Australia, New Zealand and everywhere between.", cx: 118, cy: 8, span: 120, kind: "merc", land: l110, step: 10, halo: 16, micW: 5 }),
+  build({ id: "europe", name: "Europe and the Middle East", kicker: "Further out", note: "Friends, military families and curious people far from any island.", cx: 22, cy: 44, span: 90, kind: "merc", land: l110, step: 10, halo: 16, micW: 5 }),
+  build({ id: "africa", name: "Africa", kicker: "Further still", note: "People who found the work and wanted a piece of it.", cx: 20, cy: 0, span: 135, kind: "eq", land: l110, step: 10, halo: 16, micW: 5 }),
+  build({ id: "south-america", name: "South America and the Caribbean", kicker: "Everywhere else", note: "Anyone who wants to hold their idea in their hands.", cx: -62, cy: -27, span: 128, kind: "eq", land: l110, step: 10, halo: 16, micW: 5 }),
+];
+writeFileSync("atlas-data.ts", `/* Generated from Natural Earth via world-atlas (public domain). Do not edit by hand. */\nexport type AtlasView = { id: string; name: string; kicker: string; note: string; land: string; micro: string; grat: string; arc: string; lacey: [number, number] | null; halo: number; micW: number };\nexport const ATLAS: readonly AtlasView[] = ${JSON.stringify(views)};\nexport const ATLAS_SIZE = { width: ${W}, height: ${H} } as const;\n`);
+console.log(views.map((v) => `${v.id} land=${v.land.length} lacey=${JSON.stringify(v.lacey)} micro=${v.micro.length}`).join("\n"));
