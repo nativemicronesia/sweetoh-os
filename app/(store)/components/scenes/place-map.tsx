@@ -1,53 +1,53 @@
-/**
- * Where SweetOh is made and where it is rooted. A simple plotted chart (longitude across, latitude
- * down, dateline crossed), not a decorative map: Lacey, Washington to the islands, and out to anywhere.
- */
-const W = 1000;
-const H = 420;
-const px = (lon: number) => (((lon + 360) % 360) - 120) / 130 * W;
-const py = (lat: number) => ((50 - lat) / 52) * 400 + 6;
+import { PACIFIC } from "./pacific-data";
 
-const LACEY = { x: px(-122.8), y: py(47) };
-const PLACES = [
-  { name: "Palau", lon: 134.5, lat: 7.5, side: "left" },
-  { name: "Guam", lon: 144.8, lat: 13.4, side: "top" },
-  { name: "Pohnpei", lon: 158.2, lat: 6.9, side: "bottom" },
-  { name: "Marshall Islands", lon: 171.4, lat: 7.1, side: "top" },
-  { name: "Kiribati", lon: 173, lat: 1.4, side: "bottom" },
-] as const;
+/**
+ * Real geography (Natural Earth, public domain): the Pacific from Asia to Washington state, and a
+ * close-up of Micronesia with every nation's coastline drawn to scale. Lacey, Washington is where
+ * it's made; the islands are where it's rooted.
+ */
+const NATIONS = ["palau", "fsm", "guam", "cnmi", "marshall", "nauru", "kiribati"] as const;
 
 export function PlaceMap({ className }: { className?: string }) {
+  const { wide, close } = PACIFIC;
+  const [zx0, zy0, zx1, zy1] = wide.zoom;
+  const [lx, ly] = wide.lacey;
+  const mid = [(zx0 + zx1) / 2, zy0];
+  const islands = (paths: Record<string, string>, w: number, halo: number) =>
+    NATIONS.map((n) => (
+      <g key={n}>
+        <path d={paths[n]} fill="none" stroke="#d93d22" strokeOpacity=".28" strokeWidth={halo} strokeLinejoin="round" />
+        <path d={paths[n]} fill="#d93d22" stroke="#d93d22" strokeWidth={w} strokeLinejoin="round" />
+      </g>
+    ));
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className={className} role="img" aria-label="A chart from Lacey, Washington across the Pacific to Guam, Palau, Pohnpei, the Marshall Islands and Kiribati." style={{ width: "100%", height: "auto", display: "block", overflow: "visible" }}>
-      <g stroke="currentColor" strokeOpacity=".16" strokeWidth="1">
-        {[0, 1, 2, 3, 4, 5, 6].map((i) => <line key={`v${i}`} x1={i * (W / 6)} x2={i * (W / 6)} y1="0" y2={H} />)}
-        {[0, 1, 2, 3, 4].map((i) => <line key={`h${i}`} x1="0" x2={W} y1={i * 100 + 6} y2={i * 100 + 6} />)}
-      </g>
-      {PLACES.map((p, i) => {
-        const x = px(p.lon);
-        const y = py(p.lat);
-        const mx = (LACEY.x + x) / 2;
-        const my = Math.min(LACEY.y, y) - 70 - i * 6;
-        return <path key={p.name} d={`M${LACEY.x} ${LACEY.y} Q${mx} ${my} ${x} ${y}`} className="sx-place-line" style={{ stroke: "currentColor" }} />;
-      })}
-      {PLACES.map((p) => {
-        const x = px(p.lon);
-        const y = py(p.lat);
-        const dy = p.side === "top" ? -16 : p.side === "bottom" ? 26 : 5;
-        const dx = p.side === "left" ? -14 : 0;
-        return (
-          <g key={p.name} className="sx-place-pt">
-            <circle cx={x} cy={y} r="13" fill="none" stroke="#d93d22" strokeOpacity=".4" />
-            <circle cx={x} cy={y} r="6" className="sx-place-dot" />
-            <text x={x + dx} y={y + dy} textAnchor={p.side === "left" ? "end" : "middle"} fill="currentColor">{p.name.toUpperCase()}</text>
+    <figure className={className} style={{ margin: 0, position: "relative" }}>
+      <div className="sx-map-scroll" tabIndex={0} role="region" aria-label="Map of Micronesia, scrolls sideways on small screens">
+      <svg viewBox={`0 0 ${close.width} ${close.height}`} role="img" aria-label="Map of Micronesia: Palau, the Federated States of Micronesia, Guam, the Northern Mariana Islands, the Marshall Islands, Nauru and Kiribati, drawn from real coastlines." style={{ width: "100%", height: "auto", display: "block", background: "color-mix(in srgb, #1b8ea6 9%, var(--so-black))", border: "1.5px solid currentColor" }}>
+        <path d={close.grat} fill="none" stroke="currentColor" strokeOpacity=".16" strokeWidth="1" />
+        <path d={close.land} fill="#e9dcc0" stroke="currentColor" strokeOpacity=".55" strokeWidth="1" strokeLinejoin="round" />
+        {islands(close.nations, 3.2, 12)}
+        {close.labels.map((l) => <text key={l.text} x={l.x} y={l.y} textAnchor={l.anchor} className="sx-map-label sx-map-nation" fill="currentColor">{l.text}</text>)}
+        {close.places.map((p) => (
+          <g key={p.name}>
+            <circle cx={p.x} cy={p.y} r="4" fill="#f0c419" stroke="currentColor" strokeWidth="1.6" />
+            <text x={p.x + (p.side === "e" ? 10 : 0)} y={p.y + (p.side === "n" ? -11 : p.side === "s" ? 20 : 4)} textAnchor={p.side === "e" ? "start" : "middle"} className="sx-map-place" fill="currentColor">{p.name}</text>
           </g>
-        );
-      })}
-      <g className="sx-place-pt">
-        <circle cx={LACEY.x} cy={LACEY.y} r="14" fill="#f0c419" stroke="currentColor" strokeWidth="2" />
-        <circle cx={LACEY.x} cy={LACEY.y} r="5" fill="currentColor" />
-        <text x={LACEY.x} y={LACEY.y + 38} textAnchor="middle" fill="currentColor">LACEY, WASHINGTON</text>
-      </g>
-    </svg>
+        ))}
+        <g transform="translate(24 24)" className="sx-map-label"><text fill="currentColor">MICRONESIA · DRAWN FROM REAL COASTLINES</text></g>
+      </svg>
+      </div>
+      <div className="sx-map-inset">
+        <svg viewBox={`0 0 ${wide.width} ${wide.height}`} role="img" aria-label="Locator: the Pacific from Asia to Washington state, with Lacey, Washington and Micronesia marked." style={{ width: "100%", height: "auto", display: "block" }}>
+          <rect width={wide.width} height={wide.height} fill="var(--so-black)" />
+          <path d={wide.grat} fill="none" stroke="currentColor" strokeOpacity=".14" strokeWidth="1.5" />
+          <path d={wide.land} fill="#e9dcc0" stroke="currentColor" strokeOpacity=".6" strokeWidth="2" strokeLinejoin="round" />
+          {islands(wide.nations, 5, 16)}
+          <rect x={zx0} y={zy0} width={zx1 - zx0} height={zy1 - zy0} fill="none" stroke="currentColor" strokeWidth="3" strokeDasharray="9 8" />
+          <path d={`M${lx} ${ly} Q${(lx + mid[0]) / 2} ${ly - 130} ${mid[0]} ${mid[1]}`} fill="none" stroke="currentColor" strokeWidth="3.5" strokeDasharray="4 11" strokeLinecap="round" />
+          <circle cx={lx} cy={ly} r="18" fill="#f0c419" stroke="currentColor" strokeWidth="4" />
+          <text x={lx - 22} y={ly + 56} textAnchor="end" style={{ fontSize: 34, fontWeight: 700, letterSpacing: "0.08em" }} className="sx-map-label" fill="currentColor">LACEY, WA</text>
+        </svg>
+      </div>
+    </figure>
   );
 }

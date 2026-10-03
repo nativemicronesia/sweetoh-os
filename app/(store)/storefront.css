@@ -212,3 +212,13 @@
 @keyframes sx-bob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -10px; } }
 @media (max-width: 960px) { .sx-split-hero { grid-template-columns: 1fr; } .sx-hero-objects { min-height: 20rem; max-width: 26rem; } }
 @media (prefers-reduced-motion: reduce) { .sx-ho { animation: none; } }
+
+.sx-map-label { font-family: ui-monospace, Menlo, monospace; font-size: 11px; font-weight: 700; letter-spacing: .12em; }
+.sx-map-nation { font-size: 10px; opacity: .85; }
+.sx-map-place { font-family: var(--font-display); font-size: 14px; font-weight: 600; paint-order: stroke; stroke: var(--so-black); stroke-width: 3.5px; stroke-linejoin: round; }
+
+.sx-place-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(1.5rem, 4vw, 4rem); align-items: end; }
+@media (max-width: 900px) { .sx-place-head { grid-template-columns: 1fr; } }
+.sx-map-inset { position: absolute; top: 8%; left: 1.6%; width: 26%; border: 1.5px solid var(--so-ink); box-shadow: 4px 4px 0 var(--so-ink); background: var(--so-black); }
+@media (max-width: 640px) { .sx-map-inset { position: static; width: 100%; margin-top: 0.9rem; } .sx-map-scroll > svg { min-width: 760px; } }
+.sx-map-scroll { overflow-x: auto; }

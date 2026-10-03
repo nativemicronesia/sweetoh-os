@@ -103,23 +103,25 @@ export default async function HomePage() {
 
       {/* 5. Place */}
       <section className="sx-section sx-wrap">
-        <div className="sx-place-grid">
-          <Reveal>
-            <p className="sx-label sx-mono">Where it comes from</p>
+        <Reveal>
+          <p className="sx-label sx-mono">Where it comes from</p>
+          <div className="sx-place-head">
             <h2 className="sx-h2" style={{ marginTop: "0.9rem" }}>Made in <span className="sx-em">Lacey.</span><br />Rooted in Micronesia.</h2>
-            <p className="sx-lede" style={{ marginTop: "1.2rem" }}>
-              Every piece is made to order by a Micronesian-owned shop in Washington state, for people in the islands, across the mainland, and anywhere else someone wants to hold their idea.
-            </p>
-            <ul className="sx-hello" style={{ marginTop: "1.6rem", padding: 0 }}>
-              {ISLAND_GREETINGS.map((g) => (
-                <li key={g.greeting}><b>{g.greeting}</b><small>{g.place}</small></li>
-              ))}
-            </ul>
-          </Reveal>
-          <Reveal delay={120}>
-            <div style={{ color: "var(--so-ink)" }}><PlaceMap /></div>
-          </Reveal>
-        </div>
+            <div>
+              <p className="sx-lede">
+                Every piece is made to order by a Micronesian-owned shop in Washington state, for people in the islands, across the mainland, and anywhere else someone wants to hold their idea.
+              </p>
+              <ul className="sx-hello" style={{ marginTop: "1.4rem", padding: 0 }}>
+                {ISLAND_GREETINGS.map((g) => (
+                  <li key={g.greeting}><b>{g.greeting}</b><small>{g.place}</small></li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </Reveal>
+        <Reveal delay={120}>
+          <div style={{ color: "var(--so-ink)", marginTop: "2.2rem" }}><PlaceMap /></div>
+        </Reveal>
       </section>
 
       {/* 6. Close */}
