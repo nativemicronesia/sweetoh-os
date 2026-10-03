@@ -286,6 +286,25 @@ await scenario("collage: pick photos, change layout, and stay accessible", async
   if (found.length) throw new Error(found.join("\n       "));
 });
 
+await scenario("on a phone: adding a heading shows the design, not a covered screen", async () => {
+  await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  try {
+    await fresh();
+    await ev(`${rail("Text")}.click()`); await sleep(600);
+    await waitFor("!!document.querySelector('.pe-panel')", "the text sheet");
+    const sheet = await ev("document.querySelector('.pe-panel').getBoundingClientRect().height / window.innerHeight");
+    if (!(sheet < 0.5)) throw new Error(`the sheet should leave room for the design (it covers ${Math.round(sheet * 100)}% of the screen)`);
+    await ev("document.querySelector('.pe-text-preset').click()");
+    await waitFor("!document.querySelector('.pe-panel')", "the sheet to step aside after adding");
+    const visible = await ev("(() => { const r = document.querySelector('.pe-canvas').getBoundingClientRect(); return r.top >= 0 && r.top < window.innerHeight * 0.7 && r.height > 150; })()");
+    if (!visible) throw new Error("the page should be on screen once the sheet closes");
+    const sideways = await ev("document.documentElement.scrollWidth > window.innerWidth + 2");
+    if (sideways) throw new Error("the page scrolls sideways on a phone");
+  } finally {
+    await send("Emulation.setDeviceMetricsOverride", { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
+  }
+});
+
 await scenario("autosave: work survives a reload", async () => {
   await fresh();
   await ev(`${rail("Shapes")}.click()`); await sleep(500);

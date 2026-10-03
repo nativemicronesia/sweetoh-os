@@ -47,6 +47,41 @@ function Shelf({ title, query, mode, prefixes, disabled, onAdd, onSeeAll }: { ti
   );
 }
 
+/**
+ * The best sticker and icon matches for a search from the main Elements view, so a
+ * search like "bear" leads with colorful bears instead of whatever the static
+ * library happens to tag with that word.
+ */
+export function LiveSearchPreview({ query, disabled, onAdd, onSeeAll }: { query: string; disabled: boolean; onAdd: (id: string) => void; onSeeAll: (mode: "icons" | "stickers") => void }) {
+  const term = query.trim();
+  const [found, setFound] = useState<{ key: string; stickers: string[]; icons: string[] } | null>(null);
+  useEffect(() => {
+    if (!term) return;
+    let live = true;
+    const timer = setTimeout(() => {
+      Promise.all([searchIcons(term, STICKER_PREFIXES, 8), searchIcons(term, ICON_PREFIXES, 8)])
+        .then(([stickers, icons]) => { if (live) setFound({ key: term, stickers, icons }); })
+        .catch(() => { if (live) setFound({ key: term, stickers: [], icons: [] }); });
+    }, 250);
+    return () => { live = false; clearTimeout(timer); };
+  }, [term]);
+  const ready = found?.key === term ? found : null;
+  if (ready && !ready.stickers.length && !ready.icons.length) return null;
+  const rows: Array<["stickers" | "icons", string, string[]]> = [["stickers", "Stickers", ready?.stickers ?? []], ["icons", "Icons", ready?.icons ?? []]];
+  return (
+    <div className="el-shelves">
+      {rows.map(([mode, title, ids]) => (ready && !ids.length ? null : (
+        <section key={mode} className="el-shelf" aria-label={`${title} for ${term}`}>
+          <header><div><h3>{title}</h3></div><button type="button" onClick={() => onSeeAll(mode)}>See all</button></header>
+          <div className="el-row">
+            {ready ? ids.map((id) => <IconTile key={id} id={id} mode={mode} disabled={disabled} onAdd={onAdd} />) : Array.from({ length: 6 }, (_, i) => <div key={i} className="el-tile" aria-hidden />)}
+          </div>
+        </section>
+      )))}
+    </div>
+  );
+}
+
 /** Live, searchable icon and sticker libraries from open sets. */
 export function LiveIcons({ mode, query, disabled, onAdd, onSeeAll }: { mode: "icons" | "stickers"; query: string; disabled: boolean; onAdd: (id: string) => void; onSeeAll: (query: string) => void }) {
   const [activeSet, setActiveSet] = useState<string>("all");

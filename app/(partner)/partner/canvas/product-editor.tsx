@@ -578,6 +578,12 @@ export function ProductEditor({
   const [name, setName] = useState(initialName || blank?.name || "My product");
   const [applyTargetId, setApplyTargetId] = useState(initialApplyTargetId ?? privateProductDrafts[0]?.id ?? "");
   const [layers, setLayers] = useState<StudioLayer[]>([]);
+  // On a phone the tool sheet covers the design, so once something is added the sheet steps aside.
+  const layerCount = useRef(0);
+  useEffect(() => {
+    if (layers.length > layerCount.current && typeof window !== "undefined" && window.matchMedia("(max-width: 860px)").matches) queueMicrotask(() => setPanel(null));
+    layerCount.current = layers.length;
+  }, [layers.length]);
   const printCheck = useRef<HTMLDetailsElement>(null);
   const [selected, setSelected] = useState<Selected>(null);
   const [showOriginalPhoto, setShowOriginalPhoto] = useState(false);
@@ -785,19 +791,19 @@ export function ProductEditor({
       const label = layer.kind === "text" ? `“${layer.text.slice(0, 22)}”` : layer.kind === "image" ? "Image" : layer.kind === "graphic" || layer.kind === "icon" ? "Element" : layer.kind === "pattern" ? "Pattern" : layer.kind === "drawing" ? "Drawing" : layer.kind === "path" ? "Vector path" : "Shape";
       if (layer.kind === "image" && ippX && ippY) {
         const dpi = Math.round(Math.min(1 / (object.scaleX * ippX), 1 / (object.scaleY * ippY)));
-        if (dpi < 100) found.push({ id: `${layer.id}:dpi`, level: "error", title: `${label} is low resolution`, detail: `${dpi} DPI at this size. It will print blurry; use a larger file or make it smaller.`, layerId: layer.id });
-        else if (dpi < 150) found.push({ id: `${layer.id}:dpi`, level: "warn", title: `${label} is borderline`, detail: `${dpi} DPI at this size. 150+ prints sharply.`, layerId: layer.id });
+        if (dpi < 100) found.push({ id: `${layer.id}:dpi`, level: "error", title: `${label} is too small to print sharply`, detail: "It would look blurry at this size. Use a bigger picture, or make it smaller on the page.", layerId: layer.id });
+        else if (dpi < 150) found.push({ id: `${layer.id}:dpi`, level: "warn", title: `${label} might look a little soft`, detail: "It should print fine, but a bigger picture would be sharper.", layerId: layer.id });
       }
       if (layer.kind === "text" && ippY) {
         const heightIn = (object as IText).fontSize * object.scaleY * ippY;
-        if (heightIn < 0.14) found.push({ id: `${layer.id}:size`, level: "warn", title: `${label} is very small`, detail: `${heightIn.toFixed(2)} in tall. Thin or tiny text can print unevenly; try 0.15 in or larger.`, layerId: layer.id });
+        if (heightIn < 0.14) found.push({ id: `${layer.id}:size`, level: "warn", title: `${label} is very small`, detail: "Tiny or thin text can print unevenly. Try making it a little bigger.", layerId: layer.id });
       }
       const paths = regions.filter((r) => !layer.printRegionId || r.id === layer.printRegionId).map((r) => new Path2D(regionPath(r)));
       const b = object.getBoundingRect();
       const samples = [0, 0.25, 0.5, 0.75, 1].flatMap((x) => [0, 0.25, 0.5, 0.75, 1].map((y) => [b.left + b.width * x, b.top + b.height * y] as const));
       const outsideCount = samples.filter(([x, y]) => !paths.some((path) => ctx.isPointInPath(path, x, y))).length;
       if (layer.kind !== "pattern" && outsideCount > 0) {
-        found.push({ id: `${layer.id}:area`, level: outsideCount === samples.length ? "error" : "warn", title: `${label} ${outsideCount === samples.length ? "is outside" : "extends past"} the print area`, detail: outsideCount === samples.length ? "Nothing of it will print." : "The part past the edge is clipped in print files.", layerId: layer.id });
+        found.push({ id: `${layer.id}:area`, level: outsideCount === samples.length ? "error" : "warn", title: `${label} ${outsideCount === samples.length ? "is outside" : "extends past"} the print area`, detail: outsideCount === samples.length ? "Nothing of it will print." : "The part past the edge will not print.", layerId: layer.id });
       }
     }
     return found;
@@ -3356,7 +3362,7 @@ export function ProductEditor({
             {panel === "shapes" && (
               <div className="pe-panel-body">
                 <section className="pe-section">
-                  <p className="pe-label">Vector pen</p>
+                  <p className="pe-label">Pen: draw your own shapes</p>
                   <button className="pe-btn pe-btn-primary pe-block" disabled={locked} aria-pressed={vectorTool === "pen"} onClick={() => (vectorTool === "pen" ? penRef.current?.cancel() : startPen())}><PenTool size={16} />{vectorTool === "pen" ? "Cancel pen" : "Pen tool (P)"}</button>
                   <p className="pe-muted pe-small">Click to place points, drag for curves, click the first point to close. Select a path later to edit its points, or select two shapes to combine them.</p>
                 </section>
@@ -3561,7 +3567,7 @@ export function ProductEditor({
         )}
 
         <main className="pe-stage-wrap">
-          <div className="pe-surface-bar"><span><strong>{current.name}</strong><small>{standalone ? "Artboard" : photoFor(current) ? setupSaved ? "Product setup saved" : "Verified production blank" : flatFor(current, colorRef.current) ? "Flat product blank" : "Print-area surface only"}{!standalone && currentSpec ? ` · ${describeProductionSize({ width: currentSpec.width / DPI, height: currentSpec.height / DPI, unit: "in" })}` : ""}</small></span>
+          <div className="pe-surface-bar"><span><strong>{current.name}</strong><small>{standalone ? "Page" : photoFor(current) ? setupSaved ? "Product setup saved" : "Verified production blank" : flatFor(current, colorRef.current) ? "Flat product blank" : "Print-area surface only"}{!standalone && currentSpec ? ` · ${describeProductionSize({ width: currentSpec.width / DPI, height: currentSpec.height / DPI, unit: "in" })}` : ""}</small></span>
             {standalone ? null : currentRegions.length > 0 ? <label>Print area <select aria-label="Active print area" value={activeRegionId ?? currentRegions[0]?.id} onChange={e => {
               const r = currentRegions.find(r => r.id === e.target.value)!;
               capture(); editor.current?.discardActiveObject(); surface().area = r.bounds; setActiveRegionId(r.id); setSurfaces([...doc.current.surfaces]); readSelection();
@@ -3652,7 +3658,7 @@ export function ProductEditor({
             {outside && ready && <div className="pe-warn">Artwork outside the print areas is clipped in previews and print files.</div>}
           </div>
 
-          <div className="pe-views" role="tablist" aria-label={standalone ? "Artboard" : "Product views"}>
+          <div className="pe-views" role="tablist" aria-label={standalone ? "Page" : "Product views"}>
             {surfaces.map((s) => (
               <button
                 key={s.id}
@@ -3744,7 +3750,7 @@ export function ProductEditor({
                 </div>
               </div>
 
-              {current.printRegions && currentRegions.length > 0 && <section className="pe-section"><label className="ps-field">Print in<select className="pe-select" aria-label="Layer print area" value={selected.printRegionId ?? ""} onChange={e => changeSelected(o => {
+              {current.printRegions && currentRegions.length > 0 && !(standalone && currentRegions.length < 2) && <section className="pe-section"><label className="ps-field">Print in<select className="pe-select" aria-label="Layer print area" value={selected.printRegionId ?? ""} onChange={e => changeSelected(o => {
                 const layer = meta.current.get(o)!;
                 const updated = { ...layer, printRegionId: e.target.value || undefined } as StudioLayer;
                 meta.current.set(o, updated);
@@ -3839,7 +3845,7 @@ export function ProductEditor({
                     </button>
                   </div>
                   <p className="pe-label">Sticker</p>
-                  <div className="pe-row">
+                  <div className="pe-row pe-sticker-row">
                     <button className="pe-btn pe-btn-ghost pe-grow" type="button" aria-pressed={Boolean(selected.sticker)} disabled={locked} onClick={() => void executeEditorCommand({ type: "set_image_sticker", sticker: selected.sticker ? null : STICKER_DEFAULT })}>{selected.sticker ? "Remove sticker border" : "Add sticker border"}</button>
                     {!selected.sticker && <button className="pe-btn pe-btn-ghost" type="button" disabled={locked || Boolean(busy)} onClick={() => void cutOutAndSticker()}>Cut out + sticker</button>}
                   </div>
@@ -3853,11 +3859,11 @@ export function ProductEditor({
                   )}
                   <p className="pe-muted pe-small">A die-cut edge that follows the shape. It looks best on a cutout.</p>
                   <button className="pe-btn pe-btn-ghost pe-block" type="button" onClick={() => setPanel("mockups")} hidden={!standalone}>See it on a product</button>
-                  <p className="pe-label">Vector art</p>
+                  <p className="pe-label">Flat-color art</p>
                   <label className="pe-slider"><span>Colors <b>{vectorColors}</b></span><input type="range" min={2} max={32} step={1} value={vectorColors} onChange={(event) => setVectorColors(Number(event.target.value))} aria-label="Number of colors" /></label>
-                  <button className="pe-btn pe-btn-ghost pe-block" disabled={locked || Boolean(busy)} onClick={() => void makeVector()}><WandSparkles size={15} /> Make vector art</button>
-                  {vectorFile && <button className="pe-btn pe-btn-ghost pe-block" onClick={downloadVector}><Download size={15} /> Download SVG · {vectorFile.paths} shapes</button>}
-                  <p className="pe-muted pe-small">Flat colors, sharp at any size. Best for logos, illustrations and simple photos.</p>
+                  <button className="pe-btn pe-btn-ghost pe-block" disabled={locked || Boolean(busy)} onClick={() => void makeVector()}><WandSparkles size={15} /> Turn into flat-color art</button>
+                  {vectorFile && <button className="pe-btn pe-btn-ghost pe-block" onClick={downloadVector}><Download size={15} /> Download vector file (SVG)</button>}
+                  <p className="pe-muted pe-small">Simplifies a picture into a few flat colors that stay sharp at any size. Best for logos, drawings and simple photos.</p>
                   <p className="pe-label">Photo looks</p>
                   <div className="pe-row pe-photo-look-actions">
                     <button
@@ -4044,8 +4050,8 @@ export function ProductEditor({
                 <section className="pe-section">
                   <p className={`pe-quality ${selected.dpi >= 150 ? "ok" : selected.dpi >= 100 ? "warn" : "bad"}`}>
                     <b />
-                    {selected.dpi >= 150 ? "Good print quality" : selected.dpi >= 100 ? "Okay print quality" : "Low resolution — may print blurry"}
-                    <span>{selected.dpi} DPI</span>
+                    {selected.dpi >= 150 ? "Good print quality" : selected.dpi >= 100 ? "Okay print quality" : "Too small to print sharply"}
+                    <span title="Dots per inch">{selected.dpi >= 150 ? "Sharp" : selected.dpi >= 100 ? "Fine" : "Blurry"}</span>
                   </p>
                 </section>
               )}
@@ -4079,7 +4085,7 @@ export function ProductEditor({
                 </section>
               )}
               <section className="pe-section">
-                <p className="pe-label">{standalone ? "Artboard size" : `${current.name} print area`}</p>
+                <p className="pe-label">{standalone ? "Page size" : `${current.name} print area`}</p>
                 {currentSpec ? (
                   <p className="pe-spec">
                     {round(currentSpec.width / DPI, 1)} × {round(currentSpec.height / DPI, 1)} in
@@ -4209,7 +4215,7 @@ export function ProductEditor({
       {recovered && (
         <div className="pe-recover" role="status">
           <span>
-            Unsaved work from {new Date(recovered.at).toLocaleString()} — {recovered.layers} {recovered.layers === 1 ? "layer" : "layers"}.
+            We kept your last session ({new Date(recovered.at).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}, {recovered.layers} {recovered.layers === 1 ? "item" : "items"}). Pick up where you left off?
           </span>
           <button
             className="pe-btn pe-btn-primary"
@@ -4234,7 +4240,7 @@ export function ProductEditor({
             Restore it
           </button>
           <button className="pe-btn pe-btn-ghost" onClick={() => { clearDraft(); setRecovered(null); }}>
-            Discard
+            Start fresh
           </button>
         </div>
       )}

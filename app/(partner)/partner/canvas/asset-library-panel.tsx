@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Heart, Search, X } from "lucide-react";
 import { studioAssetUrl, saveStudioLibraryIds } from "@/lib/studio/asset-library-client";
 import { LIBRARY_SHELVES, LIBRARY_TYPES, LIBRARY_TOPICS, filterLibrary, libraryAssets, trendingAssets, type LibraryAsset, type LibraryShelf, type LibraryTopic, type LibraryType } from "@/lib/studio/library-taxonomy";
-import { LiveIcons } from "./live-icons";
+import { LiveIcons, LiveSearchPreview } from "./live-icons";
 import { filterStudioCreativeAssets, type StudioCreativeAssetOption } from "@/lib/studio/creative-library-browser";
 
 const FAVORITES_KEY = "sweetoh:studio:favorites:v1";
@@ -185,6 +185,7 @@ export function AssetLibraryPanel({ disabled, creativeAssets = [], onAddCreative
               {topicCounts.map((entry) => <button key={entry.name} type="button" aria-pressed={topic === entry.name} onClick={() => setTopic(entry.name)}>{entry.name} <i>{entry.count}</i></button>)}
             </div>
           )}
+          {searching && tab === "browse" && onAddIcon && <LiveSearchPreview query={query} disabled={disabled} onAdd={onAddIcon} onSeeAll={(mode) => reset(mode === "stickers" ? "stickers" : "Icons")} />}
           {results.length ? (
             <>
               <p className="el-count">{results.length.toLocaleString()} {results.length === 1 ? "element" : "elements"}</p>

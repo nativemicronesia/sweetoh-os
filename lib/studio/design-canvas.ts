@@ -93,7 +93,7 @@ export function designCanvasSurface(size: DesignSize): StudioSurface {
     assetId: null,
     position: DESIGN_SURFACE_ID,
     area: bounds,
-    printRegions: [{ id: DESIGN_REGION_ID, name: "Artboard", bounds, shape: "rectangle", dimensions }],
+    printRegions: [{ id: DESIGN_REGION_ID, name: "Page", bounds, shape: "rectangle", dimensions }],
   };
 }
 

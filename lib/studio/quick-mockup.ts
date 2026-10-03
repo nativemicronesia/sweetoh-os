@@ -1,4 +1,5 @@
 import { flatBlankSvg, flatBlankZone, type FlatBlankKind } from "./flat-blanks";
+import { renderStickerBorder } from "./sticker-border";
 
 /**
  * Quick mockups: a design shown on a clean flat product at real print scale,
@@ -6,12 +7,15 @@ import { flatBlankSvg, flatBlankZone, type FlatBlankKind } from "./flat-blanks";
  * They are illustrations, not photographs, and never replace a sample or the
  * print provider's own product photos.
  */
-export type MockupProduct = { kind: FlatBlankKind; name: string; widthIn: number; heightIn: number; fitDesignSize?: boolean };
+export type MockupKind = FlatBlankKind | "mug" | "sticker";
+export type MockupProduct = { kind: MockupKind; name: string; widthIn: number; heightIn: number; fitDesignSize?: boolean };
 
 export const MOCKUP_PRODUCTS: MockupProduct[] = [
   { kind: "tee", name: "T-shirt", widthIn: 12, heightIn: 16 },
   { kind: "hoodie", name: "Hoodie", widthIn: 12, heightIn: 14 },
   { kind: "tote", name: "Tote bag", widthIn: 11, heightIn: 11 },
+  { kind: "mug", name: "Mug", widthIn: 9, heightIn: 3.5 },
+  { kind: "sticker", name: "Sticker", widthIn: 4, heightIn: 4 },
   { kind: "panel", name: "Print", widthIn: 12, heightIn: 16, fitDesignSize: true },
 ];
 
@@ -81,14 +85,110 @@ function canvasOf(size: number) {
   return { canvas, g: canvas.getContext("2d")! };
 }
 
+function paintScene(g: CanvasRenderingContext2D, size: number, sceneId: MockupSceneId) {
+  const scene = MOCKUP_SCENES.find((item) => item.id === sceneId);
+  if (!scene || !scene.stops.length) return;
+  const sky = g.createLinearGradient(0, 0, size * 0.4, size);
+  sky.addColorStop(0, scene.stops[0]);
+  sky.addColorStop(1, scene.stops[1]);
+  g.fillStyle = sky;
+  g.fillRect(0, 0, size, size);
+  const glow = g.createRadialGradient(size * 0.5, size * 0.45, size * 0.1, size * 0.5, size * 0.5, size * 0.75);
+  glow.addColorStop(0, "rgba(255,255,255,0.35)");
+  glow.addColorStop(1, "rgba(255,255,255,0)");
+  g.fillStyle = glow;
+  g.fillRect(0, 0, size, size);
+}
+
+function mix(hex: string, other: string, amount: number) {
+  const a = parseInt(hex.slice(1), 16), b = parseInt(other.slice(1), 16);
+  const c = (shift: number) => Math.round(((a >> shift) & 255) * (1 - amount) + ((b >> shift) & 255) * amount).toString(16).padStart(2, "0");
+  return `#${c(16)}${c(8)}${c(0)}`;
+}
+
+function mugSvg(color: string): string {
+  const body = /^#[0-9a-f]{6}$/i.test(color) ? color : "#ffffff";
+  const lip = mix(body, "#ffffff", 0.35);
+  const inside = mix(body, "#000000", 0.55);
+  const handle = "M 470 262 C 612 246 640 340 612 412 C 590 468 524 478 468 464";
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="720" height="720" viewBox="0 0 720 720">
+    <ellipse cx="320" cy="566" rx="178" ry="24" fill="#000" opacity=".14"/>
+    <path d="${handle}" fill="none" stroke="${mix(body, "#000000", 0.18)}" stroke-width="36" stroke-linecap="round"/>
+    <path d="${handle}" fill="none" stroke="${body}" stroke-width="28" stroke-linecap="round"/>
+    <path d="M 168 204 L 168 524 Q 168 552 196 552 L 444 552 Q 472 552 472 524 L 472 204 Z" fill="${body}"/>
+    <ellipse cx="320" cy="204" rx="152" ry="28" fill="${lip}"/>
+    <ellipse cx="320" cy="206" rx="140" ry="22" fill="${inside}"/>
+  </svg>`;
+}
+
+/** A mug: the design on the front of a ceramic cup, wrapped with a little curve and shading. */
+async function composeMug(input: MockupInput, size: number): Promise<HTMLCanvasElement> {
+  const u = size / 720;
+  const out = canvasOf(size);
+  paintScene(out.g, size, input.scene);
+  const layer = canvasOf(size);
+  layer.g.drawImage(await svgImage(mugSvg(input.color)), 0, 0, size, size);
+  layer.g.globalCompositeOperation = "source-atop";
+  const box = { x: 196 * u, y: 292 * u, w: 248 * u, h: 178 * u };
+  const crop = input.crop;
+  const aspect = crop ? crop.w / crop.h : input.aspect;
+  const fit = Math.min(box.w / aspect, box.h);
+  const w = fit * aspect, h = fit;
+  const dx = box.x + (box.w - w) / 2, dy = box.y + (box.h - h) / 2;
+  if (crop) layer.g.drawImage(input.design, crop.x, crop.y, crop.w, crop.h, dx, dy, w, h);
+  else layer.g.drawImage(input.design, dx, dy, w, h);
+  // Curve of the cup: darker edges, a soft highlight a little left of center.
+  const round = layer.g.createLinearGradient(168 * u, 0, 472 * u, 0);
+  round.addColorStop(0, "rgba(0,0,0,0.22)");
+  round.addColorStop(0.18, "rgba(0,0,0,0)");
+  round.addColorStop(0.42, "rgba(255,255,255,0.16)");
+  round.addColorStop(0.8, "rgba(0,0,0,0.06)");
+  round.addColorStop(1, "rgba(0,0,0,0.26)");
+  layer.g.fillStyle = round;
+  layer.g.fillRect(168 * u, 180 * u, 304 * u, 380 * u);
+  out.g.drawImage(layer.canvas, 0, 0);
+  return out.canvas;
+}
+
+function sourceSize(source: CanvasImageSource): { width: number; height: number } {
+  const s = source as { width?: number; height?: number; naturalWidth?: number; naturalHeight?: number };
+  return { width: s.naturalWidth ?? s.width ?? 1, height: s.naturalHeight ?? s.height ?? 1 };
+}
+
+/** A die-cut sticker: the artwork with a white edge, tilted a touch, with a soft shadow. */
+async function composeSticker(input: MockupInput, size: number): Promise<HTMLCanvasElement> {
+  const out = canvasOf(size);
+  paintScene(out.g, size, input.scene);
+  const dims = sourceSize(input.design);
+  const crop = input.crop ?? { x: 0, y: 0, w: dims.width, h: dims.height };
+  const shown = 0.62 * size;
+  const s = Math.min(shown / crop.w, shown / crop.h);
+  const border = Math.max(crop.w, crop.h) * 0.04;
+  const edge = renderStickerBorder({ source: input.design, crop: { x: crop.x, y: crop.y, width: crop.w, height: crop.h }, border, color: "#ffffff", scale: s });
+  out.g.save();
+  out.g.translate(size / 2, size / 2);
+  out.g.rotate(-0.06);
+  out.g.shadowColor = "rgba(20,40,40,0.35)";
+  out.g.shadowBlur = size * 0.035;
+  out.g.shadowOffsetY = size * 0.016;
+  out.g.drawImage(edge.canvas, -(crop.w / 2 + edge.pad) * s, -(crop.h / 2 + edge.pad) * s, (edge.canvas.width / edge.scale) * s, (edge.canvas.height / edge.scale) * s);
+  out.g.shadowColor = "transparent";
+  out.g.drawImage(input.design, crop.x, crop.y, crop.w, crop.h, (-crop.w * s) / 2, (-crop.h * s) / 2, crop.w * s, crop.h * s);
+  out.g.restore();
+  return out.canvas;
+}
+
 /** Compose one mockup as a square canvas. */
 export async function composeMockup(input: MockupInput): Promise<HTMLCanvasElement> {
   const size = input.size ?? 1600;
   const { product } = input;
+  if (product.kind === "mug") return composeMug(input, size);
+  if (product.kind === "sticker") return composeSticker(input, size);
   const widthIn = product.fitDesignSize && input.sizeIn ? input.sizeIn.width : product.widthIn;
   const heightIn = product.fitDesignSize && input.sizeIn ? input.sizeIn.height : product.heightIn;
-  const zone = flatBlankZone(product.kind, widthIn, heightIn);
-  const blank = await svgImage(flatBlankSvg(product.kind, { zone, widthIn, heightIn, color: input.color, position: "front" }));
+  const flat = product.kind as FlatBlankKind;
+  const zone = flatBlankZone(flat, widthIn, heightIn);
+  const blank = await svgImage(flatBlankSvg(flat, { zone, widthIn, heightIn, color: input.color, position: "front" }));
 
   const out = canvasOf(size);
   const scene = MOCKUP_SCENES.find((s) => s.id === input.scene);
